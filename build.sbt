@@ -25,11 +25,19 @@ lazy val demoCore = (project in file("demo-core"))
     )
   )
 
+val akkaVersion = "2.6.10"
+val logbackVersion = "1.2.3"
+
+val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
+val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
+
 lazy val demoAkka = (project in file("demo-akka"))
   .dependsOn(demoCore)
   .settings(
     name := "demo-akka",
     libraryDependencies ++= Seq(
+      akkaActorTyped,
+      logbackClassic
     )
   )
 
