@@ -22,23 +22,17 @@ lazy val demoCore = (project in file("demo-core"))
   .settings(
     name := "demo-core",
     libraryDependencies ++= Seq(
-    )
+      pekCommonCore,
+    ),
   )
-
-val akkaVersion = "2.6.10"
-val logbackVersion = "1.2.3"
-
-val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
-val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
 
 lazy val demoAkka = (project in file("demo-akka"))
   .dependsOn(demoCore)
   .settings(
     name := "demo-akka",
     libraryDependencies ++= Seq(
-      akkaActorTyped,
-      logbackClassic
-    )
+      pekCommonAkka,
+    ),
   )
 
 lazy val demoApp = (project in file("demo-app"))
@@ -46,5 +40,10 @@ lazy val demoApp = (project in file("demo-app"))
   .settings(
     name := "demo-app",
     libraryDependencies ++= Seq(
-    )
+    ),
   )
+
+val pekCommonVersion = "0.1-SNAPSHOT"
+
+val pekCommonCore = "com.peknight" %% "common-core" % pekCommonVersion
+val pekCommonAkka = "com.peknight" %% "common-akka" % pekCommonVersion
