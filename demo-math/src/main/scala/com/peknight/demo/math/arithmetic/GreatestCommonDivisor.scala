@@ -7,7 +7,6 @@ import org.apache.commons.math3.util.ArithmeticUtils
  */
 object GreatestCommonDivisor {
   def gcd(p: Int, q: Int): Int = {
-    println(ArithmeticUtils.lcm(256, 91))
     ArithmeticUtils.gcd(p, q)
   }
 }
