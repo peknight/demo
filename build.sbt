@@ -73,7 +73,7 @@ lazy val demoAkka = (project in file("demo-akka"))
   .settings(
     name := "demo-akka",
     libraryDependencies ++= Seq(
-//      pekCommonAkka,
+      pekCommonAkka,
     ),
   )
 
