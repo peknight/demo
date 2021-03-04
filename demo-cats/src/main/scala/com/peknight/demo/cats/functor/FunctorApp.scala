@@ -1,5 +1,8 @@
 package com.peknight.demo.cats.functor
 
+import cats.Functor
+import cats.syntax.functor._
+
 object FunctorApp extends App {
   println(List(1, 2, 3).map(_ + 1))
   println(List(1, 2, 3).map(_ + 1).map(_ * 2).map(n => s"${n}!"))
@@ -41,7 +44,6 @@ object FunctorApp extends App {
   val result2 = Await.result(future2, 1.second)
   println(result2)
 
-  import cats.syntax.functor._
 
   val func1: Int => Double = (x: Int) => x.toDouble
   val func2: Double => Double = (y: Double) => y * 2
@@ -54,4 +56,36 @@ object FunctorApp extends App {
   println(func(123))
 
   func1.map(func2)
+
+  val list1 = List(1, 2, 3)
+  val list2 = Functor[List].map(list1)(_ * 2)
+  println(list2)
+
+  val option1 = Option(123)
+  val option2 = Functor[Option].map(option1)(_.toString)
+  println(option2)
+
+  val func3 = (x: Int) => x + 1
+  val liftedFunc3 = Functor[Option].lift(func3)
+  println(liftedFunc3(Option(1)))
+
+  println(Functor[List].as(list1, "As"))
+
+  val func4 = (a: Int) => a + 1
+  val func5 = (a: Int) => a * 2
+  val func6 = (a: Int) => s"${a}!"
+  val func7 = func4.map(func5).map(func6)
+  println(func7(123))
+
+  def doMath[F[_]](start: F[Int])(implicit functor: Functor[F]): F[Int] = start.map(n => n + 1 * 2)
+
+  println(doMath(Option(20)))
+  println(doMath(List(1, 2, 3)))
+
+  val box = Box[Int](123)
+  import FunctorInstances._
+  println(box.map(value => value + 1))
+  println(List(1, 2, 3).as("As"))
+  Future(123).map(_.toString())
+
 }
