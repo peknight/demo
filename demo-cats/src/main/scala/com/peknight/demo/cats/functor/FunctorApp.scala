@@ -2,14 +2,16 @@ package com.peknight.demo.cats.functor
 
 import cats.Functor
 import cats.syntax.functor._
+import com.peknight.demo.cats.functor.FunctorInstances._
+import com.peknight.demo.cats.functor.Tree.Leaf
 
 object FunctorApp extends App {
   println(List(1, 2, 3).map(_ + 1))
   println(List(1, 2, 3).map(_ + 1).map(_ * 2).map(n => s"${n}!"))
 
-  import scala.concurrent.{Future, Await}
   import scala.concurrent.ExecutionContext.Implicits.global
   import scala.concurrent.duration._
+  import scala.concurrent.{Await, Future}
 
   val future: Future[String] = Future(123).map(_ + 1).map(_ * 2).map(n => s"${n}!")
   println(Await.result(future, 1.second))
@@ -83,9 +85,17 @@ object FunctorApp extends App {
   println(doMath(List(1, 2, 3)))
 
   val box = Box[Int](123)
-  import FunctorInstances._
   println(box.map(value => value + 1))
   println(List(1, 2, 3).as("As"))
   Future(123).map(_.toString())
 
+  println(Functor[Future])
+
+  println(Tree.branch(Leaf(10), Leaf(20)).map(_ * 2))
+
+  type F[A] = Int => A
+  val functor = Functor[F]
+
+  val either: Either[String, Int] = Right(123)
+  println(either.map(_ + 1))
 }

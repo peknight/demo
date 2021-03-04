@@ -1,6 +1,7 @@
 package com.peknight.demo.cats.monoid
 
 import cats.Monoid
+import cats.syntax.invariant._
 import cats.syntax.semigroup._
 
 object MonoidInstances {
@@ -44,4 +45,7 @@ object MonoidInstances {
     }
     def empty: Order = Order(Monoid[Double].empty, Monoid[Double].empty)
   }
+
+  // sbt可编译通过，但idea编译不通过，why?
+  implicit val symbolMonoid: Monoid[Symbol] = Monoid[String].imap[Symbol](Symbol.apply)(_.name)
 }
