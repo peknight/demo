@@ -6,6 +6,7 @@ ThisBuild / organization := "com.peknight"
 
 lazy val commonSettings = Seq(
   scalacOptions ++= Seq(
+    "-deprecation",
     "-Xfatal-warnings",
     "-Ymacro-annotations",
   ),
