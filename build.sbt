@@ -5,6 +5,7 @@ ThisBuild / scalaVersion := "2.13.4"
 ThisBuild / organization := "com.peknight"
 
 lazy val commonSettings = Seq(
+  addCompilerPlugin(kindProjector),
   scalacOptions ++= Seq(
     "-deprecation",
     "-Xfatal-warnings",
@@ -87,9 +88,11 @@ lazy val demoApp = (project in file("demo-app"))
     ),
   )
 
+val kindProjectorVersion = "0.11.3"
 val pekCommonVersion = "0.1-SNAPSHOT"
 val circeVersion = "0.13.0"
 
+val kindProjector = "org.typelevel" % "kind-projector" % kindProjectorVersion cross CrossVersion.full
 val pekCommonCore = "com.peknight" %% "common-core" % pekCommonVersion
 val pekCommonMath = "com.peknight" %% "common-math" % pekCommonVersion
 val pekCommonFp = "com.peknight" %% "common-fp" % pekCommonVersion
