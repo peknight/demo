@@ -90,7 +90,6 @@ lazy val demoApp = (project in file("demo-app"))
 
 val kindProjectorVersion = "0.11.3"
 val pekCommonVersion = "0.1-SNAPSHOT"
-val circeVersion = "0.13.0"
 
 val kindProjector = "org.typelevel" % "kind-projector" % kindProjectorVersion cross CrossVersion.full
 val pekCommonCore = "com.peknight" %% "common-core" % pekCommonVersion
