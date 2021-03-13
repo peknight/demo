@@ -29,9 +29,9 @@ object FoldableApp extends App {
     if (func(item)) item :: accum else accum
   }
 
-  def sumWithNumeric[A](list: List[A])(implicit numeric: Numeric[A]): A = list.foldRight(numeric.zero)(numeric.plus)
-
   def sum[A](list: List[A])(implicit m: Monoid[A]) = list.foldRight(m.empty)(_ |+| _)
+  def sumWithNumeric[A](list: List[A])(implicit numeric: Numeric[A]): A = list.foldRight(numeric.zero)(numeric.plus)
+  def sumWithFoldable[F[_]: Foldable](values: F[Int]): Int = values.foldLeft(0)(_ + _)
 
   println(map(List(1, 2, 3))(i => s"$i!"))
   println(flatMap(List(1, 2, 3))(i => List(i - 1, i + 1)))
@@ -73,5 +73,4 @@ object FoldableApp extends App {
 
   println(List(1, 2, 3).foldLeft(0)(_ + _))
 
-  def sum[F[_]: Foldable](values: F[Int]): Int = values.foldLeft(0)(_ + _)
 }
