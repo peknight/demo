@@ -17,7 +17,7 @@ packageName in Docker := "pek/demo"
 maintainer in Docker := "peknight <JKpeknight@gmail.com>"
 
 lazy val demo = (project in file("."))
-  .aggregate(demoCore, demoMath, demoCats, demoMonocle, demoJson, demoAkka, demoApp)
+  .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoMonocle, demoJson, demoAkka, demoApp)
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
   .settings(
@@ -39,6 +39,15 @@ lazy val demoMath = (project in file("demo-math"))
     name := "demo-math",
     libraryDependencies ++= Seq(
       pekCommonMath,
+    ),
+  )
+
+lazy val demoFpInScala = (project in file("demo-fp"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-fp",
+    libraryDependencies ++= Seq(
+      pekCommonFp,
     ),
   )
 
