@@ -1,6 +1,6 @@
 ThisBuild / version := "0.1-SNAPSHOT"
 
-ThisBuild / scalaVersion := "2.13.4"
+ThisBuild / scalaVersion := "2.13.5"
 
 ThisBuild / organization := "com.peknight"
 
