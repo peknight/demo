@@ -7,7 +7,9 @@ ThisBuild / organization := "com.peknight"
 lazy val commonSettings = Seq(
   addCompilerPlugin(kindProjector),
   scalacOptions ++= Seq(
+    "-feature",
     "-deprecation",
+    "-unchecked",
     "-Xfatal-warnings",
     "-Ymacro-annotations",
   ),
@@ -17,7 +19,7 @@ packageName in Docker := "pek/demo"
 maintainer in Docker := "peknight <JKpeknight@gmail.com>"
 
 lazy val demo = (project in file("."))
-  .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoMonocle, demoJson, demoAkka, demoApp)
+  .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoMonocle, demoJson, demoAkka, demoApp)
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
   .settings(
@@ -55,6 +57,15 @@ lazy val demoCats = (project in file("demo-cats"))
   .settings(commonSettings)
   .settings(
     name := "demo-cats",
+    libraryDependencies ++= Seq(
+      pekCommonFp,
+    ),
+  )
+
+lazy val demoCatsEffect = (project in file("demo-cats-effect"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-cats-effect",
     libraryDependencies ++= Seq(
       pekCommonFp,
     ),

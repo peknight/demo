@@ -1,5 +1,5 @@
 package com.peknight.demo.fpinscala.introduction
 
 trait Payments {
-  def charge(cc: CreditCard, amount: Double)
+  def charge(cc: CreditCard, amount: Double): Unit
 }
