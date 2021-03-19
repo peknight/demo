@@ -1,11 +1,12 @@
 package com.peknight.demo.cats.effect.io
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.{ContextShift, Fiber, IO, SyncIO}
+import cats.syntax.flatMap._
 
 import java.io.{BufferedReader, File, FileInputStream, InputStreamReader}
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 import scala.util.control.NonFatal
@@ -100,6 +101,7 @@ object IOApp extends App {
 
 //  IO.race(lh, IO.never) <-> lh.map(Left(_))
 //  IO.race(IO.never, rh) <-> rh.map(Right(_))
+
 
   // Deferred Execution -- IO.suspend
 
@@ -220,9 +222,52 @@ object IOApp extends App {
 
     }
 
-  // Concurrent start + cancel
 
-  // To be continued
+  {
+    // Concurrent start + cancel
+
+    // Needed for IO.start to do a logical thread fork
+    implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+
+    val launchMissiles: IO[Unit] = IO.raiseError(new Exception("boom!"))
+    val runToBunker = IO(println("To the bunker!!!"))
+
+    val aftermathRes = for {
+      fiber <- launchMissiles.start
+      _ <- runToBunker.handleErrorWith { error =>
+        // Retreat failed, cancel launch (maybe we should
+        // have retreated to our bunker before the launch?)
+        fiber.cancel *> IO.raiseError(error)
+      }
+      aftermath <- fiber.join
+    } yield aftermath
+
+//    aftermathRes.unsafeRunSync()
+  }
+
+
+  // runCancelable & unsafeRunCancelable
+
+  implicit val timer = IO.timer(ExecutionContext.global)
+  val io: IO[Unit] = IO.sleep(3.seconds) *> IO(println("Hello!"))
+
+  val cancel: IO[Unit] = io.unsafeRunCancelable(r => println(s"Done $r"))
+
+  cancel.unsafeRunSync()
+  // TODO 暂时没看懂这是在干啥
+
+
+  val pureResult: SyncIO[IO[Unit]] = io.runCancelable { r =>
+    IO(println(s"Done: $r"))
+  }
+
+  pureResult.toIO.flatten.unsafeRunSync()
+
+  // uncancelable marker
+
+  io.uncancelable.unsafeRunSync()
+
+  
 
 
 }
