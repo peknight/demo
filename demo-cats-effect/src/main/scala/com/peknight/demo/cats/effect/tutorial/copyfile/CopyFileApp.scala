@@ -29,6 +29,12 @@ object CopyFileApp extends IOApp {
       total <- transmit(origin, destination, buffer, 0L)
     } yield total
 
+  def transferWithSync[F[_]: Sync](origin: InputStream, destination: OutputStream): F[Long] =
+    for {
+      buffer <- Sync[F].delay(new Array[Byte](1024 * 10))
+      total <- transmitWithSync(origin, destination, buffer, 0L)
+    } yield total
+
   def inputStream(f: File): Resource[IO, FileInputStream] =
     Resource.make {
       IO(new FileInputStream(f))
@@ -42,6 +48,15 @@ object CopyFileApp extends IOApp {
     } { inStream =>
       guard.withPermit {
         IO(inStream.close()).handleErrorWith(_ => IO.unit)
+      }
+    }
+
+  def inputStreamWithSync[F[_]: Sync](f: File, guard: Semaphore[F]): Resource[F, FileInputStream] =
+    Resource.make {
+      Sync[F].delay(new FileInputStream(f))
+    } { inStream =>
+      guard.withPermit {
+        Sync[F].delay(inStream.close())
       }
     }
 
