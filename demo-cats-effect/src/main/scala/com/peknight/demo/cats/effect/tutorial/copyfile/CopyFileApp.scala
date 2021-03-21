@@ -24,4 +24,5 @@ object CopyFileApp extends App {
 
   def inputOutputStreams(in: File, out: File): Resource[IO, (InputStream, OutputStream)] =
     (inputStream(in), outputStream(out)).mapN((_, _))
+
 }
