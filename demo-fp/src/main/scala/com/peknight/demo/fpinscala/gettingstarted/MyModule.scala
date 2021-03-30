@@ -1,7 +1,5 @@
-package com.peknight.demo.fpinscala.introduction
+package com.peknight.demo.fpinscala.gettingstarted
 
-// A comment!
-/* Another comment */
 /** A documentation comment */
 object MyModule {
   def abs(n: Int): Int =
