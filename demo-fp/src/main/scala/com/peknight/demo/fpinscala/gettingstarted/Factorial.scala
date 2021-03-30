@@ -11,4 +11,14 @@ object Factorial {
 
     go(n, 1)
   }
+
+  private def formatFactorial(n: Int) = {
+    val msg = "The factorial of %d is %d."
+    msg.format(n, factorial(n))
+  }
+
+  def main(args: Array[String]): Unit = {
+    println(formatFactorial(7))
+  }
+
 }

@@ -8,25 +8,14 @@ import scala.annotation.tailrec
 object Fibonacci {
   def fib(n: Int): Int = {
     @tailrec
-    def go(first: Int, second: Int, n: Int): Int = {
-      if (n <= 1) {
-        first
-      } else if (n == 2) {
-        second
-      } else {
-        go(second, first + second, n - 1)
-      }
-    }
-    go(0, 1, n)
+    def loop(n: Int, prev: Int, cur: Int): Int =
+      if (n == 0) prev
+      else loop(n - 1, cur, prev + cur)
+    loop(n, 0, 1)
   }
 
   def main(args: Array[String]): Unit = {
-    println(fib(1))
-    println(fib(2))
-    println(fib(3))
-    println(fib(4))
-    println(fib(5))
-    println(fib(6))
-    println(fib(7))
+    println("Expected: 0, 1, 1, 2, 3, 5, 8")
+    println("Actual:   %d, %d, %d, %d, %d, %d, %d".format(fib(0), fib(1), fib(2), fib(3), fib(4), fib(5), fib(6)))
   }
 }
