@@ -27,4 +27,9 @@ object ListApp extends App {
   println(append(l, List(6, 7, 8)))
   println(appendViaFoldLeft(l, List(6, 7, 8)))
   println(appendViaFoldRight(l, List(6, 7, 8)))
+  println(removeAllOddNumber(l))
+  println(flatMap(List(1, 2, 3))(i => List(i, i)))
+  println(hasSubsequence(List(1, 2, 3, 4, 5), List(2, 3)))
+  println(hasSubsequence(List(1, 2, 3, 4, 5), List(2, 4)))
+  println(hasSubsequence(List(1, 2, 3, 4, 5), Nil))
 }
