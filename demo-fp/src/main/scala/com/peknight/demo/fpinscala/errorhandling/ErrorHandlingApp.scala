@@ -1,6 +1,7 @@
 package com.peknight.demo.fpinscala.errorhandling
 
 import com.peknight.demo.fpinscala.errorhandling.Option._
+import com.peknight.demo.fpinscala.errorhandling.Either._
 
 object ErrorHandlingApp extends App {
   def failingFn(i: Int): Int = {
@@ -51,5 +52,34 @@ object ErrorHandlingApp extends App {
     .map(_.department)
     .filter(_ != "Accounting")
     .getOrElse("Default Dept")
+
+  val absO: Option[Double] => Option[Double] = lift(math.abs)
+
+  def insuranceRateQuote(age: Int, numberOfSpeedingTickets: Int): Double = age.toDouble / numberOfSpeedingTickets
+
+  println("112".toInt)
+
+//  println("hello".toInt)
+
+  def parseInsuranceRateQuoteWithOption(age: String, numberOfSpeedingTickets: String): Option[Double] = {
+    val optAge: Option[Int] = Option.Try(age.toInt)
+    val optTickets: Option[Int] = Option.Try(numberOfSpeedingTickets.toInt)
+    map2(optAge, optTickets)(insuranceRateQuote)
+  }
+
+  def parseInsuranceRateQuoteWithEither(age: String, numberOfSpeedingTickets: String): Either[Exception, Double] =
+    for {
+      a <- Either.Try(age.toInt)
+      b <- Either.Try(numberOfSpeedingTickets.toInt)
+    } yield insuranceRateQuote(a, b)
+
+  def meanWithEither(xs: Seq[Double]): Either[String, Double] =
+    if (xs.isEmpty) Left("mean of empty list!")
+    else Right(xs.sum / xs.length)
+
+  def safeDiv(x: Int, y: Int): Either[Exception, Int] =
+    try (Right(x / y))
+    catch { case e: Exception => Left(e)}
+
 
 }
