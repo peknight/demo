@@ -29,4 +29,15 @@ object LazinessApp extends App {
 
   val x2 = maybeTwice2(true, { println("hi"); 1 + 41 })
   println(x2)
+
+  println(Stream(1, 2, 3).take(2).toList)
+
+  println(Stream(1, 2, 3, 4)
+    .map(a => {
+      println(s"map $a")
+      a + 10
+    }).filter(a => {
+      println(s"filter $a")
+      a % 2 == 0
+    }).toList)
 }
