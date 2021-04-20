@@ -131,13 +131,32 @@ sealed trait Stream[+A] {
     case (Empty, Cons(hb, tb)) => Some((f(None, Some(hb())), (Empty, tb())))
     case (Empty, Empty) => None
   }
-  def startsWith[A](prefix: Stream[A]): Boolean = zipWithAll(prefix) {
-    case (Some(a1), Some(a2)) if a1 == a2 => true
-    case (_, None) => true
-    case _ => false
-  } forAll(b => b)
 
-  def hasSubsequence[A](sub: Stream[A]): Boolean = ???
+  // Exercise 5.14
+  def startsWith[A](prefix: Stream[A]): Boolean =
+    zipAll(prefix).takeWhile(!_._2.isEmpty) forAll {
+      case (h1, h2) => h1 == h2
+    }
+
+  // Exercise 5.15
+  def tails: Stream[Stream[A]] = unfold(this) {
+    case s @ Cons(_, t) => Some((s, t()))
+    case Empty => None
+  } append Stream(empty)
+
+  def hasSubsequence[A](sub: Stream[A]): Boolean = tails exists (_ startsWith sub)
+
+  // Exercise 5.16
+  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = foldRight((z, Stream(z)))((a, p0) => {
+    // p0 is passwd by-name and used in by-name args in f and cons. So use lazy val to ensure only one evaluation...
+    lazy val p1 = p0
+    val b2 = f(a, p1._1)
+    (b2, cons(b2, p1._2))
+  })._2
+
+  def tailsViaScanRight: Stream[Stream[A]] = scanRight(empty[A])((a, b) => {
+    cons(a, b)
+  })
 }
 object Stream {
   case object Empty extends Stream[Nothing]
