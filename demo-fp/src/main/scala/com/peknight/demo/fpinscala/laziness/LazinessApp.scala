@@ -1,6 +1,8 @@
 package com.peknight.demo.fpinscala.laziness
 
+import com.peknight.demo.fpinscala.laziness.Stream._
 object LazinessApp extends App {
+
   val b1 = false && { println("!!"); true }
   println(b1)
   val b2 = true || { println("!!"); false }
@@ -40,4 +42,13 @@ object LazinessApp extends App {
       println(s"filter $a")
       a % 2 == 0
     }).toList)
+
+  println(ones.take(5).toList)
+  println(ones.exists(_ % 2 != 0))
+  println(ones.map(_ + 1).exists(_ % 2 == 0))
+  println(ones.takeWhile(_ == 1))
+  println(ones.forAllWithRecursiveLoop(_ != 1))
+  println(fibs.take(7).toList)
+  println(fibsViaUnfold.take(7).toList)
+  println(Stream(1, 2, 3).startsWith(Stream(1, 2)))
 }
