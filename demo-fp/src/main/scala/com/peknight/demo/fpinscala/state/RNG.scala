@@ -1,5 +1,7 @@
 package com.peknight.demo.fpinscala.state
 
+import com.peknight.demo.fpinscala.state.State._
+
 trait RNG {
   def nextInt: (Int, RNG)
 }
@@ -66,27 +68,26 @@ object RNG {
 
   val int: Rand[Int] = State(_.nextInt)
 
-  def unit[A](a: A): Rand[A] = State(rng => (a, rng))
+//  def unit[A](a: A): Rand[A] = State(rng => (a, rng))
 
-  // def map[S, A, B](s: S => (A, S))(f: A => B): S => (B, S) = rng => {
-  def map[A, B](s: Rand[A])(f: A => B): Rand[B] = State(rng => {
-    val (a, rng2) = s.run(rng)
-    (f(a), rng2)
-  })
+//  def map[A, B](s: Rand[A])(f: A => B): Rand[B] = State { rng =>
+//    val (a, rng2) = s.run(rng)
+//    (f(a), rng2)
+//  }
 
-  def nonNegativeEven: Rand[Int] = map(State(nonNegativeInt))(i => i - i % 2)
+  def nonNegativeEven: Rand[Int] = State(nonNegativeInt).map(i => i - i % 2)
 
   // Exercise 6.5
-  def doubleViaMap: Rand[Double] = map(State(nonNegativeInt))(_ / (Int.MaxValue.toDouble + 1))
+  def doubleViaMap: Rand[Double] = State(nonNegativeInt).map(_ / (Int.MaxValue.toDouble + 1))
 
   // Exercise 6.6
-  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = State(rng => {
-    val (a, rng2) = ra.run(rng)
-    val (b, rng3) = rb.run(rng2)
-    (f(a, b), rng3)
-  })
+//  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = State { rng =>
+//    val (a, rng2) = ra.run(rng)
+//    val (b, rng3) = rb.run(rng2)
+//    (f(a, b), rng3)
+//  }
 
-  def both[A, B](ra:Rand[A], rb: Rand[B]): Rand[(A, B)] = map2(ra, rb)((_, _))
+  def both[A, B](ra:Rand[A], rb: Rand[B]): Rand[(A, B)] = ra.map2(rb)((_, _))
 
   val randIntDouble: Rand[(Int, Double)] = both(int, doubleViaMap)
 
@@ -104,12 +105,12 @@ object RNG {
     }
   }
 
-  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
-    fs.foldRight(unit(List.empty[A]))((f, acc) => map2(f, acc)(_ :: _))
+//  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+//    fs.foldRight(unit[RNG, List[A]](List()))((f, acc) => f.map2(acc)(_ :: _))
 
   def intsViaSequence(count: Int): Rand[List[Int]] = sequence(List.fill(count)(int))
 
-  def nonNegativeLessThanV1(n: Int): Rand[Int] = map(State(nonNegativeInt))(_ % n)
+  def nonNegativeLessThanV1(n: Int): Rand[Int] = State(nonNegativeInt).map(_ % n)
 
   def nonNegativeLessThanV2(n: Int): Rand[Int] = State { rng =>
     val (i, rng2) = nonNegativeInt(rng)
@@ -120,23 +121,22 @@ object RNG {
   }
 
   // Exercise 6.8
-  def flatMap[A, B](s: Rand[A])(f: A => Rand[B]): Rand[B] = State(rng => {
-    val (a, rng2) = s.run(rng)
-    f(a).run(rng2)
-  })
+//  def flatMap[A, B](s: Rand[A])(f: A => Rand[B]): Rand[B] = State { rng =>
+//    val (a, rng2) = s.run(rng)
+//    f(a).run(rng2)
+//  }
 
-  def nonNegativeLessThan(n: Int): Rand[Int] = flatMap(State(nonNegativeInt)) { i =>
+  def nonNegativeLessThan(n: Int): Rand[Int] = State(nonNegativeInt) flatMap { i =>
     val mod = i % n
     if (i + (n - 1) - mod >= 0) unit(mod)
     else nonNegativeLessThan(n)
   }
 
   // Exercise 6.9
-  def mapViaFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] =
-    flatMap(s)(a => unit(f(a)))
+  def mapViaFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] = s.flatMap(a => unit(f(a)))
 
   def map2ViaFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
-    flatMap(ra)(a => map(rb)(b => f(a, b)))
+    ra.flatMap(a => rb.map(b => f(a, b)))
 
-  def rollDie: Rand[Int] = map(nonNegativeLessThan(6))(_ + 1)
+  def rollDie: Rand[Int] = nonNegativeLessThan(6).map(_ + 1)
 }

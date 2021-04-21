@@ -1,6 +1,8 @@
 package com.peknight.demo.fpinscala.state
 
 import com.peknight.demo.fpinscala.state.RNG._
+import com.peknight.demo.fpinscala.state.State._
+
 import scala.util.Random
 
 object StateApp extends App {
@@ -29,7 +31,15 @@ object StateApp extends App {
 
   println(randomPair(rng))
   println(ints(3)(rng))
-  println(sequence(List(unit(1), unit(2), unit(3))).run(rng)._1)
+  println(sequence[RNG, Int](List(unit(1), unit(2), unit(3))).run(rng)._1)
 
   println(rollDie.run(SimpleRNG(5))._1)
+
+  val ns: Rand[List[Int]] = for {
+    x <- int
+    y <- int
+    xs <- intsViaSequence(x)
+  } yield xs.map(_ % y)
+
+
 }
