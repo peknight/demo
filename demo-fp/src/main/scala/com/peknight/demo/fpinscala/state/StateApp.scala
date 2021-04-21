@@ -10,14 +10,14 @@ object StateApp extends App {
   println(scalaRng.nextInt())
   println(scalaRng.nextInt(10))
 
-  def rollDie: Int = {
+  def rollDieV1: Int = {
     val rng = new Random()
     // Returns a random number from 0 to 5
     // off-by-one error supposed to return a value between 1 and 6
     rng.nextInt(6)
   }
 
-  def rollDieV2(rng: Random): Int = rng.nextInt(6)
+  def rollDieV2(rng: Random): Int = rng.nextInt(6) + 1
 
   val rng = SimpleRNG(42)
   val (n1, rng2) = rng.nextInt
@@ -29,4 +29,7 @@ object StateApp extends App {
 
   println(randomPair(rng))
   println(ints(3)(rng))
+  println(sequence(List(unit(1), unit(2), unit(3))).run(rng)._1)
+
+  println(rollDie.run(SimpleRNG(5))._1)
 }

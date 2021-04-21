@@ -5,7 +5,8 @@ trait RNG {
 }
 object RNG {
 
-  type Rand[+A] = RNG => (A, RNG)
+//  type Rand[+A] = RNG => (A, RNG)
+  type Rand[A] = State[RNG, A]
 
   def randomPair(rng: RNG): ((Int, Int), RNG) = {
     val (i1, rng2) = rng.nextInt
@@ -63,30 +64,79 @@ object RNG {
     go(count, rng, Nil)
   }
 
-  val int: Rand[Int] = _.nextInt
+  val int: Rand[Int] = State(_.nextInt)
 
-  def unit[A](a: A): Rand[A] = rng => (a, rng)
+  def unit[A](a: A): Rand[A] = State(rng => (a, rng))
 
-  def map[A, B](s: Rand[A])(f: A => B): Rand[B] = rng => {
-    val (a, rng2) = s(rng)
+  // def map[S, A, B](s: S => (A, S))(f: A => B): S => (B, S) = rng => {
+  def map[A, B](s: Rand[A])(f: A => B): Rand[B] = State(rng => {
+    val (a, rng2) = s.run(rng)
     (f(a), rng2)
-  }
+  })
 
-  def nonNegativeEven: Rand[Int] = map(nonNegativeInt)(i => i - i % 2)
+  def nonNegativeEven: Rand[Int] = map(State(nonNegativeInt))(i => i - i % 2)
 
   // Exercise 6.5
-  def doubleViaMap: Rand[Double] = map(nonNegativeInt)(_ / (Int.MaxValue.toDouble + 1))
+  def doubleViaMap: Rand[Double] = map(State(nonNegativeInt))(_ / (Int.MaxValue.toDouble + 1))
 
   // Exercise 6.6
-  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = rng => {
-    val (a, rng2) = ra(rng)
-    val (b, rng3) = rb(rng2)
+  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = State(rng => {
+    val (a, rng2) = ra.run(rng)
+    val (b, rng3) = rb.run(rng2)
     (f(a, b), rng3)
+  })
+
+  def both[A, B](ra:Rand[A], rb: Rand[B]): Rand[(A, B)] = map2(ra, rb)((_, _))
+
+  val randIntDouble: Rand[(Int, Double)] = both(int, doubleViaMap)
+
+  val randDoubleInt: Rand[(Double, Int)] = both(doubleViaMap, int)
+
+  // Exercise 6.7
+  def sequenceWithRecursive[A](fs: List[Rand[A]]): Rand[List[A]] = {
+    fs match {
+      case h :: t => State(rng => {
+        val (h1, rng2) = h.run(rng)
+        val (t1, rng3) = sequenceWithRecursive(t).run(rng2)
+        (h1 :: t1, rng3)
+      })
+      case Nil => State(rng => (List(), rng))
+    }
   }
 
-  // TODO 提前实现
-  def flatMap[A, B](s: Rand[A])(f: A => Rand[B]): Rand[B] = rng => {
-    val (a, rng2) = s(rng)
-    f(a)(rng2)
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(List.empty[A]))((f, acc) => map2(f, acc)(_ :: _))
+
+  def intsViaSequence(count: Int): Rand[List[Int]] = sequence(List.fill(count)(int))
+
+  def nonNegativeLessThanV1(n: Int): Rand[Int] = map(State(nonNegativeInt))(_ % n)
+
+  def nonNegativeLessThanV2(n: Int): Rand[Int] = State { rng =>
+    val (i, rng2) = nonNegativeInt(rng)
+    val mod = i % n
+    if (i + (n - 1) - mod >= 0) (mod, rng2)
+    else nonNegativeLessThanV2(n).run(rng2)
+    // 书上写错了，这里应该用rng2而不是rng
   }
+
+  // Exercise 6.8
+  def flatMap[A, B](s: Rand[A])(f: A => Rand[B]): Rand[B] = State(rng => {
+    val (a, rng2) = s.run(rng)
+    f(a).run(rng2)
+  })
+
+  def nonNegativeLessThan(n: Int): Rand[Int] = flatMap(State(nonNegativeInt)) { i =>
+    val mod = i % n
+    if (i + (n - 1) - mod >= 0) unit(mod)
+    else nonNegativeLessThan(n)
+  }
+
+  // Exercise 6.9
+  def mapViaFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] =
+    flatMap(s)(a => unit(f(a)))
+
+  def map2ViaFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    flatMap(ra)(a => map(rb)(b => f(a, b)))
+
+  def rollDie: Rand[Int] = map(nonNegativeLessThan(6))(_ + 1)
 }
