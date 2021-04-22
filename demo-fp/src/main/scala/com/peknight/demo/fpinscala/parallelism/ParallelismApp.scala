@@ -16,8 +16,15 @@ object ParallelismApp extends App {
       val (l, r) = ints.splitAt(ints.length / 2)
       val sumL: Par[Int] = Par.unit(sumViaParV1(l))
       val sumR: Par[Int] = Par.unit(sumViaParV1(r))
-      Par.get(sumL) + Par.get(sumR)
+      Par.run(sumL) + Par.run(sumR)
     }
-    
+
+  def sumViaParV2(ints: IndexedSeq[Int]): Par[Int] =
+    if (ints.size <= 1)
+      Par.unit(ints.headOption getOrElse 0)
+    else {
+      val (l, r) = ints.splitAt(ints.length / 2)
+      Par.map2(Par.fork(sumViaParV2(l)), Par.fork(sumViaParV2(r)))(_ + _)
+    }
 
 }
