@@ -1,6 +1,6 @@
 ThisBuild / version := "0.1-SNAPSHOT"
 
-ThisBuild / scalaVersion := "2.13.5"
+ThisBuild / scalaVersion := "2.13.6"
 
 ThisBuild / organization := "com.peknight"
 
@@ -33,6 +33,12 @@ lazy val demoCore = (project in file("demo-core"))
     libraryDependencies ++= Seq(
       pekCommonCore,
     ),
+  )
+
+lazy val demoScala3 = (project in file("demo-scala3"))
+  .settings(
+    name := "demo-scala3",
+    scalaVersion := "3.0.0"
   )
 
 lazy val demoMath = (project in file("demo-math"))
@@ -108,7 +114,7 @@ lazy val demoApp = (project in file("demo-app"))
     ),
   )
 
-val kindProjectorVersion = "0.11.3"
+val kindProjectorVersion = "0.13.0"
 val pekCommonVersion = "0.1-SNAPSHOT"
 
 val kindProjector = "org.typelevel" % "kind-projector" % kindProjectorVersion cross CrossVersion.full
