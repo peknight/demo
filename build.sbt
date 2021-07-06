@@ -19,7 +19,7 @@ packageName in Docker := "pek/demo"
 maintainer in Docker := "peknight <JKpeknight@gmail.com>"
 
 lazy val demo = (project in file("."))
-  .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoMonocle, demoJson, demoAkka, demoApp)
+  .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoMonocle, demoJson, demoAkka, demoApp, demoScala3)
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
   .settings(
@@ -33,12 +33,6 @@ lazy val demoCore = (project in file("demo-core"))
     libraryDependencies ++= Seq(
       pekCommonCore,
     ),
-  )
-
-lazy val demoScala3 = (project in file("demo-scala3"))
-  .settings(
-    name := "demo-scala3",
-    scalaVersion := "3.0.0"
   )
 
 lazy val demoMath = (project in file("demo-math"))
@@ -112,6 +106,12 @@ lazy val demoApp = (project in file("demo-app"))
     name := "demo-app",
     libraryDependencies ++= Seq(
     ),
+  )
+
+lazy val demoScala3 = (project in file("demo-scala3"))
+  .settings(
+    name := "demo-scala3",
+    scalaVersion := "3.0.0"
   )
 
 val kindProjectorVersion = "0.13.0"
