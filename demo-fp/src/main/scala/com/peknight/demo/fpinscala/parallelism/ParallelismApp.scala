@@ -26,7 +26,7 @@ object ParallelismApp extends App {
       Par.unit(ints.headOption getOrElse 0)
     else {
       val (l, r) = ints.splitAt(ints.length / 2)
-      Par.map2(Par.fork(sumViaParV2(l)), Par.fork(sumViaParV2(r)))(_ + _)
+      Par.map2WithUnitFuture(Par.fork(sumViaParV2(l)), Par.fork(sumViaParV2(r)))(_ + _)
     }
 
 }
