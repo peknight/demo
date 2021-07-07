@@ -35,9 +35,39 @@ object Par {
   // Exercise 7.4
   def asyncF[A, B](f:A => B): A => Par[B] = (a: A) => lazyUnit(f(a))
 
-  // 实际是用map2来实现map
-  def sortPar(parList: Par[List[Int]]): Par[List[Int]] = map2(parList, unit(()))((a, _) => a.sorted)
+  def map[A, B](pa: Par[A])(f: A => B) = map2(pa, unit(()))((a, _) => f(a))
 
-  // TODO
-  def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = ???
+  def sortPar(parList: Par[List[Int]]): Par[List[Int]] = map(parList)(_.sorted)
+
+  def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = {
+    val fbs: List[Par[B]] = ps.map(asyncF(f))
+    sequence(fbs)
+  }
+
+  // Exercise 7.5
+  def sequence_simple[A](l: List[Par[A]]): Par[List[A]] =
+    l.foldRight[Par[List[A]]](unit(List()))((h, t) => map2(h, t)(_ :: _))
+
+  def sequenceRight[A](as: List[Par[A]]): Par[List[A]] =
+    as match {
+      case Nil => unit(Nil)
+      case h :: t => map2(h, fork(sequenceRight(t)))(_ :: _)
+    }
+
+  def sequenceBalanced[A](as:IndexedSeq[Par[A]]): Par[IndexedSeq[A]] = fork {
+    if (as.isEmpty) unit(Vector())
+    else if (as.length == 1) map(as.head)(a => Vector(a))
+    else {
+      val (l, r) = as.splitAt(as.length / 2)
+      map2(sequenceBalanced(l), sequenceBalanced(r))(_ ++ _)
+    }
+  }
+
+  def sequence[A](as: List[Par[A]]): Par[List[A]] = map(sequenceBalanced(as.toIndexedSeq))(_.toList)
+
+  // Exercise 7.6
+  def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = {
+    val pars: List[Par[List[A]]] = as.map(asyncF((a: A) => if (f(a)) List(a) else List()))
+    map(sequence(pars))(_.flatten)
+  }
 }
