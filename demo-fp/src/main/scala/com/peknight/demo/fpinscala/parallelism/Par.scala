@@ -70,4 +70,23 @@ object Par {
     val pars: List[Par[List[A]]] = as.map(asyncF((a: A) => if (f(a)) List(a) else List()))
     map(sequence(pars))(_.flatten)
   }
+
+  def map3[A, B, C, D](pa: Par[A], pb: Par[B], pc: Par[C])(f: (A, B, C) => D): Par[D] =
+    map2(map2(pa, pb)((_, _)), pc) {
+      case ((a, b), c) => f(a, b, c)
+    }
+
+  def map4[A, B, C, D, E](pa: Par[A], pb: Par[B], pc: Par[C], pd: Par[D])(f: (A, B, C, D) => E): Par[E] =
+    map2(map3(pa, pb, pc)((_, _, _)), pd) {
+      case ((a, b, c), d) => f(a, b, c, d)
+    }
+
+  def map5[A, B, C, D, E, F](pa: Par[A], pb: Par[B], pc: Par[C], pd: Par[D], pe: Par[E])(f: (A, B, C, D, E) => F): Par[F] =
+    map2(map4(pa, pb, pc, pd)((_, _, _, _)), pe) {
+      case ((a, b, c, d), e) => f(a, b, c, d, e)
+    }
+
+  def equal[A](e: ExecutorService)(p1: Par[A], p2: Par[A]): Boolean = p1(e).get() == p2(e).get()
+
+
 }
