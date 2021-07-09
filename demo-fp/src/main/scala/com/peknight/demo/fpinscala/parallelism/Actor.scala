@@ -40,7 +40,7 @@ import scala.annotation.tailrec
  */
 final class Actor[A](strategy: Strategy)(handler: A => Unit, onError: Throwable => Unit = throw(_)) {
   self =>
-  // 需要画图理解
+  // 一定要自己画图理解
   private val tail = new AtomicReference(new Node[A]())
   private val suspended = new AtomicInteger(1)
   private val head = new AtomicReference(tail.get)

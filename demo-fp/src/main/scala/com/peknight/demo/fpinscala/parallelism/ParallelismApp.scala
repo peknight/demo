@@ -31,22 +31,22 @@ object ParallelismApp extends App {
       Par.map2WithUnitFuture(Par.fork(sumViaParV2(l)), Par.fork(sumViaParV2(r)))(_ + _)
     }
 
-  val S = Executors.newFixedThreadPool(4)
+  val S = Executors.newFixedThreadPool(2)
 
   val echoer = Actor[String](S) {
     msg => println(s"Got message: '$msg' - ${Thread.currentThread().getName()}")
   }
 
-  println(s"1${Thread.currentThread().getName()}")
   echoer ! "hello"
 
-  println(s"2${Thread.currentThread().getName()}")
   echoer ! "goodbye"
 
-  println(s"3${Thread.currentThread().getName()}")
   echoer ! "You're just repeating everything I say, aren't you?"
 
-  println(s"4${Thread.currentThread().getName()}")
+  val p = Nonblocking.parMap(List.range(1, 100000))(math.sqrt(_))
+  val x = Nonblocking.run(S)(p)
+  println(x)
 
-  Thread.sleep(300)
+  Thread.sleep(100)
+  S.shutdown()
 }
