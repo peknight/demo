@@ -50,6 +50,7 @@ lazy val demoFpInScala = (project in file("demo-fp"))
     name := "demo-fp",
     libraryDependencies ++= Seq(
       pekCommonFp,
+      pekCommonTest,
     ),
   )
 
@@ -121,5 +122,6 @@ val kindProjector = "org.typelevel" % "kind-projector" % kindProjectorVersion cr
 val pekCommonCore = "com.peknight" %% "common-core" % pekCommonVersion
 val pekCommonMath = "com.peknight" %% "common-math" % pekCommonVersion
 val pekCommonFp = "com.peknight" %% "common-fp" % pekCommonVersion
+val pekCommonTest = "com.peknight" %% "common-test" % pekCommonVersion
 val pekCommonJson = "com.peknight" %% "common-json" % pekCommonVersion
 val pekCommonAkka = "com.peknight" %% "common-akka" % pekCommonVersion
