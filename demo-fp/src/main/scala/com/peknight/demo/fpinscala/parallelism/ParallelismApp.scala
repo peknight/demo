@@ -43,8 +43,8 @@ object ParallelismApp extends App {
 
   echoer ! "You're just repeating everything I say, aren't you?"
 
-  val p = Nonblocking.parMap(List.range(1, 100000))(math.sqrt(_))
-  val x = Nonblocking.run(S)(p)
+  val p = Nonblocking.Par.parMap(List.range(1, 100000))(math.sqrt(_))
+  val x = Nonblocking.Par.run(S)(p)
   println(x)
 
   Thread.sleep(100)

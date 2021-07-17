@@ -181,6 +181,7 @@ object Nonblocking {
       join(map(p)(f))
 
     /* Gives us infix syntax for `Par`. */
+    import scala.language.implicitConversions
     implicit def toParOps[A](p: Par[A]): ParOps[A] = new ParOps(p)
 
     // infix versions of `map`, `map2` and `flatMap`
