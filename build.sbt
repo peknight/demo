@@ -1,3 +1,4 @@
+
 ThisBuild / version := "0.1-SNAPSHOT"
 
 ThisBuild / scalaVersion := "2.13.6"
@@ -19,7 +20,8 @@ packageName in Docker := "pek/demo"
 maintainer in Docker := "peknight <JKpeknight@gmail.com>"
 
 lazy val demo = (project in file("."))
-  .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoMonocle, demoJson, demoAkka, demoApp, demoScala3)
+  .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoMonocle, demoJson, demoAkka, demoApp,
+    demoScala3, demoJs)
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
   .settings(
@@ -113,6 +115,14 @@ lazy val demoScala3 = (project in file("demo-scala3"))
   .settings(
     name := "demo-scala3",
     scalaVersion := "3.0.0"
+  )
+
+lazy val demoJs = (project in file("demo-js"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(
+    name := "demo-js",
+    // This is an application with a main method
+    scalaJSUseMainModuleInitializer := true,
   )
 
 val kindProjectorVersion = "0.13.0"
