@@ -1,4 +1,3 @@
-
 ThisBuild / version := "0.1-SNAPSHOT"
 
 ThisBuild / scalaVersion := "2.13.6"
@@ -16,8 +15,8 @@ lazy val commonSettings = Seq(
   ),
 )
 
-packageName in Docker := "pek/demo"
-maintainer in Docker := "peknight <JKpeknight@gmail.com>"
+Docker / packageName := "pek/demo"
+Docker / maintainer := "peknight <JKpeknight@gmail.com>"
 
 lazy val demo = (project in file("."))
   .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoMonocle, demoJson, demoAkka, demoApp,
