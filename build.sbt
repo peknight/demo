@@ -4,6 +4,9 @@ ThisBuild / scalaVersion := "2.13.6"
 
 ThisBuild / organization := "com.peknight"
 
+Docker / packageName := "pek/demo"
+Docker / maintainer := "peknight <JKpeknight@gmail.com>"
+
 lazy val commonSettings = Seq(
   addCompilerPlugin(kindProjector),
   scalacOptions ++= Seq(
@@ -14,9 +17,6 @@ lazy val commonSettings = Seq(
     "-Ymacro-annotations",
   ),
 )
-
-Docker / packageName := "pek/demo"
-Docker / maintainer := "peknight <JKpeknight@gmail.com>"
 
 lazy val demo = (project in file("."))
   .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoMonocle, demoJson, demoAkka, demoApp,
