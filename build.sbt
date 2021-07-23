@@ -122,6 +122,12 @@ lazy val demoJs = (project in file("demo-js"))
     name := "demo-js",
     // This is an application with a main method
     scalaJSUseMainModuleInitializer := true,
+    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+    testFrameworks += new TestFramework("utest.runner.Framework"),
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % "1.1.0",
+      "com.lihaoyi" %%% "utest" % "0.7.4" % "test"
+    )
   )
 
 val kindProjectorVersion = "0.13.0"
