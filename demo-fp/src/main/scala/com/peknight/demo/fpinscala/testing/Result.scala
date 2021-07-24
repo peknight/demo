@@ -14,4 +14,8 @@ object Result {
   case class Falsified(failure: FailedCase, successes: SuccessCount) extends Result {
     def isFalsified = true
   }
+
+  case object Proved extends Result {
+    def isFalsified = true
+  }
 }

@@ -1,6 +1,7 @@
 package com.peknight.demo.fpinscala.testing
 
 case class SGen[+A](forSize: Int => Gen[A]) {
+  // Exercise 8.11
   def apply(n: Int): Gen[A] = forSize(n)
 
   def map[B](f: A => B): SGen[B] = SGen { forSize(_) map f }

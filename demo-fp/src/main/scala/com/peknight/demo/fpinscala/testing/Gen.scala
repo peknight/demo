@@ -21,7 +21,6 @@ case class Gen[+A](sample: State[RNG, A]) {
 }
 
 object Gen {
-  def listOf[A](a: Gen[A]): Gen[List[A]] = ???
 
   // Exercise 8.4
   def choose(start: Int, stopExclusive: Int): Gen[Int] =
@@ -54,4 +53,10 @@ object Gen {
 
     Gen(State(RNG.double).flatMap(d => if (d < g1Threshold) g1._1.sample else g2._1.sample))
   }
+
+  // Exercise 8.12
+  def listOf[A](g: Gen[A]): SGen[List[A]] = SGen(n => g.listOfN(n))
+
+  // Exercise 8.13
+  def listOf1[A](g: Gen[A]): SGen[List[A]] = SGen(n => g.listOfN(n max 1))
 }
