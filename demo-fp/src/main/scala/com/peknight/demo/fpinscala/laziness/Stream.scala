@@ -176,7 +176,7 @@ object Stream {
   // Exercise 5.8
   def constant[A](a: A): Stream[A] = {
     // cons(a, constant(a))
-    // This is more efficient than `cons(a, contant(a))` since it's just
+    // This is more efficient than `cons(a, constant(a))` since it's just
     // one object referencing itself.
     lazy val tail: Stream[A] = Cons(() => a, () => tail)
     tail
