@@ -151,9 +151,11 @@ object Exhaustive {
       ) (ES).get()
     }
 
+    // `a -> b` is syntax sugar for `(a,b)`
     val S = weighted(
       Gen.choose(1,4).map(Executors.newFixedThreadPool) -> .75,
-      Gen.unit(Executors.newCachedThreadPool) -> .25) // `a -> b` is syntax sugar for `(a,b)`
+      Gen.unit(Executors.newCachedThreadPool) -> .25
+    )
 
     def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
       forAll(S.map2(g)((_,_))) { case (s, a) => f(a)(s).get }

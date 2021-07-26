@@ -1,8 +1,13 @@
 package com.peknight.demo.fpinscala.testing
 
+import com.peknight.demo.fpinscala.parallelism.Par
+import com.peknight.demo.fpinscala.parallelism.Par.Par
 import com.peknight.demo.fpinscala.state.{RNG, SimpleRNG}
+import com.peknight.demo.fpinscala.testing.Gen.{**, weighted}
 import com.peknight.demo.fpinscala.testing.Prop.{MaxSize, TestCases}
 import com.peknight.demo.fpinscala.testing.Result.{Falsified, Passed, Proved}
+
+import java.util.concurrent.Executors
 
 case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
   // Exercise 8.9
@@ -90,4 +95,18 @@ object Prop {
   def check(p: => Boolean): Prop = Prop { (_, _, _) =>
     if (p) Proved else Falsified("()", 0)
   }
+
+  def equal[A](p: Par[A], p2: Par[A]): Par[Boolean] = Par.map2(p, p2)(_ == _)
+
+  val S = weighted(
+    // This generator creates a fixed thread pool executor 75% of the time and an unbounded one 25% of the time.
+    Gen.choose(1, 4).map(Executors.newFixedThreadPool) -> .75,
+    // a -> b is syntactic sugar for (a, b).
+    Gen.unit(Executors.newCachedThreadPool) -> .25
+  )
+
+  def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
+    forAll(S ** g) { case s ** a => f(a)(s).get }
+
+
 }
