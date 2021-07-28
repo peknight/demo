@@ -37,7 +37,10 @@ object SierpinskiTriangle {
   def canvasRenderingContext2D(canvas: html.Canvas): dom.CanvasRenderingContext2D =
     canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
 
-  def screenSize(documentElement: Element): (Int, Int) = (documentElement.clientWidth, documentElement.clientHeight)
+  def screenSize(documentElement: Element): (Int, Int) = {
+//    (documentElement.clientWidth, documentElement.clientHeight)
+    (255, 255)
+  }
 
   def rgb(p: Point, width: Int, height: Int): (Int, Int, Int) = {
     val x = p.x * 255.0 / width
@@ -58,7 +61,7 @@ object SierpinskiTriangle {
         canvas.width = width
         canvas.height = height
         val ctx = canvasRenderingContext2D(canvas)
-        ctx.fillStyle = "gray"
+        ctx.fillStyle = "black"
         ctx.fillRect(0, 0, width, height)
         Runtime(p, rng, width, height, count, false)
       } else {
