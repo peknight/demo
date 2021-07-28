@@ -126,7 +126,8 @@ lazy val demoJs = (project in file("demo-js"))
     testFrameworks += new TestFramework("utest.runner.Framework"),
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "1.1.0",
-      "com.lihaoyi" %%% "utest" % "0.7.4" % "test"
+      "com.lihaoyi" %%% "utest" % "0.7.4" % "test",
+      "org.typelevel" %%% "cats-core" % "2.6.1",
     )
   )
 
