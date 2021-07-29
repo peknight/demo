@@ -10,14 +10,6 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 
 object DodgeTheDots {
 
-  case class Point(x: Double, y: Double) {
-    def +(p: Point) = Point(x + p.x, y + p.y)
-    def -(p: Point) = Point(x - p.x, y - p.y)
-    def *(d: Double) = Point(x * d, y * d)
-    def /(d: Double) = Point(x / d, y / d)
-    def length = Math.sqrt(x * x + y * y)
-  }
-
   case class Enemy(pos: Point, vel: Point)
 
   case class Runtime(rng: RNG,
