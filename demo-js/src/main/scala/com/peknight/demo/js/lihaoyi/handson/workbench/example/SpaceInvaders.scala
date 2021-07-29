@@ -1,100 +1,136 @@
 package com.peknight.demo.js.lihaoyi.handson.workbench.example
 
+import cats.data.State
 import org.scalajs.dom
 import org.scalajs.dom.html
 
-import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
+import scala.scalajs.js.annotation.JSExportTopLevel
 
 object SpaceInvaders {
 
-  val canvas =
-    dom.document
-      .getElementById("canvas")
-      .asInstanceOf[html.Canvas]
+  case class Runtime(player: Point, enemies: Seq[Point], bullets: Seq[Point], keysDown: Set[Int],
+                     width: Int, height: Int, count: Int, wave: Int)
 
-  val ctx =
-    canvas.getContext("2d")
-      .asInstanceOf[dom.CanvasRenderingContext2D]
+  class Event(var keysDown: Set[Int], var bullet: Boolean)
 
-  canvas.height = dom.window.innerHeight.toInt
-  canvas.width = dom.window.innerWidth.toInt
+  def screenSize(window: dom.Window): (Int, Int) = (window.innerWidth.toInt, window.innerHeight.toInt)
 
-  var count = 0
-  var player = Point(dom.window.innerWidth / 2, dom.window.innerHeight / 2)
-  val corners = Seq(Point(255, 255), Point(0, 255), Point(128, 0))
+  def updateScreenSize(window: dom.Window): State[Runtime, Unit] = State.modify(runtime => {
+    val (width, height) = screenSize(window)
+    runtime.copy(width = width, height = height)
+  })
 
-  var bullets = Seq.empty[Point]
-  var enemies = Seq.empty[Point]
+  def addCount: State[Runtime, Unit] = State.modify(runtime => runtime.copy(count = runtime.count + 1))
 
-  var wave = 1
-
-  def run = {
-    count += 1
-    bullets = bullets.map(
-      p => Point(p.x, p.y - 5)
-    )
-
-    if (enemies.isEmpty){
-      enemies = for{
-        x <- (0 until canvas.width.toInt by 50)
-        y <- 0 until wave
-      } yield {
-        Point(x, 50 + y * 50)
-      }
-      wave += 1
+  def addBullets(add: Boolean): State[Runtime, Unit] = State.modify { runtime =>
+    if (add) {
+      runtime.copy(bullets = runtime.bullets ++ Seq(runtime.player))
+    } else {
+      runtime
     }
-
-    enemies = enemies.filter( e =>
-      !bullets.exists(b =>
-        (e - b).length < 5
-      )
-    )
-    enemies = enemies.map{ e =>
-      val i = count % 200
-      if (i < 50) e.copy(x = e.x - 0.2)
-      else if (i < 100) e.copy(y = e.y + 0.2)
-      else if (i < 150) e.copy(x = e.x + 0.2)
-      else e.copy(y = e.y + 0.2)
-    }
-
-
-    if (keysDown(38)) player += Point(0, -2)
-    if (keysDown(37)) player += Point(-2, 0)
-    if (keysDown(39)) player += Point(2, 0)
-    if (keysDown(40)) player += Point(0, 2)
   }
 
-  def draw = {
+  def updateKeysDown(keysDown: Set[Int]): State[Runtime, Unit] = State.modify(_.copy(keysDown = keysDown))
+
+  def moveBullets: State[Runtime, Unit] = State.modify(runtime => runtime.copy(bullets =
+    runtime.bullets.map(p => Point(p.x, p.y - 5))
+  ))
+
+  def checkEnemyClear: State[Runtime, Unit] = State.modify(runtime =>
+    if (runtime.enemies.isEmpty) {
+      val enemies = for {
+        x <- (0 until runtime.width by 50)
+        y <- 0 until runtime.wave
+      } yield Point(x, 50 + y * 50)
+      runtime.copy(enemies = enemies, wave = runtime.wave + 1)
+    } else {
+      runtime
+    }
+  )
+
+  def checkEnemyDestroy: State[Runtime, Unit] = State.modify(runtime => runtime.copy(enemies =
+    runtime.enemies.filter(enemy => !runtime.bullets.exists(bullet => (enemy - bullet).length < 5))
+  ))
+
+  def moveEnemy: State[Runtime, Unit] = State.modify(runtime => runtime.copy(enemies =
+    runtime.enemies.map(enemy => {
+      val i = runtime.count % 200
+      if (i < 50) enemy.copy(x = enemy.x - 0.2)
+      else if (i < 100) enemy.copy(y = enemy.y + 0.2)
+      else if (i < 150) enemy.copy(x = enemy.x + 0.2)
+      else enemy.copy(y = enemy.y + 0.2)
+    })
+  ))
+
+  val LEFT = (37, Point(-2, 0))
+  val UP = (38, Point(0, -2))
+  val RIGHT = (39, Point(2, 0))
+  val DOWN = (40, Point(0, 2))
+
+  def movePlayer(direction: (Int, Point)): State[Runtime, Unit] = State.modify { runtime =>
+    if (runtime.keysDown(direction._1)) {
+      runtime.copy(player = runtime.player + direction._2)
+    } else {
+      runtime
+    }
+  }
+
+  def draw(canvas: html.Canvas): State[Runtime, Unit] = State.inspect { runtime =>
+    val ctx = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
+
+    canvas.width = runtime.width
+    canvas.height = runtime.height
+
     ctx.fillStyle = "black"
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.fillRect(0, 0, runtime.width, runtime.height)
 
     ctx.fillStyle = "white"
-    ctx.fillRect(player.x - 5, player.y - 5, 10, 10)
+    ctx.fillRect(runtime.player.x - 5, runtime.player.y - 5, 10, 10)
 
     ctx.fillStyle = "yellow"
-    for (enemy <- enemies){
+    for (enemy <- runtime.enemies) {
       ctx.fillRect(enemy.x - 5, enemy.y - 5, 10, 10)
     }
+
     ctx.fillStyle = "red"
-    for (bullet <- bullets){
+    for (bullet <- runtime.bullets) {
       ctx.fillRect(bullet.x - 2, bullet.y - 2, 4, 4)
     }
   }
 
-  val keysDown = collection.mutable.Set.empty[Int]
   @JSExportTopLevel("spaceInvaders")
   def spaceInvaders(canvas: html.Canvas): Unit = {
 
     dom.console.log("main")
-    dom.document.onkeypress = {(e: dom.KeyboardEvent) =>
-      if (e.keyCode.toInt == 32) bullets = player +: bullets
-    }
-    dom.document.onkeydown = {(e: dom.KeyboardEvent) =>
-      keysDown.add(e.keyCode.toInt)
-    }
-    dom.document.onkeyup = {(e: dom.KeyboardEvent) =>
-      keysDown.remove(e.keyCode.toInt)
-    }
-    dom.window.setInterval(() => {run; draw}, 20)
+
+    val event = new Event(Set(), false)
+    dom.document.onkeypress = { (e: dom.KeyboardEvent) => if (e.keyCode == 32) event.bullet = true }
+    dom.document.onkeydown = { (e: dom.KeyboardEvent) => event.keysDown = event.keysDown + e.keyCode }
+    dom.document.onkeyup = { (e: dom.KeyboardEvent) => event.keysDown = event.keysDown - e.keyCode }
+
+    val (width, height) = screenSize(dom.window)
+
+    run(dom.window, canvas)
+      .run(Runtime(Point(width / 2, height / 2), Seq(), Seq(), event.keysDown, width, height, 0, 1))
+      .value
+
+    def run(window: dom.Window, canvas: html.Canvas): State[Runtime, Unit] = for {
+      _ <- updateScreenSize(window)
+      _ <- addCount
+      _ <- addBullets(event.bullet)
+      _ = event.bullet = false
+      _ <- updateKeysDown(event.keysDown)
+      _ <- moveBullets
+      _ <- checkEnemyClear
+      _ <- checkEnemyDestroy
+      _ <- moveEnemy
+      _ <- movePlayer(LEFT)
+      _ <- movePlayer(UP)
+      _ <- movePlayer(RIGHT)
+      _ <- movePlayer(DOWN)
+      _ <- draw(canvas)
+      runtime <- State.get[Runtime]
+      _ = window.setTimeout(() => run(window, canvas).run(runtime).value, 20)
+    } yield ()
   }
 }
