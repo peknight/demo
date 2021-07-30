@@ -2,6 +2,7 @@ package com.peknight.demo.js.lihaoyi.handson.workbench.example
 
 import cats.data.State
 import org.scalajs.dom
+import org.scalajs.dom.ext.KeyCode
 import org.scalajs.dom.html
 
 import scala.scalajs.js.annotation.JSExportTopLevel
@@ -62,12 +63,13 @@ object SpaceInvaders {
     })
   ))
 
-  val LEFT = (37, Point(-2, 0))
-  val UP = (38, Point(0, -2))
-  val RIGHT = (39, Point(2, 0))
-  val DOWN = (40, Point(0, 2))
+  val left = (KeyCode.Left, Point(-2, 0))
+  val up = (KeyCode.Up, Point(0, -2))
+  val right = (KeyCode.Right, Point(2, 0))
+  val down = (KeyCode.Down, Point(0, 2))
 
   def movePlayer(direction: (Int, Point)): State[Runtime, Unit] = State.modify { runtime =>
+    KeyCode
     if (runtime.keysDown(direction._1)) {
       runtime.copy(player = runtime.player + direction._2)
     } else {
@@ -104,7 +106,7 @@ object SpaceInvaders {
     dom.console.log("main")
 
     val event = new Event(Set(), false)
-    dom.document.onkeypress = { (e: dom.KeyboardEvent) => if (e.keyCode == 32) event.bullet = true }
+    dom.document.onkeypress = { (e: dom.KeyboardEvent) => if (e.keyCode == KeyCode.Space) event.bullet = true }
     dom.document.onkeydown = { (e: dom.KeyboardEvent) => event.keysDown = event.keysDown + e.keyCode }
     dom.document.onkeyup = { (e: dom.KeyboardEvent) => event.keysDown = event.keysDown - e.keyCode }
 
@@ -124,10 +126,10 @@ object SpaceInvaders {
       _ <- checkEnemyClear
       _ <- checkEnemyDestroy
       _ <- moveEnemy
-      _ <- movePlayer(LEFT)
-      _ <- movePlayer(UP)
-      _ <- movePlayer(RIGHT)
-      _ <- movePlayer(DOWN)
+      _ <- movePlayer(left)
+      _ <- movePlayer(up)
+      _ <- movePlayer(right)
+      _ <- movePlayer(down)
       _ <- draw(canvas)
       runtime <- State.get[Runtime]
       _ = window.setTimeout(() => run(window, canvas).run(runtime).value, 20)
