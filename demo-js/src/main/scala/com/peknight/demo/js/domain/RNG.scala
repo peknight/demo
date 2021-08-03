@@ -1,4 +1,4 @@
-package com.peknight.demo.js.lihaoyi.handson.workbench.example
+package com.peknight.demo.js.domain
 
 import scala.annotation.tailrec
 
