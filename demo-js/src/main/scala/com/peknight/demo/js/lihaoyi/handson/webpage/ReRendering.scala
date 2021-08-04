@@ -6,11 +6,6 @@ import scalatags.JsDom.all._
 
 import scala.scalajs.js.annotation.JSExportTopLevel
 
-/**
- *
- * @author shuigen.rengang [rg249590@alibaba-inc.com]
- * @version $Id:ReRendering.java,v 0.1 2021-08-02 15:09 shuigen Exp $$
- */
 object ReRendering {
 
   val box = input(

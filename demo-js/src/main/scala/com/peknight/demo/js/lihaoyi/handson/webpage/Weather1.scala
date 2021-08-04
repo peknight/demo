@@ -7,11 +7,6 @@ import scalatags.JsDom.all._
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSExportTopLevel
 
-/**
- *
- * @author shuigen.rengang [rg249590@alibaba-inc.com]
- * @version $Id:Weather1.java,v 0.1 2021-08-03 11:29 shuigen Exp $$
- */
 object Weather1 {
   @JSExportTopLevel("weather1")
   def weather1(target: html.Div): Unit = {
