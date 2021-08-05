@@ -117,13 +117,25 @@ lazy val demoScala3 = (project in file("demo-scala3"))
   )
 
 lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
-  .enablePlugins(ScalaJSPlugin)
-  .enablePlugins(ScalaJSCrossPlugin)
+//  .enablePlugins(ScalaJSPlugin) crossProject下看起来不需要设置
   .settings(
     name := "demo-js",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-core" % "2.6.1",
+      "com.lihaoyi" %%% "utest" % "0.7.4" % "test",
+      "com.lihaoyi" %%% "scalatags" % "0.9.4",
+      "com.lihaoyi" %%% "upickle" % "1.4.0",
+      "com.lihaoyi" %%% "autowire" % "0.3.3",
+    ),
   )
   .jvmSettings(
     // Add JVM-specific settings here
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-actor" % "2.6.15",
+      "com.typesafe.akka" %% "akka-stream" % "2.6.15",
+      "com.typesafe.akka" %% "akka-http" % "10.2.5",
+      "org.webjars" % "bootstrap" % "5.0.2",
+    ),
   )
   .jsSettings(
     // Add JS-specific settings here
@@ -133,9 +145,6 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     testFrameworks += new TestFramework("utest.runner.Framework"),
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "1.1.0",
-      "org.typelevel" %%% "cats-core" % "2.6.1",
-      "com.lihaoyi" %%% "scalatags" % "0.9.4",
-      "com.lihaoyi" %%% "utest" % "0.7.4" % "test",
     ),
   )
 
