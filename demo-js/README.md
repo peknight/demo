@@ -9,7 +9,7 @@
 Adding the Scala.js sbt plugin is one-liner in `project/plugins.sbt`
 
 ```
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.6.0")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.7.0")
 ```
 
 ### Source maps in Node.js

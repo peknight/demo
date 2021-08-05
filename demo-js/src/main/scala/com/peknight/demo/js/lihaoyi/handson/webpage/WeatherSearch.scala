@@ -26,7 +26,7 @@ object WeatherSearch {
     for {
       xhr <- Ajax.get(searchUrl) if query == box.value
     } yield js.JSON.parse(xhr.responseText).list match {
-      case jsonlist: js.Array[js.Dynamic] =>
+      case jsonlist: js.Array[js.Dynamic] @unchecked =>
         output.innerHTML = ""
         showResults(jsonlist, query)
       case _ =>

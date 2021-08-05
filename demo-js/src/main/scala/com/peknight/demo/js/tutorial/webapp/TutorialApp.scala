@@ -9,6 +9,7 @@ object TutorialApp {
 
   def main(args: Array[String]): Unit = {
     println("Hello world!")
+    println(s"In Scala.js, (1.0).toString is ${(1.0).toString}!")
   }
 
   @JSExportTopLevel("tutorial")
