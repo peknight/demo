@@ -20,7 +20,7 @@ lazy val commonSettings = Seq(
 
 lazy val demo = (project in file("."))
   .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoMonocle, demoJson, demoAkka, demoApp,
-    demoScala3, demoJs)
+    demoScala3, demoJs.jvm, demoJs.js)
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
   .settings(
@@ -116,10 +116,17 @@ lazy val demoScala3 = (project in file("demo-scala3"))
     scalaVersion := "3.0.0"
   )
 
-lazy val demoJs = (project in file("demo-js"))
+lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
   .enablePlugins(ScalaJSPlugin)
+  .enablePlugins(ScalaJSCrossPlugin)
   .settings(
     name := "demo-js",
+  )
+  .jvmSettings(
+    // Add JVM-specific settings here
+  )
+  .jsSettings(
+    // Add JS-specific settings here
     // This is an application with a main method
     scalaJSUseMainModuleInitializer := true,
     jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
