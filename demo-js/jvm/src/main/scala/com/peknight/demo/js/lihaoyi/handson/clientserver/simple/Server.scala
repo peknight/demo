@@ -4,14 +4,15 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.util.Properties
 
 /**
  * demoJsJVM/reStart 重启调试程序
- * IDEA运行时需要将编译生成的main.js文件放到jvm/target/classes下
+ * IDEA运行时需要将编译生成的main.js文件放到jvm/target/scala-2.13/classes下
  */
-object Server {
+object Server extends Api {
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem()
 //    implicit val materializer = ActorMaterializer()
@@ -27,12 +28,18 @@ object Server {
           }
         } ~ getFromResourceDirectory("")
       } ~ post {
-        path("ajax" / "list") {
+//        path("ajax" / "list") {
+        path("ajax" / Segments) { s =>
           entity(as[String]) { e =>
             complete {
               implicit val writer: upickle.default.Writer[FileData] = upickle.default.macroW
-              // Define as many implicit val as types you hav
-              upickle.default.write(list(e))
+//              upickle.default.write(list(e))
+              Router.route[Api](Server)(
+                autowire.Core.Request(
+                  s,
+                  upickle.default.read[Map[String, String]](e)
+                )
+              )
             }
           }
         }

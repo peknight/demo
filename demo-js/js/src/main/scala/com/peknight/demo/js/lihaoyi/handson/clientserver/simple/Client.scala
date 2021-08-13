@@ -1,12 +1,12 @@
 package com.peknight.demo.js.lihaoyi.handson.clientserver.simple
 
+import autowire._
 import org.scalajs.dom
 import org.scalajs.dom.ext.Ajax
+import org.scalajs.dom.html
 import scalatags.JsDom.all._
 
-import scalajs.concurrent.JSExecutionContext.Implicits.queue
-import org.scalajs.dom.html
-
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 
@@ -16,9 +16,10 @@ object Client {
   def main(container: html.Div) = {
     val inputBox = input.render
     val outputBox = ul.render
-    def update() = Ajax.post("/ajax/list", inputBox.value).foreach{xhr =>
-      implicit val reader: upickle.default.Reader[FileData] = upickle.default.macroR
-      val data = upickle.default.read[Seq[FileData]](xhr.responseText)
+    implicit val reader: upickle.default.Reader[FileData] = upickle.default.macroR
+    def update() = Ajaxer[Api].list(inputBox.value).call().foreach{ data =>
+//    def update() = Ajax.post("/ajax/list", inputBox.value).foreach{xhr =>
+//      val data = upickle.default.read[Seq[FileData]](xhr.responseText)
       outputBox.innerHTML = ""
       for (FileData(name, size) <- data) {
         outputBox.appendChild(

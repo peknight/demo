@@ -13,6 +13,7 @@ object Weather1 {
     import dom.ext._
 
     import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+    // Define object OpenWeatherAppid { val appid = "#your appid here#" }
     val url = s"http://api.openweathermap.org/data/2.5/weather?q=Singapore&appid=${OpenWeatherAppid.appid}"
     Ajax.get(url).map { case xhr => target.appendChild(
 //      format(xhr.responseText)

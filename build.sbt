@@ -19,8 +19,8 @@ lazy val commonSettings = Seq(
 )
 
 lazy val demo = (project in file("."))
-  .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoMonocle, demoJson, demoAkka, demoApp,
-    demoScala3, demoJs.jvm, demoJs.js)
+  .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoMonocle, demoJson, demoAkka, demoRx,
+    demoAsync, demoApp, demoScala3, demoJs.jvm, demoJs.js)
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
   .settings(
@@ -101,6 +101,31 @@ lazy val demoAkka = (project in file("demo-akka"))
     ),
   )
 
+lazy val demoRx = (project in file("demo-rx"))
+  .dependsOn(demoCore)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-rx",
+    libraryDependencies ++= Seq(
+      "com.lihaoyi" %%% "scalarx" % "0.4.3",
+      "com.lihaoyi" %%% "utest" % "0.7.4",
+    ),
+  )
+
+lazy val demoAsync = (project in file("demo-async"))
+  .dependsOn(demoCore)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-async",
+    scalacOptions ++= Seq(
+      "-Xasync",
+    ),
+    libraryDependencies ++= Seq(
+      "org.scala-lang.modules" %% "scala-async" % "1.0.0",
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided,
+    ),
+  )
+
 lazy val demoApp = (project in file("demo-app"))
   .dependsOn(demoCore)
   .settings(commonSettings)
@@ -118,14 +143,19 @@ lazy val demoScala3 = (project in file("demo-scala3"))
 
 lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
 //  .enablePlugins(ScalaJSPlugin) crossProject下看起来不需要设置
+  .settings(commonSettings)
   .settings(
     name := "demo-js",
+    scalacOptions ++= Seq(
+      "-Xasync",
+    ),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % "2.6.1",
-      "com.lihaoyi" %%% "utest" % "0.7.4" % "test",
+      "com.lihaoyi" %%% "utest" % "0.7.4",
       "com.lihaoyi" %%% "scalatags" % "0.9.4",
       "com.lihaoyi" %%% "upickle" % "1.4.0",
       "com.lihaoyi" %%% "autowire" % "0.3.3",
+      "com.lihaoyi" %%% "scalarx" % "0.4.3",
     ),
   )
   .jvmSettings(
@@ -141,10 +171,12 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     // Add JS-specific settings here
     // This is an application with a main method
     scalaJSUseMainModuleInitializer := true,
+    Compile / mainClass := Some("com.peknight.demo.js.tutorial.webapp.TutorialApp"),
     jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
     testFrameworks += new TestFramework("utest.runner.Framework"),
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "1.1.0",
+      "org.scala-lang.modules" %% "scala-async" % "1.0.0",
     ),
   )
 

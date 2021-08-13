@@ -20,6 +20,7 @@ object WeatherSearch {
   ).render
 
   def fetchWeather(query: String) = {
+    // Define object OpenWeatherAppid { val appid = "#your appid here#" }
     val searchUrl = s"http://api.openweathermap.org/data/" +
       s"2.5/find?type=like&mode=json&q=${query}&appid=${OpenWeatherAppid.appid}"
     import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue

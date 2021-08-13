@@ -4,6 +4,6 @@ import scala.scalajs.js
 
 object Platform {
   def format(ts: Long) = {
-    new js.Date(ts).toISOString()
+    new js.Date(ts.toDouble).toISOString()
   }
 }
