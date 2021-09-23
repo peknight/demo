@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>品优购 - 优质！优质！</title>
+    <style>
+        @font-face {
+            font-family: 'icomoon';
+            src:  url('fonts/icomoon.eot?qi0s9y');
+            src:  url('fonts/icomoon.eot?qi0s9y#iefix') format('embedded-opentype'),
+            url('fonts/icomoon.ttf?qi0s9y') format('truetype'),
+            url('fonts/icomoon.woff?qi0s9y') format('woff'),
+            url('fonts/icomoon.svg?qi0s9y#icomoon') format('svg');
+            font-weight: normal;
+            font-style: normal;
+            font-display: block;
+        }
+        .clearfix::after {
+            content: "";
+            display: block;
+            clear: both;
+            height: 0px;
+        }
+        * {
+            padding: 0px;
+            margin: 0px;
+            box-sizing: border-box;
+            font-size: 12px;
+            color: black;
+        }
+        a {
+            text-decoration: none;
+        }
+        li {
+            list-style: none;
+        }
+        .w {
+            width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            height: 32px;
+            background-color: #e5e5e5;
+        }
+        .welcome {
+            float: left;
+            line-height: 32px;
+        }
+        .welcome .login,
+        .welcome .register {
+            color: #50c1ef
+        }
+        header .nav {
+            float: right;
+        }
+        header .nav li {
+            float: left;
+        }
+        header .nav li:last-child a {
+            border-right: black none 0px;
+        }
+        header .nav li a {
+            display: block;
+            margin: 8px 0px;
+            padding: 0px 8px 0px;
+            border-right: black solid 1px;
+        }
+        header .nav .menu a::after {
+            content: "\e900";
+            font-family: "icomoon";
+        }
+        .logo {
+            float: left;
+        }
+        .logo-pic {
+            display: block;
+            width: 175px;
+            height: 55px;
+            background: url("images/logo.png") no-repeat;
+        }
+        .top {
+            margin-top: 30px;
+            height: 105px;
+        }
+        .search {
+            float:left;
+            margin-left: 100px;
+        }
+        .search input {
+            float: left;
+            width: 500px;
+            height: 30px;
+            border: 2px solid #bb0000;
+        }
+        .search input:focus {
+            outline: none;
+        }
+        .search button {
+            float: left;
+            width: 70px;
+            height: 30px;
+            border: 2px solid #bb0000;
+            background-color: #bb0000;
+            color: white;
+            font-size: 13px;
+        }
+        .cart button {
+            position: relative;
+            margin-left: 150px;
+            width: 145px;
+            height: 30px;
+            border: #cccccc solid 1px;
+            background-color: #eee;
+        }
+        .cart .cart-icon {
+            position: absolute;
+            background: url("./images/icons.png") no-repeat;
+            background-position-x: -413px;
+            background-position-y: -86px;
+            left: 10px;
+            top: 4px;
+            width: 25px;
+            height: 20px;
+        }
+        .cart .badge {
+            position: absolute;
+            background-color: red;
+            width: 14px;
+            height: 14px;
+            top: -7px;
+            right: 20px;
+            border-radius: 7px;
+            color: white;
+            font-size: 10px;
+            line-height: 16px;
+        }
+        .search-nav {
+            float: left;
+            margin-top: 10px;
+            margin-left: 100px;
+        }
+        .search-nav li {
+            float: left;
+            margin-right: 25px;
+        }
+        .search-nav li:first-child {
+            color: red;
+        }
+        .top2 .category-head {
+            float: left;
+            background-color: #bb0000;
+            width: 210px;
+            height: 45px;
+            line-height: 45px;
+            text-align: center;
+            font-size: 15px;
+            color: white;
+        }
+        .top2 ul li {
+            float: left;
+            height: 45px;
+            line-height: 45px;
+            font-size: 15px;
+            margin: 0px 22px;
+        }
+        .separator {
+            height: 2px;
+            background-color: #bb0000;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="w clearfix">
+        <div class="welcome">
+            <span>品优购欢迎您！请</span>
+            <a class="login" href="#">登录</a>
+            <a class="register" href="#">免费注册</a>
+        </div>
+        <ul class="nav">
+            <li><a href="#">我的订单</a></li>
+            <li class="menu"><a href="#">我的品优购</a></li>
+            <li><a href="#">品优购会员</a></li>
+            <li><a href="#">企业采购</a></li>
+            <li class="menu"><a href="#">关注品优购</a></li>
+            <li class="menu"><a href="#">客户服务</a></li>
+            <li class="menu"><a href="#">网站导航</a></li>
+        </ul>
+    </div>
+    <div class="w top clearfix">
+        <div class="logo">
+            <a class="logo-pic" title="品优购" href="index.html"></a>
+        </div>
+        <div class="search">
+            <input type="text"><button>搜索</button>
+        </div>
+        <div class="cart">
+            <button>
+                <span class="cart-icon"></span>
+                我的购物车
+                <div class="badge">0</div>
+            </button>
+        </div>
+        <div class="search-nav">
+            <ul>
+                <li>品优购首发</li>
+                <li>亿元优惠</li>
+                <li>9.9元团购</li>
+                <li>每满99减30</li>
+                <li>亿元优惠</li>
+                <li>9.9元团购</li>
+                <li>办公用品</li>
+            </ul>
+        </div>
+    </div>
+    <div class="w top2 clearfix">
+        <div class="category-head">全部商品分类</div>
+        <ul>
+            <li>服装城</li>
+            <li>美妆馆</li>
+            <li>传智超市</li>
+            <li>全球购</li>
+            <li>闪购</li>
+            <li>团购</li>
+            <li>拍卖</li>
+            <li>有趣</li>
+        </ul>
+    </div>
+    <div class="separator"></div>
+
+</header>
+
+</body>
+</html>
