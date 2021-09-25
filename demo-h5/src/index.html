@@ -34,85 +34,102 @@
         li {
             list-style: none;
         }
+        input:focus {
+            outline: none;
+        }
         .w {
             width: 1200px;
             margin: 0 auto;
+            height: 100%;
         }
         header {
-            height: 32px;
-            background-color: #e5e5e5;
+            border-bottom: 2px solid #bb0000;
         }
-        .welcome {
+        .top-bar {
+            height: 32px;
+            background-color: #eee;
+        }
+        .top-bar .welcome {
             float: left;
             line-height: 32px;
         }
-        .welcome .login,
-        .welcome .register {
-            color: #50c1ef
+        .top-bar .welcome .login,
+        .top-bar .welcome .register {
+            color: #50c1ef;
         }
-        header .nav {
+        .top-bar .top-nav {
             float: right;
         }
-        header .nav li {
+        .top-bar .top-nav ul li {
             float: left;
         }
-        header .nav li:last-child a {
-            border-right: black none 0px;
-        }
-        header .nav li a {
+        .top-bar .top-nav ul li a {
             display: block;
             margin: 8px 0px;
             padding: 0px 8px 0px;
-            border-right: black solid 1px;
+            border-right: 1px solid black;
         }
-        header .nav .menu a::after {
+        .top-bar .top-nav ul li:last-child a {
+            border-right: 0px none black;
+        }
+        .top-bar .top-nav ul .top-menu a::after {
             content: "\e900";
             font-family: "icomoon";
         }
-        .logo {
-            float: left;
+        .logo-search-cart-area {
+            height: 105px;
         }
-        .logo-pic {
+        .logo-search-cart-area .logo-area {
+            float: left;
+            width: 210px;
+        }
+        .logo-search-cart-area .logo-area .logo-pic {
             display: block;
+            margin: 25px 17px;
             width: 175px;
             height: 55px;
             background: url("images/logo.png") no-repeat;
         }
-        .top {
+        .logo-search-cart-area .search-area {
+            float: left;
             margin-top: 30px;
-            height: 105px;
-        }
-        .search {
-            float:left;
             margin-left: 100px;
         }
-        .search input {
+        .logo-search-cart-area .search-area .search-bar input {
             float: left;
             width: 500px;
             height: 30px;
-            border: 2px solid #bb0000;
+            border: 2px solid #b00;
         }
-        .search input:focus {
-            outline: none;
-        }
-        .search button {
+        .logo-search-cart-area .search-area .search-bar button {
             float: left;
             width: 70px;
             height: 30px;
-            border: 2px solid #bb0000;
-            background-color: #bb0000;
+            border: 2px solid #b00;
+            background-color: #b00;
             color: white;
             font-size: 13px;
         }
-        .cart button {
+        .logo-search-cart-area .search-area .search-nav {
+            margin-top: 10px;
+        }
+        .logo-search-cart-area .search-area .search-nav li {
+            float: left;
+            margin-right: 25px;
+        }
+        .logo-search-cart-area .search-area .search-nav li:first-child {
+            color: red;
+        }
+        .logo-search-cart-area .cart-area button {
             position: relative;
-            margin-left: 150px;
+            margin-top: 30px;
+            margin-left: 155px;
             width: 145px;
             height: 30px;
-            border: #cccccc solid 1px;
             background-color: #eee;
+            border: 1px solid #ccc;
         }
-        .cart .cart-icon {
+        .logo-search-cart-area .cart-area button .cart-icon {
             position: absolute;
             background: url("./images/icons.png") no-repeat;
             background-position-x: -413px;
@@ -122,113 +139,207 @@
             width: 25px;
             height: 20px;
         }
-        .cart .badge {
+        .logo-search-cart-area .cart-area button .badge {
             position: absolute;
-            background-color: red;
-            width: 14px;
-            height: 14px;
             top: -7px;
             right: 20px;
+            width: 14px;
+            height: 14px;
             border-radius: 7px;
+            background-color: red;
             color: white;
             font-size: 10px;
             line-height: 16px;
         }
-        .search-nav {
-            float: left;
-            margin-top: 10px;
-            margin-left: 100px;
-        }
-        .search-nav li {
-            float: left;
-            margin-right: 25px;
-        }
-        .search-nav li:first-child {
-            color: red;
-        }
-        .top2 .category-head {
-            float: left;
-            background-color: #bb0000;
-            width: 210px;
+        .head-nav-area {
             height: 45px;
-            line-height: 45px;
+        }
+        .head-nav-area .category-head {
+            float: left;
+            width: 210px;
+            background-color: #b00;
             text-align: center;
             font-size: 15px;
+            line-height: 45px;
             color: white;
         }
-        .top2 ul li {
+        .head-nav-area .head-nav ul li {
             float: left;
-            height: 45px;
-            line-height: 45px;
-            font-size: 15px;
             margin: 0px 22px;
+            font-size: 15px;
+            line-height: 45px;
         }
-        .separator {
-            height: 2px;
-            background-color: #bb0000;
+        .top-container {
+            height: 460px;
+        }
+        .top-container .item-category {
+            float: left;
+            width: 210px;
+            height: 100%;
+            background-color: #c50000;
+        }
+        .top-container .item-category li a {
+            display: block;
+            padding-left: 18px;
+            height: 30px;
+            line-height: 30px;
+            font-size: 14px;
+            color: white;
+        }
+        .top-container .item-category li a::after {
+            float: right;
+            content: "\e901";
+            font-family: "icomoon";
+            margin-right: 15px;
+        }
+        .top-container .banner-area {
+            float: left;
+            position: relative;
+            margin-left: 5px;
+            margin-top: 5px;
+            width: 730px;
+            height: 454px;
+        }
+        .top-container .banner-area img {
+            width: 100%;
+            height: 100%;
+        }
+        .top-container .banner-area .prev,
+        .top-container .banner-area .next {
+            position: absolute;
+            top: 50%;
+            margin-top: -25px;
+            height: 50px;
+            background: rgba(0,0,0,.3);
+            font-size: 30px;
+            line-height: 50px;
+            font-family: "icomoon";
+            color: white;
+        }
+        .top-container .banner-area .prev {
+            left: 0px;
+            border-top-right-radius: 25px;
+            border-bottom-right-radius: 25px;
+        }
+        .top-container .banner-area .next {
+            right: 0px;
+            border-top-left-radius: 25px;
+            border-bottom-left-radius: 25px;
+        }
+        .top-container .banner-area::before {
+            content: "";
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, .3);
+        }
+        .top-container .banner-area:hover::before {
+            display: block;
         }
     </style>
 </head>
 <body>
 <header>
-    <div class="w clearfix">
-        <div class="welcome">
-            <span>品优购欢迎您！请</span>
-            <a class="login" href="#">登录</a>
-            <a class="register" href="#">免费注册</a>
+    <div class="top-bar">
+        <div class="w">
+            <div class="welcome">
+                <span>品优购欢迎您！请</span>
+                <a class="login" href="#">登录</a>
+                <a class="register" href="#">免费注册</a>
+            </div>
+            <div class="top-nav">
+                <ul>
+                    <li><a href="#">我的订单</a></li>
+                    <li class="top-menu"><a href="#">我的品优购</a></li>
+                    <li><a href="#">品优购会员</a></li>
+                    <li><a href="#">企业采购</a></li>
+                    <li class="top-menu"><a href="#">关注品优购</a></li>
+                    <li class="top-menu"><a href="#">客户服务</a></li>
+                    <li class="top-menu"><a href="#">网站导航</a></li>
+                </ul>
+            </div>
         </div>
-        <ul class="nav">
-            <li><a href="#">我的订单</a></li>
-            <li class="menu"><a href="#">我的品优购</a></li>
-            <li><a href="#">品优购会员</a></li>
-            <li><a href="#">企业采购</a></li>
-            <li class="menu"><a href="#">关注品优购</a></li>
-            <li class="menu"><a href="#">客户服务</a></li>
-            <li class="menu"><a href="#">网站导航</a></li>
-        </ul>
     </div>
-    <div class="w top clearfix">
-        <div class="logo">
-            <a class="logo-pic" title="品优购" href="index.html"></a>
+    <div class="logo-search-cart-area">
+        <div class="w">
+            <div class="logo-area">
+                <a class="logo-pic" title="品优购" href="index.html"></a>
+            </div>
+            <div class="search-area">
+                <div class="search-bar clearfix">
+                    <input type="text"><button>搜索</button>
+                </div>
+                <div class="search-nav">
+                    <ul>
+                        <li>品优购首发</li>
+                        <li>亿元优惠</li>
+                        <li>9.9元团购</li>
+                        <li>每满99减30</li>
+                        <li>亿元优惠</li>
+                        <li>9.9元团购</li>
+                        <li>办公用品</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="cart-area">
+                <button>
+                    <span class="cart-icon"></span>
+                    我的购物车
+                    <div class="badge">0</div>
+                </button>
+            </div>
         </div>
-        <div class="search">
-            <input type="text"><button>搜索</button>
+    </div>
+    <div class="head-nav-area">
+        <div class="w">
+            <div class="category-head">全部商品分类</div>
+            <div class="head-nav">
+                <ul>
+                    <li>服装城</li>
+                    <li>美妆馆</li>
+                    <li>传智超市</li>
+                    <li>全球购</li>
+                    <li>闪购</li>
+                    <li>团购</li>
+                    <li>拍卖</li>
+                    <li>有趣</li>
+                </ul>
+            </div>
         </div>
-        <div class="cart">
-            <button>
-                <span class="cart-icon"></span>
-                我的购物车
-                <div class="badge">0</div>
-            </button>
-        </div>
-        <div class="search-nav">
+    </div>
+</header>
+<div class="top-container">
+    <div class="w">
+        <div class="item-category">
             <ul>
-                <li>品优购首发</li>
-                <li>亿元优惠</li>
-                <li>9.9元团购</li>
-                <li>每满99减30</li>
-                <li>亿元优惠</li>
-                <li>9.9元团购</li>
-                <li>办公用品</li>
+                <li><a href="#">图像、音像、数字商品</a></li>
+                <li><a href="#">家用电器</a></li>
+                <li><a href="#">手机、数码</a></li>
+                <li><a href="#">电脑、办公</a></li>
+                <li><a href="#">家居、家具、家装、厨具</a></li>
+                <li><a href="#">服饰内衣</a></li>
+                <li><a href="#">个护化妆</a></li>
+                <li><a href="#">运动健康</a></li>
+                <li><a href="#">汽车用品</a></li>
+                <li><a href="#">彩票、旅行</a></li>
+                <li><a href="#">理财、众筹</a></li>
+                <li><a href="#">母婴、玩具</a></li>
+                <li><a href="#">箱包</a></li>
+                <li><a href="#">运动户外</a></li>
+                <li><a href="#">箱包</a></li>
             </ul>
         </div>
+        <div class="banner-area">
+            <img src="uploads/banner1.jpg" />
+            <a href="#" class="prev">&#xe902</a>
+            <a href="#" class="next">&#xe901</a>
+        </div>
+        <div class="news-nav-ad-area">
+        </div>
     </div>
-    <div class="w top2 clearfix">
-        <div class="category-head">全部商品分类</div>
-        <ul>
-            <li>服装城</li>
-            <li>美妆馆</li>
-            <li>传智超市</li>
-            <li>全球购</li>
-            <li>闪购</li>
-            <li>团购</li>
-            <li>拍卖</li>
-            <li>有趣</li>
-        </ul>
-    </div>
-    <div class="separator"></div>
-
-</header>
-
+</div>
 </body>
 </html>
