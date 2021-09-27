@@ -26,6 +26,7 @@
             margin: 0px;
             box-sizing: border-box;
             font-size: 12px;
+            font-weight: 400;
             color: black;
         }
         a {
@@ -234,10 +235,84 @@
             left: 0;
             width: 100%;
             height: 100%;
+            /*鼠标点击穿透遮罩*/
+            pointer-events: none;
             background: rgba(255, 255, 255, .3);
         }
         .top-container .banner-area:hover::before {
             display: block;
+        }
+        .top-container .banner-area .banner-nav {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            margin-left: -28px;
+        }
+        .top-container .banner-area .banner-nav li {
+            float: left;
+            margin: 0px 2px;
+            width: 10px;
+            height: 10px;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.5);
+        }
+        .top-container .banner-area .banner-nav li:first-of-type {
+            background: rgba(255,255,255,1);
+        }
+        .top-container .news-nav-ad-area {
+            float: left;
+            margin-left: 5px;
+            margin-top: 5px;
+        }
+        .top-container .news-nav-ad-area .news-area {
+            width: 248px;
+            height: 180px;
+            padding-left: 5px;
+            padding-right: 5px;
+            border: 1px solid #ccc;
+        }
+        .top-container .news-nav-ad-area .news-area .news-header {
+            padding-left: 10px;
+            padding-right: 10px;
+            height: 40px;
+            border-bottom: 1px solid #ccc;
+        }
+        .top-container .news-nav-ad-area .news-area .news-header h4 {
+            float: left;
+            font-size: 14px;
+            line-height: 40px;
+        }
+        .top-container .news-nav-ad-area .news-area .news-header a {
+            float: right;
+            line-height: 40px;
+        }
+        .top-container .news-nav-ad-area .news-area .news-header a::after {
+            content: "\e901";
+            font-family: "icomoon";
+        }
+        .top-container .news-nav-ad-area .news-area .news-body {
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-top: 7px;
+        }
+        .top-container .news-nav-ad-area .news-area .news-body li {
+            line-height: 25px;
+            white-space: nowrap;
+        }
+        .top-container .news-nav-ad-area .nav-area {
+            width: 248px;
+        }
+        .top-container .news-nav-ad-area .nav-area li {
+            float: left;
+            width: 62px;
+            height: 62px;
+            text-align: center;
+            line-height: 100px;
+            border-left: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+        }
+        .top-container .news-nav-ad-area .nav-area li:nth-of-type(4n) {
+            border-right: 1px solid #ccc;
         }
     </style>
 </head>
@@ -333,11 +408,48 @@
             </ul>
         </div>
         <div class="banner-area">
-            <img src="uploads/banner1.jpg" />
+            <a href="#"><img src="uploads/banner1.jpg" /></a>
             <a href="#" class="prev">&#xe902</a>
             <a href="#" class="next">&#xe901</a>
+            <ul class="banner-nav">
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
         </div>
         <div class="news-nav-ad-area">
+            <div class="news-area">
+                <div class="news-header">
+                    <h4>品优购快报</h4>
+                    <a href="#">更多</a>
+                </div>
+                <div class="news-body">
+                    <ul>
+                        <li><a href="#">【特惠】备战开学季 全民半价购数码</a></li>
+                        <li><a href="#">【公告】备战开学季 全民半价购数码</a></li>
+                        <li><a href="#">【特惠】备战开学季 全民半价购数码</a></li>
+                        <li><a href="#">【公告】备战开学季 全民半价购数码</a></li>
+                        <li><a href="#">【特惠】备战开学季 全民半价购数码</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="nav-area clearfix">
+                <ul>
+                    <li>话费</li>
+                    <li>机票</li>
+                    <li>电影票</li>
+                    <li>游戏</li>
+                    <li>彩票</li>
+                    <li>加油站</li>
+                    <li>酒店</li>
+                    <li>火车票</li>
+                    <li>众筹</li>
+                    <li>理财</li>
+                    <li>礼品卡</li>
+                    <li>白条</li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
