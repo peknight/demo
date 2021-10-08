@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>品优购 - 优质！优质！</title>
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/common.css">
     <style>
         @font-face {
             font-family: 'icomoon';
@@ -16,18 +19,18 @@
             font-display: block;
         }
         .clearfix::after {
-            content: "";
             display: block;
             clear: both;
             height: 0px;
+            content: "";
         }
         * {
-            padding: 0px;
             margin: 0px;
-            box-sizing: border-box;
+            padding: 0px;
+            color: black;
             font-size: 12px;
             font-weight: 400;
-            color: black;
+            box-sizing: border-box;
         }
         a {
             text-decoration: none;
@@ -38,89 +41,89 @@
         input:focus {
             outline: none;
         }
-        .white-mask {
+        .white_mask {
             position: relative;
         }
-        .white-mask::before {
-            content: "";
+        .white_mask::before {
             display: none;
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background: rgba(255,255,255,.3);
+            content: "";
             /*鼠标点击穿透遮罩*/
             pointer-events: none;
-            background: rgba(255, 255, 255, .3);
         }
-        .white-mask:hover::before {
+        .white_mask:hover::before {
             display: block;
         }
         .w {
             width: 1200px;
-            margin: 0 auto;
             height: 100%;
+            margin: 0 auto;
         }
         header {
             border-bottom: 2px solid #bb0000;
         }
-        .top-bar {
+        .top_bar {
             height: 32px;
             background-color: #eee;
         }
-        .top-bar .welcome {
+        .top_bar .welcome {
             float: left;
             line-height: 32px;
         }
-        .top-bar .welcome .login,
-        .top-bar .welcome .register {
+        .top_bar .welcome .login,
+        .top_bar .welcome .register {
             color: #50c1ef;
         }
-        .top-bar .top-nav {
+        .top_bar .top_nav {
             float: right;
         }
-        .top-bar .top-nav ul li {
+        .top_bar .top_nav ul li {
             float: left;
         }
-        .top-bar .top-nav ul li a {
+        .top_bar .top_nav ul li a {
             display: block;
             margin: 8px 0px;
             padding: 0px 8px 0px;
             border-right: 1px solid black;
         }
-        .top-bar .top-nav ul li:last-child a {
+        .top_bar .top_nav ul li:last-child a {
             border-right: 0px none black;
         }
-        .top-bar .top-nav ul .top-menu a::after {
-            content: "\e900";
+        .top_bar .top_nav ul .top_menu a::after {
             font-family: "icomoon";
+            content: "\e900";
         }
-        .logo-search-cart-area {
+        .logo_search_cart_area {
             height: 105px;
         }
-        .logo-search-cart-area .logo-area {
+        .logo_search_cart_area .logo_area {
             float: left;
             width: 210px;
         }
-        .logo-search-cart-area .logo-area .logo-pic {
+        .logo_search_cart_area .logo_area .logo_pic {
             display: block;
-            margin: 25px 17px;
             width: 175px;
             height: 55px;
+            margin: 25px 17px;
             background: url("images/logo.png") no-repeat;
         }
-        .logo-search-cart-area .search-area {
+        .logo_search_cart_area .search_area {
             float: left;
             margin-top: 30px;
             margin-left: 100px;
         }
-        .logo-search-cart-area .search-area .search-bar input {
+        .logo_search_cart_area .search_area .search_bar input {
             float: left;
             width: 500px;
             height: 30px;
             border: 2px solid #b00;
         }
-        .logo-search-cart-area .search-area .search-bar button {
+        .logo_search_cart_area .search_area .search_bar button {
             float: left;
             width: 70px;
             height: 30px;
@@ -129,36 +132,36 @@
             color: white;
             font-size: 13px;
         }
-        .logo-search-cart-area .search-area .search-nav {
+        .logo_search_cart_area .search_area .search_nav {
             margin-top: 10px;
         }
-        .logo-search-cart-area .search-area .search-nav li {
+        .logo_search_cart_area .search_area .search_nav li {
             float: left;
             margin-right: 25px;
         }
-        .logo-search-cart-area .search-area .search-nav li:first-child {
+        .logo_search_cart_area .search_area .search_nav li:first-child {
             color: red;
         }
-        .logo-search-cart-area .cart-area button {
+        .logo_search_cart_area .cart_area button {
             position: relative;
-            margin-top: 30px;
-            margin-left: 155px;
             width: 145px;
             height: 30px;
-            background-color: #eee;
+            margin-top: 30px;
+            margin-left: 155px;
             border: 1px solid #ccc;
+            background-color: #eee;
         }
-        .logo-search-cart-area .cart-area button .cart-icon {
+        .logo_search_cart_area .cart_area button .cart_icon {
             position: absolute;
-            background: url("./images/icons.png") no-repeat;
-            background-position-x: -413px;
-            background-position-y: -86px;
             left: 10px;
             top: 4px;
             width: 25px;
             height: 20px;
+            background: url("./images/icons.png") no-repeat;
+            background-position-x: -413px;
+            background-position-y: -86px;
         }
-        .logo-search-cart-area .cart-area button .badge {
+        .logo_search_cart_area .cart_area button .badge {
             position: absolute;
             top: -7px;
             right: 20px;
@@ -170,212 +173,212 @@
             font-size: 10px;
             line-height: 16px;
         }
-        .head-nav-area {
+        .head_nav_area {
             height: 45px;
         }
-        .head-nav-area .category-head {
+        .head_nav_area .category_head {
             float: left;
             width: 210px;
             background-color: #b00;
-            text-align: center;
+            color: white;
             font-size: 15px;
             line-height: 45px;
-            color: white;
+            text-align: center;
         }
-        .head-nav-area .head-nav ul li {
+        .head_nav_area .head_nav ul li {
             float: left;
             margin: 0px 22px;
             font-size: 15px;
             line-height: 45px;
         }
-        .top-container {
+        .top_container {
             height: 460px;
         }
-        .top-container .item-category {
+        .top_container .item_category {
             float: left;
             width: 210px;
             height: 100%;
             background-color: #c50000;
         }
-        .top-container .item-category li a {
+        .top_container .item_category li a {
             display: block;
-            padding-left: 18px;
             height: 30px;
-            line-height: 30px;
-            font-size: 14px;
+            padding-left: 18px;
             color: white;
+            font-size: 14px;
+            line-height: 30px;
         }
-        .top-container .item-category li a::after {
+        .top_container .item_category li a::after {
             float: right;
-            content: "\e901";
-            font-family: "icomoon";
             margin-right: 15px;
+            font-family: "icomoon";
+            content: "\e901";
         }
-        .top-container .banner-area {
+        .top_container .banner_area {
             float: left;
-            margin-left: 5px;
-            margin-top: 5px;
             width: 730px;
             height: 454px;
+            margin-left: 5px;
+            margin-top: 5px;
         }
-        .top-container .banner-area img {
+        .top_container .banner_area img {
             width: 100%;
             height: 100%;
         }
-        .top-container .banner-area .prev,
-        .top-container .banner-area .next {
+        .top_container .banner_area .prev,
+        .top_container .banner_area .next {
             position: absolute;
             top: 50%;
-            margin-top: -25px;
             height: 50px;
+            margin-top: -25px;
             background: rgba(0,0,0,.3);
+            color: white;
             font-size: 30px;
             line-height: 50px;
             font-family: "icomoon";
-            color: white;
         }
-        .top-container .banner-area .prev {
+        .top_container .banner_area .prev {
             left: 0px;
             border-top-right-radius: 25px;
             border-bottom-right-radius: 25px;
         }
-        .top-container .banner-area .next {
+        .top_container .banner_area .next {
             right: 0px;
             border-top-left-radius: 25px;
             border-bottom-left-radius: 25px;
         }
-        .top-container .banner-area .banner-nav {
+        .top_container .banner_area .banner_nav {
             position: absolute;
-            bottom: 12px;
             left: 50%;
+            bottom: 12px;
             margin-left: -28px;
         }
-        .top-container .banner-area .banner-nav li {
+        .top_container .banner_area .banner_nav li {
             float: left;
-            margin: 0px 2px;
             width: 10px;
             height: 10px;
+            margin: 0px 2px;
             border-radius: 5px;
-            background: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,.5);
         }
-        .top-container .banner-area .banner-nav li:first-of-type {
+        .top_container .banner_area .banner_nav li:first-of-type {
             background: rgba(255,255,255,1);
         }
-        .top-container .news-nav-banner-area {
+        .top_container .news_nav_banner_area {
             float: left;
+            width: 248px;
             margin-left: 5px;
             margin-top: 5px;
-            width: 248px;
         }
-        .top-container .news-nav-banner-area .news-area {
+        .top_container .news_nav_banner_area .news_area {
             width: 100%;
             height: 180px;
             padding-left: 5px;
             padding-right: 5px;
             border: 1px solid #ccc;
         }
-        .top-container .news-nav-banner-area .news-area .news-header {
+        .top_container .news_nav_banner_area .news_area .news_header {
+            height: 40px;
             padding-left: 10px;
             padding-right: 10px;
-            height: 40px;
             border-bottom: 1px solid #ccc;
         }
-        .top-container .news-nav-banner-area .news-area .news-header h4 {
+        .top_container .news_nav_banner_area .news_area .news_header h4 {
             float: left;
             font-size: 14px;
             line-height: 40px;
         }
-        .top-container .news-nav-banner-area .news-area .news-header a {
+        .top_container .news_nav_banner_area .news_area .news_header a {
             float: right;
             line-height: 40px;
         }
-        .top-container .news-nav-banner-area .news-area .news-header a::after {
-            content: "\e901";
+        .top_container .news_nav_banner_area .news_area .news_header a::after {
             font-family: "icomoon";
+            content: "\e901";
         }
-        .top-container .news-nav-banner-area .news-area .news-body {
+        .top_container .news_nav_banner_area .news_area .news_body {
             padding-left: 5px;
             padding-right: 5px;
             padding-top: 7px;
         }
-        .top-container .news-nav-banner-area .news-area .news-body li {
+        .top_container .news_nav_banner_area .news_area .news_body li {
             line-height: 25px;
             white-space: nowrap;
         }
-        .top-container .news-nav-banner-area .nav-area {
+        .top_container .news_nav_banner_area .nav_area {
             width: 100%;
         }
-        .top-container .news-nav-banner-area .nav-area .nav-line {
+        .top_container .news_nav_banner_area .nav_area .nav_line {
             width: 100%;
             background: url("./images/icons.png") center no-repeat;
             background-position-x: 3px;
         }
-        .top-container .news-nav-banner-area .nav-area .nav-line1 {
+        .top_container .news_nav_banner_area .nav_area .nav_line1 {
             background-position-y: -7px;
         }
-        .top-container .news-nav-banner-area .nav-area .nav-line2 {
+        .top_container .news_nav_banner_area .nav_area .nav_line2 {
             background-position-y: -75px;
         }
-        .top-container .news-nav-banner-area .nav-area .nav-line3 {
+        .top_container .news_nav_banner_area .nav_area .nav_line3 {
             background-position-y: -148px;
         }
-        .top-container .news-nav-banner-area .nav-area li {
+        .top_container .news_nav_banner_area .nav_area li {
             float: left;
             width: 62px;
             height: 65px;
-            text-align: center;
-            line-height: 100px;
             border-left: 1px solid #ccc;
             border-bottom: 1px solid #ccc;
+            text-align: center;
+            line-height: 100px;
         }
-        .top-container .news-nav-banner-area .nav-area li:nth-of-type(4n) {
+        .top_container .news_nav_banner_area .nav_area li:nth-of-type(4n) {
             border-right: 1px solid #ccc;
         }
-        .top-container .news-nav-banner-area .little-banner-area {
-            margin-top: 5px;
+        .top_container .news_nav_banner_area .little_banner_area {
             width: 100%;
             height: 75px;
+            margin-top: 5px;
         }
-        .top-container .news-nav-banner-area .little-banner-area img {
+        .top_container .news_nav_banner_area .little_banner_area img {
             width: 100%;
             height: 100%;
         }
-        .middle-banner {
-            margin-top: 12px;
+        .middle_banner {
             height: 163px;
+            margin-top: 12px;
         }
-        .middle-banner dl {
+        .middle_banner dl {
             height: 100%;
         }
-        .middle-banner dl dt {
+        .middle_banner dl dt {
             float: left;
+            overflow: hidden;
             width: 204px;
             height: 100%;
             background-color: #444;
-            overflow: hidden;
         }
-        .middle-banner dl dt img {
+        .middle_banner dl dt img {
             display: block;
             margin: 30px auto 12px;
         }
-        .middle-banner dl dt h4 {
+        .middle_banner dl dt h4 {
             color: white;
             font-size: 18px;
             font-weight: 600;
             text-align: center;
         }
-        .middle-banner dl dd {
+        .middle_banner dl dd {
             float: left;
         }
-        .recommend-area {
+        .recommend_area {
             margin-top: 25px;
         }
-        .recommend-area .recommend-head h2 {
+        .recommend_area .recommend_head h2 {
             float: left;
             font-size: 20px;
             font-weight: 500;
         }
-        .recommend-area .recommend-head .change {
+        .recommend_area .recommend_head .change {
             float: right;
             width: 66px;
             height: 25px;
@@ -383,56 +386,56 @@
             background: rgba(255, 255, 255, 0) url("images/icons.png");
             background-position-x: -380px;
             background-position-y: -105px;
-            text-align: left;
             color: #50c1ef;
+            text-align: left;
         }
-        .recommend-area ul {
+        .recommend_area ul {
             border: 1px solid #ccc;
         }
-        .recommend-area ul .recommend-item {
+        .recommend_area ul .recommend_item {
             float: left;
-            width: 200px;
             overflow: auto;
+            width: 200px;
             margin-top: 18px;
             margin-bottom: 18px;
             padding-left: 29px;
             padding-right: 29px;
             border-right: 1px solid #ccc;
         }
-        .recommend-area ul li:first-of-type {
+        .recommend_area ul li:first-of-type {
             width: 199px;
         }
-        .recommend-area ul li:last-of-type {
+        .recommend_area ul li:last-of-type {
             width: 199px;
             border-right: 0px none;
         }
-        .recommend-area ul .recommend-item .item-pic img {
+        .recommend_area ul .recommend_item .item_pic img {
             display: block;
-            margin: 0px auto 5px;
             width: 142px;
             height: 142px;
+            margin: 0px auto 5px;
         }
-        .recommend-area ul .recommend-item .item-price {
+        .recommend_area ul .recommend_item .item_price {
             display: block;
-            color: #c50000;
             margin-top: 9px;
+            color: #c50000;
             font-family: "WenQuanYi Micro Hei Mono";
             font-size: 20px;
             font-weight: 700;
         }
-        .sidebar-area {
+        .sidebar_area {
             position: fixed;
             top: 0px;
             right: 0px;
             height: 100%;
         }
-        .sidebar-area .right-bar {
+        .sidebar_area .right_bar {
             float: right;
             width: 5px;
             height: 100%;
             background-color: #666;
         }
-        .sidebar-area .sidebar-icon {
+        .sidebar_area .sidebar_icon {
             width: 100%;
             height: 32px;
             margin-top: 2px;
@@ -440,70 +443,70 @@
             background: #666 url("images/cartPanelViewIcons.png");
             background-position-x: -52px;
         }
-        .sidebar-area .middle-area {
+        .sidebar_area .middle_area {
             position: absolute;
-            width: 32px;
-            height: 100px;
             top: 50%;
             right: 0px;
+            width: 32px;
+            height: 100px;
             margin-top: -50px;
         }
-        .sidebar-area .middle-area .cart-icon {
+        .sidebar_area .middle_area .cart_icon {
             background-position-y: -2px;
         }
-        .sidebar-area .middle-area .favorite-icon {
+        .sidebar_area .middle_area .favorite_icon {
             background-position-y: -50px;
         }
-        .sidebar-area .middle-area .history-icon {
+        .sidebar_area .middle_area .history_icon {
             background-position-y: -101px;
         }
-        .sidebar-area .bottom-area {
+        .sidebar_area .bottom_area {
             position: absolute;
-            width: 32px;
-            height: 66px;
             bottom: 0px;
             right: 0px;
+            width: 32px;
+            height: 66px;
         }
-        .sidebar-area .bottom-area .top-icon {
+        .sidebar_area .bottom_area .top_icon {
             background-position-y: -252px;
         }
-        .sidebar-area .bottom-area .comment-icon {
+        .sidebar_area .bottom_area .comment_icon {
             background-position-y: -300px;
         }
     </style>
 </head>
 <body>
 <header>
-    <div class="top-bar">
+    <div class="top_bar">
         <div class="w">
             <div class="welcome">
                 <span>品优购欢迎您！请</span>
                 <a class="login" href="#">登录</a>
                 <a class="register" href="#">免费注册</a>
             </div>
-            <div class="top-nav">
+            <div class="top_nav">
                 <ul>
                     <li><a href="#">我的订单</a></li>
-                    <li class="top-menu"><a href="#">我的品优购</a></li>
+                    <li class="top_menu"><a href="#">我的品优购</a></li>
                     <li><a href="#">品优购会员</a></li>
                     <li><a href="#">企业采购</a></li>
-                    <li class="top-menu"><a href="#">关注品优购</a></li>
-                    <li class="top-menu"><a href="#">客户服务</a></li>
-                    <li class="top-menu"><a href="#">网站导航</a></li>
+                    <li class="top_menu"><a href="#">关注品优购</a></li>
+                    <li class="top_menu"><a href="#">客户服务</a></li>
+                    <li class="top_menu"><a href="#">网站导航</a></li>
                 </ul>
             </div>
         </div>
     </div>
-    <div class="logo-search-cart-area">
+    <div class="logo_search_cart_area">
         <div class="w">
-            <div class="logo-area">
-                <a class="logo-pic" title="品优购" href="index.html"></a>
+            <div class="logo_area">
+                <a class="logo_pic" title="品优购" href="index.html"></a>
             </div>
-            <div class="search-area">
-                <div class="search-bar clearfix">
+            <div class="search_area">
+                <div class="search_bar clearfix">
                     <input type="text"><button>搜索</button>
                 </div>
-                <div class="search-nav">
+                <div class="search_nav">
                     <ul>
                         <li>品优购首发</li>
                         <li>亿元优惠</li>
@@ -515,19 +518,19 @@
                     </ul>
                 </div>
             </div>
-            <div class="cart-area">
+            <div class="cart_area">
                 <button>
-                    <span class="cart-icon"></span>
+                    <span class="cart_icon"></span>
                     我的购物车
                     <div class="badge">0</div>
                 </button>
             </div>
         </div>
     </div>
-    <div class="head-nav-area">
+    <div class="head_nav_area">
         <div class="w">
-            <div class="category-head">全部商品分类</div>
-            <div class="head-nav">
+            <div class="category_head">全部商品分类</div>
+            <div class="head_nav">
                 <ul>
                     <li>服装城</li>
                     <li>美妆馆</li>
@@ -542,9 +545,9 @@
         </div>
     </div>
 </header>
-<div class="top-container">
+<div class="top_container">
     <div class="w">
-        <div class="item-category">
+        <div class="item_category">
             <ul>
                 <li><a href="#">图像、音像、数字商品</a></li>
                 <li><a href="#">家用电器</a></li>
@@ -563,24 +566,24 @@
                 <li><a href="#">箱包</a></li>
             </ul>
         </div>
-        <div class="banner-area white-mask">
+        <div class="banner_area white_mask">
             <a href="#"><img src="uploads/banner1.jpg" /></a>
             <a href="#" class="prev">&#xe902</a>
             <a href="#" class="next">&#xe901</a>
-            <ul class="banner-nav">
+            <ul class="banner_nav">
                 <li></li>
                 <li></li>
                 <li></li>
                 <li></li>
             </ul>
         </div>
-        <div class="news-nav-banner-area">
-            <div class="news-area">
-                <div class="news-header">
+        <div class="news_nav_banner_area">
+            <div class="news_area">
+                <div class="news_header">
                     <h4>品优购快报</h4>
                     <a href="#">更多</a>
                 </div>
-                <div class="news-body">
+                <div class="news_body">
                     <ul>
                         <li><a href="#">【特惠】备战开学季 全民半价购数码</a></li>
                         <li><a href="#">【公告】备战开学季 全民半价购数码</a></li>
@@ -590,116 +593,116 @@
                     </ul>
                 </div>
             </div>
-            <div class="nav-area">
-                <ul class="nav-line nav-line1 clearfix">
+            <div class="nav_area">
+                <ul class="nav_line nav_line1 clearfix">
                     <li>话费</li>
                     <li>机票</li>
                     <li>电影票</li>
                     <li>游戏</li>
                 </ul>
-                <ul class="nav-line nav-line2 clearfix">
+                <ul class="nav_line nav_line2 clearfix">
                     <li>彩票</li>
                     <li>加油站</li>
                     <li>酒店</li>
                     <li>火车票</li>
                 </ul>
-                <ul class="nav-line nav-line3 clearfix">
+                <ul class="nav_line nav_line3 clearfix">
                     <li>众筹</li>
                     <li>理财</li>
                     <li>礼品卡</li>
                     <li>白条</li>
                 </ul>
             </div>
-            <div class="little-banner-area">
+            <div class="little_banner_area">
                 <img src="uploads/ad.jpg"/>
             </div>
         </div>
     </div>
 </div>
-<div class="middle-banner">
+<div class="middle_banner">
     <div class="w">
         <dl>
             <dt>
                 <img src="images/clock.png"/>
                 <h4>今日推荐</h4>
             </dt>
-            <dd class="white-mask">
+            <dd class="white_mask">
                 <img src="uploads/today01.png"/>
             </dd>
-            <dd class="white-mask">
+            <dd class="white_mask">
                 <img src="uploads/today02.png"/>
             </dd>
-            <dd class="white-mask">
+            <dd class="white_mask">
                 <img src="uploads/today03.png"/>
             </dd>
-            <dd class="white-mask">
+            <dd class="white_mask">
                 <img src="uploads/today04.png"/>
             </dd>
         </dl>
     </div>
 </div>
-<div class="recommend-area">
+<div class="recommend_area">
     <div class="w">
-        <div class="recommend-head clearfix">
+        <div class="recommend_head clearfix">
             <h2>猜你喜欢</h2>
             <button class="change">换一换</button>
         </div>
         <ul class="clearfix">
-            <li class="recommend-item">
-                <a href="#" class="item-pic">
+            <li class="recommend_item">
+                <a href="#" class="item_pic">
                     <img src="uploads/like_01.png" />
                 </a>
                 <h4 class="item-title">时光美包新款单肩女包时尚子母包四件套女</h4>
-                <span class="item-price">￥116.00</span>
+                <span class="item_price">￥116.00</span>
             </li>
-            <li class="recommend-item">
-                <a href="#" class="item-pic">
+            <li class="recommend_item">
+                <a href="#" class="item_pic">
                     <img src="uploads/like_02.png" />
                 </a>
                 <h4 class="item-title">爱仕达 30CM炒锅不粘锅电磁炉炒</h4>
-                <span class="item-price">￥116.00</span>
+                <span class="item_price">￥116.00</span>
             </li>
-            <li class="recommend-item">
-                <a href="#" class="item-pic">
+            <li class="recommend_item">
+                <a href="#" class="item_pic">
                     <img src="uploads/like_03.png" />
                 </a>
                 <h4 class="item-title">捷波朗<br/>（jabra）BOSSI劲步</h4>
-                <span class="item-price">￥236.00</span>
+                <span class="item_price">￥236.00</span>
             </li>
-            <li class="recommend-item">
-                <a href="#" class="item-pic">
+            <li class="recommend_item">
+                <a href="#" class="item_pic">
                     <img src="uploads/like_04.png" />
                 </a>
                 <h4 class="item-title">阳光美包新款单肩包女包时尚子母包四件套女</h4>
-                <span class="item-price">￥116.00</span>
+                <span class="item_price">￥116.00</span>
             </li>
-            <li class="recommend-item">
-                <a href="#" class="item-pic">
+            <li class="recommend_item">
+                <a href="#" class="item_pic">
                     <img src="uploads/like_05.png" />
                 </a>
                 <h4 class="item-title">捷波朗<br/>（jabra）BOSSI劲步</h4>
-                <span class="item-price">￥236.00</span>
+                <span class="item_price">￥236.00</span>
             </li>
-            <li class="recommend-item">
-                <a href="#" class="item-pic">
+            <li class="recommend_item">
+                <a href="#" class="item_pic">
                     <img src="uploads/like_06.png" />
                 </a>
                 <h4 class="item-title">三星（G5500）<br/>移动联通双网通</h4>
-                <span class="item-price">￥566.00</span>
+                <span class="item_price">￥566.00</span>
             </li>
         </ul>
     </div>
 </div>
-<div class="sidebar-area">
-    <div class="right-bar"></div>
-    <div class="middle-area">
-        <div class="sidebar-icon cart-icon"><div class="badge">0</div></div>
-        <div class="sidebar-icon favorite-icon"></div>
-        <div class="sidebar-icon history-icon"></div>
+<div class="sidebar_area">
+    <div class="right_bar"></div>
+    <div class="middle_area">
+        <div class="sidebar_icon cart_icon"><div class="badge">0</div></div>
+        <div class="sidebar_icon favorite_icon"></div>
+        <div class="sidebar_icon history_icon"></div>
     </div>
-    <div class="bottom-area">
-        <div class="sidebar-icon top-icon"></div>
-        <div class="sidebar-icon comment-icon"></div>
+    <div class="bottom_area">
+        <div class="sidebar_icon top_icon"></div>
+        <div class="sidebar_icon comment_icon"></div>
     </div>
 </div>
 </body>
