@@ -37,7 +37,7 @@ trait Parsers[ParseError, Parser[+_]] { self =>
   object Laws {
     import com.peknight.demo.fpinscala.testing.Prop._
     import com.peknight.demo.fpinscala.testing._
-    def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop = forAll(in)(s => run(p1)(s) == run(p2)(s))
+    def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop = forAll(in)(s => self.run(p1)(s) == self.run(p2)(s))
     def mapLaw[A](p: Parser[A])(in: Gen[String]): Prop = equal(p, p.map(a => a))(in)
   }
 
