@@ -1,6 +1,6 @@
 ThisBuild / version := "0.1-SNAPSHOT"
 
-ThisBuild / scalaVersion := "2.13.6"
+ThisBuild / scalaVersion := "2.13.8"
 
 ThisBuild / organization := "com.peknight"
 
@@ -180,7 +180,7 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     ),
   )
 
-val kindProjectorVersion = "0.13.0"
+val kindProjectorVersion = "0.13.2"
 val pekCommonVersion = "0.1-SNAPSHOT"
 
 val kindProjector = "org.typelevel" % "kind-projector" % kindProjectorVersion cross CrossVersion.full
