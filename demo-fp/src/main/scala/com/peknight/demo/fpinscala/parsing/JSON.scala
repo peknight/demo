@@ -10,13 +10,35 @@ object JSON {
   case class JArray(get: IndexedSeq[JSON]) extends JSON
   case class JObject(get: Map[String, JSON]) extends JSON
 
-  def jsonParser[Err, Parser[+_]](P: Parsers[Err, Parser]): Parser[JSON] = {
+  def jsonParser[Parser[+_]](P: Parsers[Parser]): Parser[JSON] = {
+    // We'll hide the string implicit conversion and promote strings to tokens instead
+    // this is a bit nicer than having to write token everywhere
     // Gives access to all the combinators
-    import P._
-    val spaces = char(' ').many.slice
-    def number: Parser[JNumber] = regex("[0-9]*+(?:.[0-9]+)?".r).map(d => JNumber(d.toDouble))
-    def bool: Parser[JBool] = (string("true") or string("false")).map(b => JBool(b.toBoolean))
-    ???
+    import P.{string => _, _}
+
+    import scala.language.implicitConversions
+    implicit def tok(s: String) = token(P.string(s))
+
+    def array = surround("[", "]")(
+      value.sep(",").map(vs => JArray(vs.toIndexedSeq))
+    ).scope("array")
+
+    def obj = surround("{", "}")(
+      keyval.sep(",").map(kvs => JObject(kvs.toMap))
+    ).scope("object")
+
+    def keyval = escapedQuoted ** (":" *> value)
+
+    def lit = scope("literal") {
+      "null".as(JNull) |
+      double.map(JNumber) |
+      escapedQuoted.map(JString) |
+      "true".as(JBool(true)) |
+      "false".as(JBool(false))
+    }
+
+    def value: Parser[JSON] = lit | obj | array
+    root(whitespace *> (obj | array))
   }
 
 

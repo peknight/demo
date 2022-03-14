@@ -60,6 +60,14 @@ object Gen {
   // Exercise 8.13
   def listOf1[A](g: Gen[A]): SGen[List[A]] = SGen(n => g.listOfN(n max 1))
 
+  /*
+   * Not the most efficent implementation, but it's simple.
+   * This generates ASCII strings.
+   */
+  def stringN(n: Int): Gen[String] = listOfN(n, choose(0, 127)).map(_.map(_.toChar).mkString)
+
+  val string: SGen[String] = SGen(stringN)
+
   object ** {
     def unapply[A, B](p: (A, B)) = Some(p)
   }
