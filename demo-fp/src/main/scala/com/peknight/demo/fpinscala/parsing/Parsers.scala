@@ -58,6 +58,9 @@ trait Parsers[Parser[+_]] { self =>
    */
   def scope[A](msg: String)(p: Parser[A]): Parser[A]
 
+  /**
+   * attempt(p flatMap (_ => fail)) or p2 == p2
+   */
   def attempt[A](p: Parser[A]): Parser[A]
 
   /**
@@ -86,7 +89,7 @@ trait Parsers[Parser[+_]] { self =>
 
   /** Unescaped or escaped string literals, like "An \n important \"Quotation\"" or "bar" */
   def escapedQuoted: Parser[String] =
-    string("\"") *> "([^\\\\\"]|\\\\[^\"])*(\\\\\"([^\\\\\"]|\\\\[^\"])*)*\"".r.map(_.dropRight(1))
+    string("\"") *> "([^\\\\\"]|\\\\[^\"])*+(\\\\\"([^\\\\\"]|\\\\[^\"])*+)*+\"".r.map(_.dropRight(1))
 
   /**
    * C/Java style floating point literals, e.g.1, -1.0, 1e9, 1E-23, etc.
