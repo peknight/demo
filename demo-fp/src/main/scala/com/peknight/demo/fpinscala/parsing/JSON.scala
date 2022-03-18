@@ -40,7 +40,4 @@ object JSON {
     def value: Parser[JSON] = lit | obj | array
     root(whitespace *> (obj | array))
   }
-
-
-
 }

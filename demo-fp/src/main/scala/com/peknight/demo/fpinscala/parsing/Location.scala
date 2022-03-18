@@ -6,4 +6,13 @@ case class Location(input: String, offset: Int = 0) {
     case -1 => offset + 1
     case lineStart => offset - lineStart
   }
+  def toError(msg: String): ParseError = ParseError(List((this, msg)))
+
+  def advanceBy(n: Int) = copy(offset = offset + n)
+
+  def currentLine: String =
+    if (input.length > 1) input.linesIterator.drop(line - 1).next()
+    else ""
+
+  def columnCaret = (" " * (col - 1)) + "^"
 }

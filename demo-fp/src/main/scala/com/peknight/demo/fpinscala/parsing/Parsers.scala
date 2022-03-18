@@ -15,7 +15,7 @@ trait Parsers[Parser[+_]] { self =>
   // Here the Parser type constructor is applied to Char.
   def char(c: Char): Parser[Char] = string(c.toString).map(_.charAt(0))
 
-  def defaultSucceed[A](a: A): Parser[A] = string("") map (_ => a)
+//  def defaultSucceed[A](a: A): Parser[A] = string("") map (_ => a)
 
   def succeed[A](a: A): Parser[A]
 
@@ -28,7 +28,7 @@ trait Parsers[Parser[+_]] { self =>
     if (n <= 0) succeed(List.empty[A])
     else map2(p, listOfN(n - 1, p))(_ :: _)
 
-  def many[A](p: Parser[A]): Parser[List[A]] = or(map2(p, wrap(many(p)))(_ :: _), succeed(List.empty[A]))
+  def many[A](p: Parser[A]): Parser[List[A]] = or(map2(p, many(p)/*wrap(many(p))*/)(_ :: _), succeed(List.empty[A]))
 
   def or[A](s1: Parser[A], s2: => Parser[A]): Parser[A]
 
@@ -41,9 +41,9 @@ trait Parsers[Parser[+_]] { self =>
     b <- p2
   } yield (a, b)
 
-  def map2[A, B, C](a: Parser[A], b: => Parser[B])(f: (A, B) => C): Parser[C] = map(product(a, b))(f.tupled)
+//  def map2[A, B, C](a: Parser[A], b: => Parser[B])(f: (A, B) => C): Parser[C] = map(product(a, b))(f.tupled)
 
-  def map2ViaFlatMap[A, B, C](p: Parser[A], p2: => Parser[B])(f: (A, B) => C): Parser[C] = for {
+  def map2[A, B, C](p: Parser[A], p2: => Parser[B])(f: (A, B) => C): Parser[C] = for {
     a <- p
     b <- p2
   } yield f(a, b)
@@ -75,6 +75,8 @@ trait Parsers[Parser[+_]] { self =>
    */
   def skipR[A](p: Parser[A], p2: => Parser[Any]): Parser[A] = map2(p, slice(p2))((a, _) => a)
 
+  def opt[A](p: Parser[A]): Parser[Option[A]] = p.map(Some(_)) or succeed(None)
+
   /** Parser which consumes zero or more whitespace characters. */
   def whitespace: Parser[String] = "\\s*".r
 
@@ -89,7 +91,7 @@ trait Parsers[Parser[+_]] { self =>
 
   /** Unescaped or escaped string literals, like "An \n important \"Quotation\"" or "bar" */
   def escapedQuoted: Parser[String] =
-    string("\"") *> "([^\\\\\"]|\\\\[^\"])*+(\\\\\"([^\\\\\"]|\\\\[^\"])*+)*+\"".r.map(_.dropRight(1))
+    token(string("\"") *> "([^\\\\\"]|\\\\[^\"])*+(\\\\\"([^\\\\\"]|\\\\[^\"])*+)*+\"".r.map(_.dropRight(1)))
 
   /**
    * C/Java style floating point literals, e.g.1, -1.0, 1e9, 1E-23, etc.
@@ -166,11 +168,20 @@ trait Parsers[Parser[+_]] { self =>
   }
 
   // We could introduce a combinator, `wrap`:
-  def wrap[A](p: => Parser[A]): Parser[A]
+//  def wrap[A](p: => Parser[A]): Parser[A]
 
-  def errorLocation(e: ParseError): Location
+//  def errorLocation(e: ParseError): Location
 
   def errorMessage(e: ParseError): String
+
+  def fail[A](msg: String): Parser[A]
+
+  // exercise 9.11
+  /** In the event of an error, returns the error that occurred after consuming the most number of characters. */
+//  def furthest[A](p: Parser[A]): Parser[A]
+
+  /** In the event of an error, returns the error that occurred most recently */
+//  def latest[A](p: Parser[A]): Parser[A]
 
   // parse: 1a 2aa 3aaa
   for {
