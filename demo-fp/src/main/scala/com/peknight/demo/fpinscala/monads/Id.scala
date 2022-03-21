@@ -8,6 +8,6 @@ case class Id[A](value: A) {
 object Id {
   val idMonad = new Monad[Id] {
     def unit[A](a: => A): Id[A] = Id(a)
-    def flatMap[A, B](fa: Id[A])(f: A => Id[B]): Id[B] = fa.flatMap(f)
+    override def flatMap[A, B](fa: Id[A])(f: A => Id[B]): Id[B] = fa.flatMap(f)
   }
 }
