@@ -56,6 +56,22 @@ trait Monad[F[_]] extends Functor[F] {
     case Nil => unit(Nil)
     case h :: t => flatMap(f(h))(b => if (!b) _filterM(t)(f) else map(filterM(t)(f))(h :: _))
   }
+
+  def compose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = a => flatMap(f(a))(g)
+
+  // Exercise 11.8
+  def flatMapViaCompose[A, B](fa: F[A])(f: A => F[B]): F[B] = compose((_: Unit) => fa, f)(())
+
+  // Exercise 11.12
+
+  // Join is sometimes called "flatten", and `flatMap` "maps and then flattens".
+  def join[A](mma: F[F[A]]): F[A] = flatMap(mma)(identity)
+
+  // Exercise 11.13
+
+  def flatMapViaJoin[A, B](fa: F[A])(f: A => F[B]): F[B] = join(map(fa)(f))
+
+  def composeViaJoin[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = a => join(map(f(a))(g))
 }
 
 object Monad {
