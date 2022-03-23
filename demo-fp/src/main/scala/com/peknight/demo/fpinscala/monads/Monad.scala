@@ -1,6 +1,6 @@
 package com.peknight.demo.fpinscala.monads
 
-import com.peknight.demo.fpinscala.applicative.Applicative
+import com.peknight.demo.fpinscala.applicative.{Applicative, Traverse}
 import com.peknight.demo.fpinscala.parallelism.Nonblocking.Par
 import com.peknight.demo.fpinscala.parsing.Parsers
 import com.peknight.demo.fpinscala.state.State
@@ -124,5 +124,20 @@ object Monad {
   def stateMonad[S] = new Monad[({type f[x] = State[S, x]})#f] {
     def unit[A](a: => A): State[S, A] = State.unit(a)
     override def flatMap[A, B](st: State[S, A])(f: A => State[S, B]): State[S, B] = st flatMap f
+  }
+
+  // Exercise 12.20
+
+  def composeM[G[_], H[_]](implicit G: Monad[G], H: Monad[H], T: Traverse[H]): Monad[({type f[x] = G[H[x]]})#f] = new Monad[({type f[x] = G[H[x]]})#f] {
+    def unit[A](a: => A): G[H[A]] = G.unit(H.unit(a))
+    override def flatMap[A, B](mna: G[H[A]])(f: A => G[H[B]]): G[H[B]] =
+      G.flatMap(mna)(na => G.map(T.traverse(na)(f))(H.join))
+  }
+
+  case class OptionT[M[_], A](value: M[Option[A]])(implicit M: Monad[M]) {
+    def flatMap[B](f: A => OptionT[M, B]): OptionT[M, B] = OptionT(M.flatMap(value) {
+      case None => M.unit(None)
+      case Some(a) => f(a).value
+    })
   }
 }
