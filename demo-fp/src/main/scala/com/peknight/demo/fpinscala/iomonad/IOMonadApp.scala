@@ -1,6 +1,6 @@
 package com.peknight.demo.fpinscala.iomonad
 
-import com.peknight.demo.fpinscala.iomonad.IO.{PrintLine, ReadLine}
+import com.peknight.demo.fpinscala.iomonad.IO._
 
 import scala.io.StdIn.readLine
 
@@ -42,4 +42,32 @@ object IOMonadApp extends App {
     d <- ReadLine.map(_.toDouble)
     _ <- PrintLine(fahrenheitToCelsius(d).toString)
   } yield ()
+
+  def factorial(n: Int): IO[Int] = for {
+    acc <- ref(1)
+    _ <- foreachM(1 to n to(LazyList): LazyList[Int])(i => acc.modify(_ * i).skip)
+    result <- acc.get
+  } yield result
+
+  val helpstring =
+    """
+      | The Amazing Factorial REPL, v2.0
+      | q - quit
+      | <number> - compute the factorial of the given number
+      | <anything else> - bomb with horrible error
+      """.trim.stripMargin
+
+  val factorialREPL: IO[Unit] = sequence_ {
+    IO { println(helpstring) }
+    doWhile (IO(readLine())) { line =>
+      when (line != "q") { for {
+        n <- factorial(line.toInt)
+        _ <- IO { println("factorial: " + n) }
+      } yield () }
+    }
+  }
+
+  val stillGoing = IO.forever(PrintLine("Still going..."))
+  // 这里Debug看下 可以更好理解
+  // IO.run(stillGoing)
 }

@@ -45,7 +45,10 @@ trait Monad[F[_]] extends Applicative[F] {
     else map2(ma, _replicateM(n - 1, ma))(_ :: _)
 
   // See `Gen` and `Parser`'s `listOfN`. `replicateM` meaning "replicate in a monad"
-  override def replicateM[A](n: Int, ma: F[A]): F[List[A]] = sequence(List.fill(n)(ma))
+//  override def replicateM[A](n: Int, ma: F[A]): F[List[A]] = sequence(List.fill(n)(ma))
+  override def replicateM[A](n: Int)(f: F[A]): F[List[A]] = LazyList.fill(n)(f).foldRight(unit(List.empty[A]))(map2(_, _)(_ :: _))
+
+  def replicateM_[A](n: Int)(f: F[A]): F[Unit] = foreachM(LazyList.fill(n)(f))(skip)
 
   // Exercise 11.6
 
@@ -73,6 +76,46 @@ trait Monad[F[_]] extends Applicative[F] {
   def flatMapViaJoin[A, B](fa: F[A])(f: A => F[B]): F[B] = join(map(fa)(f))
 
   def composeViaJoin[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = a => join(map(f(a))(g))
+
+  def sequence_[A](fs: LazyList[F[A]]): F[Unit] = foreachM(fs)(skip)
+  def sequence_[A](fs: F[A]*): F[Unit] = sequence_(fs.to(LazyList))
+  def as[A, B](a: F[A])(b: B): F[B] = map(a)(_ => b)
+  def skip[A](fa: F[A]): F[Unit] = as(fa)(())
+  def when[A](b: Boolean)(fa: => F[A]): F[Boolean] = if (b) as(fa)(true) else unit(false)
+  def while_(a: F[Boolean])(b: F[Unit]): F[Unit] = {
+    lazy val t: F[Unit] = while_(a)(b)
+    flatMap(a)(c => skip(when(c)(t)))
+  }
+  def doWhile[A](fa: F[A])(cond: A => F[Boolean]): F[Unit] = for {
+    a <- fa
+    ok <- cond(a)
+    _ <- if (ok) doWhile(fa)(cond) else unit(())
+  } yield ()
+
+  def forever[A, B](a: F[A]): F[B] = {
+//    lazy val t: F[B] = forever(a)
+//    flatMap(a)(_ => t)
+    lazy val t: F[B] = flatMap(a)(_ => t)
+    t
+  }
+
+  def foldM[A, B](l: LazyList[A])(z: B)(f: (B, A) => F[B]): F[B] = l match {
+    case h #:: t => flatMap(f(z, h))(z2 => foldM(t)(z2)(f))
+    case _ => unit(z)
+  }
+
+  def foldM_[A, B](l: LazyList[A])(z: B)(f: (B, A) => F[B]): F[Unit] = skip { foldM(l)(z)(f) }
+
+  def foreachM[A](l: LazyList[A])(f: A => F[Unit]): F[Unit] = foldM_(l)(())((_, a) => skip(f(a)))
+
+  def seq[A, B, C](f: A => F[B])(g: B => F[C]): A => F[C] = f andThen (fb => flatMap(fb)(g))
+
+  import scala.language.implicitConversions
+  // syntax
+  implicit def toMonadic[A](a: F[A]): Monadic[F, A] = new Monadic[F, A] {
+    val F = Monad.this
+    def get = a
+  }
 }
 
 object Monad {
