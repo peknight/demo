@@ -70,4 +70,19 @@ object IOMonadApp extends App {
   val stillGoing = IO.forever(PrintLine("Still going..."))
   // 这里Debug看下 可以更好理解
   // IO.run(stillGoing)
+
+  // StackOverflowError
+//  val f = (x: Int) => x
+//  val g = List.fill(100000)(f).foldLeft(f)(_ compose _)
+//  println(g(42))
+
+  val f: Int => IO[Int] = (x: Int) => Return(x)
+  val g = List.fill(100000)(f).foldLeft(f)((a, b) => x => IO(()).flatMap(_ => a(x).flatMap(b)))
+  val x1 = run(g(0))
+  println(x1)
+  val x2 = run(g(42))
+  println(x2)
+
+
+
 }
