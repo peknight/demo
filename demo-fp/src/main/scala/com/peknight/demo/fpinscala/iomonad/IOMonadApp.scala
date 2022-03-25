@@ -1,7 +1,10 @@
 package com.peknight.demo.fpinscala.iomonad
 
+import com.peknight.demo.fpinscala.iomonad.Console.{printLn, readLn, runConsoleFunction0, runConsolePar}
 import com.peknight.demo.fpinscala.iomonad.IO._
+import com.peknight.demo.fpinscala.parallelism.Nonblocking.Par
 
+import java.util.concurrent.Executors
 import scala.io.StdIn.readLine
 
 object IOMonadApp extends App {
@@ -83,6 +86,13 @@ object IOMonadApp extends App {
   val x2 = run(g(42))
   println(x2)
 
+  val f1: Free[Console, Option[String]] = for {
+    _ <- printLn("I can only interact with the console.")
+    ln <- readLn
+  } yield ln
 
-
+  val S = Executors.newFixedThreadPool(2)
+  println(Par.run(S)(runConsolePar(f1)))
+  S.shutdown()
+  println(runConsoleFunction0(f1)())
 }

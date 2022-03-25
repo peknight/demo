@@ -4,6 +4,9 @@ import com.peknight.demo.fpinscala.parallelism.Nonblocking.Par
 
 import scala.annotation.tailrec
 
+/**
+ * Free[Par, A]
+ */
 sealed trait Async[A] {
   import Async._
   def flatMap[B](f: A => Async[B]): Async[B] = FlatMap(this, f)
@@ -27,7 +30,7 @@ object Async {
     case Suspend(r) => r
     case FlatMap(x, f) => x match {
       case Suspend(r) => Par.flatMap(r)(a => run(f(a)))
-      case _ => sys.error("Impossible: `step` eliminates these cases")
+      case _ => sys.error("Impossible; `step` eliminates these cases")
     }
   }
 

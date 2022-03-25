@@ -40,7 +40,7 @@ object IO extends Monad[IO] {
     case Return(a) => a
     case Suspend(r) => r()
     case FlatMap(x, f) => x match {
-      // 为啥idea不能推断这里的类型？但是编译器可以
+      // FlatMap有两个泛型参数，但是run方法只指定了一个，所以idea推断不出来左侧泛型的类型而报红，实际是可以编译通过的
       case Return(a) => run(f(a))
       // 无限调用会走到这里，先执行r()，也就是实际要执行的业务代码，将执行结果做为参数来执行f函数产生新的IO对象，然后尾递归继续run这个新IO对象
       case Suspend(r) => run(f(r()))
