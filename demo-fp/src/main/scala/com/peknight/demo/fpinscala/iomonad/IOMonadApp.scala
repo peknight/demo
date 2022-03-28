@@ -1,7 +1,6 @@
 package com.peknight.demo.fpinscala.iomonad
 
-import com.peknight.demo.fpinscala.iomonad.Console.{printLn, readLn, runConsoleFunction0, runConsolePar}
-import com.peknight.demo.fpinscala.iomonad.IO._
+import com.peknight.demo.fpinscala.iomonad.Console.{ConsoleIO, printLn, readLn, runConsoleFunction0, runConsolePar}
 import com.peknight.demo.fpinscala.parallelism.Nonblocking.Par
 
 import java.util.concurrent.Executors
@@ -30,7 +29,7 @@ object IOMonadApp extends App {
 
   def contestV3(p1: Player, p2: Player): Unit = println(winnerMsg(winner(p1, p2)))
 
-  def contest(p1: Player, p2: Player): IO[Unit] = PrintLine(winnerMsg(winner(p1, p2)))
+  def contest(p1: Player, p2: Player): IO[Unit] = IO.PrintLine(winnerMsg(winner(p1, p2)))
 
   def fahrenheitToCelsius(f: Double): Double = (f - 32) * 5.0 / 9.0
 
@@ -41,14 +40,14 @@ object IOMonadApp extends App {
   }
 
   def converter: IO[Unit] = for {
-    _ <- PrintLine("Enter a temperature in degrees Fahrenheit: ")
-    d <- ReadLine.map(_.toDouble)
-    _ <- PrintLine(fahrenheitToCelsius(d).toString)
+    _ <- IO.PrintLine("Enter a temperature in degrees Fahrenheit: ")
+    d <- IO.ReadLine.map(_.toDouble)
+    _ <- IO.PrintLine(fahrenheitToCelsius(d).toString)
   } yield ()
 
   def factorial(n: Int): IO[Int] = for {
-    acc <- ref(1)
-    _ <- foreachM(1 to n to(LazyList): LazyList[Int])(i => acc.modify(_ * i).skip)
+    acc <- IO.ref(1)
+    _ <- IO.foreachM(1 to n to(LazyList): LazyList[Int])(i => acc.modify(_ * i).skip)
     result <- acc.get
   } yield result
 
@@ -60,17 +59,17 @@ object IOMonadApp extends App {
       | <anything else> - bomb with horrible error
       """.trim.stripMargin
 
-  val factorialREPL: IO[Unit] = sequence_ {
+  val factorialREPL: IO[Unit] = IO.sequence_ {
     IO { println(helpstring) }
-    doWhile (IO(readLine())) { line =>
-      when (line != "q") { for {
+    IO.doWhile (IO(readLine())) { line =>
+      IO.when (line != "q") { for {
         n <- factorial(line.toInt)
         _ <- IO { println("factorial: " + n) }
       } yield () }
     }
   }
 
-  val stillGoing = IO.forever(PrintLine("Still going..."))
+  val stillGoing = IO.forever(IO.PrintLine("Still going..."))
   // 这里Debug看下 可以更好理解
   // IO.run(stillGoing)
 
@@ -79,11 +78,11 @@ object IOMonadApp extends App {
 //  val g = List.fill(100000)(f).foldLeft(f)(_ compose _)
 //  println(g(42))
 
-  val f: Int => IO[Int] = (x: Int) => Return(x)
+  val f: Int => IO[Int] = (x: Int) => IO.Return(x)
   val g = List.fill(100000)(f).foldLeft(f)((a, b) => x => IO(()).flatMap(_ => a(x).flatMap(b)))
-  val x1 = run(g(0))
+  val x1 = IO.run(g(0))
   println(x1)
-  val x2 = run(g(42))
+  val x2 = IO.run(g(42))
   println(x2)
 
   val f1: Free[Console, Option[String]] = for {
@@ -92,7 +91,21 @@ object IOMonadApp extends App {
   } yield ln
 
   val S = Executors.newFixedThreadPool(2)
+
   println(Par.run(S)(runConsolePar(f1)))
-  S.shutdown()
+
   println(runConsoleFunction0(f1)())
+
+  def p: ConsoleIO[Unit] = for {
+    _ <- printLn("What's your name?")
+    n <- readLn
+    _ <- n match {
+      case Some(n) => printLn(s"Hello, $n!")
+      case None => printLn(s"Fine, be that way.")
+    }
+  } yield ()
+
+  Par.run(S)(runConsolePar(p))
+
+  S.shutdown()
 }

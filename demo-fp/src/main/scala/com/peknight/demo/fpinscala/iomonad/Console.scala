@@ -19,7 +19,7 @@ object Console {
     def toPar = Par.lazyUnit(run)
     def toThunk = () => run
 
-    def run: Option[String] = try Some(readLine()) catch { case e: Exception => None }
+    def run: Option[String] = try Option(readLine()) catch { case e: Exception => None }
 
     def toState = ConsoleState {
       case Buffers(head :: tail, out) => (Some(head), Buffers(tail, out))
