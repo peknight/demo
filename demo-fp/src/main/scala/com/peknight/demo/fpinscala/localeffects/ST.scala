@@ -106,7 +106,7 @@ object ST {
       val table = (mutable.HashMap.empty[K, V])
     })
     def fromMap[S, K, V](m: Map[K, V]): ST[S, STMap[S, K, V]] = ST(new STMap[S, K, V] {
-      val table = (mutable.HashMap.newBuilder[K, V] ++= m).result
+      val table = (mutable.HashMap.newBuilder[K, V] ++= m).result()
     })
   }
 }
