@@ -6,7 +6,7 @@ import com.peknight.demo.fpinscala.parallelism.Nonblocking.Par
 import java.util.concurrent.Executors
 import scala.io.StdIn.readLine
 
-object IOMonadApp extends App {
+object IOMonadApp extends scala.App {
   def contestV1(p1: Player, p2: Player): Unit = {
     if (p1.score > p2.score) println(s"${p1.name} is the winner!")
     else if (p2.score > p1.score) println(s"${p2.name} is the winner!")
