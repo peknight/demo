@@ -70,6 +70,7 @@ lazy val demoCatsEffect = (project in file("demo-cats-effect"))
     name := "demo-cats-effect",
     libraryDependencies ++= Seq(
       pekCommonFp,
+      pekCommonTest % Test,
     ),
   )
 
