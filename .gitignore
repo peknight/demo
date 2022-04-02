@@ -39,3 +39,5 @@ package.json
 package-lock.json
 
 OpenWeatherAppid.scala
+origin.txt
+destination.txt
