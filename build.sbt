@@ -15,12 +15,13 @@ lazy val commonSettings = Seq(
     "-unchecked",
     "-Xfatal-warnings",
     "-Ymacro-annotations",
+//    "-Ywarn-value-discard",
   ),
 )
 
 lazy val demo = (project in file("."))
-  .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoMonocle, demoJson, demoAkka, demoRx,
-    demoAsync, demoApp, demoScala3, demoJs.jvm, demoJs.js)
+  .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoFs2, demoMonocle, demoJson, demoAkka,
+    demoRx, demoAsync, demoApp, demoScala3, demoJs.jvm, demoJs.js)
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
   .settings(
@@ -70,7 +71,17 @@ lazy val demoCatsEffect = (project in file("demo-cats-effect"))
     name := "demo-cats-effect",
     libraryDependencies ++= Seq(
       pekCommonFp,
+      pekCommonLog,
       pekCommonTest % Test,
+    ),
+  )
+
+lazy val demoFs2 = (project in file("demo-fs2"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-fs2",
+    libraryDependencies ++= Seq(
+      pekCommonFp,
     ),
   )
 
@@ -186,6 +197,7 @@ val pekCommonVersion = "0.1-SNAPSHOT"
 
 val kindProjector = "org.typelevel" % "kind-projector" % kindProjectorVersion cross CrossVersion.full
 val pekCommonCore = "com.peknight" %% "common-core" % pekCommonVersion
+val pekCommonLog = "com.peknight" %% "common-log" % pekCommonVersion
 val pekCommonMath = "com.peknight" %% "common-math" % pekCommonVersion
 val pekCommonFp = "com.peknight" %% "common-fp" % pekCommonVersion
 val pekCommonTest = "com.peknight" %% "common-test" % pekCommonVersion

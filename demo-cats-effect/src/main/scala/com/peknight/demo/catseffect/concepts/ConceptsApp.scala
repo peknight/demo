@@ -24,6 +24,7 @@ object ConceptsApp extends IOApp.Simple {
   }
 
   val run = schedule.flatMap(IO.println) >>
+    // 当你希望能中断执行时用`interruptible`（尝试打断一次）或`interruptibleMany`（不断尝试直到成功打断），不希望中断则用`blocking`即可
     IO.interruptible(Thread.sleep(500)) >>
     IO.println("Hello, World!") >>
     example[IO]("Hello, World") >>
