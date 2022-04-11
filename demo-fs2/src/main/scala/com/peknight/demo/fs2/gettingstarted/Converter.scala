@@ -10,7 +10,7 @@ object Converter extends IOApp.Simple {
     Files[IO].readAll(Path("demo-fs2/src/main/resources/com/peknight/demo/fs2/gettingstarted/fahrenheit.txt"))
       .through(text.utf8.decode)
       .through(text.lines)
-      .filter(s => !s.trim.isEmpty && !s.startsWith("//"))
+      .filter(s => s.trim.nonEmpty && !s.startsWith("//"))
       .map(line => fahrenheitToCelsius(line.toDouble).toString)
       .intersperse("\n")
       .through(text.utf8.encode)
@@ -18,5 +18,4 @@ object Converter extends IOApp.Simple {
   }
 
   def run: IO[Unit] = converter.compile.drain
-
 }
