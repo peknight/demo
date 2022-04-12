@@ -1,8 +1,8 @@
 package com.peknight.demo.fs2.gettingstarted
 
 import cats.effect.{IO, IOApp}
-import fs2.{Stream, text}
 import fs2.io.file.{Files, Path}
+import fs2.{Stream, text}
 
 object Converter extends IOApp.Simple {
   val converter: Stream[IO, Unit] = {

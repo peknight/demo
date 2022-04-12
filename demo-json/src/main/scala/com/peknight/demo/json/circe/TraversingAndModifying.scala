@@ -1,6 +1,5 @@
 package com.peknight.demo.json.circe
 
-import cats.syntax.either._
 import io.circe._
 import io.circe.parser._
 

@@ -1,7 +1,7 @@
 package com.peknight.demo.catseffect.standard
 
-import cats.effect.{IO, IOApp}
 import cats.effect.std.{Dispatcher, Queue}
+import cats.effect.{IO, IOApp}
 
 object DispatcherApp extends IOApp.Simple {
 

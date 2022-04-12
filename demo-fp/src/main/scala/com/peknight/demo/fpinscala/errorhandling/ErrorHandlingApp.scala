@@ -1,7 +1,7 @@
 package com.peknight.demo.fpinscala.errorhandling
 
-import com.peknight.demo.fpinscala.errorhandling.Option._
 import com.peknight.demo.fpinscala.errorhandling.Either._
+import com.peknight.demo.fpinscala.errorhandling.Option._
 
 object ErrorHandlingApp extends App {
   def failingFn(i: Int): Int = {

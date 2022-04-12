@@ -1,7 +1,7 @@
 package com.peknight.demo.fpinscala.parallelism
 
 import java.util.concurrent.atomic.AtomicReference
-import java.util.concurrent.{Callable, CountDownLatch, ExecutorService, Executors}
+import java.util.concurrent.{Callable, CountDownLatch, ExecutorService}
 
 object Nonblocking {
 

@@ -1,8 +1,8 @@
 package com.peknight.demo.catseffect.standard
 
-import cats.effect.{IO, IOApp, Temporal}
 import cats.effect.std.{Console, Semaphore}
 import cats.effect.syntax.all._
+import cats.effect.{IO, IOApp, Temporal}
 import cats.syntax.all._
 
 import scala.concurrent.duration.DurationInt

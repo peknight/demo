@@ -1,7 +1,7 @@
 package com.peknight.demo.fs2.guide
 
 import cats.effect.{IO, IOApp}
-import fs2.{Pipe, Stream}
+import fs2.Stream
 
 object ExercisesStreamTransformingApp extends IOApp.Simple {
 

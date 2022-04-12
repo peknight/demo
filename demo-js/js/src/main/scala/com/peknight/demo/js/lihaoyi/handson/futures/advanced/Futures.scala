@@ -9,8 +9,8 @@ import scalatags.JsDom.all._
 
 import scala.collection.mutable
 import scala.concurrent.Future
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js
-import scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 @JSExportTopLevel("FuturesAdvanced")

@@ -1,7 +1,6 @@
 package com.peknight.demo.cats.monad
 
 import cats.{Id, Monad}
-import cats.syntax.flatMap._
 import com.peknight.demo.cats.functor.Tree
 import com.peknight.demo.cats.functor.Tree.{Branch, Leaf}
 

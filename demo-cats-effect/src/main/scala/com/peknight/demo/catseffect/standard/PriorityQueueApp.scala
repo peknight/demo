@@ -1,9 +1,9 @@
 package com.peknight.demo.catseffect.standard
 
-import cats.{Contravariant, Functor, Order}
-import cats.effect.{IO, IOApp}
 import cats.effect.std.{PQueue, PQueueSink, PQueueSource}
+import cats.effect.{IO, IOApp}
 import cats.implicits.toTraverseOps
+import cats.{Contravariant, Functor, Order}
 
 object PriorityQueueApp extends IOApp.Simple {
 

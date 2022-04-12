@@ -3,9 +3,9 @@ package com.peknight.demo.cats.monadtransformer
 import cats.data.{EitherT, OptionT, Writer}
 import cats.syntax.applicative._
 
-import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.util.Try
 
 object MonadTransformerApp extends App {

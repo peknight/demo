@@ -2,7 +2,7 @@ package com.peknight.demo.js.lihaoyi.handson.clientserver.simple
 import org.scalajs.dom
 
 import scala.concurrent.Future
-import scalajs.concurrent.JSExecutionContext.Implicits.queue
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 object Ajaxer extends autowire.Client[String, upickle.default.Reader, upickle.default.Writer] {
   override def doCall(req: Ajaxer.Request): Future[String] = {

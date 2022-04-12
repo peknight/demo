@@ -1,6 +1,6 @@
 package com.peknight.demo.catseffect.gettingstarted
 
-import cats.effect.{IO, SyncIO}
+import cats.effect.IO
 import munit.CatsEffectSuite
 
 class MUnitExampleSuite extends CatsEffectSuite {

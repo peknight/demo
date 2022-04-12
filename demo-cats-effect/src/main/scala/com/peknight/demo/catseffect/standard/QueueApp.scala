@@ -1,9 +1,9 @@
 package com.peknight.demo.catseffect.standard
 
-import cats.{Contravariant, Functor}
-import cats.effect.{IO, IOApp}
 import cats.effect.std.{Queue, QueueSink, QueueSource}
+import cats.effect.{IO, IOApp}
 import cats.implicits.toTraverseOps
+import cats.{Contravariant, Functor}
 
 object QueueApp extends IOApp.Simple {
 

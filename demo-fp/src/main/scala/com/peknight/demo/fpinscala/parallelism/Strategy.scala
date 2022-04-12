@@ -1,6 +1,6 @@
 package com.peknight.demo.fpinscala.parallelism
 
-import java.util.concurrent.{Callable, ExecutorService}
+import java.util.concurrent.ExecutorService
 
 /**
  * Provides a function for evaluating expressions, possibly asynchronously.

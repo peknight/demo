@@ -10,8 +10,9 @@ object AlgebraicDataType extends App {
 
 
   import cats.syntax.functor._
-  import io.circe.{ Decoder, Encoder }, io.circe.generic.auto._
+  import io.circe.generic.auto._
   import io.circe.syntax._
+  import io.circe.{Decoder, Encoder}
 
   object GenericDerivation {
     implicit val encodeEvent: Encoder[Event] = Encoder.instance {
@@ -43,12 +44,12 @@ object AlgebraicDataType extends App {
 
 
   // To suppress previously imported inplicit codecs. 这一步看起来并没有用
-  import GenericDerivation.{ decodeEvent => _, encodeEvent => _ }
+  import GenericDerivation.{decodeEvent => _, encodeEvent => _}
 
   object ShapesDerivation {
     // 没啥用的引入
-    import io.circe.shapes
-    import shapeless.{ Coproduct, Generic }
+//    import io.circe.shapes
+    import shapeless.{Coproduct, Generic}
 
     implicit def encodeAdtNoDiscr[A, Repr <: Coproduct](implicit
                                                         gen: Generic.Aux[A, Repr],
@@ -64,8 +65,8 @@ object AlgebraicDataType extends App {
 
 
   // 也是没啥用的引入
-  import ShapesDerivation._
-  import io.circe.parser.decode, io.circe.syntax._
+//  import ShapesDerivation._
+//  import io.circe.parser.decode, io.circe.syntax._
 
   println(decode[Event]("""{ "i": 1000 }"""))
   // res2: Either[io.circe.Error, Event] = Right(Foo(1000))
@@ -77,13 +78,13 @@ object AlgebraicDataType extends App {
 
   // 看circe文档的意思下面的的内容应该不是最终版，所以先别用了
 
-  import io.circe.generic.extras.auto._
+//  import io.circe.generic.extras.auto._
   import io.circe.generic.extras.Configuration
 
   implicit val genDevConfig: Configuration =
     Configuration.default.withDiscriminator("what_am_i")
 
-  import io.circe.parser.decode, io.circe.syntax._
+//  import io.circe.parser.decode, io.circe.syntax._
 
   println((Foo(100): Event).asJson.noSpaces)
   // res4: String = "{\"i\":100}"

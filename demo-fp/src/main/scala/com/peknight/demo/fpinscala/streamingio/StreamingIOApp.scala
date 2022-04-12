@@ -4,7 +4,7 @@ import com.peknight.demo.fpinscala.iomonad.App.IO
 import com.peknight.demo.fpinscala.iomonad.Free.Suspend
 import com.peknight.demo.fpinscala.iomonad.IOMonadApp.fahrenheitToCelsius
 import com.peknight.demo.fpinscala.parallelism.Nonblocking.Par
-import com.peknight.demo.fpinscala.streamingio.Process.{Channel, Emit, End, Halt, constant, eval, fileW, intersperse, resource, resource_}
+import com.peknight.demo.fpinscala.streamingio.Process.{Channel, Emit, End, Halt, constant, eval, fileW, intersperse, resource_}
 
 import java.io.{BufferedReader, File, FileReader}
 
@@ -82,7 +82,7 @@ object StreamingIOApp extends App {
     .to(fileW("celsius.txt"))
     .drain
 
-  import java.sql.{Connection, PreparedStatement, ResultSet}
+  import java.sql.{Connection, PreparedStatement}
   def query(conn: IO[Connection]): Channel[IO, Connection => PreparedStatement, Map[String, Any]] = resource_
     { conn }
     { conn => constant { (q: Connection => PreparedStatement) =>

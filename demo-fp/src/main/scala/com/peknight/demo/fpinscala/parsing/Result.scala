@@ -1,6 +1,6 @@
 package com.peknight.demo.fpinscala.parsing
 
-import com.peknight.demo.fpinscala.parsing.Result.{Failure, Slice, Success}
+import com.peknight.demo.fpinscala.parsing.Result.Failure
 
 sealed trait Result[+A] {
   def extract(input: String): Either[ParseError, A]

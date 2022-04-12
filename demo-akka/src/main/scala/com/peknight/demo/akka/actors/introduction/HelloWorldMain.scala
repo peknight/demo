@@ -1,7 +1,7 @@
 package com.peknight.demo.akka.actors.introduction
 
-import akka.actor.typed.{ActorSystem, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorSystem, Behavior}
 import org.slf4j.LoggerFactory
 
 object HelloWorldMain {

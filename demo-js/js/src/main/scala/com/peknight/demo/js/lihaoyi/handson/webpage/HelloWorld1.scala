@@ -1,9 +1,9 @@
 package com.peknight.demo.js.lihaoyi.handson.webpage
 
 import org.scalajs.dom.html
+import scalatags.JsDom.all._
 
 import scala.scalajs.js.annotation.JSExportTopLevel
-import scalatags.JsDom.all._
 
 object HelloWorld1 {
   @JSExportTopLevel("helloWorld1")

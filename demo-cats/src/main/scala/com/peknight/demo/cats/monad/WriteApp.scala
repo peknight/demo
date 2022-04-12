@@ -3,8 +3,9 @@ package com.peknight.demo.cats.monad
 import cats.data.Writer
 import cats.syntax.applicative._
 import cats.syntax.writer._
-import scala.concurrent._
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
 import scala.concurrent.duration._
 
 object WriteApp extends App {

@@ -12,7 +12,7 @@ object FunctorInstances {
     def map[A, B](fa: Option[A])(f: A => B): Option[B] = fa.map(f)
   }
 
-  import scala.concurrent.{Future, ExecutionContext}
+  import scala.concurrent.{ExecutionContext, Future}
 
   def futureFunctor(implicit ec: ExecutionContext): Functor[Future] = new Functor[Future] {
     def map[A, B](fa: Future[A])(f: A => B): Future[B] = fa.map(f)

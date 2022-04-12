@@ -2,8 +2,8 @@ package com.peknight.demo.catseffect.tutorial.producerconsumer
 
 import cats.effect._
 import cats.effect.std.Console
-import cats.syntax.all._
 import cats.effect.syntax.all._
+import cats.syntax.all._
 
 object ProducerConsumerBoundedCancelable extends IOApp {
 

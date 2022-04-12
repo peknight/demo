@@ -1,6 +1,6 @@
 package com.peknight.demo.fpinscala.testing
 
-import com.peknight.demo.fpinscala.state.{RNG, SimpleRNG, State}
+import com.peknight.demo.fpinscala.state.{RNG, State}
 
 trait Cogen[-A] {
   def sample(a: A, rng: RNG): RNG

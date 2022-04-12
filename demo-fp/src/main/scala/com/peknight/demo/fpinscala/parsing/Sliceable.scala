@@ -1,7 +1,7 @@
 package com.peknight.demo.fpinscala.parsing
 
-import com.peknight.demo.fpinscala.parsing.SliceableType.Parser
 import com.peknight.demo.fpinscala.parsing.Result.{Failure, Slice, Success, firstNonmatchingIndex}
+import com.peknight.demo.fpinscala.parsing.SliceableType.Parser
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer

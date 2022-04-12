@@ -1,13 +1,13 @@
 package com.peknight.demo.cats.casestudy.mapreduce
 
 import cats.Monoid
+import cats.syntax.foldable._
 import cats.syntax.semigroup._
 import cats.syntax.traverse._
-import cats.syntax.foldable._
 
-import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, Future}
 
 object FoldMapApp extends App {
   def foldMap[A, B: Monoid](values: Vector[A])(func: A => B): B = {

@@ -4,9 +4,9 @@ import cats.Monad
 import cats.kernel.Monoid
 import cats.syntax.traverse._
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
-import scala.concurrent.ExecutionContext.Implicits.global
 
 object FutureApp extends App {
   val future1 = Future {

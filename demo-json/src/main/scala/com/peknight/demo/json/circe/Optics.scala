@@ -1,7 +1,8 @@
 package com.peknight.demo.json.circe
 
 object Optics extends App {
-  import io.circe._, io.circe.parser._
+  import io.circe._
+  import io.circe.parser._
 
   val json: Json = parse("""
 {

@@ -4,9 +4,8 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.monad._
 import cats.{Id, Monad}
-import com.peknight.demo.cats.functor.Tree
 import com.peknight.demo.cats.functor.Tree._
-import MonadInstances._
+import com.peknight.demo.cats.monad.MonadInstances._
 
 object MonadApp extends App {
 

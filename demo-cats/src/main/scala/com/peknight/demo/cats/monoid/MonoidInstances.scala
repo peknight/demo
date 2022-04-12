@@ -1,7 +1,6 @@
 package com.peknight.demo.cats.monoid
 
 import cats.Monoid
-import cats.syntax.invariant._
 import cats.syntax.semigroup._
 
 object MonoidInstances {

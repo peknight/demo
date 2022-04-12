@@ -1,10 +1,10 @@
 package com.peknight.demo.cats.foldable
 
-import cats.{Applicative, Traverse}
 import cats.data.Validated
 import cats.syntax.applicative._
 import cats.syntax.apply._
 import cats.syntax.traverse._
+import cats.{Applicative, Traverse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt

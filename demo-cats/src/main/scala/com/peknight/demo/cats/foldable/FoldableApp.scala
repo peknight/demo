@@ -1,8 +1,8 @@
 package com.peknight.demo.cats.foldable
 
 import cats.kernel.Monoid
-import cats.syntax.semigroup._
 import cats.syntax.foldable._
+import cats.syntax.semigroup._
 import cats.{Eval, Foldable}
 
 object FoldableApp extends App {

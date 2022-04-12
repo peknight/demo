@@ -2,7 +2,6 @@ package com.peknight.demo.js.lihaoyi.handson.clientserver.simple
 
 import autowire._
 import org.scalajs.dom
-import org.scalajs.dom.ext.Ajax
 import org.scalajs.dom.html
 import scalatags.JsDom.all._
 

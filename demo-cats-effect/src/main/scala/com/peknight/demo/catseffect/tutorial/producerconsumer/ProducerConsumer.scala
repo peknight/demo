@@ -1,8 +1,7 @@
 package com.peknight.demo.catseffect.tutorial.producerconsumer
 
-import cats.effect.Deferred
-import cats.effect.std.Console
 import cats.effect._
+import cats.effect.std.Console
 import cats.syntax.all._
 
 object ProducerConsumer extends IOApp {

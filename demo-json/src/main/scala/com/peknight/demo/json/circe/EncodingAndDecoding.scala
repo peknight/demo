@@ -1,7 +1,7 @@
 package com.peknight.demo.json.circe
 
-import io.circe.syntax._
 import io.circe.parser.decode
+import io.circe.syntax._
 
 
 object EncodingAndDecoding extends App {

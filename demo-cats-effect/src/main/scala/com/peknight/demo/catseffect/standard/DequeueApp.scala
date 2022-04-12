@@ -1,9 +1,9 @@
 package com.peknight.demo.catseffect.standard
 
-import cats.{Contravariant, Functor}
-import cats.effect.{IO, IOApp}
 import cats.effect.std.{Dequeue, DequeueSink, DequeueSource}
+import cats.effect.{IO, IOApp}
 import cats.implicits.toTraverseOps
+import cats.{Contravariant, Functor}
 
 /**
  * 双端队列，可以用Functor和Contravariant作为上/下游封装

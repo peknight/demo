@@ -1,8 +1,8 @@
 package com.peknight.demo.akka.actors.introduction
 
 import akka.NotUsed
-import akka.actor.typed.{ActorSystem, Behavior, Terminated}
 import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{Behavior, Terminated}
 
 object ChatRoomMain {
     def apply(): Behavior[NotUsed] =

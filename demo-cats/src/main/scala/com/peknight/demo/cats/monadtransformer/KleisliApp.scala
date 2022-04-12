@@ -1,6 +1,5 @@
 package com.peknight.demo.cats.monadtransformer
 
-import cats.FlatMap
 import cats.data.Kleisli
 
 object KleisliApp extends App {

@@ -1,9 +1,8 @@
 package com.peknight.demo.cats.casestudy.datavalidation
 
+import cats.data.Kleisli
 import cats.syntax.either._
 import cats.syntax.validated._
-import cats.data.{Kleisli, NonEmptyList, Validated}
-import cats.syntax.apply._
 
 object DataValidationApp extends App {
   val aCheckF: CheckF[List[String], Int] = CheckF { v =>

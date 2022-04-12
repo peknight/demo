@@ -1,6 +1,6 @@
 package com.peknight.demo.catseffect.tutorial.copyfile
 
-import cats.effect.{ExitCode, IO, IOApp, Resource, Sync}
+import cats.effect._
 import cats.syntax.all._
 
 import java.io._

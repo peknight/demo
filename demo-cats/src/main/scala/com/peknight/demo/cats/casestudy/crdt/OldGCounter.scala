@@ -1,8 +1,8 @@
 package com.peknight.demo.cats.casestudy.crdt
 
 import cats.kernel.CommutativeMonoid
-import cats.syntax.semigroup._
 import cats.syntax.foldable._
+import cats.syntax.semigroup._
 
 final case class OldGCounter[A](counters: Map[String, A]) {
 

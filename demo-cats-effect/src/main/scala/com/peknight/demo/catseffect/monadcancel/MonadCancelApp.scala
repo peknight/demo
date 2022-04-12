@@ -1,8 +1,8 @@
 package com.peknight.demo.catseffect.monadcancel
 
-import cats.effect.{IO, IOApp, MonadCancel, Poll}
 import cats.effect.std.Semaphore
 import cats.effect.syntax.all._
+import cats.effect.{IO, IOApp, MonadCancel, Poll}
 import cats.syntax.all._
 
 /**
