@@ -43,5 +43,18 @@ object TransformingStreamsUsingPullsApp extends IOApp.Simple{
     _ <- IO.println(s1.pull.uncons)
     _ <- IO.println(Stream(1, 2, 3, 4).through(tk(2)).toList)
     _ <- IO.println(Stream(1, 2, 3, 4).through(tkViaTake(2)).toList)
+
+    _ <- IO.println(Stream("ok", "skip", "next ok", "skip", "told you")
+      .pull
+      // 失败时返回剩余的流数据
+      .takeWhile(o => o != "skip")
+      .flatMap {
+        case None => Pull.pure(None)
+        // 去掉第一个失败的"skip"继续
+        case Some(s) => s.drop(1).pull.echo
+      }
+      .void
+      .stream.toList
+    )
   } yield ()
 }

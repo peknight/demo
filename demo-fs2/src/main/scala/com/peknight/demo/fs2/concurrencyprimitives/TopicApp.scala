@@ -7,9 +7,12 @@ import fs2.concurrent.Topic
 object TopicApp extends IOApp.Simple {
 
   val run = for {
-    _ <- Topic[IO, String].flatMap { topic =>
-      val publisher = Stream.constant("1").covary[IO].through(topic.publish)
+    _ <- Topic[IO, Int].flatMap { topic =>
+      val publisher = Stream.iterate(1)(_ + 1).covary[IO]
+        .evalMap(value => IO.println(s"publisher: $value").as(value))
+        .through(topic.publish)
       val subscriber = topic.subscribe(10).take(4)
+        .evalMap(value => IO.println(s"subscriber: $value").as(value))
       subscriber.concurrently(publisher).compile.toVector
     } .flatMap(IO.println)
   } yield ()
