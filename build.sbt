@@ -150,7 +150,7 @@ lazy val demoApp = (project in file("demo-app"))
 lazy val demoScala3 = (project in file("demo-scala3"))
   .settings(
     name := "demo-scala3",
-    scalaVersion := "3.1.1"
+    scalaVersion := "3.1.2"
   )
 
 lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
