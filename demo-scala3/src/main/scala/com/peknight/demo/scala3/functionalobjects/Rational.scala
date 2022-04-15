@@ -2,7 +2,7 @@ package com.peknight.demo.scala3.functionalobjects
 
 import scala.annotation.tailrec
 
-class Rational(n: Int, d: Int) {
+class Rational(n: Int, d: Int) extends Ordered[Rational] {
   require(d != 0)
 
   private val g = gcd(n.abs, d.abs)
@@ -33,6 +33,8 @@ class Rational(n: Int, d: Int) {
   def lessThan(that: Rational) = this.numer * that.denom < that.numer * this.denom
 
   def max(that: Rational) = if this.lessThan(that) then that else this
+
+  def compare(that: Rational): Int = (this.numer * that.denom) - (that.numer * this.denom)
 
   @tailrec
   private def gcd(a: Int, b: Int): Int = if b == 0 then a else gcd(b, a % b)
