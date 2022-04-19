@@ -153,7 +153,11 @@ lazy val demoScala3 = (project in file("demo-scala3"))
     scalaVersion := "3.1.2",
     scalacOptions ++= Seq(
       "-language:strictEquality",
-    )
+    ),
+    libraryDependencies ++= Seq(
+      "org.scalatest" %% "scalatest" % "3.2.11" % Test,
+      "org.specs2" %% "specs2-core" % "5.0.0" % Test,
+    ),
   )
 
 lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))

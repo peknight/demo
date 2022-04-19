@@ -13,10 +13,11 @@ abstract class Element:
 
   def widen(w: Int): Element =
     if w <= width then this
-    else
+    else {
       val left = elem(' ', (w - width) / 2, height)
       val right = elem(' ', w - width - left.width, height)
       left beside this beside right
+    } ensuring (w <= _.width)
 
   def heighten(h: Int): Element =
     if h <= height then this
