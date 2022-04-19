@@ -1,6 +1,6 @@
 package com.peknight.demo.scala3.patternmatching
 
-sealed trait Expr
+sealed trait Expr derives CanEqual
 
 object Expr:
   case class Var(name: String) extends Expr

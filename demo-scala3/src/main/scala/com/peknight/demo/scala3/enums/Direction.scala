@@ -5,7 +5,7 @@ import com.peknight.demo.scala3.enums.Direction.{East, North, South, West}
 /**
  * 可以写作enum Direction extends java.lang.Enum[Direction]: 来扩展处java的枚举类型
  */
-enum Direction(val degrees: Int):
+enum Direction(val degrees: Int) derives CanEqual:
   def invert: Direction =
     this match
       case North => South
