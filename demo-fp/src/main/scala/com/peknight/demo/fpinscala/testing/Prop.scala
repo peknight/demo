@@ -96,7 +96,7 @@ object Prop {
     if (p) Proved else Falsified("()", 0)
   }
 
-  def equal[A](p: Par[A], p2: Par[A]): Par[Boolean] = Par.map2(p, p2)(_ == _)
+  def equal[A](p: Par[A], p2: Par[A])(using CanEqual[A, A]): Par[Boolean] = Par.map2(p, p2)(_ == _)
 
   val S = weighted(
     // This generator creates a fixed thread pool executor 75% of the time and an unbounded one 25% of the time.

@@ -5,7 +5,7 @@ import com.peknight.demo.fpinscala.laziness.Stream.Cons
 import com.peknight.demo.fpinscala.parallelism.Par
 import com.peknight.demo.fpinscala.parallelism.Par.Par
 import com.peknight.demo.fpinscala.state.{RNG, SimpleRNG, State}
-import com.peknight.demo.fpinscala.testing.Exhaustive.Gen._
+import com.peknight.demo.fpinscala.testing.Exhaustive.Gen.*
 import com.peknight.demo.fpinscala.testing.Exhaustive.Prop.{MaxSize, Result, TestCases, forAll}
 import com.peknight.demo.fpinscala.testing.Status.{Exhausted, Proven, Unfalsified}
 
@@ -141,7 +141,7 @@ object Exhaustive {
       p(ES).get == p2(ES).get
     }
 
-    def equal[A](p: Par[A], p2: Par[A]): Par[Boolean] =
+    def equal[A](p: Par[A], p2: Par[A])(using CanEqual[A, A]): Par[Boolean] =
       Par.map2(p,p2)(_ == _)
 
     val p3 = check {

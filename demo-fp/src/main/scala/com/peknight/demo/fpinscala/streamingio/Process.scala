@@ -13,7 +13,7 @@ import scala.annotation.tailrec
  * GeneralizeStreamTransducers
  */
 trait Process[F[_], O] {
-  import Process._
+  import Process.*
 
   def map[O2](f: O => O2): Process[F, O2] = this match {
     case Await(req, recv) => Await(req, recv andThen (_.map(f)))
@@ -136,8 +136,11 @@ object Process {
   // Halt due to err, which could be an actual error or End indicating normal termination.
   case class Halt[F[_], O](err: Throwable) extends Process[F, O]
 
-  case object End extends Exception
-  case object Kill extends Exception
+  case object End extends Exception:
+    given CanEqual[End, Throwable]
+
+  case object Kill extends Exception:
+    given CanEqual[End, Throwable]
 
   def emit[F[_], O](head: O, tail: Process[F, O] = Halt[F, O](End)): Process[F, O] = Emit(head, tail)
   def await[F[_], A, O](req: F[A])(recv: Either[Throwable, A] => Process[F, O]): Process[F, O] = Await(req, recv)

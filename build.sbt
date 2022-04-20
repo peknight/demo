@@ -60,12 +60,13 @@ lazy val demoMath = (project in file("demo-math"))
   )
 
 lazy val demoFpInScala = (project in file("demo-fp"))
-  .settings(commonSettings2)
+  .settings(commonSettings)
   .settings(
     name := "demo-fp",
     libraryDependencies ++= Seq(
-      pekCommonFp,
-      pekCommonTest,
+      scalacheck,
+//      pekCommonFp,
+//      pekCommonTest,
     ),
   )
 
@@ -255,10 +256,12 @@ val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
 
 // Test
 
+val scalacheckVersion = "1.15.4"
 val catsEffectTestingSpecsVersion = "1.4.0"
 val mUnitCatsEffectVersion = "1.0.7"
 val weaverCatsVersion = "0.7.11"
 
+val scalacheck = "org.scalacheck" %% "scalacheck" % scalacheckVersion
 val catsEffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
 val catsEffectTestingSpecs = "org.typelevel" %% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion
 val mUnitCatsEffect = "org.typelevel" %% "munit-cats-effect-3" % mUnitCatsEffectVersion
