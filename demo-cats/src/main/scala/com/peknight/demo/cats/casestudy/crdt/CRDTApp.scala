@@ -1,6 +1,6 @@
 package com.peknight.demo.cats.casestudy.crdt
 
-object CRDTApp extends App {
+object CRDTApp extends App:
   val g1 = Map("a" -> 7, "b" -> 3)
   val g2 = Map("a" -> 2, "b" -> 5)
 
@@ -11,4 +11,3 @@ object CRDTApp extends App {
 
   val total = counter.total(merged)
   println(total)
-}

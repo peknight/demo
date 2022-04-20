@@ -1,35 +1,35 @@
 package com.peknight.demo.cats.monad
 
-import cats.syntax.either._
+import cats.syntax.either.*
 
-object EitherApp extends App {
+object EitherApp extends App:
   val either1: Either[String, Int] = Right(10)
   val either2: Either[String, Int] = Right(32)
 
-  //  for {
+  //  for
   //    a <- either1.right
   //    b <- either2.right
-  //  } yield a + b
+  //  yield a + b
 
-  for {
+  for
     a <- either1
     b <- either2
-  } yield a + b
+  yield a + b
 
   val aEither = 3.asRight[String]
   val bEither = 4.asRight[String]
-  val eitherAns = for {
-    x <- aEither
-    y <- bEither
-  } yield x * x + y * y
+
+  val eitherAns =
+    for
+      x <- aEither
+      y <- bEither
+    yield x * x + y * y
+
   println(eitherAns)
 
   def countPositive(nums: List[Int]) = nums.foldLeft(0.asRight[String]) { (accumulator, num) =>
-    if (num > 0) {
-      accumulator.map(_ + 1)
-    } else {
-      Left("Negative. Stopping!")
-    }
+    if num > 0 then accumulator.map(_ + 1)
+    else Left("Negative. Stopping!")
   }
 
   println(countPositive(List(1, 2, 3)))
@@ -56,12 +56,12 @@ object EitherApp extends App {
   println(123.asRight[String].swap)
 
 
-  val divAns = for {
-    a <- 1.asRight[String]
-    b <- 0.asRight[String]
-    c <- if (b == 0) "DIV0".asLeft[Int] else (a / b).asRight[String]
-  } yield c * 100
+  val divAns =
+    for
+      a <- 1.asRight[String]
+      b <- 0.asRight[String]
+      c <- if b == 0 then "DIV0".asLeft[Int] else (a / b).asRight[String]
+    yield c * 100
   println(divAns)
 
   type Result[A] = Either[Throwable, A]
-}

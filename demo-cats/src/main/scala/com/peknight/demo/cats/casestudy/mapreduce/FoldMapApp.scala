@@ -1,23 +1,27 @@
 package com.peknight.demo.cats.casestudy.mapreduce
 
 import cats.Monoid
-import cats.syntax.foldable._
-import cats.syntax.semigroup._
-import cats.syntax.traverse._
+import cats.syntax.foldable.*
+import cats.syntax.semigroup.*
+import cats.syntax.traverse.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 
-object FoldMapApp extends App {
-  def foldMap[A, B: Monoid](values: Vector[A])(func: A => B): B = {
+object FoldMapApp extends App:
+  def foldMap[A, B: Monoid](values: Vector[A])(func: A => B): B =
 //    values.foldLeft(Monoid[B].empty)((b, a) => func(a) |+| b)
     values.map(func).foldLeft(Monoid[B].empty)(_ |+| _)
-  }
 
-  def parallelFoldMap[A, B: Monoid](values: Vector[A])(func: A => B): Future[B] = {
+  def parallelFoldMap[A, B: Monoid](values: Vector[A])(func: A => B): Future[B] =
     val numCores = Runtime.getRuntime.availableProcessors()
     val groupSize = (1.0 * values.size / numCores).ceil.toInt
+    values
+      .grouped(groupSize)
+      .toVector
+      .traverse(group => Future(group.foldMap(func)))
+      .map(_.combineAll)
 //    val groups: Iterator[Vector[A]] = values.grouped(groupSize)
 //    val futures: Iterator[Future[B]] = groups map { group =>
 //      Future {
@@ -28,12 +32,6 @@ object FoldMapApp extends App {
 //    Future.sequence(futures) map { iterable =>
 //      iterable.foldLeft(Monoid[B].empty)(_ |+| _)
 //    }
-    values
-      .grouped(groupSize)
-      .toVector
-      .traverse(group => Future(group.foldMap(func)))
-      .map(_.combineAll)
-  }
 
   println(foldMap(Vector(1, 2, 3))(identity))
 
@@ -44,4 +42,3 @@ object FoldMapApp extends App {
   val result: Future[Int] = parallelFoldMap((1 to 1000000).toVector)(identity)
 
   println(Await.result(result, 1.second))
-}

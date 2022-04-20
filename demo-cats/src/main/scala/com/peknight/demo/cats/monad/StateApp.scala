@@ -2,7 +2,7 @@ package com.peknight.demo.cats.monad
 
 import cats.data.State
 
-object StateApp extends App {
+object StateApp extends App:
 
   val a = State[Int, String] { state =>
     (state, s"The state is $state")
@@ -28,10 +28,11 @@ object StateApp extends App {
     (ans, s"Result of step2: $ans")
   }
 
-  val both = for {
-    a <- step1
-    b <- step2
-  } yield (a, b)
+  val both =
+    for
+      a <- step1
+      b <- step2
+    yield (a, b)
 
   val (stateBoth, resultBoth) = both.run(20).value
   println(stateBoth)
@@ -52,14 +53,15 @@ object StateApp extends App {
   val modifyDemo = State.modify[Int](_ + 1)
   println(modifyDemo.run(10).value)
 
-  val program: State[Int, (Int, Int, Int)] = for {
-    a <- State.get[Int]
-    _ <- State.set[Int](a + 1)
-    b <- State.get[Int]
-    _ <- State.modify[Int](_ + 1)
-    c <- State.inspect[Int, Int](_ * 1000)
-  } yield (a, b, c)
+  val program: State[Int, (Int, Int, Int)] =
+    for
+      a <- State.get[Int]
+      _ <- State.set[Int](a + 1)
+      b <- State.get[Int]
+      _ <- State.modify[Int](_ + 1)
+      c <- State.inspect[Int, Int](_ * 1000)
+    yield (a, b, c)
+
   val (stateProgram, resultProgram) = program.run(1).value
   println(stateProgram)
   println(resultProgram)
-}

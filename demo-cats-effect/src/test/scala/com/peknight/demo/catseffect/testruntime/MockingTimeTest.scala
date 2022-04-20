@@ -4,19 +4,19 @@ import cats.Id
 import cats.effect.std.Random
 import cats.effect.testkit.TestControl
 import cats.effect.{IO, Outcome}
-import cats.syntax.all._
+import cats.syntax.all.*
 import munit.CatsEffectSuite
 
 import scala.concurrent.duration.DurationInt
 
-class MockingTimeTest extends CatsEffectSuite {
+class MockingTimeTest extends CatsEffectSuite:
   test("retry at least 3 times until success") {
     case object TestException extends RuntimeException
 
     var attempts = 0
     val action = IO {
       attempts += 1
-      if (attempts != 3) throw TestException
+      if attempts != 3 then throw TestException
       else "success!"
     }
     val program = Random.scalaUtilRandom[IO].flatMap { random => MockingTimeApp.retry(action, 1.minute, 5, random) }
@@ -32,7 +32,7 @@ class MockingTimeTest extends CatsEffectSuite {
     val program = Random.scalaUtilRandom[IO].flatMap { random => MockingTimeApp.retry(action, 1.minute, 5, random) }
 
     TestControl.execute(program).flatMap { control =>
-      for {
+      for
         _ <- control.results.assertEquals(None)
         /*
          * `tick`会让`program`运行至所有的fibers都进入`sleep`或`program`完成。
@@ -49,18 +49,17 @@ class MockingTimeTest extends CatsEffectSuite {
          * 在这个场景里（每次`action`都会抛出异常进入二进制指数退避），正是我们当前退避的时间，在0到当前的`delay`之间
          */
         _ <- 0.until(4).toList.traverse { i =>
-          for {
+          for
             _ <- control.results.assertEquals(None)
             interval <- control.nextInterval
             _ <- IO(assert(interval >= 0.nanos))
             _ <- IO(assert(interval < (1 << i).minute))
             // 推进时间并执行至下一个tick完成
             _ <- control.advanceAndTick(interval)
-          } yield ()
+          yield ()
         }
         // 文档中使用的Outcome.failed(TestException)的语法没找到方式使其编译通过，这里改为使用Outcome.Errored
         _ <- control.results.assertEquals(Some(Outcome.Errored[Id, Throwable, String](TestException)))
-      } yield ()
+      yield ()
     }
   }
-}

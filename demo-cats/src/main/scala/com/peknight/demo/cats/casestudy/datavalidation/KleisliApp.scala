@@ -1,9 +1,9 @@
 package com.peknight.demo.cats.casestudy.datavalidation
 
 import cats.data.{Kleisli, NonEmptyList}
-import cats.syntax.apply._
+import cats.syntax.apply.*
 
-object KleisliApp extends App {
+object KleisliApp extends App:
   type Errors = NonEmptyList[String]
   type Result[A] = Either[Errors, A]
   type Check[A, B] = Kleisli[Result, A, B]
@@ -16,7 +16,7 @@ object KleisliApp extends App {
 
   def longerThan(n: Int): Predicate[Errors, String] = Predicate.lift(
     error(s"Must be longer than $n characters"),
-    _.size > n
+    _.length > n
   )
 
   val alphanumeric: Predicate[Errors, String] = Predicate.lift(
@@ -31,17 +31,15 @@ object KleisliApp extends App {
 
   def containsOnce(char: Char): Predicate[Errors, String] = Predicate.lift(
     error(s"Must contain the character $char only once"),
-    str => str.filter(c => c == char).size == 1
+    str => str.count(_ == char) == 1
   )
 
   val checkUsername: Check[String, String] = checkPred(longerThan(3) and alphanumeric)
 
-  val splitEmail: Check[String, (String, String)] = check(_.split('@') match {
-    case Array(name, domain) =>
-      Right((name, domain))
-    case _ =>
-      Left(error("Must contain a single @ character"))
-  })
+  val splitEmail: Check[String, (String, String)] = check { _.split('@') match
+    case Array(name, domain) => Right((name, domain))
+    case _ => Left(error("Must contain a single @ character"))
+  }
 
   val checkLeft: Check[String, String] = checkPred(longerThan(0))
 
@@ -58,5 +56,3 @@ object KleisliApp extends App {
 
   println(createUser("Noel", "noel@underscore.io"))
   println(createUser("", "dave@underscore.io@io"))
-
-}

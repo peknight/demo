@@ -7,6 +7,7 @@ object TypeClassesApp extends App:
   val orangeTwo = Orange(2)
   // println(appleTwo == orangeTwo)
   val street = Street("123 Main St")
+  import scala.language.implicitConversions
   val streetStr: String = street
   println(streetStr)
 

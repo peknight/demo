@@ -1,11 +1,11 @@
 package com.peknight.demo.cats.casestudy.datavalidation
 
 import cats.data.{NonEmptyList, Validated}
-import cats.syntax.apply._
-import cats.syntax.validated._
+import cats.syntax.apply.*
+import cats.syntax.validated.*
 
 final case class User(username: String, email: String)
-object User {
+object User:
   type Errors = NonEmptyList[String]
 
   def createUser(username: String, email: String): Validated[Errors, User] =
@@ -15,7 +15,7 @@ object User {
 
   def longerThan(n: Int): Predicate[Errors, String] = Predicate.lift(
     error(s"Must be longer than $n characters"),
-    _.size > n
+    _.length > n
   )
 
   val alphanumeric: Predicate[Errors, String] = Predicate.lift(
@@ -30,15 +30,15 @@ object User {
 
   def containsOnce(char: Char): Predicate[Errors, String] = Predicate.lift(
     error(s"Must contain the character $char only once"),
-    str => str.filter(c => c == char).size == 1
+    str => str.count(_ == char) == 1
   )
 
   val checkUsername: Check[Errors, String, String] = Check(longerThan(3) and alphanumeric)
 
-  val splitEmail: Check[Errors, String, (String, String)] = Check(_.split('@') match {
+  val splitEmail: Check[Errors, String, (String, String)] = Check { _.split('@') match
     case Array(name, domain) => (name, domain).validNel[String]
     case _ => "Must contain a single @ character".invalidNel[(String, String)]
-  })
+  }
 
   val checkLeft: Check[Errors, String, String] = Check(longerThan(0))
 
@@ -49,4 +49,3 @@ object User {
   }
 
   val checkEmail: Check[Errors, String, String] = splitEmail andThen joinEmail
-}

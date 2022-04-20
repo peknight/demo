@@ -1,4 +1,3 @@
 package com.peknight.demo.app
 
-object DemoApp extends App {
-}
+object DemoApp extends App

@@ -1,12 +1,13 @@
 package com.peknight.demo.cats.functor
 
-import cats.syntax.contravariant._
-import cats.syntax.functor._
+import cats.syntax.contravariant.*
+import cats.syntax.functor.*
 import cats.{Contravariant, Show}
 import com.peknight.demo.cats.introduction.Printable.format
-import com.peknight.demo.cats.introduction.PrintableInstances._
+import com.peknight.demo.cats.introduction.PrintableInstances.given
 
-object ContravariantApp extends App {
+object ContravariantApp extends App:
+
   println(format("hello"))
   println(format(true))
   println(format(Box("hello world")))
@@ -31,18 +32,17 @@ object ContravariantApp extends App {
   // won't compile
   // import cats.syntax.contravariant._
   // val func3c: Int => Double = func2.contramap(func1)
-//  type F[A] = A => Double
+  // type F[A] = A => Double
 
   type <=[B, A] = A => B
   type F[A] = Double <= A
 
   val func2b: Double <= Double = func2
 
-//  (Double => Double).contramap(Int => Double)
+  // (Double => Double).contramap(Int => Double)
   val func3c = func2b.contramap(func1)
   println(func3c(10))
 
   val func4: Boolean <= Double = _ > 0
   val func5 = func4.contramap(func1)
   println(func5(10))
-}

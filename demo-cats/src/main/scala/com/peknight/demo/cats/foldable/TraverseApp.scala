@@ -1,16 +1,16 @@
 package com.peknight.demo.cats.foldable
 
 import cats.data.Validated
-import cats.syntax.applicative._
-import cats.syntax.apply._
-import cats.syntax.traverse._
+import cats.syntax.applicative.*
+import cats.syntax.apply.*
+import cats.syntax.traverse.*
 import cats.{Applicative, Traverse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 
-object TraverseApp extends App {
+object TraverseApp extends App:
   val hostnames = List(
     "alpha.example.com",
     "beta.example.com",
@@ -22,10 +22,10 @@ object TraverseApp extends App {
   val allUptimesByFold: Future[List[Int]] = hostnames.foldLeft(Future(List.empty[Int])) {
     (accum, host) =>
       val uptime = getUptime(host)
-      for {
+      for
         accum <- accum
         uptime <- uptime
-      } yield accum :+ uptime
+      yield accum :+ uptime
   }
   println(Await.result(allUptimesByFold, 1.second))
 
@@ -35,17 +35,15 @@ object TraverseApp extends App {
   Future(List.empty[Int])
   List.empty[Int].pure[Future]
 
-  def oldCombine(accum: Future[List[Int]], host: String): Future[List[Int]] = {
+  def oldCombine(accum: Future[List[Int]], host: String): Future[List[Int]] =
     val uptime = getUptime(host)
-    for {
+    for
       accum <- accum
       uptime <- uptime
-    } yield accum :+ uptime
-  }
+    yield accum :+ uptime
 
-  def newCombine(accum: Future[List[Int]], host: String): Future[List[Int]] = {
+  def newCombine(accum: Future[List[Int]], host: String): Future[List[Int]] =
     (accum, getUptime(host)).mapN(_ :+ _)
-  }
 
   def listTraverse[F[_]: Applicative, A, B](list: List[A])(func: A => F[B]): F[List[B]] =
     list.foldLeft(List.empty[B].pure[F]) { (accum, item) =>
@@ -62,7 +60,7 @@ object TraverseApp extends App {
   println(listSequence(List(Vector(1, 2), Vector(3, 4), Vector(5, 6))))
 
   def processOption(inputs: List[Int]) =
-    listTraverse(inputs)(n => if (n % 2 == 0) Some(n) else None)
+    listTraverse(inputs)(n => if n % 2 == 0 then Some(n) else None)
 
   println(processOption(List(2, 4, 6)))
   println(processOption(List(1, 2, 3)))
@@ -70,11 +68,8 @@ object TraverseApp extends App {
   type ErrorsOr[A] = Validated[List[String], A]
 
   def processValidated(inputs: List[Int]): ErrorsOr[List[Int]] = listTraverse(inputs) { n =>
-    if (n % 2 == 0) {
-      Validated.valid(n)
-    } else {
-      Validated.invalid(List(s"$n is not even"))
-    }
+    if n % 2 == 0 then Validated.valid(n)
+    else Validated.invalid(List(s"$n is not even"))
   }
 
   println(processValidated(List(2, 4, 6)))
@@ -94,4 +89,3 @@ object TraverseApp extends App {
   // 这里要把泛型带上，否则编译不通过
   println(Await.result(numbers.sequence[Future, Int], 1.second))
 //  println(Await.result(numbers.sequence, 1.second)) // 编译失败
-}

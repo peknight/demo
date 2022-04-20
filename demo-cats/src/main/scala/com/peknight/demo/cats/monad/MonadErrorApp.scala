@@ -1,15 +1,15 @@
 package com.peknight.demo.cats.monad
 
 import cats.MonadError
-import cats.syntax.applicative._
-import cats.syntax.applicativeError._
-import cats.syntax.monadError._
+import cats.syntax.applicative.*
+import cats.syntax.applicativeError.*
+import cats.syntax.monadError.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Try
 
-object MonadErrorApp extends App {
+object MonadErrorApp extends App:
 
   type ErrorOr[A] = Either[String, A]
 
@@ -44,8 +44,8 @@ object MonadErrorApp extends App {
   println(exn.raiseError[Try, Int])
   println(exn.raiseError[Future, Int])
 
-  def validateAdult[F[_]](age: Int)(implicit me: MonadError[F, Throwable]): F[Int] =
-    if (age >= 18) age.pure[F]
+  def validateAdult[F[_]](age: Int)(using me: MonadError[F, Throwable]): F[Int] =
+    if age >= 18 then age.pure[F]
     else new IllegalArgumentException("Age must be greater than or equal to 18").raiseError[F, Int]
 
   println(validateAdult[Try](18))
@@ -53,4 +53,3 @@ object MonadErrorApp extends App {
 
   type ExceptionOr[A] = Either[Throwable, A]
   println(validateAdult[ExceptionOr](-1))
-}

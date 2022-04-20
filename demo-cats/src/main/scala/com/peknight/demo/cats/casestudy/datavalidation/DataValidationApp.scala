@@ -1,17 +1,18 @@
 package com.peknight.demo.cats.casestudy.datavalidation
 
 import cats.data.Kleisli
-import cats.syntax.either._
-import cats.syntax.validated._
+import cats.syntax.either.*
+import cats.syntax.validated.*
 
-object DataValidationApp extends App {
+object DataValidationApp extends App:
+
   val aCheckF: CheckF[List[String], Int] = CheckF { v =>
-    if (v > 2) v.asRight
+    if v > 2 then v.asRight
     else List("Must be > 2").asLeft
   }
 
   val bCheckF: CheckF[List[String], Int] = CheckF { v =>
-    if (v < -2) v.asRight
+    if v < -2 then v.asRight
     else List("Must be < -2").asLeft
   }
 
@@ -21,12 +22,12 @@ object DataValidationApp extends App {
   println(checkF(0))
 
   val a: OldCheck[List[String], Int] = OldCheck.pure { v =>
-    if (v > 2) v.valid
+    if v > 2 then v.valid
     else List("Must be > 2").invalid
   }
 
   val b: OldCheck[List[String], Int] = OldCheck.pure { v =>
-    if (v < -2) v.valid
+    if v < -2 then v.valid
     else List("Must be < -2").invalid
   }
 
@@ -47,4 +48,3 @@ object DataValidationApp extends App {
   val pipeline = step1 andThen step2 andThen step3
 
   println(pipeline.run(20))
-}

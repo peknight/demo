@@ -1,14 +1,14 @@
 package com.peknight.demo.cats.monad
 
 import cats.data.Writer
-import cats.syntax.applicative._
-import cats.syntax.writer._
+import cats.syntax.applicative.*
+import cats.syntax.writer.*
 
+import scala.concurrent.*
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent._
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
-object WriteApp extends App {
+object WriteApp extends App:
   println(Writer(Vector(
     "It was the best of times",
     "it was the worst of times"
@@ -30,11 +30,12 @@ object WriteApp extends App {
   println(result)
   println(log)
 
-  val writer1 = for {
-    a <- 10.pure[Logged]
-    _ <- Vector("a", "b", "c").tell
-    b <- 32.writer(Vector("x", "y", "z"))
-  } yield a + b
+  val writer1 =
+    for
+      a <- 10.pure[Logged]
+      _ <- Vector("a", "b", "c").tell
+      b <- 32.writer(Vector("x", "y", "z"))
+    yield a + b
   println(writer1.run)
 
   println(10.pure[Logged].flatMap(a =>
@@ -69,11 +70,11 @@ object WriteApp extends App {
 
   def slowly[A](body: => A) = try body finally Thread.sleep(100)
 
-  def factorial(n: Int): Int = {
-    val ans = slowly(if (n == 0) 1 else n * factorial(n - 1))
+  def factorial(n: Int): Int =
+    val ans = slowly(if n == 0 then 1 else n * factorial(n - 1))
     println(s"fact $n $ans")
     ans
-  }
+
   println(factorial(5))
 
   println(Await.result(Future.sequence(Vector(
@@ -82,10 +83,10 @@ object WriteApp extends App {
   )), 5.seconds))
 
   def factorialWithLog(n: Int): Logged[Int] =
-    for {
-      ans <- if (n == 0) 1.pure[Logged] else slowly(factorialWithLog(n - 1).map(_ * n))
+    for
+      ans <- if n == 0 then 1.pure[Logged] else slowly(factorialWithLog(n - 1).map(_ * n))
       _ <- Vector(s"fact $n $ans").tell
-    } yield ans
+    yield ans
 
   val (logFactorial, res) = factorialWithLog(5).run
   println(logFactorial)
@@ -95,4 +96,3 @@ object WriteApp extends App {
     Future(factorialWithLog(5)),
     Future(factorialWithLog(5))
   )), 5.seconds))
-}

@@ -1,13 +1,14 @@
 package com.peknight.demo.cats.monad
 
 import cats.Monad
-import cats.syntax.applicative._
+import cats.syntax.applicative.*
 
-object ListApp extends App {
-  val listFlatMap1 = for {
-    x <- (1 to 3).toList
-    y <- (4 to 5).toList
-  } yield (x, y)
+object ListApp extends App:
+  val listFlatMap1 =
+    for
+      x <- (1 to 3).toList
+      y <- (4 to 5).toList
+    yield (x, y)
 
   println(listFlatMap1)
 
@@ -21,4 +22,3 @@ object ListApp extends App {
   println(Monad[Vector].flatMap(Vector(1, 2, 3))(a => Vector(a, a * 10)))
 
   1.pure[List]
-}

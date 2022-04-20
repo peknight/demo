@@ -3,7 +3,7 @@ package com.peknight.demo.akka.actors.introduction
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 
-object HelloWorld {
+object HelloWorld:
 
   final case class Greet(whom: String, replyTo: ActorRef[Greeted])
 
@@ -14,4 +14,3 @@ object HelloWorld {
     message.replyTo ! Greeted(message.whom, context.self)
     Behaviors.same
   }
-}

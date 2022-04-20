@@ -7,8 +7,9 @@ ThisBuild / organization := "com.peknight"
 Docker / packageName := "pek/demo"
 Docker / maintainer := "peknight <JKpeknight@gmail.com>"
 
-lazy val commonSettings = Seq(
+lazy val commonSettings2 = Seq(
   addCompilerPlugin(kindProjector),
+  scalaVersion := "2.13.8",
   scalacOptions ++= Seq(
     "-feature",
     "-deprecation",
@@ -19,17 +20,29 @@ lazy val commonSettings = Seq(
   ),
 )
 
+lazy val commonSettings = Seq(
+  scalaVersion := "3.1.2",
+  scalacOptions ++= Seq(
+    "-feature",
+    "-deprecation",
+    "-unchecked",
+    "-Xfatal-warnings",
+    "-language:strictEquality",
+    //    "-Ywarn-value-discard",
+  ),
+)
+
 lazy val demo = (project in file("."))
   .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoFs2, demoMonocle, demoJson, demoAkka,
     demoRx, demoAsync, demoApp, demoScala3, demoJs.jvm, demoJs.js)
   .enablePlugins(JavaAppPackaging)
-  .settings(commonSettings)
+  .settings(commonSettings2)
   .settings(
     name := "demo",
   )
 
 lazy val demoCore = (project in file("demo-core"))
-  .settings(commonSettings)
+  .settings(commonSettings2)
   .settings(
     name := "demo-core",
     libraryDependencies ++= Seq(
@@ -38,7 +51,7 @@ lazy val demoCore = (project in file("demo-core"))
   )
 
 lazy val demoMath = (project in file("demo-math"))
-  .settings(commonSettings)
+  .settings(commonSettings2)
   .settings(
     name := "demo-math",
     libraryDependencies ++= Seq(
@@ -47,7 +60,7 @@ lazy val demoMath = (project in file("demo-math"))
   )
 
 lazy val demoFpInScala = (project in file("demo-fp"))
-  .settings(commonSettings)
+  .settings(commonSettings2)
   .settings(
     name := "demo-fp",
     libraryDependencies ++= Seq(
@@ -61,7 +74,7 @@ lazy val demoCats = (project in file("demo-cats"))
   .settings(
     name := "demo-cats",
     libraryDependencies ++= Seq(
-      pekCommonFp,
+      catsCore,
     ),
   )
 
@@ -70,14 +83,16 @@ lazy val demoCatsEffect = (project in file("demo-cats-effect"))
   .settings(
     name := "demo-cats-effect",
     libraryDependencies ++= Seq(
-      pekCommonFp,
-      pekCommonLog,
-      pekCommonTest % Test,
+      catsEffect,
+      catsEffectTestkit % Test,
+      catsEffectTestingSpecs % Test,
+      mUnitCatsEffect % Test,
+      weaverCats % Test,
     ),
   )
 
 lazy val demoFs2 = (project in file("demo-fs2"))
-  .settings(commonSettings)
+  .settings(commonSettings2)
   .settings(
     name := "demo-fs2",
     libraryDependencies ++= Seq(
@@ -86,7 +101,7 @@ lazy val demoFs2 = (project in file("demo-fs2"))
   )
 
 lazy val demoMonocle = (project in file("demo-monocle"))
-  .settings(commonSettings)
+  .settings(commonSettings2)
   .settings(
     name := "demo-monocle",
     libraryDependencies ++= Seq(
@@ -95,7 +110,7 @@ lazy val demoMonocle = (project in file("demo-monocle"))
   )
 
 lazy val demoJson = (project in file("demo-json"))
-  .settings(commonSettings)
+  .settings(commonSettings2)
   .settings(
     name := "demo-json",
     libraryDependencies ++= Seq(
@@ -104,18 +119,19 @@ lazy val demoJson = (project in file("demo-json"))
   )
 
 lazy val demoAkka = (project in file("demo-akka"))
-  .dependsOn(demoCore)
+//  .dependsOn(demoCore)
   .settings(commonSettings)
   .settings(
     name := "demo-akka",
     libraryDependencies ++= Seq(
-      pekCommonAkka,
+      akkaActorTyped,
+      logbackClassic,
     ),
   )
 
 lazy val demoRx = (project in file("demo-rx"))
   .dependsOn(demoCore)
-  .settings(commonSettings)
+  .settings(commonSettings2)
   .settings(
     name := "demo-rx",
     libraryDependencies ++= Seq(
@@ -125,21 +141,20 @@ lazy val demoRx = (project in file("demo-rx"))
   )
 
 lazy val demoAsync = (project in file("demo-async"))
-  .dependsOn(demoCore)
-  .settings(commonSettings)
+  .settings(commonSettings2)
   .settings(
     name := "demo-async",
     scalacOptions ++= Seq(
       "-Xasync",
     ),
     libraryDependencies ++= Seq(
-      "org.scala-lang.modules" %% "scala-async" % "1.0.0",
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided,
+      scalaAsync,
+      scalaReflect % Provided,
     ),
   )
 
 lazy val demoApp = (project in file("demo-app"))
-  .dependsOn(demoCore)
+//  .dependsOn(demoCore)
   .settings(commonSettings)
   .settings(
     name := "demo-app",
@@ -148,21 +163,18 @@ lazy val demoApp = (project in file("demo-app"))
   )
 
 lazy val demoScala3 = (project in file("demo-scala3"))
+//  .dependsOn(demoCore)
+  .settings(commonSettings)
   .settings(
     name := "demo-scala3",
-    scalaVersion := "3.1.2",
-    scalacOptions ++= Seq(
-      "-language:strictEquality",
-    ),
     libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.2.11" % Test,
-      "org.specs2" %% "specs2-core" % "5.0.0" % Test,
+      scalaTest % Test,
     ),
   )
 
 lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
 //  .enablePlugins(ScalaJSPlugin) crossProject下看起来不需要设置
-  .settings(commonSettings)
+  .settings(commonSettings2)
   .settings(
     name := "demo-js",
     scalacOptions ++= Seq(
@@ -202,6 +214,20 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
 val kindProjectorVersion = "0.13.2"
 val pekCommonVersion = "0.1-SNAPSHOT"
 
+val scalaTestVersion = "3.2.11"
+
+val catsVersion = "2.7.0"
+val catsEffectVersion = "3.3.11"
+val catsEffectTestingSpecsVersion = "1.4.0"
+val mUnitCatsEffectVersion = "1.0.7"
+val weaverCatsVersion = "0.7.11"
+
+val logbackVersion = "1.2.11"
+val akkaVersion = "2.6.19"
+
+val scalaAsyncVersion = "1.0.1"
+val scalaReflectVersion = "2.13.8"
+
 val kindProjector = "org.typelevel" % "kind-projector" % kindProjectorVersion cross CrossVersion.full
 val pekCommonCore = "com.peknight" %% "common-core" % pekCommonVersion
 val pekCommonLog = "com.peknight" %% "common-log" % pekCommonVersion
@@ -210,3 +236,18 @@ val pekCommonFp = "com.peknight" %% "common-fp" % pekCommonVersion
 val pekCommonTest = "com.peknight" %% "common-test" % pekCommonVersion
 val pekCommonJson = "com.peknight" %% "common-json" % pekCommonVersion
 val pekCommonAkka = "com.peknight" %% "common-akka" % pekCommonVersion
+
+val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
+
+val catsCore = "org.typelevel" %% "cats-core" % catsVersion
+val catsEffect = "org.typelevel" %% "cats-effect" % catsEffectVersion withSources() withJavadoc()
+val catsEffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
+val catsEffectTestingSpecs = "org.typelevel" %% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion
+val mUnitCatsEffect = "org.typelevel" %% "munit-cats-effect-3" % mUnitCatsEffectVersion
+val weaverCats = "com.disneystreaming" %% "weaver-cats" % weaverCatsVersion
+
+val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
+val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
+
+val scalaAsync = "org.scala-lang.modules" %% "scala-async" % scalaAsyncVersion
+val scalaReflect = "org.scala-lang" % "scala-reflect" % scalaReflectVersion

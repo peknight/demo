@@ -1,15 +1,14 @@
 package com.peknight.demo.cats.monoid
 
+import cats.{Monoid, Semigroup}
+import cats.syntax.semigroup.*
 
-object MonoidApp extends App {
+object MonoidApp extends App:
 //  import com.peknight.demo.cats.monoid.MonoidInstances.{intSetMonoid, strSetMonoid}
 //  println(intSetMonoid.combine(Set(1, 2), Set(2, 3)))
 //  println(strSetMonoid.combine(Set("A", "B"), Set("B", "C")))
-  import cats.Monoid
   println(Monoid[String].combine("Hi ", "there"))
   Monoid[String].empty
-
-  import cats.Semigroup
 
   println(Semigroup[String].combine("Hi ", "there"))
 
@@ -20,7 +19,6 @@ object MonoidApp extends App {
   println(Monoid[Option[Int]].combine(a, b))
   println(Monoid[Option[Int]].combine(a, Option.empty[Int]))
 
-  import cats.syntax.semigroup._
 
   val intResult = 1 |+| 2 |+| Monoid[Int].empty
   println(intResult)
@@ -30,7 +28,7 @@ object MonoidApp extends App {
 //  }
 
 
-//  def add[A](items: Seq[A])(implicit m: Monoid[A]): A = {
+//  def add[A](items: Seq[A])(using m: Monoid[A]): A = {
 //    items.foldLeft(m.empty)(_ |+| _)
 //  }
 
@@ -38,6 +36,3 @@ object MonoidApp extends App {
 
   println(add(List(1, 2, 3, 4, 5)))
   println(add(List(Option(1), Option(2), Option(3), Option.empty)))
-
-
-}

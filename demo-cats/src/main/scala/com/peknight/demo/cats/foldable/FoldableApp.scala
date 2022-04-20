@@ -1,13 +1,12 @@
 package com.peknight.demo.cats.foldable
 
 import cats.kernel.Monoid
-import cats.syntax.foldable._
-import cats.syntax.semigroup._
+import cats.syntax.foldable.*
+import cats.syntax.semigroup.*
 import cats.{Eval, Foldable}
 
-object FoldableApp extends App {
-  def show[A](list: List[A]): String =
-    list.foldLeft("nil")((accum, item) => s"$item then $accum")
+object FoldableApp extends App:
+  def show[A](list: List[A]): String = list.foldLeft("nil")((accum, item) => s"$item then $accum")
 
   println(show(Nil))
   println(show(List(1, 2, 3)))
@@ -26,11 +25,11 @@ object FoldableApp extends App {
   def flatMap[A, B](list: List[A])(func: A => List[B]): List[B] = list.foldRight(List.empty[B])(func(_) ::: _)
 
   def filter[A](list: List[A])(func: A => Boolean): List[A] = list.foldRight(List.empty[A]) { (item, accum) =>
-    if (func(item)) item :: accum else accum
+    if func(item) then item :: accum else accum
   }
 
-  def sum[A](list: List[A])(implicit m: Monoid[A]) = list.foldRight(m.empty)(_ |+| _)
-  def sumWithNumeric[A](list: List[A])(implicit numeric: Numeric[A]): A = list.foldRight(numeric.zero)(numeric.plus)
+  def sum[A](list: List[A])(using m: Monoid[A]) = list.foldRight(m.empty)(_ |+| _)
+  def sumWithNumeric[A](list: List[A])(using numeric: Numeric[A]): A = list.foldRight(numeric.zero)(numeric.plus)
   def sumWithFoldable[F[_]: Foldable](values: F[Int]): Int = values.foldLeft(0)(_ + _)
 
   println(map(List(1, 2, 3))(i => s"$i!"))
@@ -71,6 +70,4 @@ object FoldableApp extends App {
   println(List(1, 2, 3).combineAll)
   println(List(1, 2, 3).foldMap(_.toString))
 
-  println(List(1, 2, 3).foldLeft(0)(_ + _))
-
-}
+  println(List(1, 2, 3).sum)

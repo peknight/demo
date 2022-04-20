@@ -1,23 +1,23 @@
 package com.peknight.demo.cats.monad
 
 import cats.data.Reader
-import cats.syntax.applicative._
+import cats.syntax.applicative.*
 
-object ReaderApp extends App {
+object ReaderApp extends App:
 
   val catName: Reader[Cat, String] = Reader(_.name)
   println(catName.run(Cat("Garfield", "lasagne")))
 
-  val greetKitty: Reader[Cat, String] = catName.map(name => s"Hello ${name}")
+  val greetKitty: Reader[Cat, String] = catName.map(name => s"Hello $name")
   println(greetKitty.run(Cat("Garfield", "lasagne")))
 
   val feedKitty: Reader[Cat, String] = Reader(cat => s"Have a nice bowl of ${cat.favoriteFood}")
 
   val greetAndFeed: Reader[Cat, String] =
-    for {
+    for
       greet <- greetKitty
       feed <- feedKitty
-    } yield s"$greet. $feed."
+    yield s"$greet. $feed."
 
   println(greetAndFeed(Cat("Garfield", "lasagne")))
   println(greetAndFeed(Cat("Heathcliff", "junk food")))
@@ -30,14 +30,13 @@ object ReaderApp extends App {
     db.passwords.get(username).contains(password)
   )
 
-  def checkLogin(userId: Int, password: String): DbReader[Boolean] = {
-    for {
+  def checkLogin(userId: Int, password: String): DbReader[Boolean] =
+    for
       usernameOption <- findUsername(userId)
       passwordOk <- usernameOption
         .map(username => checkPassword(username, password))
         .getOrElse(false.pure[DbReader])
-    } yield passwordOk
-  }
+    yield passwordOk
 
   val users = Map(
     1 -> "dade",
@@ -55,4 +54,3 @@ object ReaderApp extends App {
 
   println(checkLogin(1, "zerocool").run(db))
   println(checkLogin(4, "davinci").run(db))
-}

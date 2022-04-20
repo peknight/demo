@@ -2,9 +2,9 @@ package com.peknight.demo.akka.actors.introduction
 
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.{Behaviors, LoggerOps}
+import com.peknight.demo.akka.actors.introduction.ChatRoom.*
 
-object Gabbler {
-  import ChatRoom._
+object Gabbler :
 
   def apply(): Behavior[SessionEvent] =
     Behaviors.setup { context =>
@@ -19,5 +19,4 @@ object Gabbler {
           Behaviors.unhandled
       }
     }
-}
 

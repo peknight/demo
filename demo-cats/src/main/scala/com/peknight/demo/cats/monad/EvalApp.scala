@@ -2,27 +2,27 @@ package com.peknight.demo.cats.monad
 
 import cats.Eval
 
-object EvalApp extends App {
-  val x = {
+object EvalApp extends App:
+  val x =
     println("Computing X")
     math.random()
-  }
+
   println("before print x")
   println(x)
   println(x)
 
-  def y = {
+  def y =
     println("Computing Y")
     math.random()
-  }
+
   println("before print y")
   println(y)
   println(y)
 
-  lazy val z = {
+  lazy val z =
     println("Computing Z")
     math.random()
-  }
+
   println("before print z")
   println(z)
   println(z)
@@ -72,13 +72,14 @@ object EvalApp extends App {
   println(greeting.value)
   println(greeting.value)
 
-  val ans = for {
-    a <- Eval.now { println("Calculating A"); 40 }
-    b <- Eval.always { println("Calculating B"); 2 }
-  } yield {
-    println("Adding A and B")
-    a + b
-  }
+  val ans =
+    for
+      a <- Eval.now { println("Calculating A"); 40 }
+      b <- Eval.always { println("Calculating B"); 2 }
+    yield
+      println("Adding A and B")
+      a + b
+
   println("before print ans")
   println(ans.value)
   println(ans.value)
@@ -92,18 +93,16 @@ object EvalApp extends App {
   println(saying.value)
   println(saying.value)
 
-  def factorial(n: BigInt): Eval[BigInt] = if (n == 1) Eval.now(n) else Eval.defer(factorial(n - 1).map(_ * n))
+  def factorial(n: BigInt): Eval[BigInt] = if n == 1 then Eval.now(n) else Eval.defer(factorial(n - 1).map(_ * n))
   // println(factorial(50000).value) // 卧槽
 
-  def foldRight[A, B](as: List[A], acc: B)(fn: (A, B) => B): B = as match {
+  def foldRight[A, B](as: List[A], acc: B)(fn: (A, B) => B): B = as match
     case head :: tail => fn(head, foldRight(tail, acc)(fn))
     case Nil => acc
-  }
 
-  def foldRightEval[A, B](as: List[A], acc: Eval[B])(fn: (A, Eval[B]) => Eval[B]): Eval[B] = as match {
+  def foldRightEval[A, B](as: List[A], acc: Eval[B])(fn: (A, Eval[B]) => Eval[B]): Eval[B] = as match
     case head :: tail => Eval.defer(fn(head, foldRightEval(tail, acc)(fn)))
     case Nil => acc
-  }
 
   def foldRightWithEval[A, B](as: List[A], acc: B)(fn: (A, B) => B): B =
     foldRightEval(as, Eval.now(acc)) { (a, b) =>
@@ -111,4 +110,3 @@ object EvalApp extends App {
     }.value
 
   println(foldRightWithEval((1 to 100000).toList, 0L)(_ + _))
-}

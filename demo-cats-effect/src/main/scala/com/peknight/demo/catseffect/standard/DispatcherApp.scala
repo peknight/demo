@@ -3,46 +3,40 @@ package com.peknight.demo.catseffect.standard
 import cats.effect.std.{Dispatcher, Queue}
 import cats.effect.{IO, IOApp}
 
-object DispatcherApp extends IOApp.Simple {
+object DispatcherApp extends IOApp.Simple:
 
-  abstract class ImpureInterface {
+  abstract class ImpureInterface:
     def onMessage(msg: String): Unit
+    def init(): Unit = onMessage("init")
 
-    def init(): Unit = {
-      onMessage("init")
-    }
-  }
+  //noinspection DuplicatedCode
+  val queueDemo =
+    for
+      queue <- Queue.unbounded[IO, String]
+      impureInterface = new ImpureInterface:
+        // This returns an IO, so nothing really happens
+        override def onMessage(msg: String): Unit = queue.offer(msg)
+      _ <- IO.delay(impureInterface.init())
+      value <- queue.tryTake
+      _ <- value match
+        case Some(v) => IO.println(s"Value found in queue! $v")
+        case None => IO.println("Value not found in queue :(")
+    yield ()
 
-  val queueDemo = for {
-    queue <- Queue.unbounded[IO, String]
-    impureInterface = new ImpureInterface {
-      // This returns an IO, so nothing really happens
-      override def onMessage(msg: String): Unit = queue.offer(msg)
-    }
-    _ <- IO.delay(impureInterface.init())
-    value <- queue.tryTake
-    _ <- value match {
-      case Some(v) => IO.println(s"Value found in queue! $v")
-      case None => IO.println("Value not found in queue :(")
-    }
-  } yield ()
-
+  //noinspection DuplicatedCode
   val dispatcherDemo = Dispatcher[IO].use { dispatcher =>
-    for {
+    for
       queue <- Queue.unbounded[IO, String]
       impureInterface <- IO.delay {
-        new ImpureInterface {
+        new ImpureInterface:
           override def onMessage(msg: String): Unit = dispatcher.unsafeRunSync(queue.offer(msg))
-        }
       }
       _ <- IO.delay(impureInterface.init())
       value <- queue.tryTake
-      _ <- value match {
+      _ <- value match
         case Some(v) => IO.println(s"Value found in queue! $v")
         case None => IO.println("Value not found in queue :(")
-      }
-    } yield ()
+    yield ()
   }
 
   val run = dispatcherDemo
-}

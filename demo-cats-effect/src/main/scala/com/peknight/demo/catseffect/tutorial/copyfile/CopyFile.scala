@@ -1,11 +1,11 @@
 package com.peknight.demo.catseffect.tutorial.copyfile
 
-import cats.effect._
-import cats.syntax.all._
+import cats.effect.*
+import cats.syntax.all.*
 
-import java.io._
+import java.io.*
 
-object CopyFile extends IOApp {
+object CopyFile extends IOApp:
 
   def inputStream[F[_]: Sync](f: File): Resource[F, FileInputStream] = Resource.make {
     Sync[F].blocking(new FileInputStream(f))
@@ -19,10 +19,11 @@ object CopyFile extends IOApp {
     Sync[F].blocking(outStream.close()).handleError(_ => Sync[F].unit)
   }
 
-  def inoutOutputStream[F[_]: Sync](in: File, out: File): Resource[F, (InputStream, OutputStream)] = for {
-    inStream <- inputStream(in)
-    outStream <- outputStream(out)
-  } yield (inStream, outStream)
+  def inoutOutputStream[F[_]: Sync](in: File, out: File): Resource[F, (InputStream, OutputStream)] =
+    for
+      inStream <- inputStream(in)
+      outStream <- outputStream(out)
+    yield (inStream, outStream)
 
   // `fromAutoCloseable`这种方式虽然简洁一些，但不像`make`方式那样可以使用handleErrorWith处理关闭时的异常
   def inputStreamViaFromAutoCloseable(f: File): Resource[IO, FileInputStream] =
@@ -38,7 +39,7 @@ object CopyFile extends IOApp {
    * 而上面使用Resource的方式通过flatMap决定输出流打开失败也会自动关闭输入流
    * 所以用到bracket方式的地方都要考虑是否可以用上面Resource的方式替换
    */
-  def copyWithBracket(origin: File, destination: File): IO[Long] = {
+  def copyWithBracket(origin: File, destination: File): IO[Long] =
     val inIO: IO[InputStream] = IO(new FileInputStream(origin))
     val outIO: IO[OutputStream] = IO(new FileOutputStream(destination))
     (inIO, outIO).tupled.bracket {
@@ -47,27 +48,23 @@ object CopyFile extends IOApp {
       case (in, out) =>
         (IO(in.close()), IO(out.close())).tupled.handleErrorWith(_ => IO.unit).void
     }
-  }
 
   def transfer[F[_]: Sync](origin: InputStream, destination: OutputStream): F[Long] =
     transmit[F](origin, destination, new Array[Byte](1024 * 10), 0L)
 
   // 隐式转换上下文中存在Sync[IO]实例，这里可以将IO泛化为Sync
-  def transmit[F[_]: Sync](origin: InputStream, destination: OutputStream, buffer: Array[Byte], acc: Long): F[Long] = for {
-    // 阻塞的方法使用blocking而不是apply有助于cats-effect更好的规划调试线程
-    amount <- Sync[F].blocking(origin.read(buffer, 0, buffer.size))
-    count <- if (amount > -1) {
-      Sync[F].blocking(destination.write(buffer, 0, amount)) >>
-        transmit(origin, destination, buffer, acc + amount)
-    } else Sync[F].pure(acc)
-  } yield count
+  def transmit[F[_]: Sync](origin: InputStream, destination: OutputStream, buffer: Array[Byte], acc: Long): F[Long] =
+    for
+      // 阻塞的方法使用blocking而不是apply有助于cats-effect更好的规划调试线程
+      amount <- Sync[F].blocking(origin.read(buffer, 0, buffer.size))
+      count <- if amount > -1 then Sync[F].blocking(destination.write(buffer, 0, amount)) >> transmit(origin, destination, buffer, acc + amount) else Sync[F].pure(acc)
+    yield count
 
-  override def run(args: List[String]): IO[ExitCode] = for {
-    _ <- if (args.length < 2) IO.raiseError(new IllegalArgumentException("Need origin and destination files")) else IO.unit
-    orig = new File(args(0))
-    dest = new File(args(1))
-    count <- copy[IO](orig, dest)
-    _ <- IO.println(s"$count bytes copied from ${orig.getPath} to ${dest.getPath}")
-  } yield ExitCode.Success
-
-}
+  override def run(args: List[String]): IO[ExitCode] =
+    for
+      _ <- if args.length < 2 then IO.raiseError(new IllegalArgumentException("Need origin and destination files")) else IO.unit
+      orig = new File(args.head)
+      dest = new File(args(1))
+      count <- copy[IO](orig, dest)
+      _ <- IO.println(s"$count bytes copied from ${orig.getPath} to ${dest.getPath}")
+    yield ExitCode.Success

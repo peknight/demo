@@ -1,21 +1,25 @@
 package com.peknight.demo.cats.introduction
 
-object EqApp extends App {
-  import cats.Eq
+import cats.Eq
+import cats.syntax.eq.*
+import cats.syntax.option.*
+import com.peknight.demo.cats.introduction.EqInstances.given
+
+import java.util.Date
+
+object EqApp extends App:
   val eqInt = Eq[Int]
   println(eqInt.eqv(123, 123))
   println(eqInt.eqv(123, 234))
-  import cats.syntax.eq._
   println(123 === 123)
 
-  import cats.syntax.option._
   println(1.some === none[Int])
   println(1.some =!= none[Int])
 
-  import java.util.Date
-  implicit val dateEq: Eq[Date] = Eq.instance[Date] { (date1, date2) =>
+  given Eq[Date] = Eq.instance[Date] { (date1, date2) =>
     date1.getTime === date2.getTime
   }
+
   val now = System.currentTimeMillis()
   val x = new Date(now)
   val y = new Date(now + 1)
@@ -28,10 +32,8 @@ object EqApp extends App {
   val optionCat1 = cat1.some
   val optionCat2 = none[Cat]
 
-  import EqInstances._
   println(cat1 === cat2)
   println(cat1 =!= cat2)
 
   println(optionCat1 === optionCat2)
   println(optionCat1 =!= optionCat2)
-}

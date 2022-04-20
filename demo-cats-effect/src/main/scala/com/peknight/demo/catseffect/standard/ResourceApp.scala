@@ -4,7 +4,7 @@ import cats.effect.{IO, Resource}
 
 import java.io.File
 
-object ResourceApp {
+object ResourceApp:
 
   def openFile(name: String): IO[File] = ???
   def close(file: File): IO[Unit] = ???
@@ -15,16 +15,15 @@ object ResourceApp {
 
   val concat: IO[Unit] =
     (
-      for {
+      for
         in1 <- file("file1")
         in2 <- file("file2")
         out <- file("file3")
-      } yield (in1, in2, out)
+      yield (in1, in2, out)
     ).use { case (file1, file2, file3) =>
-      for {
+      for
         bytes1 <- read(file1)
         bytes2 <- read(file2)
         _ <- write(file3, bytes1 ++ bytes2)
-      } yield ()
+      yield ()
     }
-}
