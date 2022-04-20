@@ -6,16 +6,14 @@ import fs2.Stream
 
 import scala.concurrent.duration.DurationInt
 
-object FIFOApp extends IOApp.Simple {
+object FIFOApp extends IOApp.Simple:
 
-  val stream = for {
-    q1 <- Stream.eval(Queue.bounded[IO, Int](1))
-    q2 <- Stream.eval(Queue.bounded[IO, Int](100))
-    bp = new Buffering[IO](q1, q2)
-    _ <- Stream.sleep[IO](5.seconds).concurrently(bp.start.drain)
-  } yield ()
+  val stream =
+    for
+      q1 <- Stream.eval(Queue.bounded[IO, Int](1))
+      q2 <- Stream.eval(Queue.bounded[IO, Int](100))
+      bp = new Buffering[IO](q1, q2)
+      _ <- Stream.sleep[IO](5.seconds).concurrently(bp.start.drain)
+    yield ()
 
-  val run = for {
-    _ <- stream.compile.drain
-  } yield ()
-}
+  val run = stream.compile.drain

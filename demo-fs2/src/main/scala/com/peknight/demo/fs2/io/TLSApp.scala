@@ -3,14 +3,14 @@ package com.peknight.demo.fs2.io
 import cats.effect.std.Console
 import cats.effect.{MonadCancelThrow, Resource}
 import cats.implicits.{catsSyntaxFlatMapOps, toFunctorOps}
-import com.comcast.ip4s.{Host, IpLiteralSyntax, SocketAddress}
+import com.comcast.ip4s.*
 import fs2.io.net.Network
 import fs2.io.net.tls.{TLSContext, TLSParameters, TLSSocket}
 import fs2.{Chunk, Stream, text}
 
 import javax.net.ssl.SNIHostName
 
-object TLSApp {
+object TLSApp:
 
   def socketWrites[F[_]](socket: TLSSocket[F]) =
     Stream("Hello, world!")
@@ -18,6 +18,7 @@ object TLSApp {
       .through(text.utf8.encode)
       .through(socket.writes)
 
+  //noinspection DuplicatedCode
   def socketReads[F[_]: Console](socket: TLSSocket[F]) =
     socket.reads
       .through(text.utf8.decode)
@@ -27,13 +28,12 @@ object TLSApp {
         Console[F].println(s"Response: $response")
       }
 
-  def client[F[_]: MonadCancelThrow: Console: Network](tlsContext: TLSContext[F]): Stream[F, Unit] = {
+  def client[F[_]: MonadCancelThrow: Console: Network](tlsContext: TLSContext[F]): Stream[F, Unit] =
     Stream.resource(Network[F].client(SocketAddress(host"localhost", port"5555"))).flatMap { underlyingSocket =>
       Stream.resource(tlsContext.client(underlyingSocket)).flatMap { socket =>
           socketWrites(socket) ++ socketReads(socket)
       }
     }
-  }
 
   def tlsClientWithSni[F[_]: MonadCancelThrow: Network](tlsContext: TLSContext[F],
                                                         address: SocketAddress[Host]): Resource[F, TLSSocket[F]] =
@@ -62,6 +62,3 @@ object TLSApp {
           }
         }
     }
-
-
-}

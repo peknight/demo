@@ -20,10 +20,10 @@ import fs2.{Chunk, Stream}
  * Zero copy splitAt at cost of non-strictness and potentially increased memory usage
  *
  */
-object ChunksApp extends IOApp.Simple {
+object ChunksApp extends IOApp.Simple:
   val s1c = Stream.chunk(Chunk.array(Array(1.0, 2.0, 3.0)))
 
-  val run = for {
-    _ <- IO.println(s1c.toList)
-  } yield ()
-}
+  val run =
+    for
+      _ <- IO.println(s1c.toList)
+    yield ()

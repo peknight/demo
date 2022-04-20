@@ -1,9 +1,9 @@
 package com.peknight.demo.fs2.io
 
-import cats.effect._
+import cats.effect.*
 import cats.effect.std.Console
-import cats.syntax.all._
-import com.comcast.ip4s.{Host, IpLiteralSyntax, SocketAddress}
+import cats.syntax.all.*
+import com.comcast.ip4s.*
 import fs2.io.net.{ConnectException, Network, Socket}
 import fs2.{Chunk, Stream, text}
 
@@ -14,7 +14,7 @@ import scala.concurrent.duration.DurationInt
  * implements a multiuser chat server and a single user chat client
  * using the FS2 TCP support and <a href="https://scodec.org/">scodec</a> for binary processing.
  */
-object TCPApp extends IOApp.Simple {
+object TCPApp extends IOApp.Simple:
 
   val socketAddress = SocketAddress(host"localhost", port"5555")
 
@@ -75,4 +75,3 @@ object TCPApp extends IOApp.Simple {
     Stream.eval(echoServer[IO]).interruptAfter(5.seconds),
     client[IO]
   ).parJoin(2).compile.drain
-}

@@ -92,11 +92,14 @@ lazy val demoCatsEffect = (project in file("demo-cats-effect"))
   )
 
 lazy val demoFs2 = (project in file("demo-fs2"))
-  .settings(commonSettings2)
+  .settings(commonSettings)
   .settings(
     name := "demo-fs2",
     libraryDependencies ++= Seq(
-      pekCommonFp,
+      fs2Core,
+      fs2IO,
+      fs2ReactiveStreams,
+      fs2Scodec,
     ),
   )
 
@@ -214,20 +217,6 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
 val kindProjectorVersion = "0.13.2"
 val pekCommonVersion = "0.1-SNAPSHOT"
 
-val scalaTestVersion = "3.2.11"
-
-val catsVersion = "2.7.0"
-val catsEffectVersion = "3.3.11"
-val catsEffectTestingSpecsVersion = "1.4.0"
-val mUnitCatsEffectVersion = "1.0.7"
-val weaverCatsVersion = "0.7.11"
-
-val logbackVersion = "1.2.11"
-val akkaVersion = "2.6.19"
-
-val scalaAsyncVersion = "1.0.1"
-val scalaReflectVersion = "2.13.8"
-
 val kindProjector = "org.typelevel" % "kind-projector" % kindProjectorVersion cross CrossVersion.full
 val pekCommonCore = "com.peknight" %% "common-core" % pekCommonVersion
 val pekCommonLog = "com.peknight" %% "common-log" % pekCommonVersion
@@ -237,17 +226,48 @@ val pekCommonTest = "com.peknight" %% "common-test" % pekCommonVersion
 val pekCommonJson = "com.peknight" %% "common-json" % pekCommonVersion
 val pekCommonAkka = "com.peknight" %% "common-akka" % pekCommonVersion
 
+// Scala
+
+val scalaTestVersion = "3.2.11"
+
 val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
+
+// Functional
+
+val catsVersion = "2.7.0"
+val catsEffectVersion = "3.3.11"
+val fs2Version = "3.2.7"
 
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
 val catsEffect = "org.typelevel" %% "cats-effect" % catsEffectVersion withSources() withJavadoc()
+val fs2Core = "co.fs2" %% "fs2-core" % fs2Version
+val fs2IO = "co.fs2" %% "fs2-io" % fs2Version
+val fs2ReactiveStreams = "co.fs2" %% "fs2-reactive-streams" % fs2Version
+val fs2Scodec = "co.fs2" %% "fs2-scodec" % fs2Version
+
+// Library
+
+val logbackVersion = "1.2.11"
+val akkaVersion = "2.6.19"
+
+val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
+val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
+
+// Test
+
+val catsEffectTestingSpecsVersion = "1.4.0"
+val mUnitCatsEffectVersion = "1.0.7"
+val weaverCatsVersion = "0.7.11"
+
 val catsEffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
 val catsEffectTestingSpecs = "org.typelevel" %% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion
 val mUnitCatsEffect = "org.typelevel" %% "munit-cats-effect-3" % mUnitCatsEffectVersion
 val weaverCats = "com.disneystreaming" %% "weaver-cats" % weaverCatsVersion
 
-val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
-val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
+// Scala 2
+
+val scalaAsyncVersion = "1.0.1"
+val scalaReflectVersion = "2.13.8"
 
 val scalaAsync = "org.scala-lang.modules" %% "scala-async" % scalaAsyncVersion
 val scalaReflect = "org.scala-lang" % "scala-reflect" % scalaReflectVersion

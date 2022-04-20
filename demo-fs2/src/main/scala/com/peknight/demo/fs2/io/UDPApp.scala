@@ -2,13 +2,13 @@ package com.peknight.demo.fs2.io
 
 import cats.effect.std.Console
 import cats.effect.{Concurrent, IO, IOApp}
-import com.comcast.ip4s.{IpLiteralSyntax, SocketAddress}
+import com.comcast.ip4s.{SocketAddress, ip, port}
 import fs2.io.net.{Datagram, DatagramSocket, Network}
 import fs2.{Stream, text}
 
 import scala.concurrent.duration.DurationInt
 
-object UDPApp extends IOApp.Simple {
+object UDPApp extends IOApp.Simple:
 
   val address = SocketAddress(ip"127.0.0.1", port"5555")
 
@@ -44,5 +44,3 @@ object UDPApp extends IOApp.Simple {
     Stream.eval(echoServer[IO]).interruptAfter(5.seconds),
     Stream.eval(client[IO]).interruptAfter(5.seconds)
   ).parJoin(2).compile.drain
-
-}

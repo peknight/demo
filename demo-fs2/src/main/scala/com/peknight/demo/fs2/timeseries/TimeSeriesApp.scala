@@ -10,7 +10,7 @@ import scodec.bits.ByteVector
 import scala.collection.immutable.Queue
 import scala.concurrent.duration.DurationInt
 
-object TimeSeriesApp extends IOApp.Simple {
+object TimeSeriesApp extends IOApp.Simple:
 
   def withBitrateV1[F[_]](input: Stream[F, TimeStamped[ByteVector]]): Stream[F, TimeStamped[Either[Long, ByteVector]]] =
     TimeStamped.withPerSecondRate[ByteVector, Long](_.size * 8).toPipe(input)
@@ -21,12 +21,11 @@ object TimeSeriesApp extends IOApp.Simple {
   def withAverageBitrate[F[_]: Functor: Clock](input: Stream[F, Byte]): Stream[F, TimeStamped[Either[Long, ByteVector]]] =
     withReceivedBitrateV1(input).mapAccumulate(Queue.empty[Long]) {
       case (q, tsv @ TimeStamped(_, Right(_))) => (q, tsv)
-      case (q, TimeStamped(t, Left(sample))) => {
+      case (q, TimeStamped(t, Left(sample))) =>
         //noinspection DuplicatedCode
         val q2 = (sample +: q).take(10)
         val average = q2.sum / q2.size
         (q2, TimeStamped(t, Left(average)))
-      }
     }.map(_._2)
 
   def measureAverageBitrateV1[F[_]: Functor: Clock](store: Ref[F, Long], input: Stream[F, Byte]): Stream[F, Byte] =
@@ -48,12 +47,11 @@ object TimeSeriesApp extends IOApp.Simple {
 
   def averageBitrate = bitrate.andThen(Scan.stateful1(Queue.empty[Long]) {
     case (q, tsv @ TimeStamped(_, Right(_))) => (q, tsv)
-    case (q, TimeStamped(t, Left(sample))) => {
+    case (q, TimeStamped(t, Left(sample))) =>
       //noinspection DuplicatedCode
       val q2 = (sample +: q).take(10)
       val average = q2.sum / q2.size
       (q2, TimeStamped(t, Left(average)))
-    }
   })
 
   def measureAverageBitrate[F[_]: Temporal](store: Ref[F, Long], input: Stream[F, Byte]): Stream[F, Byte] =
@@ -69,10 +67,10 @@ object TimeSeriesApp extends IOApp.Simple {
 
   val duration = 5.seconds
 
-  val run = for {
-    store <- Ref.of[IO, Long](0)
-    _ <- measureAverageBitrate[IO](store, inputStream.interruptAfter(duration)).interruptAfter(duration).compile.drain
-    bitrate <- store.get
-    _ <- IO.println(s"bitrate: $bitrate")
-  } yield ()
-}
+  val run =
+    for
+      store <- Ref.of[IO, Long](0)
+      _ <- measureAverageBitrate[IO](store, inputStream.interruptAfter(duration)).interruptAfter(duration).compile.drain
+      bitrate <- store.get
+      _ <- IO.println(s"bitrate: $bitrate")
+    yield ()

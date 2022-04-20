@@ -5,7 +5,7 @@ import fs2.Stream
 
 import scala.concurrent.duration.DurationInt
 
-object InterruptionApp extends IOApp.Simple {
+object InterruptionApp extends IOApp.Simple:
 
   val program = Stream.eval(Deferred[IO, Unit]).flatMap { switch =>
     val switcher = Stream.eval(switch.complete(())).delayBy(5.seconds)
@@ -17,11 +17,12 @@ object InterruptionApp extends IOApp.Simple {
     .metered(1.second)
     .interruptAfter(5.seconds)
 
-  val interruptionRun = for {
-    _ <- program.compile.drain
-    _ <- IO.println("---")
-    _ <- program1.compile.drain
-  } yield ()
+  val interruptionRun =
+    for
+      _ <- program.compile.drain
+      _ <- IO.println("---")
+      _ <- program1.compile.drain
+    yield ()
 
   case object Err extends Throwable
 
@@ -33,17 +34,17 @@ object InterruptionApp extends IOApp.Simple {
 
   val merged = s1 merge s2 take 1
 
-  val appendixesRun = for {
-    _ <- IO.println((Stream(1) ++ Stream(2).map(_ => throw Err)).take(1).toList)
-    _ <- IO.println("---")
-    _ <- (Stream(1) ++ Stream.raiseError[IO](Err)).take(1).compile.toList.flatMap(IO.println)
-    _ <- IO.println("---")
-    _ <- Stream(1).covary[IO].onFinalize(IO.println("finalized!")).take(1).compile.toVector.flatMap(IO.println)
-    _ <- IO.println("---")
-    // 三种可能的情况: 1. s1先执行完，正常 2. s2先完整执行完，打印错误并抛出 3. s2出异常执行到handleErrorWith进行中时s1执行完，打印错误但返回正常
-    _ <- merged.compile.toList.flatMap(IO.println)
-  } yield ()
+  val appendixesRun =
+    for
+      _ <- IO.println((Stream(1) ++ Stream(2).map(_ => throw Err)).take(1).toList)
+      _ <- IO.println("---")
+      _ <- (Stream(1) ++ Stream.raiseError[IO](Err)).take(1).compile.toList.flatMap(IO.println)
+      _ <- IO.println("---")
+      _ <- Stream(1).covary[IO].onFinalize(IO.println("finalized!")).take(1).compile.toVector.flatMap(IO.println)
+      _ <- IO.println("---")
+      // 三种可能的情况: 1. s1先执行完，正常 2. s2先完整执行完，打印错误并抛出 3. s2出异常执行到handleErrorWith进行中时s1执行完，打印错误但返回正常
+      _ <- merged.compile.toList.flatMap(IO.println)
+    yield ()
 
 
   val run = appendixesRun
-}
