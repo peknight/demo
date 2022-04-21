@@ -5,7 +5,6 @@ package com.peknight.demo.fpinscala.monoids
  */
 sealed trait WC
 
-object WC {
+object WC:
   case class Stub(chars: String) extends WC
   case class Part(lStub: String, words: Int, rStub: String) extends WC
-}

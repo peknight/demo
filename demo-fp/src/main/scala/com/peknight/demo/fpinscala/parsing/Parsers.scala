@@ -5,12 +5,15 @@ import scala.language.implicitConversions
 import scala.util.matching.Regex
 
 // Parser is a type parameter that itself is a covariant type constructor
-trait Parsers[Parser[+_]] { self =>
+trait Parsers[Parser[+_]]:
+  self =>
+
   def run[A](p: Parser[A])(input: String): Either[ParseError, A]
 
-  implicit def string(s: String): Parser[String]
-  implicit def operators[A](p: Parser[A]): ParserOps[A] = ParserOps[A](p)
-  implicit def asStringParser[A](a: A)(implicit f: A => Parser[String]): ParserOps[String] = ParserOps(f(a))
+  given string: Conversion[String, Parser[String]]
+  given operators[A]: Conversion[Parser[A], ParserOps[A]] = (p: Parser[A]) => ParserOps[A](p)
+  given asStringParser[A](using f: A => Parser[String]): Conversion[A, ParserOps[String]] = (a: A) => ParserOps(f(a))
+  given regex: Conversion[Regex, Parser[String]]
 
   // Here the Parser type constructor is applied to Char.
   def char(c: Char): Parser[Char] = string(c.toString).map(_.charAt(0))
@@ -25,7 +28,7 @@ trait Parsers[Parser[+_]] { self =>
   def many1[A](p: Parser[A]): Parser[List[A]] = map2(p, many(p))(_ :: _)
 
   def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]] =
-    if (n <= 0) succeed(List.empty[A])
+    if n <= 0 then succeed(List.empty[A])
     else map2(p, listOfN(n - 1, p))(_ :: _)
 
   def many[A](p: Parser[A]): Parser[List[A]] = or(map2(p, many(p)/*wrap(many(p))*/)(_ :: _), succeed(List.empty[A]))
@@ -34,19 +37,19 @@ trait Parsers[Parser[+_]] { self =>
 
   def flatMap[A, B](p: Parser[A])(f: A => Parser[B]): Parser[B]
 
-  implicit def regex(r: Regex): Parser[String]
-
-  def product[A, B](p: Parser[A], p2: => Parser[B]): Parser[(A, B)] = for {
-    a <- p
-    b <- p2
-  } yield (a, b)
+  def product[A, B](p: Parser[A], p2: => Parser[B]): Parser[(A, B)] =
+    for
+      a <- p
+      b <- p2
+    yield (a, b)
 
 //  def map2[A, B, C](a: Parser[A], b: => Parser[B])(f: (A, B) => C): Parser[C] = map(product(a, b))(f.tupled)
 
-  def map2[A, B, C](p: Parser[A], p2: => Parser[B])(f: (A, B) => C): Parser[C] = for {
-    a <- p
-    b <- p2
-  } yield f(a, b)
+  def map2[A, B, C](p: Parser[A], p2: => Parser[B])(f: (A, B) => C): Parser[C] =
+    for
+      a <- p
+      b <- p2
+    yield f(a, b)
 
   def map[A, B](a: Parser[A])(f: A => B): Parser[B] = flatMap(a)(a => succeed(f(a)))
 
@@ -124,7 +127,7 @@ trait Parsers[Parser[+_]] { self =>
   /** The root of the grammar, expecteds no further input following p. */
   def root[A](p: Parser[A]): Parser[A] = p <* eof
 
-  case class ParserOps[A](p: Parser[A]) {
+  case class ParserOps[A](p: Parser[A]):
     // Use self to explicitly disambiguate reference to the or method on the trait
     def |[B >: A](p2: => Parser[B]): Parser[B] = self.or(p, p2)
     def or[B >: A](p2: => Parser[B]): Parser[B] = self.or(p, p2)
@@ -152,25 +155,29 @@ trait Parsers[Parser[+_]] { self =>
     def opL(op: Parser[(A, A) => A]): Parser[A] = self.opL(p)(op)
 
     def many1: Parser[List[A]] = self.many1(p)
-  }
+  end ParserOps
 
-  object Laws {
+  object Laws:
     import com.peknight.demo.fpinscala.testing.*
     import com.peknight.demo.fpinscala.testing.Prop.*
-    def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String])(using CanEqual[A, A]): Prop = forAll(in)(s => self.run(p1)(s) == self.run(p2)(s))
+    def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String])(using CanEqual[ParseError, ParseError], CanEqual[A, A])
+    : Prop =
+      forAll(in)(s => self.run(p1)(s) == self.run(p2)(s))
+
     def mapLaw[A](p: Parser[A])(in: Gen[String])(using CanEqual[A, A]): Prop = equal(p, p.map(a => a))(in)
+
     def labelLaw[A](p: Parser[A], inputs: SGen[String]): Prop = forAll(inputs ** Gen.string) { case (input, msg) =>
-      self.run(label(msg)(p))(input) match {
+      self.run(label(msg)(p))(input) match
         case Left(e: ParseError) => errorMessage(e) == msg
         case _ => true
-      }
     }
-  }
+  end Laws
+
 
   // We could introduce a combinator, `wrap`:
-//  def wrap[A](p: => Parser[A]): Parser[A]
+  // def wrap[A](p: => Parser[A]): Parser[A]
 
-//  def errorLocation(e: ParseError): Location
+  // def errorLocation(e: ParseError): Location
 
   def errorMessage(e: ParseError): String
 
@@ -178,20 +185,21 @@ trait Parsers[Parser[+_]] { self =>
 
   // exercise 9.11
   /** In the event of an error, returns the error that occurred after consuming the most number of characters. */
-//  def furthest[A](p: Parser[A]): Parser[A]
+  // def furthest[A](p: Parser[A]): Parser[A]
 
   /** In the event of an error, returns the error that occurred most recently */
-//  def latest[A](p: Parser[A]): Parser[A]
+  // def latest[A](p: Parser[A]): Parser[A]
 
   // parse: 1a 2aa 3aaa
-  for {
+  for
     digit <- "[0-9]+".r
     n = digit.toInt // we really should catch exceptions thrown by toInt and convert to parse failure
     _ <- listOfN(n, char('a'))
-  } yield n
+  yield n
 
   //  map(many(char('a')))(_.size)
   val numA: Parser[Int] = char('a').many.slice.map(_.size)
 
   val numAB: Parser[(Int, Int)] = char('a').many.slice.map(_.size) ** char('b').many1.slice.map(_.size)
-}
+
+end Parsers

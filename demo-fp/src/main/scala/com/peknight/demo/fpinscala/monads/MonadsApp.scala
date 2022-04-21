@@ -4,24 +4,26 @@ import com.peknight.demo.fpinscala.monads.Monad.{listMonad, stateMonad}
 import com.peknight.demo.fpinscala.state.State
 import com.peknight.demo.fpinscala.testing.Exhaustive.Gen
 
-object MonadsApp extends App {
-  val listFunctor = new Functor[List] {
+object MonadsApp extends App:
+
+  val listFunctor = new Functor[List]:
     def map[A, B](as: List[A])(f: A => B): List[B] = as map f
-  }
 
   case class Order(item: Item, quantity: Int)
   case class Item(name: String, price: Double)
 
-  val genItem: Gen[Item] = for {
-    name <- Gen.stringN(3)
-    price <- Gen.uniform.map(_ * 10)
-    quantity <- Gen.choose(1, 100)
-  } yield Item(name, price)
+  val genItem: Gen[Item] =
+    for
+      name <- Gen.stringN(3)
+      price <- Gen.uniform.map(_ * 10)
+      quantity <- Gen.choose(1, 100)
+    yield Item(name, price)
 
-  val genOrder: Gen[Order] = for {
-    item <- genItem
-    quantity <- Gen.choose(1, 100)
-  } yield Order(item, quantity)
+  val genOrder: Gen[Order] =
+    for
+      item <- genItem
+      quantity <- Gen.choose(1, 100)
+    yield Order(item, quantity)
 
   // Exercise 11.14
 
@@ -41,11 +43,12 @@ object MonadsApp extends App {
 
   val F = stateMonad[Int]
 
-  def zipWithIndex[A](as: List[A]): List[(Int, A)] = as.foldLeft(F.unit(List.empty[(Int, A)]))((acc, a) => for {
-    xs <- acc
-    n <- State.get
-    _ <- State.set(n + 1)
-  } yield (n, a) :: xs).run(0)._1.reverse
+  def zipWithIndex[A](as: List[A]): List[(Int, A)] = as.foldLeft(F.unit(List.empty[(Int, A)]))((acc, a) =>
+    for
+      xs <- acc
+      n <- State.get
+      _ <- State.set(n + 1)
+    yield (n, a) :: xs
+  ).run(0)._1.reverse
 
-}
-
+end MonadsApp

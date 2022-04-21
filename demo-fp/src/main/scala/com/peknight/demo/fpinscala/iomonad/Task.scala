@@ -10,14 +10,14 @@ import java.util.concurrent.ExecutorService
  * `Task[A]` is a wrapper around `Free[Par, Either[Throwable, A]]`, with some
  * convenience functions for handling exceptions.
  */
-case class Task[A](get: Free[Par, Either[Throwable, A]]) {
+case class Task[A](get: Free[Par, Either[Throwable, A]]):
 
   def flatMap[B](f: A => Task[B]): Task[B] = Task(get.flatMap {
     case Left(e) => Return(Left(e))
     case Right(a) => f(a).get
   })
 
-  def map[B](f: A => B): Task[B] = flatMap(f andThen (Task.now))
+  def map[B](f: A => B): Task[B] = flatMap(f andThen Task.now)
 
   /* 'Catches' exceptions in the given task and returns them as values. */
   def attempt: Task[Either[Throwable, A]] = Task(get map {
@@ -26,7 +26,7 @@ case class Task[A](get: Free[Par, Either[Throwable, A]]) {
   })
 
   def handle[B >: A](f: PartialFunction[Throwable, B]): Task[B] = attempt flatMap {
-    case Left(e) => f.lift(e) map (Task.now) getOrElse Task.fail(e)
+    case Left(e) => f.lift(e) map Task.now getOrElse Task.fail(e)
     case Right(a) => Task.now(a)
   }
 
@@ -35,16 +35,17 @@ case class Task[A](get: Free[Par, Either[Throwable, A]]) {
     case a => Return(a)
   })
 
-  def run(implicit E: ExecutorService): A = App.unsafePerformIO(get) match {
+  def run(using E: ExecutorService): A = App.unsafePerformIO(get) match
     case Left(e) => throw e
     case Right(a) => a
-  }
 
-  def attemptRun(implicit E: ExecutorService): Either[Throwable, A] =
-    try App.unsafePerformIO(get) catch { case t: Throwable => Left(t)}
-}
+  def attemptRun(using E: ExecutorService): Either[Throwable, A] =
+    try App.unsafePerformIO(get) catch case t: Throwable => Left(t)
 
-object Task extends Monad[Task] {
+end Task
+
+object Task extends Monad[Task]:
+
   def unit[A](a: => A): Task[A] = Task(Suspend(Par.lazyUnit(Try(a))))
 
   override def flatMap[A, B](a: Task[A])(f: A => Task[B]): Task[B] = a flatMap f
@@ -55,10 +56,13 @@ object Task extends Monad[Task] {
   def more[A](a: Task[A]): Task[A] = Task.now(()).flatMap(_ => a)
 
   def delay[A](a: => A): Task[A] = more(now(a))
+
   def fork[A](a: Task[A]): Task[A] = Task {
     Suspend { Par.lazyUnit(()) } flatMap (_ => a.get)
   }
+
   def forkUnit[A](a: => A): Task[A] = fork(now(a))
 
-  def Try[A](a: => A): Either[Throwable, A] = try Right(a) catch { case e: Exception => Left(e) }
-}
+  def Try[A](a: => A): Either[Throwable, A] = try Right(a) catch case e: Exception => Left(e)
+
+end Task

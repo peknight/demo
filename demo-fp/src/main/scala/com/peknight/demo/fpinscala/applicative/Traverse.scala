@@ -7,30 +7,45 @@ import com.peknight.demo.fpinscala.monads.{Functor, Monad}
 import com.peknight.demo.fpinscala.monoids.{Foldable, Monoid}
 import com.peknight.demo.fpinscala.state.State
 
-trait Traverse[F[_]] extends Functor[F] with Foldable[F] { self =>
-  def traverse[G[_], A, B](fa: F[A])(f: A => G[B])(implicit G: Applicative[G]): G[F[B]] = sequence(map(fa)(f))
-  def sequence[G[_], A](fga: F[G[A]])(implicit G: Applicative[G]): G[F[A]] = traverse(fga)(ga => ga)
+trait Traverse[F[_]] extends Functor[F] with Foldable[F]:
+  self =>
+
+  def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] = sequence(map(fa)(f))
+
+  def sequence[G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] = traverse(fga)(ga => ga)
+
   def map[A, B](fa: F[A])(f: A => B): F[B] = traverse[Id, A, B](fa)(a => f(a))(idMonad)
+
   override def foldMap[A, M](as: F[A])(f: A => M)(mb: Monoid[M]): M =
-    traverse[({type f[x] = Const[M, x]})#f, A, Nothing](as)(f)(monoidApplicative(mb))
+    traverse[[T] =>> Const[M, T], A, Nothing](as)(f)(monoidApplicative(mb))
 
-  def traverseS[S, A, B](fa: F[A])(f: A => State[S, B]): State[S, F[B]] = traverse[({type f[x] = State[S, x]})#f, A, B](fa)(f)(stateMonad)
+  def traverseS[S, A, B](fa: F[A])(f: A => State[S, B]): State[S, F[B]] =
+    traverse[[T] =>> State[S, T], A, B](fa)(f)(stateMonad)
 
-  def zipWithIndex[A](ta: F[A]): F[(A, Int)] = traverseS(ta)((a: A) => (for {
-    i <- State.get[Int]
-    _ <- State.set(i + 1)
-  } yield (a, i))).run(0)._1
+  def zipWithIndex[A](ta: F[A]): F[(A, Int)] =
+    traverseS(ta)((a: A) =>
+      for
+        i <- State.get[Int]
+        _ <- State.set(i + 1)
+      yield (a, i)
+    ).run(0)._1
 
-  override def toList[A](fa: F[A]): List[A] = traverseS(fa)((a: A) => (for {
-    as <- State.get[List[A]]
-    _ <- State.set(a :: as)
-  } yield ())).run(List.empty[A])._2.reverse
+  override def toList[A](fa: F[A]): List[A] =
+    traverseS(fa)((a: A) =>
+      for
+        as <- State.get[List[A]]
+        _ <- State.set(a :: as)
+      yield ()
+    ).run(List.empty[A])._2.reverse
 
-  def mapAccum[S, A, B](fa: F[A], s: S)(f: (A, S) => (B, S)): (F[B], S) = traverseS(fa)((a: A) => (for {
-    s1 <- State.get[S]
-    (b, s2) = f(a, s1)
-    _ <- State.set(s2)
-  } yield b)).run(s)
+  def mapAccum[S, A, B](fa: F[A], s: S)(f: (A, S) => (B, S)): (F[B], S) =
+    traverseS(fa)((a: A) =>
+      for
+        s1 <- State.get[S]
+        (b, s2) = f(a, s1)
+        _ <- State.set(s2)
+      yield b
+    ).run(s)
 
   def toListViaMapAccum[A](fa: F[A]): List[A] = mapAccum(fa, List.empty[A])((a, s) => ((), a :: s))._2.reverse
 
@@ -64,22 +79,23 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] { self =>
 
   // Exercise 12.18
 
-  def fuse[G[_], H[_], A, B](fa: F[A])(f: A => G[B], g: A => H[B])(implicit G: Applicative[G], H: Applicative[H]): (G[F[B]], H[F[B]]) =
+  def fuse[G[_], H[_], A, B](fa: F[A])(f: A => G[B], g: A => H[B])(using G: Applicative[G], H: Applicative[H])
+  : (G[F[B]], H[F[B]]) =
     traverse[({type f[x] = (G[x], H[x])})#f, A, B](fa)(a => (f(a), g(a)))(G product H)
 
   // Exercise 12.19
 
-  def compose[G[_]](implicit G: Traverse[G]): Traverse[({type f[x] = F[G[x]]})#f] = new Traverse[({type f[x] = F[G[x]]})#f] {
-    override def traverse[M[_], A, B](fa: F[G[A]])(f: A => M[B])(implicit M: Applicative[M]): M[F[G[B]]] =
+  def compose[G[_]](using G: Traverse[G]): Traverse[[T] =>> F[G[T]]] = new Traverse:
+    override def traverse[M[_]: Applicative, A, B](fa: F[G[A]])(f: A => M[B]): M[F[G[B]]] =
       self.traverse(fa)(ha => G.traverse(ha)(f))
-  }
-}
 
-object Traverse {
+end Traverse
+
+object Traverse:
   type Id[A] = A
 
-  val idMonad = new Monad[Id] {
+  val idMonad = new Monad[Id]:
     def unit[A](a: => A) = a
     override def flatMap[A, B](fa: Id[A])(f: A => Id[B]): Id[B] = f(fa)
-  }
-}
+
+end Traverse

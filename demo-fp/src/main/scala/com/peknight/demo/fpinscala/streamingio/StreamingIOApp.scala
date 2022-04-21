@@ -7,19 +7,18 @@ import com.peknight.demo.fpinscala.parallelism.Nonblocking.Par
 import com.peknight.demo.fpinscala.streamingio.Process.{Channel, Emit, End, Halt, constant, eval, fileW, intersperse, resource_}
 
 import java.io.{BufferedReader, File, FileReader}
+import java.sql.{Connection, PreparedStatement}
 
-object StreamingIOApp extends App {
+object StreamingIOApp extends App:
   def linesGt40k(filename: String): IO[Boolean] = Suspend(Par.lazyUnit {
     val src = io.Source.fromFile(filename)
-    try {
+    try
       var count = 0
       val lines: Iterator[String] = src.getLines()
-      while (count <= 40000 && lines.hasNext) {
+      while count <= 40000 && lines.hasNext do
         lines.next()
         count += 1
-      }
       count > 40000
-    }
     finally src.close()
   })
 
@@ -64,13 +63,12 @@ object StreamingIOApp extends App {
   )(_ || _)
 
   val p: Process[IO, String] = Process.await[IO, BufferedReader, String](Suspend(Par.lazyUnit(new BufferedReader(new FileReader("lines.txt"))))) {
-    case Right(b) => {
+    case Right(b) =>
       lazy val next: Process[IO, String] = Process.await[IO, String, String](Suspend(Par.lazyUnit(b.readLine()))) {
         case Left(e) => Process.await[IO, Unit, String](Suspend(Par.lazyUnit(b.close()))) { _ => Halt(e) }
-        case Right(line) => if (line eq null) Halt(End) else Emit(line, next)
+        case Right(line) => if line eq null then Halt(End) else Emit(line, next)
       }
       next
-    }
     case Left(e) => Halt(e)
   }
   Process.runLog(p)
@@ -82,7 +80,6 @@ object StreamingIOApp extends App {
     .to(fileW("celsius.txt"))
     .drain
 
-  import java.sql.{Connection, PreparedStatement}
   def query(conn: IO[Connection]): Channel[IO, Connection => PreparedStatement, Map[String, Any]] = resource_
     { conn }
     { conn => constant { (q: Connection => PreparedStatement) =>
@@ -93,38 +90,41 @@ object StreamingIOApp extends App {
           val cols = (1 to ncols).map(rs.getMetaData.getColumnName)
           (rs, cols)
         }) }
-        { case (rs, cols) => {
-          def step = if (!rs.next()) None else Some(cols.map(c => (c, rs.getObject(c): Any)).toMap)
+        { case (rs, cols) =>
+          def step = if !rs.next() then None else Some(cols.map(c => (c, rs.getObject(c): Any)).toMap)
           lazy val rows: Process[IO, Map[String, Any]] =
             eval[IO, Option[Map[String, Any]]](Suspend(Par.lazyUnit(step))).flatMap {
               case None => Halt(End)
               case Some(row) => Emit(row, rows)
             }
           rows
-        }}
+        }
         { p => Suspend(Par.lazyUnit(p._1.close())) }
     }}
     { conn => Suspend(Par.lazyUnit(conn.close())) }
 
-  val convertAll: Process[IO, Unit] = (for {
-    out <- fileW("celsius.txt").once
-    file <- Process.lines("fahrenheits.txt")
-    _ <- Process.lines(file).map(line => fahrenheitToCelsius(line.toDouble)).flatMap(celsius => out(celsius.toString))
-  } yield ()).drain
+  val convertAll: Process[IO, Unit] =
+    (for
+      out <- fileW("celsius.txt").once
+      file <- Process.lines("fahrenheits.txt")
+      _ <- Process.lines(file).map(line => fahrenheitToCelsius(line.toDouble)).flatMap(celsius => out(celsius.toString))
+    yield ()).drain
 
-  val convertMultiSink: Process[IO, Unit] = (for {
-    file <- Process.lines("fahrenheits.txt")
-    _ <- Process.lines(file).map(line => fahrenheitToCelsius(line.toDouble)).map(_.toString).to(fileW(file + ".celsius"))
-  } yield ()).drain
+  val convertMultiSink: Process[IO, Unit] =
+    (for
+      file <- Process.lines("fahrenheits.txt")
+      _ <- Process.lines(file).map(line => fahrenheitToCelsius(line.toDouble)).map(_.toString).to(fileW(file + ".celsius"))
+    yield ()).drain
 
-  val convertMultiSink2: Process[IO, Unit] = (for {
-    file <- Process.lines("fahrenheits.txt")
-    _ <- Process.lines(file)
-      .filter(!_.startsWith("#"))
-      .map(line => fahrenheitToCelsius(line.toDouble))
-      .filter(_ > 0)
-      .map(_.toString)
-      .to(fileW(file + ".celsius"))
-  } yield ()).drain
+  val convertMultiSink2: Process[IO, Unit] =
+    (for
+      file <- Process.lines("fahrenheits.txt")
+      _ <- Process.lines(file)
+        .filter(!_.startsWith("#"))
+        .map(line => fahrenheitToCelsius(line.toDouble))
+        .filter(_ > 0)
+        .map(_.toString)
+        .to(fileW(file + ".celsius"))
+    yield ()).drain
 
-}
+end StreamingIOApp

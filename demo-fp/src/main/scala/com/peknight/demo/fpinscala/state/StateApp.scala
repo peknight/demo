@@ -1,23 +1,23 @@
 package com.peknight.demo.fpinscala.state
 
-import com.peknight.demo.fpinscala.state.RNG._
-import com.peknight.demo.fpinscala.state.State._
+import com.peknight.demo.fpinscala.state.RNG.*
+import com.peknight.demo.fpinscala.state.State.*
 
 import scala.util.Random
 
-object StateApp extends App {
+object StateApp extends App:
+
   val scalaRng = new Random()
   println(scalaRng.nextDouble())
   println(scalaRng.nextDouble())
   println(scalaRng.nextInt())
   println(scalaRng.nextInt(10))
 
-  def rollDieV1: Int = {
+  def rollDieV1: Int =
     val rng = new Random()
     // Returns a random number from 0 to 5
     // off-by-one error supposed to return a value between 1 and 6
     rng.nextInt(6)
-  }
 
   def rollDieV2(rng: Random): Int = rng.nextInt(6) + 1
 
@@ -35,11 +35,11 @@ object StateApp extends App {
 
   println(rollDie.run(SimpleRNG(5))._1)
 
-  val ns: Rand[List[Int]] = for {
-    x <- int
-    y <- int
-    xs <- intsViaSequence(x)
-  } yield xs.map(_ % y)
+  val ns: Rand[List[Int]] =
+    for
+      x <- int
+      y <- int
+      xs <- intsViaSequence(x)
+    yield xs.map(_ % y)
 
-
-}
+end StateApp

@@ -4,84 +4,69 @@ import com.peknight.demo.fpinscala.laziness.Stream.*
 
 import scala.annotation.tailrec
 
-sealed trait Stream[+A] derives CanEqual {
-  def headOption: Option[A] = this match {
+sealed trait Stream[+A] derives CanEqual:
+
+  def headOption: Option[A] = this match
     case Cons(h, _) => Some(h())
     case Empty => None
-  }
 
   // Exercise 5.1 use recursive not stack safe
-  def toListRecursive: List[A] = this match {
+  def toListRecursive: List[A] = this match
     case Cons(h, t) => h() :: t().toListRecursive
     case Empty => Nil
-  }
 
   // Exercise 5.1 use reverse
-  def toList: List[A] = {
-    @tailrec
-    def go(s: Stream[A], acc: List[A]): List[A] = s match {
+  def toList: List[A] =
+    @tailrec def go(s: Stream[A], acc: List[A]): List[A] = s match
       case Cons(h, t) => go(t(), h() :: acc)
       case _ => acc
-    }
     go(this, Nil).reverse
-  }
 
   // Exercise 5.1 use ListBuffer
-  def toListFast: List[A] = {
+  def toListFast: List[A] =
     val buf = new collection.mutable.ListBuffer[A]
-    def go(s: Stream[A]): List[A] = s match {
+    def go(s: Stream[A]): List[A] = s match
       case Cons(h, t) =>
         buf += h()
         go(t())
       case _ => buf.toList
-    }
     go(this)
-  }
 
   // Exercise 5.2
-  def take(n: Int): Stream[A] = this match {
+  def take(n: Int): Stream[A] = this match
     case Cons(h, t) if n > 1 => cons(h(), t().take(n - 1))
     case Cons(h, _) if n == 1 => cons(h(), empty)
     case _ => empty
-  }
 
-  @tailrec
-  final def drop(n: Int): Stream[A] = this match {
+  @tailrec final def drop(n: Int): Stream[A] = this match
     case Cons(_, t) if n > 0 => t().drop(n - 1)
     case s => s
-  }
 
-  def takeWhile(p: A => Boolean): Stream[A] = this match {
+  def takeWhile(p: A => Boolean): Stream[A] = this match
     case Cons(h, t) if p(h()) => cons(h(), t().takeWhile(p))
     case _ => empty
-  }
 
-  @tailrec
-  final def exists(p: A => Boolean): Boolean = this match {
+  @tailrec final def exists(p: A => Boolean): Boolean = this match
     case Cons(h, t) => p(h()) || t().exists(p)
     case _ => false
-  }
 
-  def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
+  def foldRight[B](z: => B)(f: (A, => B) => B): B = this match
     case Cons(h, t) => f(h(), t().foldRight(z)(f))
     case _ => z
-  }
 
   def existsViaFoldRight(p: A => Boolean): Boolean = foldRight(false)((a, b) => p(a) || b)
 
   // Exercise 5.4
   def forAll(p: A => Boolean): Boolean = foldRight(true)((a, b) => p(a) && b)
 
-  @tailrec
-  final def forAllWithRecursiveLoop(p: A => Boolean): Boolean = this match {
+  @tailrec final def forAllWithRecursiveLoop(p: A => Boolean): Boolean = this match
     case Empty => true
     case Cons(h, t) if p(h()) => t().forAllWithRecursiveLoop(p)
     case _ => false
-  }
 
   // Exercise 5.5
   def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = foldRight(empty[A])((a, b) => {
-    if (p(a)) cons(a, b)
+    if p(a) then cons(a, b)
     else empty
   })
 
@@ -91,7 +76,7 @@ sealed trait Stream[+A] derives CanEqual {
   // Exercise 5.7
   def map[B](f: A => B): Stream[B] = foldRight(empty[B])((a, b) => cons(f(a), b))
 
-  def filter(p: A => Boolean): Stream[A] = foldRight(empty[A])((a, b) => if (p(a)) cons(a, b) else b)
+  def filter(p: A => Boolean): Stream[A] = foldRight(empty[A])((a, b) => if p(a) then cons(a, b) else b)
 
   def append[B >: A](sa: => Stream[B]): Stream[B] = foldRight(sa)((a, b) => cons(a, b))
 
@@ -133,8 +118,8 @@ sealed trait Stream[+A] derives CanEqual {
   }
 
   // Exercise 5.14
-  def startsWith[A](prefix: Stream[A])(using CanEqual[A, A]): Boolean =
-    zipAll(prefix).takeWhile(!_._2.isEmpty) forAll {
+  def startsWith[B](prefix: Stream[B])(using canEqual: CanEqual[A, B]): Boolean =
+    zipAll(prefix).takeWhile(_._2.isDefined) forAll {
       case (h1, h2) => h1 == h2
     }
 
@@ -144,7 +129,7 @@ sealed trait Stream[+A] derives CanEqual {
     case Empty => None
   } append Stream(empty)
 
-  def hasSubsequence[A](sub: Stream[A])(using CanEqual[A, A]): Boolean = tails exists (_ startsWith sub)
+  def hasSubsequence[B](sub: Stream[B])(using CanEqual[A, B]): Boolean = tails exists (_ startsWith sub)
 
   // Exercise 5.16
   def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = foldRight((z, Stream(z)))((a, p0) => {
@@ -157,48 +142,48 @@ sealed trait Stream[+A] derives CanEqual {
   def tailsViaScanRight: Stream[Stream[A]] = scanRight(empty[A])((a, b) => {
     cons(a, b)
   })
-}
-object Stream {
+
+end Stream
+
+object Stream:
+
   case object Empty extends Stream[Nothing]
   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
-  def cons[A](hd: => A, t1: => Stream[A]): Stream[A] = {
+
+  def cons[A](hd: => A, t1: => Stream[A]): Stream[A] =
     lazy val head = hd
     lazy val tail = t1
     Cons(() => head, () => tail)
-  }
+
   def empty[A]: Stream[A] = Empty
 
-  def apply[A](as: A*): Stream[A] =
-    if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
+  def apply[A](as: A*): Stream[A] = if as.isEmpty then empty else cons(as.head, apply(as.tail*))
 
   val ones: Stream[Int] = cons(1, ones)
 
   // Exercise 5.8
-  def constant[A](a: A): Stream[A] = {
+  def constant[A](a: A): Stream[A] =
     // cons(a, constant(a))
     // This is more efficient than `cons(a, constant(a))` since it's just
     // one object referencing itself.
     lazy val tail: Stream[A] = Cons(() => a, () => tail)
     tail
-  }
 
   // Exercise 5.9 这个引用是不同的，不能像constant一样复用同一个引用
   def from(n: Int): Stream[Int] = cons(n, from(n + 1))
 
   // Exercise 5.10
-  val fibs: Stream[Int] = {
+  val fibs: Stream[Int] =
     def go(current: Int, next: Int): Stream[Int] = cons(current, go(next, current + next))
     go(0, 1)
-  }
 
   // Exercise 5.11
-  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match
     case Some((a, s)) => cons(a, unfold(s)(f))
     case None => empty
-  }
 
   // Exercise 5.12
-  val fibsViaUnfold: Stream[Int] = unfold((0, 1)){
+  val fibsViaUnfold: Stream[Int] = unfold((0, 1)) {
     case (current, next) => Some(current, (next, current + next))
   }
 
@@ -208,4 +193,4 @@ object Stream {
 
   val onesViaUnfold: Stream[Int] = unfold(1)(_ => Some(1, 1))
 
-}
+end Stream

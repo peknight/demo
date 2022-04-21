@@ -2,7 +2,7 @@ package com.peknight.demo.fpinscala.parallelism
 
 import java.util.concurrent.{Future, TimeUnit}
 
-case class Map2Future[A, B, C](a: Future[A], b: Future[B], f: (A, B) => C) extends Future[C] {
+case class Map2Future[A, B, C](a: Future[A], b: Future[B], f: (A, B) => C) extends Future[C]:
 
   @volatile var cache: Option[C] = None
 
@@ -17,7 +17,7 @@ case class Map2Future[A, B, C](a: Future[A], b: Future[B], f: (A, B) => C) exten
 
   override def get(timeout: Long, unit: TimeUnit): C = compute(unit.toNanos(timeout))
 
-  private def compute(timeoutInNanos: Long): C = cache match {
+  private def compute(timeoutInNanos: Long): C = cache match
     case Some(c) => c
     case None =>
       val start = System.nanoTime()
@@ -28,5 +28,3 @@ case class Map2Future[A, B, C](a: Future[A], b: Future[B], f: (A, B) => C) exten
       val ret = f(ar, br)
       cache = Some(ret)
       ret
-  }
-}

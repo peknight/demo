@@ -1,8 +1,10 @@
 package com.peknight.demo.fpinscala.parsing
 
+import scala.language.implicitConversions
+
 trait JSON
 
-object JSON {
+object JSON:
   case object JNull extends JSON
   case class JNumber(get: Double) extends JSON
   case class JString(get: String) extends JSON
@@ -10,13 +12,11 @@ object JSON {
   case class JArray(get: IndexedSeq[JSON]) extends JSON
   case class JObject(get: Map[String, JSON]) extends JSON
 
-  def jsonParser[Parser[+_]](P: Parsers[Parser]): Parser[JSON] = {
+  def jsonParser[Parser[+_]](P: Parsers[Parser]): Parser[JSON] =
     // We'll hide the string implicit conversion and promote strings to tokens instead
     // this is a bit nicer than having to write token everywhere
     // Gives access to all the combinators
-    import P.{string as _, *}
-
-    import scala.language.implicitConversions
+    import P.{string as _, *, given}
     given tok: Conversion[String, Parser[String]] = (s: String) => token(P.string(s))
 
     def array = surround("[", "]")(
@@ -39,5 +39,6 @@ object JSON {
 
     def value: Parser[JSON] = lit | obj | array
     root(whitespace *> (obj | array))
-  }
-}
+  end jsonParser
+
+end JSON

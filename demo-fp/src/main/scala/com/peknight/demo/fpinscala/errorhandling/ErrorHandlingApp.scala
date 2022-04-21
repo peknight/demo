@@ -1,43 +1,38 @@
 package com.peknight.demo.fpinscala.errorhandling
 
-import com.peknight.demo.fpinscala.errorhandling.Either._
-import com.peknight.demo.fpinscala.errorhandling.Option._
+import com.peknight.demo.fpinscala.errorhandling.Either.*
+import com.peknight.demo.fpinscala.errorhandling.Option.*
 
-object ErrorHandlingApp extends App {
-  def failingFn(i: Int): Int = {
+object ErrorHandlingApp extends App:
+
+  def failingFn(i: Int): Int =
     val y: Int = throw new Exception("fail!")
-    try {
+    try
       val x = 42 + 5
       x + y
-    } catch {
+    catch
       case e: Exception => 43
-    }
-  }
 
-  def failingFn2(i: Int): Int = {
-    try {
+  def failingFn2(i: Int): Int =
+    try
       val x = 42 + 5
       x + ((throw new Exception("fail!")): Int)
-    } catch {
-      case e: Exception => 43
-    }
-  }
+    catch case e: Exception => 43
 
   println(failingFn2(12))
 
   def mean(xs: Seq[Double]): Double =
-    if (xs.isEmpty) throw new ArithmeticException("mean of empty list!")
+    if xs.isEmpty then throw new ArithmeticException("mean of empty list!")
     else xs.sum / xs.length
 
   def meanWithOption(xs: Seq[Double]): Option[Double] =
-    if (xs.isEmpty) None
+    if xs.isEmpty then None
     else Some(xs.sum / xs.length)
 
   def lookupByName(name: String): Option[Employee] =
-    Map("Joe" -> Employee("Joe", "Accounting", None)).get(name) match {
+    Map("Joe" -> Employee("Joe", "Accounting", None)).get(name) match
       case scala.Some(e) => Some(e)
       case scala.None => None
-    }
 
   val joeDepartment: Option[String] = lookupByName("Joe").map(_.department)
 
@@ -61,25 +56,23 @@ object ErrorHandlingApp extends App {
 
 //  println("hello".toInt)
 
-  def parseInsuranceRateQuoteWithOption(age: String, numberOfSpeedingTickets: String): Option[Double] = {
+  def parseInsuranceRateQuoteWithOption(age: String, numberOfSpeedingTickets: String): Option[Double] =
     val optAge: Option[Int] = Option.Try(age.toInt)
     val optTickets: Option[Int] = Option.Try(numberOfSpeedingTickets.toInt)
     map2(optAge, optTickets)(insuranceRateQuote)
-  }
 
   def parseInsuranceRateQuoteWithEither(age: String, numberOfSpeedingTickets: String): Either[Exception, Double] =
-    for {
+    for
       a <- Either.Try(age.toInt)
       b <- Either.Try(numberOfSpeedingTickets.toInt)
-    } yield insuranceRateQuote(a, b)
+    yield insuranceRateQuote(a, b)
 
   def meanWithEither(xs: Seq[Double]): Either[String, Double] =
-    if (xs.isEmpty) Left("mean of empty list!")
+    if xs.isEmpty then Left("mean of empty list!")
     else Right(xs.sum / xs.length)
 
   def safeDiv(x: Int, y: Int): Either[Exception, Int] =
-    try (Right(x / y))
-    catch { case e: Exception => Left(e)}
+    try Right(x / y)
+    catch case e: Exception => Left(e)
 
-
-}
+end ErrorHandlingApp

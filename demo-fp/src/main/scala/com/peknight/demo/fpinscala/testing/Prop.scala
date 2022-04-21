@@ -9,22 +9,20 @@ import com.peknight.demo.fpinscala.testing.Result.{Falsified, Passed, Proved}
 
 import java.util.concurrent.Executors
 
-case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
+case class Prop(run: (MaxSize, TestCases, RNG) => Result):
   // Exercise 8.9
   // 这里两个prod的执行使用的是同一个rng对象，所以对于两个prop来说它们生成的值都是一模一样的
   def &&(p: Prop): Prop = Prop { (max, n, rng) =>
-    run(max, n, rng) match {
+    run(max, n, rng) match
       case Passed => p.run(max, n, rng)
       case Proved => p.run(max, n, rng)
       case x => x
-    }
   }
 
   def ||(p: Prop): Prop = Prop { (max, n, rng) =>
-    run(max, n, rng) match {
+    run(max, n, rng) match
       case Falsified(msg, _) => p.tag(msg).run(max, n, rng)
       case x => x
-    }
   }
 
   /*
@@ -32,13 +30,14 @@ case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
    * the given message on a newline in front of the existing message.
    */
   def tag(msg: String) = Prop { (max, n, rng) =>
-    run(max, n, rng) match {
+    run(max, n, rng) match
       case Falsified(e, c) => Falsified(msg + "\n" + e, c)
       case x => x
-    }
   }
-}
-object Prop {
+
+end Prop
+
+object Prop:
   // Type aliases like this can help the readability of an API
   // 每个测试用例的list最大长度是多少
   type MaxSize = Int
@@ -48,11 +47,12 @@ object Prop {
   def forAll[A](a: Gen[A])(f: A => Boolean): Prop = Prop { (max, n, rng) =>
     // A stream of pairs (a, i) where a is a random value and i is its index in the stream.
     randomStream(a)(rng).zip(LazyList.from(0)).take(n).map {
-      case (a, i) => try {
-        // When a test fails, record the falled cse and its index so we know how many tests succeeded before it
-        if (f(a)) Passed else Falsified(a.toString, i)
-        // If a test case generates an exception, record it in the result
-      } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
+      case (a, i) =>
+        try
+          // When a test fails, record the falled cse and its index so we know how many tests succeeded before it
+          if f(a) then Passed else Falsified(a.toString, i)
+          // If a test case generates an exception, record it in the result
+        catch case e: Exception => Falsified(buildMsg(a, e), i)
     }.find(_.isFalsified).getOrElse(Passed)
   }
 
@@ -71,33 +71,29 @@ object Prop {
     prop.run(max, n, rng)
   }
 
-  def randomStream[A](g: Gen[A])(rng: RNG): LazyList[A] = {
+  def randomStream[A](g: Gen[A])(rng: RNG): LazyList[A] =
     // Generates an infinite stream of A values by repeatedly sampling a generator.
     LazyList.unfold(rng)(rng => Some(g.sample.run(rng)))
-  }
 
-  def buildMsg[A](s: A, e: Exception): String = {
+  def buildMsg[A](s: A, e: Exception): String =
     // String interpolation syntax. A string starting with s" can refer to a Scala value v
     // as $v or ${v} in the string. The Scala compiler will expand this to v.toString.
     s"test case: $s\n" +
       s"generated an exception: ${e.getMessage}\n" +
       s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
-  }
 
   def run(p: Prop, maxSize: Int = 100, testCases: Int = 100, rng: RNG = SimpleRNG(System.currentTimeMillis())): Unit =
-    p.run(maxSize, testCases, rng) match {
+    p.run(maxSize, testCases, rng) match
       case Falsified(msg, n) => println(s"! Falsified after $n passed tests:\n $msg")
       case Passed => println(s"+ OK, passed $testCases tests.")
       case Proved => println(s"+ OK, proved property.")
-    }
 
   // Note that we are non-strict here.
-  def check(p: => Boolean): Prop = Prop { (_, _, _) =>
-    if (p) Proved else Falsified("()", 0)
-  }
+  def check(p: => Boolean): Prop = Prop { (_, _, _) => if p then Proved else Falsified("()", 0) }
 
   def equal[A](p: Par[A], p2: Par[A])(using CanEqual[A, A]): Par[Boolean] = Par.map2(p, p2)(_ == _)
 
+  //noinspection DuplicatedCode
   val S = weighted(
     // This generator creates a fixed thread pool executor 75% of the time and an unbounded one 25% of the time.
     Gen.choose(1, 4).map(Executors.newFixedThreadPool) -> .75,
@@ -105,8 +101,6 @@ object Prop {
     Gen.unit(Executors.newCachedThreadPool) -> .25
   )
 
-  def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
-    forAll(S ** g) { case s ** a => f(a)(s).get }
+  def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop = forAll(S ** g) { case s ** a => f(a)(s).get }
 
-
-}
+end Prop

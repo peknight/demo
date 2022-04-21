@@ -1,6 +1,6 @@
 package com.peknight.demo.fpinscala.monads
 
-trait Monadic[F[_], A] {
+trait Monadic[F[_], A]:
   val F: Monad[F]
   def get: F[A]
   private val a = get
@@ -13,4 +13,3 @@ trait Monadic[F[_], A] {
   def skip: F[Unit] = F.skip(a)
   def replicateM(n: Int) = F.replicateM(n)(a)
   def replicateM_(n: Int) = F.replicateM_(n)(a)
-}

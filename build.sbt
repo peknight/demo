@@ -65,8 +65,6 @@ lazy val demoFpInScala = (project in file("demo-fp"))
     name := "demo-fp",
     libraryDependencies ++= Seq(
       scalacheck,
-//      pekCommonFp,
-//      pekCommonTest,
     ),
   )
 

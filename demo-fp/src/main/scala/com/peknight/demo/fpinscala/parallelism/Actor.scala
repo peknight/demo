@@ -38,65 +38,57 @@ import scala.annotation.tailrec
  * @param strategy Execution strategy, for example, a strategy that is backed by an `ExecutorService`
  * @tparam A       The type of messages accepted by this actor.
  */
-final class Actor[A](strategy: Strategy)(handler: A => Unit, onError: Throwable => Unit = throw(_)) {
+final class Actor[A](strategy: Strategy)(handler: A => Unit, onError: Throwable => Unit = throw(_)):
   self =>
+
   // 一定要自己画图理解
   private val tail = new AtomicReference(new Node[A]())
   private val suspended = new AtomicInteger(1)
   private val head = new AtomicReference(tail.get)
 
   /** Alias for `apply` */
-  def !(a: A): Unit = {
+  def !(a: A): Unit =
     val n = new Node(a)
     head.getAndSet(n).lazySet(n)
     trySchedule()
-  }
 
   /** Pass the message `a` to the mailbox of this actor */
-  def apply(a: A): Unit = {
-    this ! a
-  }
+  def apply(a: A): Unit = this ! a
 
-  def contramap[B](f: B => A): Actor[B] = new Actor[B](strategy)((b: B) => (this ! f(b)), onError)
+  def contramap[B](f: B => A): Actor[B] = new Actor(strategy)((b: B) => this ! f(b), onError)
 
-  private def trySchedule(): Unit = {
-    if (suspended.compareAndSet(1, 0)) schedule()
-  }
+  private def trySchedule(): Unit = if suspended.compareAndSet(1, 0) then schedule()
 
-  private def schedule(): Unit = {
-    strategy(act())
-  }
+  private def schedule(): Unit = strategy(act())
 
-  private def act(): Unit = {
+  private def act(): Unit =
     val t = tail.get()
     val n = batchHandle(t, 1024)
-    if (n ne t) {
+    if n ne t then
       n.a = null.asInstanceOf[A]
       tail.lazySet(n)
       schedule()
-    } else {
+    else
       suspended.set(1)
-      if (n.get ne null) trySchedule()
-    }
-  }
+      if n.get ne null then trySchedule()
 
-  @tailrec
-  private def batchHandle(t: Node[A], i: Int): Node[A] = {
+  @tailrec private def batchHandle(t: Node[A], i: Int): Node[A] =
     val n = t.get
-    if (n ne null) {
-      try {
-        handler(n.a)
-      } catch {
-        case ex: Throwable => onError(ex)
-      }
-      if (i > 0) batchHandle(n, i - 1) else n
-    } else t
-  }
-}
+    if n ne null then
+      try handler(n.a)
+      catch case ex: Throwable => onError(ex)
+      if i > 0 then batchHandle(n, i - 1) else n
+    else t
 
-object Actor {
+end Actor
+
+
+object Actor:
+
   private class Node[A](var a: A = null.asInstanceOf[A]) extends AtomicReference[Node[A]]
 
   def apply[A](es: ExecutorService)(handler: A => Unit, onError: Throwable => Unit = throw(_)): Actor[A] =
     new Actor(Strategy.fromExecutorService(es))(handler, onError)
-}
+
+end Actor
+

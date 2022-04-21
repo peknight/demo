@@ -3,65 +3,65 @@ package com.peknight.demo.fpinscala.iomonad
 import com.peknight.demo.fpinscala.iomonad.Free.{Suspend, runFree, runTrampoline, translate}
 import com.peknight.demo.fpinscala.iomonad.Translate.~>
 import com.peknight.demo.fpinscala.monads.Monad
-import com.peknight.demo.fpinscala.monads.Monad.parMonad
+import com.peknight.demo.fpinscala.monads.Monad.given
 import com.peknight.demo.fpinscala.parallelism.Nonblocking.Par
 
 import scala.io.StdIn.readLine
 
-sealed trait Console[A] {
+sealed trait Console[A]:
   def toPar: Par[A]
   def toThunk: () => A
   def toState: ConsoleState[A]
   def toReader: ConsoleReader[A]
-}
-object Console {
-  case object ReadLine extends Console[Option[String]] {
+
+object Console:
+
+  case object ReadLine extends Console[Option[String]]:
     def toPar = Par.lazyUnit(run)
     def toThunk = () => run
 
-    def run: Option[String] = try Option(readLine()) catch { case e: Exception => None }
+    def run: Option[String] = try Option(readLine()) catch case e: Exception => None
 
     def toState = ConsoleState {
       case Buffers(head :: tail, out) => (Some(head), Buffers(tail, out))
       case buffers @ Buffers(_, _) => (None, buffers)
     }
+
     def toReader = ConsoleReader { in => Some(in) }
-  }
-  case class PrintLine(line: String) extends Console[Unit] {
+  end ReadLine
+
+  case class PrintLine(line: String) extends Console[Unit]:
     def toPar = Par.lazyUnit(println(line))
     def toThunk = () => println(line)
 
     def toState = ConsoleState(buffers => ((), Buffers(buffers.in, buffers.out :+ line)))
     def toReader = ConsoleReader { s => () }
-  }
+  end PrintLine
 
   type ConsoleIO[A] = Free[Console, A]
   def readLn: ConsoleIO[Option[String]] = Suspend(ReadLine)
   def printLn(line: String): ConsoleIO[Unit] = Suspend(PrintLine(line))
 
-  val consoleToFunction0 = new (Console ~> Function0) {
+  val consoleToFunction0 = new (Console ~> Function0):
     def apply[A](a: Console[A]) = a.toThunk
-  }
-  val consoleToPar = new (Console ~> Par) {
+
+  val consoleToPar = new (Console ~> Par):
     def apply[A](a: Console[A]) = a.toPar
-  }
 
   given function0Monad: Monad[Function0] with
     def unit[A](a: => A) = () => a
-    override def flatMap[A, B](a: Function0[A])(f: A => Function0[B]) = () => f(a())()
+    override def flatMap[A, B](a: () => A)(f: A => () => B) = () => f(a())()
 
   def runConsoleFunction0[A](a: Free[Console, A]): () => A = runFree[Console, Function0, A](a)(consoleToFunction0)
-  def runConsolePar[A](a: Free[Console, A]): Par[A] = runFree[Console, Par, A](a)(consoleToPar)(parMonad)
+  def runConsolePar[A](a: Free[Console, A]): Par[A] = runFree[Console, Par, A](a)(consoleToPar)
 
   def runConsole[A](a: Free[Console, A]): A = runTrampoline { translate(a)(consoleToFunction0) }
 
-  val consoleToReader = new (Console ~> ConsoleReader) {
+  val consoleToReader = new (Console ~> ConsoleReader):
     def apply[A](a: Console[A]) = a.toReader
-  }
 
-  val consoleToState = new (Console ~> ConsoleState) {
+  val consoleToState = new (Console ~> ConsoleState):
     def apply[A](a: Console[A]) = a.toState
-  }
 
   /*
    * runConsoleReader and runConsoleState aren't stack-safe as implemented,
@@ -71,4 +71,5 @@ object Console {
    */
   def runConsoleReader[A](io: ConsoleIO[A]): ConsoleReader[A] = runFree[Console, ConsoleReader, A](io)(consoleToReader)
   def runConsoleState[A](io: ConsoleIO[A]): ConsoleState[A] = runFree[Console, ConsoleState, A](io)(consoleToState)
-}
+
+end Console

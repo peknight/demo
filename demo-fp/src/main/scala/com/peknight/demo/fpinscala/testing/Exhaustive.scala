@@ -18,21 +18,19 @@ import scala.language.implicitConversions
  *
  * The Gen data type in this file incorporates exhaustive checking of finite domains.
  */
-object Exhaustive {
+object Exhaustive:
 
-  case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
-    def &&(p: Prop) =Prop {
-      (max, n, rng) => run(max, n, rng) match {
+  case class Prop(run: (MaxSize, TestCases, RNG) => Result):
+    def &&(p: Prop) = Prop {
+      (max, n, rng) => run(max, n, rng) match
         case Right((a, n)) => p.run(max, n, rng).map { case (s, m) => (s, n + m) }
         case l => l
-      }
     }
 
     def ||(p: Prop) = Prop {
-      (max, n, rng) => run(max, n, rng) match {
+      (max, n, rng) => run(max, n, rng) match
         case Left(msg) => p.tag(msg).run(max, n, rng)
         case r => r
-      }
     }
 
     /**
@@ -40,44 +38,39 @@ object Exhaustive {
      * the given message on a newline in front of the existing message.
      */
     def tag(msg: String) = Prop {
-      (max, n, rng) => run(max, n, rng) match {
+      (max, n, rng) => run(max, n, rng) match
         case Left(e) => Left(msg + "\n" + e)
         case r => r
-      }
     }
-  }
 
-  object Prop {
+  end Prop
+
+  object Prop:
+
     type TestCases = Int
     type MaxSize = Int
     type FailedCase = String
     type Result = Either[FailedCase, (Status, TestCases)]
 
-    def forAll[A](a: Gen[A])(f: A => Boolean): Prop = Prop {
-      (n, rng) => {
-        def go(i: Int, j: Int, s: Stream[Option[A]], onEnd: Int => Result): Result = {
-          if (i == j) Right((Unfalsified, i))
-          else s match {
-            case Cons(h, t) => h() match {
-              case Some(h) =>
-                try {
-                  if (f(h)) go(i + 1, j, t(), onEnd)
-                  else Left(h.toString)
-                } catch {
-                  case e: Exception => Left(buildMsg(h, e))
-                }
-              case None => Right((Unfalsified, i))
-            }
-            case _ => onEnd(i)
-          }
-        }
-        go(0, n / 3, a.exhaustive, i => Right((Proven, i))) match {
-          case Right((Unfalsified, _)) =>
-            val rands = randomStream(a)(rng).map(Some(_))
-            go(n / 3, n, rands, i => Right((Unfalsified, i)))
-          case s => s // If proven or failed, stop immediately
-        }
-      }
+    def forAll[A](a: Gen[A])(f: A => Boolean): Prop = Prop { (n, rng) =>
+      def go(i: Int, j: Int, s: Stream[Option[A]], onEnd: Int => Result): Result =
+        if i == j then Right((Unfalsified, i))
+        else s match
+          case Cons(h, t) => h() match
+            case Some(h) =>
+              try
+                if f(h) then go(i + 1, j, t(), onEnd)
+                else Left(h.toString)
+              catch case e: Exception => Left(buildMsg(h, e))
+            case None => Right((Unfalsified, i))
+          case _ => onEnd(i)
+      end go
+
+      go(0, n / 3, a.exhaustive, i => Right((Proven, i))) match
+        case Right((Unfalsified, _)) =>
+          val rands = randomStream(a)(rng).map(Some(_))
+          go(n / 3, n, rands, i => Right((Unfalsified, i)))
+        case s => s // If proven or failed, stop immediately
     }
 
     def buildMsg[A](s: A, e: Exception): String =
@@ -90,10 +83,9 @@ object Exhaustive {
      * We pattern match on the `SGen`, and delegate to our `Gen` version of `forAll`
      * if `g` is unsized; otherwise, we call the sized version of `forAll` (below).
      */
-    def forAll[A](g: SGen[A])(f: A => Boolean): Prop = g match {
+    def forAll[A](g: SGen[A])(f: A => Boolean): Prop = g match
       case Unsized(g2) => forAll(g2)(f)
       case Sized(gs) => forAll(gs)(f)
-    }
 
     /* The sized case of `forAll` is as before, though we convert from `Proven` to
      * `Exhausted`. A sized generator can never be proven, since there are always
@@ -102,10 +94,8 @@ object Exhaustive {
     def forAll[A](g: Int => Gen[A])(f: A => Boolean): Prop = Prop {
       (max, n, rng) =>
         val casesPerSize = n / max + 1
-        val props: List[Prop] =
-          Stream.from(0).take(max + 1).map(i => forAll(g(i))(f)).toList
-        val p: Prop = props.map(p => Prop((max, n, rng) => p.run(max, casesPerSize, rng))).
-          reduceLeft(_ && _)
+        val props: List[Prop] = Stream.from(0).take(max + 1).map(i => forAll(g(i))(f)).toList
+        val p: Prop = props.map(p => Prop((max, n, rng) => p.run(max, casesPerSize, rng))).reduceLeft(_ && _)
         p.run(max, n, rng).map {
           case (Proven, n) => (Exhausted, n)
           case x => x
@@ -115,8 +105,8 @@ object Exhaustive {
     def run(p: Prop,
             maxSize: Int = 100, // A default argument of `200`
             testCases: Int = 100,
-            rng: RNG = SimpleRNG(System.currentTimeMillis)): Unit = {
-      p.run(maxSize, testCases, rng) match {
+            rng: RNG = SimpleRNG(System.currentTimeMillis)): Unit =
+      p.run(maxSize, testCases, rng) match
         case Left(msg) => println("! test failed:\n" + msg)
         case Right((Unfalsified, n)) =>
           println("+ property unfalsified, ran " + n + " tests")
@@ -125,65 +115,59 @@ object Exhaustive {
         case Right((Exhausted, n)) =>
           println("+ property unfalsified up to max size, ran " +
             n + " tests")
-      }
-    }
 
     val ES: ExecutorService = Executors.newCachedThreadPool
-    val p1 = Prop.forAll(Gen.unit(Par.unit(1)))(i =>
-      Par.map(i)(_ + 1)(ES).get == Par.unit(2)(ES).get)
+
+    val p1 = Prop.forAll(Gen.unit(Par.unit(1)))(i => Par.map(i)(_ + 1)(ES).get == Par.unit(2)(ES).get)
 
     def check(p: => Boolean): Prop = // Note that we are non-strict here
       forAll(Gen.unit(()))(_ => p)
 
     val p2 = check {
+      //noinspection DuplicatedCode
       val p = Par.map(Par.unit(1))(_ + 1)
       val p2 = Par.unit(2)
       p(ES).get == p2(ES).get
     }
 
-    def equal[A](p: Par[A], p2: Par[A])(using CanEqual[A, A]): Par[Boolean] =
-      Par.map2(p,p2)(_ == _)
+    def equal[A](p: Par[A], p2: Par[A])(using CanEqual[A, A]): Par[Boolean] = Par.map2(p,p2)(_ == _)
 
     val p3 = check {
-      equal (
+      equal(
         Par.map(Par.unit(1))(_ + 1),
         Par.unit(2)
-      ) (ES).get()
+      )(ES).get()
     }
 
+    //noinspection DuplicatedCode
     // `a -> b` is syntax sugar for `(a,b)`
     val S = weighted(
       Gen.choose(1,4).map(Executors.newFixedThreadPool) -> .75,
       Gen.unit(Executors.newCachedThreadPool) -> .25
     )
 
-    def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
-      forAll(S.map2(g)((_,_))) { case (s, a) => f(a)(s).get }
+    def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop = forAll(S.map2(g)((_,_))) { case (s, a) => f(a)(s).get }
 
-    def checkPar(p: Par[Boolean]): Prop =
-      forAllPar(Gen.unit(()))(_ => p)
+    def checkPar(p: Par[Boolean]): Prop = forAllPar(Gen.unit(()))(_ => p)
 
-    def forAllPar2[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
-      forAll(S ** g) { case (s, a) => f(a)(s).get }
+    def forAllPar2[A](g: Gen[A])(f: A => Par[Boolean]): Prop = forAll(S ** g) { case (s, a) => f(a)(s).get }
 
-    def forAllPar3[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
-      forAll(S ** g) { case s ** a => f(a)(s).get }
+    def forAllPar3[A](g: Gen[A])(f: A => Par[Boolean]): Prop = forAll(S ** g) { case s ** a => f(a)(s).get }
 
-    val pint = Gen.choose(0,10) map (Par.unit(_))
-    val p4 =
-      forAllPar(pint)(n => equal(Par.map(n)(y => y), n))
+    val pint = Gen.choose(0,10) map Par.unit
+    val p4 = forAllPar(pint)(n => equal(Par.map(n)(y => y), n))
 
     val forkProp = Prop.forAllPar(pint2)(i => equal(Par.fork(i), i)) tag "fork"
-  }
+
+  end Prop
 
   /**
    * The `Gen` type now has a random generator as well as an exhaustive stream.
    * Infinite domains will simply generate infinite streams of None.
    * A finite domain is exhausted when the stream reaches empty.
    */
-  case class Gen[+A](sample: State[RNG, A], exhaustive: Stream[Option[A]]) {
-    def map[B](f: A => B): Gen[B] =
-      Gen(sample.map(f), exhaustive.map(_.map(f)))
+  case class Gen[+A](sample: State[RNG, A], exhaustive: Stream[Option[A]]):
+    def map[B](f: A => B): Gen[B] = Gen(sample.map(f), exhaustive.map(_.map(f)))
 
     def map2[B, C](g: Gen[B])(f: (A, B) => C): Gen[C] =
       Gen(sample.map2(g.sample)(f), map2Stream(exhaustive, g.exhaustive)(map2Option(_, _)(f)))
@@ -205,9 +189,9 @@ object Exhaustive {
     def unsized = Unsized(this)
 
     def **[B](g: Gen[B]): Gen[(A, B)] = (this map2 g)((_, _))
-  }
+  end Gen
 
-  object Gen {
+  object Gen:
 
     type Domain[+A] = Stream[Option[A]]
 
@@ -229,9 +213,7 @@ object Exhaustive {
      */
     def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] =
       Gen(State.sequence(List.fill(n)(g.sample)),
-        cartesian(Stream.constant(g.exhaustive).take(n))
-          .map(l => sequenceOption(l.toList))
-      )
+        cartesian(Stream.constant(g.exhaustive).take(n)).map(l => sequenceOption(l.toList)))
 
     /*
      * `cartesian` generates all possible combinations of a `Stream[Stream[A]]`. For instance:
@@ -244,7 +226,10 @@ object Exhaustive {
 
     // `map2Option` and `map2Stream`. Notice the duplication!
     def map2Option[A, B, C](oa: Option[A], ob: Option[B])(f: (A, B) => C): Option[C] =
-      for { a <- oa; b <- ob} yield f(a, b)
+      for
+        a <- oa
+        b <- ob
+      yield f(a, b)
 
     /*
      * This is not the same as `zipWith`, a function we've implemented before.
@@ -252,7 +237,10 @@ object Exhaustive {
      * This implementation desugars to sa.flatMap(a => sb.map(b => f(a, b))).
      */
     def map2Stream[A, B, C](sa: Stream[A], sb: => Stream[B])(f: (A, => B) => C): Stream[C] =
-      for { a <- sa; b <- sb } yield f(a, b)
+      for
+        a <- sa
+        b <- sb
+      yield f(a, b)
 
     /*
      * This is a function we've implemented before. Unfortunately, it does not exist in the standard library.
@@ -275,17 +263,18 @@ object Exhaustive {
      * but we require some special handling to deal with the maximum integer in the range.
      */
     def even(start: Int, stopExclusive: Int): Gen[Int] =
-      choose(start, if (stopExclusive % 2 == 0) stopExclusive - 1 else stopExclusive)
-        .map(n => if (n % 2 != 0) n + 1 else n)
+      choose(start, if stopExclusive % 2 == 0 then stopExclusive - 1 else stopExclusive)
+        .map(n => if n % 2 != 0 then n + 1 else n)
 
     def odd(start: Int, stopExclusive: Int): Gen[Int] =
-      choose(start, if (stopExclusive % 2 != 0) stopExclusive - 1 else stopExclusive)
-        .map(n => if (n % 2 == 0) n + 1 else n)
+      choose(start, if stopExclusive % 2 != 0 then stopExclusive - 1 else stopExclusive)
+        .map(n => if n % 2 == 0 then n + 1 else n)
 
-    def sameParity(from: Int, to: Int): Gen[(Int, Int)] = for {
-      i <- choose(from, to)
-      j <- if (i % 2 == 0) even(from, to) else odd(from, to)
-    } yield (i, j)
+    def sameParity(from: Int, to: Int): Gen[(Int, Int)] =
+      for
+        i <- choose(from, to)
+        j <- if i % 2 == 0 then even(from, to) else odd(from, to)
+      yield (i, j)
 
     def listOfN_1[A](n: Int, g: Gen[A]): Gen[List[A]] =
       List.fill(n)(g).foldRight(unit(List[A]()))((a, b) => a.map2(b)(_ :: _))
@@ -296,22 +285,22 @@ object Exhaustive {
      * interleave the two streams, so we get a more representative sample if we
      * don't get to examine the entire exhaustive stream.
      */
-    def union_1[A](g1: Gen[A], g2: Gen[A]): Gen[A] = boolean.flatMap(b => if (b) g1 else g2)
+    def union_1[A](g1: Gen[A], g2: Gen[A]): Gen[A] = boolean.flatMap(b => if b then g1 else g2)
 
     def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] = Gen(
-      State(RNG.boolean).flatMap(b => if (b) g1.sample else g2.sample),
+      State(RNG.boolean).flatMap(b => if b then g1.sample else g2.sample),
       interleave(g1.exhaustive, g2.exhaustive)
     )
 
     def interleave[A](s1: Stream[A], s2: Stream[A]): Stream[A] =
-      s1.zipAll(s2).flatMap { case (a, a2) => Stream((a.toList ++ a2.toList): _*) }
+      s1.zipAll(s2).flatMap { case (a, a2) => Stream(a.toList ++ a2.toList*) }
 
     /*
      * The random case is simple - we generate a double and use this to choose between
      * the two random samplers. The exhaustive case is trickier if we want to try
      * to produce a stream that does a weighted interleave of the two exhaustive streams.
      */
-    def weighted[A](g1: (Gen[A], Double), g2: (Gen[A], Double)): Gen[A] = {
+    def weighted[A](g1: (Gen[A], Double), g2: (Gen[A], Double)): Gen[A] =
       /* The probability we should pull from `g1`. */
       val g1Threshold = g1._2.abs / (g1._2.abs + g2._2.abs)
 
@@ -322,9 +311,11 @@ object Exhaustive {
        */
       def bools: Stream[Boolean] = randomStream(uniform.map(_ < g1Threshold))(SimpleRNG(302837L))
 
-      Gen(State(RNG.double).flatMap(d => if (d < g1Threshold) g1._1.sample else g2._1.sample),
+      Gen(State(RNG.double).flatMap(d => if d < g1Threshold then g1._1.sample else g2._1.sample),
         interleave(bools, g1._1.exhaustive, g2._1.exhaustive))
-    }
+
+    end weighted
+
 
     // Produce an infinite random stream from a `Gen` and a starting `RNG`.
     def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] = Stream.unfold(rng)(rng => Some(g.sample.run(rng)))
@@ -336,13 +327,12 @@ object Exhaustive {
      */
     def interleave[A](b: Stream[Boolean], s1: Stream[A], s2: Stream[A]): Stream[A] =
       b.headOption map { hd =>
-        if (hd) s1 match {
+        if hd then s1 match
           case Cons(h, t) => Stream.cons(h(), interleave(b drop 1, t(), s2))
           case _ => s2
-        } else s2 match {
+        else s2 match
           case Cons(h, t) => Stream.cons(h(), interleave(b drop 1, s1, t()))
           case _ => s1
-        }
       } getOrElse Stream.empty
 
     def listOf[A](g: Gen[A]): SGen[List[A]] = Sized(n => g.listOfN(n))
@@ -353,6 +343,8 @@ object Exhaustive {
     def string: SGen[String] = Sized(stringN)
 
     val smallInt = Gen.choose(-10, 10)
+
+    //noinspection DuplicatedCode
     val maxProp = forAll(listOf(smallInt)) { l =>
       val max = l.max
       !l.exists(_ > max) // No value greater than `max` should exist in `l`
@@ -360,11 +352,13 @@ object Exhaustive {
 
     def listOf1[A](g: Gen[A]): SGen[List[A]] = Sized(n => g.listOfN(n max 1))
 
+    //noinspection DuplicatedCode
     val maxProp1 = forAll(listOf1(smallInt)) { l =>
       val max = l.max
       !l.exists(_ > max) // No value greater than `max` should exist in `l`
     }
 
+    //noinspection DuplicatedCode
     val sortedProp = forAll(listOf(smallInt)) { l =>
       val ls = l.sorted
       l.isEmpty || ls.tail.isEmpty || !l.zip(ls.tail).exists { case (a, b) => a > b }
@@ -375,38 +369,43 @@ object Exhaustive {
      * result. This is not the most compelling example, but it provides at least some
      * variation in structure to use for testing.
      */
-    lazy val pint2: Gen[Par[Int]] = choose(-100,100).listOfN(choose(0,20)).map(l =>
-      l.foldLeft(Par.unit(0))((p,i) =>
-        Par.fork { Par.map2(p, Par.unit(i))(_ + _) }))
+    //noinspection DuplicatedCode
+    lazy val pint2: Gen[Par[Int]] = choose(-100,100)
+      .listOfN(choose(0,20))
+      .map(l =>
+        l.foldLeft(Par.unit(0))((p,i) =>
+          Par.fork { Par.map2(p, Par.unit(i))(_ + _) }
+        )
+      )
 
-    def genStringIntFn(g: Gen[Int]): Gen[String => Int] =
-      g map (i => (s => i))
-  }
+    def genStringIntFn(g: Gen[Int]): Gen[String => Int] = g map (i => s => i)
+
+  end Gen
 
   object ** {
     def unapply[A, B](p: (A, B)) = Some(p)
   }
+
   case class Sized[+A](forSize: Int => Gen[A]) extends SGen[A]
   case class Unsized[+A](get: Gen[A]) extends SGen[A]
 
-  implicit def unsized[A](g: Gen[A]): SGen[A] = Unsized(g)
+  given unsized[A]: Conversion[Gen[A], SGen[A]] = (g: Gen[A]) => Unsized(g)
 
-  trait SGen[+A] {
-    def map[B](f: A => B): SGen[B] = this match {
+  trait SGen[+A]:
+    def map[B](f: A => B): SGen[B] = this match
       case Sized(g) => Sized(g andThen (_ map f))
       case Unsized(g) => Unsized(g map f)
-    }
 
-    def flatMap[B](f: A => Gen[B]): SGen[B] = this match {
+    def flatMap[B](f: A => Gen[B]): SGen[B] = this match
       case  Sized(g) => Sized(g andThen (_ flatMap f))
       case Unsized(g) => Unsized(g flatMap f)
-    }
 
-    def **[B](s2: SGen[B]): SGen[(A, B)] = (this, s2) match {
+    def **[B](s2: SGen[B]): SGen[(A, B)] = (this, s2) match
       case (Sized(g), Sized(g2)) => Sized(n => g(n) ** g2(n))
       case (Unsized(g), Unsized(g2)) => Unsized(g ** g2)
       case (Sized(g), Unsized(g2)) => Sized(n => g(n) ** g2)
       case (Unsized(g), Sized(g2)) => Sized(n => g ** g2(n))
-    }
-  }
-}
+
+  end SGen
+
+end Exhaustive

@@ -2,11 +2,10 @@ package com.peknight.demo.fpinscala.testing
 
 import com.peknight.demo.fpinscala.state.{RNG, State}
 
-trait Cogen[-A] {
+trait Cogen[-A]:
   def sample(a: A, rng: RNG): RNG
-}
 
-object Cogen {
+object Cogen:
 
   def fn[A, B](in: Cogen[A])(out: Gen[B]): Gen[A => B] = Gen {
     State { (rng: RNG) =>
@@ -14,5 +13,3 @@ object Cogen {
       (f, rng)
     }
   }
-
-}
