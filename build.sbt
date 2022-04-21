@@ -95,20 +95,10 @@ lazy val demoCirce = (project in file("demo-circe"))
   .settings(commonSettings)
   .settings(
     name := "demo-circe",
-    scalaVersion := scala2Version,
-    scalacOptions ++= Seq(
-      "-Ymacro-annotations",
-    ),
-    scalacOptions --= Seq(
-      "-language:strictEquality",
-    ),
     libraryDependencies ++= Seq(
       circeCore,
       circeGeneric,
       circeParser,
-      circeShapes,
-      circeOptics,
-      circeGenericExtras,
     ),
   )
 
@@ -234,9 +224,6 @@ val fs2Scodec = "co.fs2" %% "fs2-scodec" % fs2Version
 val circeCore = "io.circe" %% "circe-core" % circeVersion
 val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
 val circeParser = "io.circe" %% "circe-parser" % circeVersion
-val circeShapes = "io.circe" %% "circe-shapes" % circeVersion
-val circeOptics = "io.circe" %% "circe-optics" % circeVersion
-val circeGenericExtras = "io.circe" %% "circe-generic-extras" % circeVersion
 
 // Library
 

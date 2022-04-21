@@ -1,9 +1,9 @@
 package com.peknight.demo.circe
 
-import io.circe.generic.auto._
-import io.circe.syntax._
+import io.circe.generic.auto.*
+import io.circe.syntax.*
 
-object AutomaticDerivation extends App {
+object AutomaticDerivation extends App:
 
   case class Person(name: String)
   case class Greeting(salutation: String, person: Person, exclamationMarks: Int)
@@ -14,4 +14,5 @@ object AutomaticDerivation extends App {
   //   "name" : "Chris"
   // },exclamationMarks -> 3]
   // )
-}
+
+end AutomaticDerivation

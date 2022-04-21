@@ -1,10 +1,10 @@
 package com.peknight.demo.circe
 
-import io.circe.generic.auto._
-import io.circe.parser._
-import io.circe.syntax._
+import io.circe.generic.auto.*
+import io.circe.parser.*
+import io.circe.syntax.*
 
-object QuickStart extends App {
+object QuickStart extends App:
 
   sealed trait Foo
   case class Bar(xs: Vector[String]) extends Foo
@@ -17,4 +17,3 @@ object QuickStart extends App {
 
   val decodedFoo = decode[Foo](json)
   println(decodedFoo)
-}

@@ -1,32 +1,34 @@
 package com.peknight.demo.circe
 
-object Optics extends App {
-  import io.circe._
-  import io.circe.parser._
+import io.circe.*
+import io.circe.parser.*
 
-  val json: Json = parse("""
-{
-  "order": {
-    "customer": {
-      "name": "Custy McCustomer",
-      "contactDetails": {
-        "address": "1 Fake Street, London, England",
-        "phone": "0123-456-789"
-      }
-    },
-    "items": [{
-      "id": 123,
-      "description": "banana",
-      "quantity": 1
-    }, {
-      "id": 456,
-      "description": "apple",
-      "quantity": 2
-    }],
-    "total": 123.45
-  }
-}
-""").getOrElse(Json.Null)
+object Optics extends App:
+
+  val json: Json = parse(
+    """
+      |{
+      |  "order": {
+      |    "customer": {
+      |      "name": "Custy McCustomer",
+      |      "contactDetails": {
+      |        "address": "1 Fake Street, London, England",
+      |        "phone": "0123-456-789"
+      |      }
+      |    },
+      |    "items": [{
+      |      "id": 123,
+      |      "description": "banana",
+      |      "quantity": 1
+      |    }, {
+      |      "id": 456,
+      |      "description": "apple",
+      |      "quantity": 2
+      |    }],
+      |    "total": 123.45
+      |  }
+      |}
+    """.trim.stripMargin).getOrElse(Json.Null)
 
   val phoneNumFromCursor: Option[String] = json.hcursor.
     downField("order").
@@ -37,6 +39,9 @@ object Optics extends App {
   // phoneNumFromCursor: Option[String] = Some("0123-456-789")
   println(phoneNumFromCursor)
 
+  /*
+  // scala2 only
+
   import io.circe.optics.JsonPath._
 
   val _phoneNum = root.order.customer.contactDetails.phone.string
@@ -46,6 +51,7 @@ object Optics extends App {
   // phoneNum: Option[String] = Some("0123-456-789")
 
   println(phoneNum)
+  */
 
   val itemsFromCursor: Vector[Json] = json.hcursor.
     downField("order").
@@ -64,11 +70,13 @@ object Optics extends App {
   // quantities: Vector[Int] = Vector(1, 2)
   println(quantities)
 
+  /*
+  // scala2 version
+
   val items: List[Int] =
     root.order.items.each.quantity.int.getAll(json)
   // items: List[Int] = List(1, 2)
   println(items)
-
 
   val doubleQuantities: Json => Json =
     root.order.items.each.quantity.int.modify(_ * 2)
@@ -101,9 +109,7 @@ object Optics extends App {
   // )
   println(modifiedJson)
 
-
-  import io.circe.optics.JsonOptics._
-  import monocle.function.Plated
+  import io.circe.optics.JsonOptics.*
 
   val transformedJson = Plated.transform[Json] { j =>
     j.asNumber match {
@@ -136,9 +142,6 @@ object Optics extends App {
   //   "total" : "123.45"
   // }]
   // )
+  */
 
-
-
-
-
-}
+end Optics
