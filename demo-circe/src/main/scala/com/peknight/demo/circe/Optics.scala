@@ -1,4 +1,4 @@
-package com.peknight.demo.json.circe
+package com.peknight.demo.circe
 
 object Optics extends App {
   import io.circe._

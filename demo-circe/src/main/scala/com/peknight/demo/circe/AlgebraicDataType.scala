@@ -1,4 +1,4 @@
-package com.peknight.demo.json.circe
+package com.peknight.demo.circe
 
 object AlgebraicDataType extends App {
   sealed trait Event

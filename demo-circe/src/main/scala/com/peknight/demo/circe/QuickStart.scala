@@ -1,4 +1,4 @@
-package com.peknight.demo.json.circe
+package com.peknight.demo.circe
 
 import io.circe.generic.auto._
 import io.circe.parser._

@@ -8,26 +8,13 @@ Docker / packageName := "pek/demo"
 Docker / maintainer := "peknight <JKpeknight@gmail.com>"
 
 lazy val commonSettings = Seq(
-  scalaVersion := "3.1.2",
   scalacOptions ++= Seq(
     "-feature",
     "-deprecation",
     "-unchecked",
     "-Xfatal-warnings",
     "-language:strictEquality",
-//    "-Ywarn-value-discard",
-  ),
-)
-
-lazy val commonSettings2 = Seq(
-  scalaVersion := "2.13.8",
-  scalacOptions ++= Seq(
-    "-feature",
-    "-deprecation",
-    "-unchecked",
-    "-Xfatal-warnings",
-    "-Ymacro-annotations",
-    //    "-Ywarn-value-discard",
+    // "-Ywarn-value-discard",
   ),
 )
 
@@ -38,7 +25,7 @@ lazy val demo = (project in file("."))
     demoCats,
     demoCatsEffect,
     demoFs2,
-    demoJson,
+    demoCirce,
     demoAkka,
     demoMath,
     demoJs.jvm,
@@ -47,7 +34,7 @@ lazy val demo = (project in file("."))
     demoRx,
   )
   .enablePlugins(JavaAppPackaging)
-  .settings(commonSettings2)
+  .settings(commonSettings)
   .settings(
     name := "demo",
   )
@@ -104,10 +91,17 @@ lazy val demoFs2 = (project in file("demo-fs2"))
     ),
   )
 
-lazy val demoJson = (project in file("demo-json"))
-  .settings(commonSettings2)
+lazy val demoCirce = (project in file("demo-circe"))
+  .settings(commonSettings)
   .settings(
-    name := "demo-json",
+    name := "demo-circe",
+    scalaVersion := scala2Version,
+    scalacOptions ++= Seq(
+      "-Ymacro-annotations",
+    ),
+    scalacOptions --= Seq(
+      "-language:strictEquality",
+    ),
     libraryDependencies ++= Seq(
       circeCore,
       circeGeneric,
@@ -139,11 +133,16 @@ lazy val demoMath = (project in file("demo-math"))
 
 lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
   //  .enablePlugins(ScalaJSPlugin) crossProject下看起来不需要设置
-  .settings(commonSettings2)
+  .settings(commonSettings)
   .settings(
     name := "demo-js",
+    scalaVersion := scala2Version,
     scalacOptions ++= Seq(
+      "-Ymacro-annotations",
       "-Xasync",
+    ),
+    scalacOptions --= Seq(
+      "-language:strictEquality",
     ),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % catsVersion,
@@ -177,11 +176,16 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
   )
 
 lazy val demoAsync = (project in file("demo-async"))
-  .settings(commonSettings2)
+  .settings(commonSettings)
   .settings(
     name := "demo-async",
+    scalaVersion := scala2Version,
     scalacOptions ++= Seq(
+      "-Ymacro-annotations",
       "-Xasync",
+    ),
+    scalacOptions --= Seq(
+      "-language:strictEquality",
     ),
     libraryDependencies ++= Seq(
       scalaAsync,
@@ -190,9 +194,17 @@ lazy val demoAsync = (project in file("demo-async"))
   )
 
 lazy val demoRx = (project in file("demo-rx"))
-  .settings(commonSettings2)
+  .settings(commonSettings)
   .settings(
     name := "demo-rx",
+    scalaVersion := scala2Version,
+    scalacOptions ++= Seq(
+      "-Ymacro-annotations",
+      "-Xasync",
+    ),
+    scalacOptions --= Seq(
+      "-language:strictEquality",
+    ),
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "scalarx" % scalaRxVersion,
       "com.lihaoyi" %%% "utest" % uTestVersion,
@@ -257,6 +269,7 @@ val weaverCats = "com.disneystreaming" %% "weaver-cats" % weaverCatsVersion
 
 // Scala 2
 
+val scala2Version = "2.13.8"
 val scalaAsyncVersion = "1.0.1"
 val scalaReflectVersion = "2.13.8"
 
