@@ -14,10 +14,10 @@ object JSON {
     // We'll hide the string implicit conversion and promote strings to tokens instead
     // this is a bit nicer than having to write token everywhere
     // Gives access to all the combinators
-    import P.{string => _, _}
+    import P.{string as _, *}
 
     import scala.language.implicitConversions
-    implicit def tok(s: String) = token(P.string(s))
+    given tok: Conversion[String, Parser[String]] = (s: String) => token(P.string(s))
 
     def array = surround("[", "]")(
       value.sep(",").map(vs => JArray(vs.toIndexedSeq))
@@ -31,8 +31,8 @@ object JSON {
 
     def lit = scope("literal") {
       "null".as(JNull) |
-      double.map(JNumber) |
-      escapedQuoted.map(JString) |
+      double.map(JNumber.apply) |
+      escapedQuoted.map(JString.apply) |
       "true".as(JBool(true)) |
       "false".as(JBool(false))
     }

@@ -5,6 +5,7 @@ import com.peknight.demo.fpinscala.parallelism.Nonblocking.Par
 
 import java.util.concurrent.Executors
 import scala.io.StdIn.readLine
+import scala.language.implicitConversions
 
 object IOMonadApp extends scala.App {
   def contestV1(p1: Player, p2: Player): Unit = {

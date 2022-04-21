@@ -1,10 +1,10 @@
 package com.peknight.demo.fpinscala.laziness
 
-import com.peknight.demo.fpinscala.laziness.Stream._
+import com.peknight.demo.fpinscala.laziness.Stream.*
 
 import scala.annotation.tailrec
 
-sealed trait Stream[+A] {
+sealed trait Stream[+A] derives CanEqual {
   def headOption: Option[A] = this match {
     case Cons(h, _) => Some(h())
     case Empty => None
@@ -133,7 +133,7 @@ sealed trait Stream[+A] {
   }
 
   // Exercise 5.14
-  def startsWith[A](prefix: Stream[A]): Boolean =
+  def startsWith[A](prefix: Stream[A])(using CanEqual[A, A]): Boolean =
     zipAll(prefix).takeWhile(!_._2.isEmpty) forAll {
       case (h1, h2) => h1 == h2
     }
@@ -144,7 +144,7 @@ sealed trait Stream[+A] {
     case Empty => None
   } append Stream(empty)
 
-  def hasSubsequence[A](sub: Stream[A]): Boolean = tails exists (_ startsWith sub)
+  def hasSubsequence[A](sub: Stream[A])(using CanEqual[A, A]): Boolean = tails exists (_ startsWith sub)
 
   // Exercise 5.16
   def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = foldRight((z, Stream(z)))((a, p0) => {

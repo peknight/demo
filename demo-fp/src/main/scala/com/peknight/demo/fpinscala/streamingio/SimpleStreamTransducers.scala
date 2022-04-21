@@ -2,11 +2,13 @@ package com.peknight.demo.fpinscala.streamingio
 
 import com.peknight.demo.fpinscala.iomonad.App.IO
 import com.peknight.demo.fpinscala.iomonad.Free.Suspend
-import com.peknight.demo.fpinscala.monads.Monad
+import com.peknight.demo.fpinscala.monads.Monad.given
+import com.peknight.demo.fpinscala.monads.{Monad, Monadic}
 import com.peknight.demo.fpinscala.parallelism.Nonblocking.Par
-import com.peknight.demo.fpinscala.streamingio.SimpleStreamTransducers.Process._
+import com.peknight.demo.fpinscala.streamingio.SimpleStreamTransducers.Process.*
 
 import scala.annotation.tailrec
+import scala.language.implicitConversions
 
 object SimpleStreamTransducers {
 
@@ -197,13 +199,12 @@ object SimpleStreamTransducers {
       }
     }
 
-    def monad[I]: Monad[({type f[x] = Process[I, x]})#f] = new Monad[({type f[x] = Process[I, x]})#f] {
+    def monad[I]: Monad[[A] =>> Process[I, A]] = new Monad[({type f[x] = Process[I, x]})#f] {
       def unit[O](o: => O): Process[I, O] = Emit(o)
       override def flatMap[O, O2](p: Process[I, O])(f: O => Process[I, O2]): Process[I, O2] = p flatMap f
     }
 
-    import scala.language.implicitConversions
-    implicit def toMonadic[I, O](a: Process[I, O]) = monad[I].toMonadic(a)
+    given toMonadic[I, O]: Conversion[Process[I, O], Monadic[[A] =>> Process[I, A], O]] = monad[I].toMonadic(_)
 
     // Exercise 15.7
     def zip[A, B, C](p1: Process[A, B], p2: Process[A, C]): Process[A, (B, C)] = (p1, p2) match {

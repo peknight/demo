@@ -1,8 +1,8 @@
 package com.peknight.demo.fpinscala.errorhandling
 
-sealed trait Option[+A] {
+sealed trait Option[+A] derives CanEqual {
 
-  import Option._
+  import Option.*
 
   def map[B](f: A => B): Option[B] = this match {
     case Some(a) => Some(f(a))

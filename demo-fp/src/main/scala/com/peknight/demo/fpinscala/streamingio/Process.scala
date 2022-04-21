@@ -69,15 +69,13 @@ trait Process[F[_], O] {
     go(this, IndexedSeq())
   }
 
-  def |>[O2](p2: Process1[O, O2]): Process[F, O2] = p2 match {
+  def |>[O2](p2: Process1[O, O2]): Process[F, O2] = p2 match
     case Halt(e) => this.kill onHalt { e2 => Halt(e) ++ Halt(e2) }
     case Emit(h, t) => Emit(h, this |> t)
-    case Await(req, recv) => this match {
+    case Await(req, recv) => this match
       case Halt(err) => Halt(err) |> recv(Left(err))
       case Emit(h, t) => t |> Try(recv(Right(h)))
       case Await(req0, recv0) => await(req0)(recv0.andThen(_ |> p2))
-    }
-  }
 
   // 给最外层的Await传递Kill异常，但忽略余下的输出
   @tailrec
@@ -136,11 +134,10 @@ object Process {
   // Halt due to err, which could be an actual error or End indicating normal termination.
   case class Halt[F[_], O](err: Throwable) extends Process[F, O]
 
-  case object End extends Exception:
-    given CanEqual[End, Throwable]
+  case object End extends Exception
+  case object Kill extends Exception
 
-  case object Kill extends Exception:
-    given CanEqual[End, Throwable]
+  given canEq: CanEqual[Exception, Throwable] = CanEqual.derived
 
   def emit[F[_], O](head: O, tail: Process[F, O] = Halt[F, O](End)): Process[F, O] = Emit(head, tail)
   def await[F[_], A, O](req: F[A])(recv: Either[Throwable, A] => Process[F, O]): Process[F, O] = Await(req, recv)

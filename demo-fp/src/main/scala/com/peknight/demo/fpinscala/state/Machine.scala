@@ -1,11 +1,11 @@
 package com.peknight.demo.fpinscala.state
 
-import com.peknight.demo.fpinscala.state.State._
+import com.peknight.demo.fpinscala.state.State.*
 
 case class Machine(locked: Boolean, candies: Int, coins: Int)
 
 object Machine {
-  sealed trait Input
+  sealed trait Input derives CanEqual
   case object Coin extends Input
   case object Turn extends Input
 

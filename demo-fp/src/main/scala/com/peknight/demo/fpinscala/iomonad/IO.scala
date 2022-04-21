@@ -5,6 +5,7 @@ import com.peknight.demo.fpinscala.monads.Monad
 
 import scala.annotation.tailrec
 import scala.io.StdIn.readLine
+import scala.language.implicitConversions
 
 sealed trait IO[A] { self =>
   def flatMap[B](f: A => IO[B]): IO[B] = FlatMap(this, f)

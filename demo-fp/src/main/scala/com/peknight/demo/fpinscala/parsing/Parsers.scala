@@ -155,10 +155,10 @@ trait Parsers[Parser[+_]] { self =>
   }
 
   object Laws {
-    import com.peknight.demo.fpinscala.testing.Prop._
-    import com.peknight.demo.fpinscala.testing._
-    def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop = forAll(in)(s => self.run(p1)(s) == self.run(p2)(s))
-    def mapLaw[A](p: Parser[A])(in: Gen[String]): Prop = equal(p, p.map(a => a))(in)
+    import com.peknight.demo.fpinscala.testing.*
+    import com.peknight.demo.fpinscala.testing.Prop.*
+    def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String])(using CanEqual[A, A]): Prop = forAll(in)(s => self.run(p1)(s) == self.run(p2)(s))
+    def mapLaw[A](p: Parser[A])(in: Gen[String])(using CanEqual[A, A]): Prop = equal(p, p.map(a => a))(in)
     def labelLaw[A](p: Parser[A], inputs: SGen[String]): Prop = forAll(inputs ** Gen.string) { case (input, msg) =>
       self.run(label(msg)(p))(input) match {
         case Left(e: ParseError) => errorMessage(e) == msg

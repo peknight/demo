@@ -4,7 +4,7 @@ import com.peknight.demo.fpinscala.applicative.Validation.{Failure, Success, val
 import com.peknight.demo.fpinscala.monads.Monad
 import com.peknight.demo.fpinscala.monads.Monad.{lazyListMonad, optionMonad}
 import com.peknight.demo.fpinscala.parsing.Sliceable
-import com.peknight.demo.fpinscala.parsing.Sliceable.{string => _, _}
+import com.peknight.demo.fpinscala.parsing.Sliceable.{string as _, *}
 import com.peknight.demo.fpinscala.parsing.SliceableType.Parser
 
 import java.time.format.DateTimeFormatter
@@ -12,7 +12,7 @@ import java.time.{LocalDate, ZoneId}
 import java.util.Date
 import scala.language.implicitConversions
 
-object ApplicativeApp extends App {
+object ApplicativeApp extends App:
   val depts: Map[String, String] = Map("Alice" -> "Tech")
   val salaries: Map[String, Double] = Map("Alice" -> 100.0)
   val aliceDeptSalary: Option[String] = optionMonad.map2(depts.get("Alice"), salaries.get("Alice"))((dept, salary) =>
@@ -28,7 +28,7 @@ object ApplicativeApp extends App {
 
   val parserMonad: Monad[Parser] = Monad.parserMonad(Sliceable)
 
-  implicit def tok(s: String) = token(Sliceable.string(s))
+  given tok: Conversion[String, Parser[String]] = (a: String) => token(Sliceable.string(a))
 
   def parseDate(dateStr: String, pattern: String): Date = Date.from(
     LocalDate.parse(dateStr, DateTimeFormatter.ofPattern(pattern)).atStartOfDay(ZoneId.systemDefault()).toInstant
@@ -36,7 +36,7 @@ object ApplicativeApp extends App {
 
   val dateParser: Parser[Date] = "[0-1]?[0-9]/[0-3]?[0-9]/[0-9]{1,4}".r.map(parseDate(_, "M/d/yyyy"))
   val tempParser: Parser[Double] = double
-  val rowParser: Parser[Row] = parserMonad.map2(dateParser <* ",", tempParser)(Row)
+  val rowParser: Parser[Row] = parserMonad.map2(dateParser <* ",", tempParser)(Row.apply)
   val rowsParser: Parser[List[Row]] = root(whitespace *> many(rowParser <* whitespace))
 
   val rowsFile =
@@ -58,7 +58,7 @@ object ApplicativeApp extends App {
     }
 
   val header: Parser[Parser[Row]] = token("#" *> (headerParser(tempHeader, dateHeader)((temp, date) => Row(date, temp)) or
-    headerParser(dateHeader, tempHeader)(Row)))
+    headerParser(dateHeader, tempHeader)(Row.apply)))
 
   val rowsParser2: Parser[List[Row]] = root(whitespace *> parserMonad.flatMap(header)(parser => many(parser <* whitespace)))
 
@@ -127,7 +127,7 @@ object ApplicativeApp extends App {
       validName(name),
       validBirthdate(birthdate),
       validPhone(phone)
-    )(WebForm)
+    )(WebForm.apply)
 
   def format(e: Option[Employee], pay: Option[Pay]): Option[String] = optionMonad.map2(e, pay) { (e, pay) =>
     s"${e.name} makes ${pay.rate * pay.hoursPerYear}"
@@ -162,4 +162,3 @@ object ApplicativeApp extends App {
     override def traverse[G[_], A, B](fa: Tree[A])(f: A => G[B])(implicit G: Applicative[G]): G[Tree[B]] =
       G.map2(f(fa.head), listTraverse.traverse(fa.tail)(a => traverse(a)(f)))(Tree(_, _))
   }
-}

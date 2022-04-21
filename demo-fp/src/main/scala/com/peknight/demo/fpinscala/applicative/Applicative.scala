@@ -68,8 +68,9 @@ object Applicative {
   type Const[M, B] = M
 
   import scala.language.implicitConversions
-  implicit def monoidApplicative[M](M: Monoid[M]) = new Applicative[({type f[x] = Const[M, x]})#f] {
-    def unit[A](a: => A): Const[M, A] = M.zero
-    override def map2[A, B, C](fa: Const[M, A], fb: Const[M, B])(f: (A, B) => C): Const[M, C] = M.op(fa, fb)
-  }
+
+  given monoidApplicative[M]: Conversion[Monoid[M], Applicative[[B] =>> Const[M, B]]] = (m: Monoid[M]) =>
+    new Applicative[[B] =>> Const[M, B]]:
+      def unit[A](a: => A): Const[M, A] = m.zero
+      override def map2[A, B, C](fa: Const[M, A], fb: Const[M, B])(f: (A, B) => C): Const[M, C] = m.op(fa, fb)
 }

@@ -46,10 +46,9 @@ object Console {
     def apply[A](a: Console[A]) = a.toPar
   }
 
-  implicit val function0Monad = new Monad[Function0] {
+  given function0Monad: Monad[Function0] with
     def unit[A](a: => A) = () => a
     override def flatMap[A, B](a: Function0[A])(f: A => Function0[B]) = () => f(a())()
-  }
 
   def runConsoleFunction0[A](a: Free[Console, A]): () => A = runFree[Console, Function0, A](a)(consoleToFunction0)
   def runConsolePar[A](a: Free[Console, A]): Par[A] = runFree[Console, Par, A](a)(consoleToPar)(parMonad)

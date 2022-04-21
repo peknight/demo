@@ -3,8 +3,7 @@ package com.peknight.demo.fpinscala.datastructures
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 
-sealed trait List[+A] {
-}
+sealed trait List[+A] derives CanEqual
 
 object List {
   case object Nil extends List[Nothing]
@@ -224,7 +223,7 @@ object List {
 
   // Exercise 3.24
   @tailrec
-  def startsWith[A](l: List[A], prefix: List[A]): Boolean = {
+  def startsWith[A](l: List[A], prefix: List[A])(using CanEqual[A, A]): Boolean = {
     (l, prefix) match {
       case (_, Nil) => true
       case (Cons(hp, tp), Cons(hb, tb)) if (hp == hb) => startsWith(tp, tb)
@@ -232,7 +231,7 @@ object List {
     }
   }
   @tailrec
-  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean =
+  def hasSubsequence[A](sup: List[A], sub: List[A])(using CanEqual[A, A]): Boolean =
     sup match {
       case Nil => sub == Nil
       case _ if startsWith(sup, sub) => true

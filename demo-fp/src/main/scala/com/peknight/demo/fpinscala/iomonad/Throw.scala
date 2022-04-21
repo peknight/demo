@@ -2,6 +2,8 @@ package com.peknight.demo.fpinscala.iomonad
 
 import com.peknight.demo.fpinscala.monads.Monad
 
+import scala.language.implicitConversions
+
 /**
  * A version of `TailRec` implemented using exceptions.
  * In the implementation of `flatMap`, rather than calling
@@ -10,7 +12,7 @@ import com.peknight.demo.fpinscala.monads.Monad
  * and catches these exceptions to force the computation.
  */
 sealed trait Throw[+A] {
-  import Throw._
+  import Throw.*
 
   final def run: A = this match {
     case Done(a) => a

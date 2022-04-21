@@ -62,9 +62,9 @@ object MonoidsApp extends App {
 
   // Exercise 10.4
 
-  import com.peknight.demo.fpinscala.testing.Prop._
-  import com.peknight.demo.fpinscala.testing._
-  def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop =
+  import com.peknight.demo.fpinscala.testing.*
+  import com.peknight.demo.fpinscala.testing.Prop.*
+  def monoidLaws[A](m: Monoid[A], gen: Gen[A])(using CanEqual[A, A]): Prop =
     forAll(for {
       x <- gen
       y <- gen
@@ -109,7 +109,7 @@ object MonoidsApp extends App {
   // Exercise 10.8
 
   import com.peknight.demo.fpinscala.parallelism.Nonblocking.Par
-  import com.peknight.demo.fpinscala.parallelism.Nonblocking.Par._
+  import com.peknight.demo.fpinscala.parallelism.Nonblocking.Par.*
   def par[A](m: Monoid[A]): Monoid[Par[A]] = new Monoid[Par[A]] {
     def zero = Par.unit(m.zero)
     def op(a: Par[A], b: Par[A]) = Par.map2(a, b)(m.op)

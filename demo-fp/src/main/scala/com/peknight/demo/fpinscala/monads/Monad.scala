@@ -6,6 +6,8 @@ import com.peknight.demo.fpinscala.parsing.Parsers
 import com.peknight.demo.fpinscala.state.State
 import com.peknight.demo.fpinscala.testing.Gen
 
+import scala.language.implicitConversions
+
 trait Monad[F[_]] extends Applicative[F] {
   def unit[A](a: => A): F[A]
   def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B] = join(map(fa)(f))
@@ -112,7 +114,7 @@ trait Monad[F[_]] extends Applicative[F] {
 
   import scala.language.implicitConversions
   // syntax
-  implicit def toMonadic[A](a: F[A]): Monadic[F, A] = new Monadic[F, A] {
+  given toMonadic[A]: Conversion[F[A], Monadic[F, A]] = (a: F[A]) => new Monadic[F, A] {
     val F = Monad.this
     def get = a
   }

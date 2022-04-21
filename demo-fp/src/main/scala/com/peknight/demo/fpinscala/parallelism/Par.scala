@@ -104,7 +104,7 @@ object Par {
       case ((a, b, c, d), e) => f(a, b, c, d, e)
     }
 
-  def equal[A](e: ExecutorService)(p1: Par[A], p2: Par[A]): Boolean = p1(e).get() == p2(e).get()
+  def equal[A](e: ExecutorService)(p1: Par[A], p2: Par[A])(using CanEqual[A, A]): Boolean = p1(e).get() == p2(e).get()
 
   def delay[A](fa: => Par[A]):Par[A] = es => fa(es)
 
