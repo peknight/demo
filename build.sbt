@@ -1,24 +1,11 @@
 ThisBuild / version := "0.1-SNAPSHOT"
 
-ThisBuild / scalaVersion := "2.13.8"
+ThisBuild / scalaVersion := "3.1.2"
 
 ThisBuild / organization := "com.peknight"
 
 Docker / packageName := "pek/demo"
 Docker / maintainer := "peknight <JKpeknight@gmail.com>"
-
-lazy val commonSettings2 = Seq(
-  addCompilerPlugin(kindProjector),
-  scalaVersion := "2.13.8",
-  scalacOptions ++= Seq(
-    "-feature",
-    "-deprecation",
-    "-unchecked",
-    "-Xfatal-warnings",
-    "-Ymacro-annotations",
-//    "-Ywarn-value-discard",
-  ),
-)
 
 lazy val commonSettings = Seq(
   scalaVersion := "3.1.2",
@@ -28,34 +15,49 @@ lazy val commonSettings = Seq(
     "-unchecked",
     "-Xfatal-warnings",
     "-language:strictEquality",
+//    "-Ywarn-value-discard",
+  ),
+)
+
+lazy val commonSettings2 = Seq(
+  scalaVersion := "2.13.8",
+  scalacOptions ++= Seq(
+    "-feature",
+    "-deprecation",
+    "-unchecked",
+    "-Xfatal-warnings",
+    "-Ymacro-annotations",
     //    "-Ywarn-value-discard",
   ),
 )
 
 lazy val demo = (project in file("."))
-  .aggregate(demoCore, demoMath, demoFpInScala, demoCats, demoCatsEffect, demoFs2, demoMonocle, demoJson, demoAkka,
-    demoRx, demoAsync, demoApp, demoScala3, demoJs.jvm, demoJs.js)
+  .aggregate(
+    demoScala3,
+    demoFpInScala,
+    demoCats,
+    demoCatsEffect,
+    demoFs2,
+    demoJson,
+    demoAkka,
+    demoMath,
+    demoJs.jvm,
+    demoJs.js,
+    demoAsync,
+    demoRx,
+  )
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings2)
   .settings(
     name := "demo",
   )
 
-lazy val demoCore = (project in file("demo-core"))
-  .settings(commonSettings2)
+lazy val demoScala3 = (project in file("demo-scala3"))
+  .settings(commonSettings)
   .settings(
-    name := "demo-core",
+    name := "demo-scala3",
     libraryDependencies ++= Seq(
-      pekCommonCore,
-    ),
-  )
-
-lazy val demoMath = (project in file("demo-math"))
-  .settings(commonSettings2)
-  .settings(
-    name := "demo-math",
-    libraryDependencies ++= Seq(
-      pekCommonMath,
+      scalaTest % Test,
     ),
   )
 
@@ -102,26 +104,21 @@ lazy val demoFs2 = (project in file("demo-fs2"))
     ),
   )
 
-lazy val demoMonocle = (project in file("demo-monocle"))
-  .settings(commonSettings2)
-  .settings(
-    name := "demo-monocle",
-    libraryDependencies ++= Seq(
-      pekCommonFp,
-    ),
-  )
-
 lazy val demoJson = (project in file("demo-json"))
   .settings(commonSettings2)
   .settings(
     name := "demo-json",
     libraryDependencies ++= Seq(
-      pekCommonJson,
+      circeCore,
+      circeGeneric,
+      circeParser,
+      circeShapes,
+      circeOptics,
+      circeGenericExtras,
     ),
   )
 
 lazy val demoAkka = (project in file("demo-akka"))
-//  .dependsOn(demoCore)
   .settings(commonSettings)
   .settings(
     name := "demo-akka",
@@ -131,14 +128,51 @@ lazy val demoAkka = (project in file("demo-akka"))
     ),
   )
 
-lazy val demoRx = (project in file("demo-rx"))
-  .dependsOn(demoCore)
+lazy val demoMath = (project in file("demo-math"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-math",
+    libraryDependencies ++= Seq(
+      apacheCommonsMath,
+    ),
+  )
+
+lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
+  //  .enablePlugins(ScalaJSPlugin) crossProject下看起来不需要设置
   .settings(commonSettings2)
   .settings(
-    name := "demo-rx",
+    name := "demo-js",
+    scalacOptions ++= Seq(
+      "-Xasync",
+    ),
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "scalarx" % "0.4.3",
-      "com.lihaoyi" %%% "utest" % "0.7.4",
+      "org.typelevel" %%% "cats-core" % catsVersion,
+      "com.lihaoyi" %%% "scalarx" % scalaRxVersion,
+      "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
+      "com.lihaoyi" %%% "upickle" % uPickleVersion,
+      "com.lihaoyi" %%% "utest" % uTestVersion,
+      "com.lihaoyi" %%% "autowire" % autowireVersion,
+    ),
+  )
+  .jvmSettings(
+    // Add JVM-specific settings here
+    libraryDependencies ++= Seq(
+      akkaActor,
+      akkaStream,
+      akkaHttp,
+      bootstrap,
+    ),
+  )
+  .jsSettings(
+    // Add JS-specific settings here
+    // This is an application with a main method
+    scalaJSUseMainModuleInitializer := true,
+    Compile / mainClass := Some("com.peknight.demo.js.tutorial.webapp.TutorialApp"),
+    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+    testFrameworks += new TestFramework("utest.runner.Framework"),
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+      scalaAsync,
     ),
   )
 
@@ -155,75 +189,15 @@ lazy val demoAsync = (project in file("demo-async"))
     ),
   )
 
-lazy val demoApp = (project in file("demo-app"))
-//  .dependsOn(demoCore)
-  .settings(commonSettings)
-  .settings(
-    name := "demo-app",
-    libraryDependencies ++= Seq(
-    ),
-  )
-
-lazy val demoScala3 = (project in file("demo-scala3"))
-//  .dependsOn(demoCore)
-  .settings(commonSettings)
-  .settings(
-    name := "demo-scala3",
-    libraryDependencies ++= Seq(
-      scalaTest % Test,
-    ),
-  )
-
-lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
-//  .enablePlugins(ScalaJSPlugin) crossProject下看起来不需要设置
+lazy val demoRx = (project in file("demo-rx"))
   .settings(commonSettings2)
   .settings(
-    name := "demo-js",
-    scalacOptions ++= Seq(
-      "-Xasync",
-    ),
+    name := "demo-rx",
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-core" % "2.6.1",
-      "com.lihaoyi" %%% "utest" % "0.7.4",
-      "com.lihaoyi" %%% "scalatags" % "0.9.4",
-      "com.lihaoyi" %%% "upickle" % "1.4.0",
-      "com.lihaoyi" %%% "autowire" % "0.3.3",
-      "com.lihaoyi" %%% "scalarx" % "0.4.3",
+      "com.lihaoyi" %%% "scalarx" % scalaRxVersion,
+      "com.lihaoyi" %%% "utest" % uTestVersion,
     ),
   )
-  .jvmSettings(
-    // Add JVM-specific settings here
-    libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-actor" % "2.6.15",
-      "com.typesafe.akka" %% "akka-stream" % "2.6.15",
-      "com.typesafe.akka" %% "akka-http" % "10.2.5",
-      "org.webjars" % "bootstrap" % "5.0.2",
-    ),
-  )
-  .jsSettings(
-    // Add JS-specific settings here
-    // This is an application with a main method
-    scalaJSUseMainModuleInitializer := true,
-    Compile / mainClass := Some("com.peknight.demo.js.tutorial.webapp.TutorialApp"),
-    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
-    testFrameworks += new TestFramework("utest.runner.Framework"),
-    libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % "1.1.0",
-      "org.scala-lang.modules" %% "scala-async" % "1.0.0",
-    ),
-  )
-
-val kindProjectorVersion = "0.13.2"
-val pekCommonVersion = "0.1-SNAPSHOT"
-
-val kindProjector = "org.typelevel" % "kind-projector" % kindProjectorVersion cross CrossVersion.full
-val pekCommonCore = "com.peknight" %% "common-core" % pekCommonVersion
-val pekCommonLog = "com.peknight" %% "common-log" % pekCommonVersion
-val pekCommonMath = "com.peknight" %% "common-math" % pekCommonVersion
-val pekCommonFp = "com.peknight" %% "common-fp" % pekCommonVersion
-val pekCommonTest = "com.peknight" %% "common-test" % pekCommonVersion
-val pekCommonJson = "com.peknight" %% "common-json" % pekCommonVersion
-val pekCommonAkka = "com.peknight" %% "common-akka" % pekCommonVersion
 
 // Scala
 
@@ -236,6 +210,7 @@ val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
 val catsVersion = "2.7.0"
 val catsEffectVersion = "3.3.11"
 val fs2Version = "3.2.7"
+val circeVersion = "0.14.1"
 
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
 val catsEffect = "org.typelevel" %% "cats-effect" % catsEffectVersion withSources() withJavadoc()
@@ -244,13 +219,28 @@ val fs2IO = "co.fs2" %% "fs2-io" % fs2Version
 val fs2ReactiveStreams = "co.fs2" %% "fs2-reactive-streams" % fs2Version
 val fs2Scodec = "co.fs2" %% "fs2-scodec" % fs2Version
 
+val circeCore = "io.circe" %% "circe-core" % circeVersion
+val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
+val circeParser = "io.circe" %% "circe-parser" % circeVersion
+val circeShapes = "io.circe" %% "circe-shapes" % circeVersion
+val circeOptics = "io.circe" %% "circe-optics" % circeVersion
+val circeGenericExtras = "io.circe" %% "circe-generic-extras" % circeVersion
+
 // Library
 
 val logbackVersion = "1.2.11"
 val akkaVersion = "2.6.19"
+val akkaHttpVersion = "10.2.9"
+val apacheCommonsMathVersion = "3.6.1"
+val bootstrapVersion = "5.1.3"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
 val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
+val akkaActor = "com.typesafe.akka" %% "akka-actor" % akkaVersion
+val akkaStream = "com.typesafe.akka" %% "akka-stream" % akkaVersion
+val akkaHttp = "com.typesafe.akka" %% "akka-http" % akkaHttpVersion
+val apacheCommonsMath = "org.apache.commons" % "commons-math3" % apacheCommonsMathVersion
+val bootstrap = "org.webjars" % "bootstrap" % bootstrapVersion
 
 // Test
 
@@ -272,3 +262,12 @@ val scalaReflectVersion = "2.13.8"
 
 val scalaAsync = "org.scala-lang.modules" %% "scala-async" % scalaAsyncVersion
 val scalaReflect = "org.scala-lang" % "scala-reflect" % scalaReflectVersion
+
+// Scala JS
+
+val scalaJsDomVersion = "1.1.0"
+val scalaRxVersion = "0.4.3"
+val scalaTagsVersion = "0.9.4"
+val uPickleVersion = "1.4.0"
+val uTestVersion = "0.7.4"
+val autowireVersion = "0.3.3"
