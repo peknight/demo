@@ -2,10 +2,10 @@ package com.peknight.demo.js.tutorial.webapp
 
 import org.scalajs.dom
 import org.scalajs.dom.document
-import org.scalajs.dom.ext._
-import utest.{TestSuite, Tests, test, _}
+import org.scalajs.dom.ext.*
+import utest.*
 
-object TutorialTest extends TestSuite {
+object TutorialTest extends TestSuite:
   def tests = Tests {
 
     TutorialApp.setupUI()
@@ -22,10 +22,8 @@ object TutorialTest extends TestSuite {
       val button = document.querySelector("button").asInstanceOf[dom.html.Button]
       assert(button != null && button.textContent == "Click me from js!")
       assert(messageCount == 0)
-      for (c <- 1 to 5) {
+      for c <- 1 to 5 do
         button.click()
         assert(messageCount == c)
-      }
     }
   }
-}

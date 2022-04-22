@@ -20,7 +20,7 @@ lazy val commonSettings = Seq(
 
 lazy val demo = (project in file("."))
   .aggregate(
-    demoScala3,
+    demoScala,
     demoFpInScala,
     demoCats,
     demoCatsEffect,
@@ -30,6 +30,8 @@ lazy val demo = (project in file("."))
     demoMath,
     demoJs.jvm,
     demoJs.js,
+    demoJs2.jvm,
+    demoJs2.js,
     demoAsync,
     demoRx,
   )
@@ -39,10 +41,10 @@ lazy val demo = (project in file("."))
     name := "demo",
   )
 
-lazy val demoScala3 = (project in file("demo-scala3"))
+lazy val demoScala = (project in file("demo-scala"))
   .settings(commonSettings)
   .settings(
-    name := "demo-scala3",
+    name := "demo-scala",
     libraryDependencies ++= Seq(
       scalaTest % Test,
     ),
@@ -122,10 +124,38 @@ lazy val demoMath = (project in file("demo-math"))
   )
 
 lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
-  //  .enablePlugins(ScalaJSPlugin) crossProject下看起来不需要设置
+  //  .enablePlugins(ScalaJSPlugin) crossProject下不设置
   .settings(commonSettings)
   .settings(
     name := "demo-js",
+    scalacOptions ++= Seq(
+    ),
+    libraryDependencies ++= Seq(
+      "com.lihaoyi" %%% "utest" % uTestVersion % "test",
+    ),
+  )
+  .jvmSettings(
+    // Add JVM-specific settings here
+    libraryDependencies ++= Seq(
+    ),
+  )
+  .jsSettings(
+    // Add JS-specific settings here
+    // This is an application with a main method
+    scalaJSUseMainModuleInitializer := true,
+    Compile / mainClass := Some("com.peknight.demo.js.tutorial.webapp.TutorialApp"),
+    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+    testFrameworks += new TestFramework("utest.runner.Framework"),
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+    ),
+  )
+
+lazy val demoJs2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-js2"))
+  //  .enablePlugins(ScalaJSPlugin) crossProject下看起来不需要设置
+  .settings(commonSettings)
+  .settings(
+    name := "demo-js2",
     scalaVersion := scala2Version,
     scalacOptions ++= Seq(
       "-Ymacro-annotations",
@@ -160,7 +190,7 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
     testFrameworks += new TestFramework("utest.runner.Framework"),
     libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+      "org.scala-js" %%% "scalajs-dom" % "1.2.0",
       scalaAsync,
     ),
   )
@@ -265,9 +295,9 @@ val scalaReflect = "org.scala-lang" % "scala-reflect" % scalaReflectVersion
 
 // Scala JS
 
-val scalaJsDomVersion = "1.1.0"
+val scalaJsDomVersion = "2.1.0"
 val scalaRxVersion = "0.4.3"
 val scalaTagsVersion = "0.9.4"
 val uPickleVersion = "1.4.0"
-val uTestVersion = "0.7.4"
+val uTestVersion = "0.7.11"
 val autowireVersion = "0.3.3"
