@@ -131,6 +131,9 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     scalacOptions ++= Seq(
     ),
     libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-core" % catsVersion,
+      "org.typelevel" %%% "cats-effect" % catsEffectVersion,
+      "co.fs2" %%% "fs2-core" % fs2Version,
       "com.lihaoyi" %%% "utest" % uTestVersion % "test",
     ),
   )
