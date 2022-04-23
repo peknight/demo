@@ -26,6 +26,9 @@ object CanvasOps:
         f(renderer)
         renderer.fillStyle = originStyle
       }
+
+    def drawSquare[F[_]: Sync](point: Point & Colored, sideLength: Double): F[Unit] =
+      withFillStyle[F](point.color)(_.fillRect(point.x, point.y, sideLength, sideLength))
   end extension
 
 

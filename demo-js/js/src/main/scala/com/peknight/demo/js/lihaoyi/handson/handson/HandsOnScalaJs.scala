@@ -25,25 +25,21 @@ object HandsOnScalaJs:
     ("blue", x => sin(x/12) * sin(x))
   ).zipWithIndex
 
-  def points(w: Int, h: Int): Stream[Pure, Seq[ColoredPoint]] =
+  def points(w: Int, h: Int): Stream[Pure, Seq[Point & Colored]] =
     Stream.unfold(0.0) { s =>
       val x = (s + 1) % w
       // x为零时 返回 点的空列表，此时清屏
-      if x == 0 then Some((Seq.empty[ColoredPoint], x))
+      if x == 0 then Some((Seq.empty[Point & Colored], x))
       else
         // x不为零时，返回要画的点的列表
-        val points: Seq[ColoredPoint] =
+        val points: Seq[Point & Colored] =
           for ((color, f), i) <- graphs yield
             val offset = h.toDouble / 3 * (i + 0.5)
             val y = f(x / w * 75) * h / 30
-            ColoredPoint(x, y + offset, color)
+            Point.colored(x, y + offset, color)
         Some((points, x))
       end if
     }
-
-  // 画单点
-  def drawPoint[F[_]: Sync](point: Point & Colored, renderer: dom.CanvasRenderingContext2D): F[Unit] =
-    renderer.withFillStyle(point.color)(_.fillRect(point.x, point.y, 3, 3))
 
   def drawPoints[F[_]: Sync](points: Seq[Point & Colored], canvas: html.Canvas): F[Unit] =
     // 点列表为空时清屏
@@ -51,7 +47,7 @@ object HandsOnScalaJs:
     else
       // 点列表不为空时画点
       val renderer = canvas.context2d
-      points.map(drawPoint(_, renderer)).sequence.void
+      points.map(renderer.drawSquare(_, 3)).sequence.void
   end drawPoints
 
   def drawGraphs[F[_]: Sync: Temporal](canvas: html.Canvas): F[Unit] =

@@ -35,7 +35,9 @@ trait Random:
   def between(minInclusive: Int, maxExclusive: Int): (Random, Int) =
     require(minInclusive < maxExclusive, s"Invalid bounds: $minInclusive, $maxExclusive")
     val difference = maxExclusive - minInclusive
-    if difference >= 0 then nextIntBounded(difference).map(_ + minInclusive)
+    if difference >= 0 then
+      val (nextRandom, rnd) = nextIntBounded(difference)
+      (nextRandom, rnd + minInclusive)
     else
       @tailrec def go(random: Random): (Random, Int) =
         val (nextRandom, n) = random.nextInt
@@ -56,7 +58,10 @@ trait Random:
     go(this, Vector.empty[Byte])
   end nextBytes
 
-  def nextLong: (Random, Long) = Random.nextLongF(this)
+  def nextLong: (Random, Long) =
+    val (nextRandom, high) = nextInt
+    val (lastRandom, low) = nextRandom.nextInt
+    (lastRandom, (high.toLong << 32) + low)
 
   def nextLongBounded(n: Long): (Random, Long) =
     require(n > 0, s"n must be positive: $n")
@@ -70,13 +75,16 @@ trait Random:
         go(nextRand, nextOffset, nextBound)
     end go
     val (nextRandom, offset, bound) = go(this, 0L, n)
-    nextRandom.nextIntBounded(bound.toInt).map(_ + offset)
+    val (lastRandom, rnd) = nextRandom.nextIntBounded(bound.toInt)
+    (lastRandom, rnd + offset)
   end nextLongBounded
 
   def between(minInclusive: Long, maxExclusive: Long): (Random, Long) =
     require(minInclusive < maxExclusive, s"Invalid bounds: $minInclusive, $maxExclusive")
     val difference = maxExclusive - minInclusive
-    if difference >= 0 then nextLongBounded(difference).map(_ + minInclusive)
+    if difference >= 0 then
+      val (nextRandom, rnd) = nextLongBounded(difference)
+      (nextRandom, rnd + minInclusive)
     else
       @tailrec def go(random: Random): (Random, Long) =
         val (nextRandom, n) = random.nextLong
@@ -85,28 +93,35 @@ trait Random:
       go(this)
   end between
 
-  def nextBoolean: (Random, Boolean) = next(1).map(_ != 0)
+  def nextBoolean: (Random, Boolean) =
+    val (nextRandom, rnd) = next(1)
+    (nextRandom, rnd != 0)
 
-  def nextFloat: (Random, Float) = next(24).map(_ / (1 << 24).toFloat)
+  def nextFloat: (Random, Float) =
+    val (nextRandom, rnd) = next(24)
+    (nextRandom, rnd / (1 << 24).toFloat)
 
+  //noinspection DuplicatedCode
   def between(minInclusive: Float, maxExclusive: Float): (Random, Float) =
     require(minInclusive < maxExclusive, s"Invalid bounds: $minInclusive, $maxExclusive")
-    nextFloat.map { (rnd: Float) =>
-      val next = rnd * (maxExclusive - minInclusive) + minInclusive
-      if next < maxExclusive then next
-      else Math.nextAfter(maxExclusive, Float.NegativeInfinity)
-    }
+    val (nextRandom, rnd) = nextFloat
+    val next = rnd * (maxExclusive - minInclusive) + minInclusive
+    if next < maxExclusive then (nextRandom, next)
+    else (nextRandom, Math.nextAfter(maxExclusive, Float.NegativeInfinity))
   end between
 
-  def nextDouble: (Random, Double) = Random.nextDoubleF(this)
+  def nextDouble: (Random, Double) =
+    val (nextRandom, high) = next(26)
+    val (lastRandom, low) = nextRandom.next(27)
+    (lastRandom, ((high.toLong << 27) + low) * Random.doubleUnit)
 
+  //noinspection DuplicatedCode
   def between(minInclusive: Double, maxExclusive: Double): (Random, Double) =
     require(minInclusive < maxExclusive, s"Invalid bounds: $minInclusive, $maxExclusive")
-    nextDouble.map { (rnd: Double) =>
-      val next = rnd * (maxExclusive - minInclusive) + minInclusive
-      if next < maxExclusive then next
-      else Math.nextAfter(maxExclusive, Double.NegativeInfinity)
-    }
+    val (nextRandom, rnd) = nextDouble
+    val next = rnd * (maxExclusive - minInclusive) + minInclusive
+    if next < maxExclusive then (nextRandom, next)
+    else (nextRandom, Math.nextAfter(maxExclusive, Double.NegativeInfinity))
   end between
 
   def nextString(length: Int): (Random, String) =
@@ -114,7 +129,8 @@ trait Random:
     else
       def safeChar(random: Random): (Random, Char) =
         val surrogateStart: Int = 0xD800
-        random.nextIntBounded(surrogateStart - 1).map((rnd: Int) => (rnd + 1).toChar)
+        val (nextRandom, rnd) = random.nextIntBounded(surrogateStart - 1)
+        (nextRandom, (rnd + 1).toChar)
       end safeChar
       val arr = new Array[Char](length)
       val lastRandom = Vector.tabulate[Int](length)(identity).foldLeft(this) { (random, index) =>
@@ -128,12 +144,14 @@ trait Random:
   def nextPrintableChar: (Random, Char) =
     val low = 33
     val high = 127
-    nextIntBounded(high - low).map((rnd: Int) => (rnd + low).toChar)
+    val (nextRandom, rnd) = nextIntBounded(high - low)
+    (nextRandom, (rnd + low).toChar)
   end nextPrintableChar
 
   def nextAlphaNumeric: (Random, Char) =
     val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-    nextIntBounded(chars.length).map(chars.charAt)
+    val (nextRandom, rnd) = nextIntBounded(chars.length)
+    (nextRandom, chars.charAt(rnd))
 
   def shuffle[T, C](xs: IterableOnce[T])(using bf: BuildFrom[xs.type, T, C]): (Random, C) =
     val buf = new ArrayBuffer[T] ++= xs
@@ -190,79 +208,44 @@ object Random:
 
   def javaRandom(seed: Long): Random = apply(initialScramble(seed))
 
-  extension [A](tuple: (Random, A))
-    def map[B](f: A => B): (Random, B) =
-      val (random, a) = tuple
-      (random, f(a))
-    end map
-  end extension
+  type RandomState[A] = State[Random, A]
 
-  type RandFunction[A] = Random => (Random, A)
+  def next(bits: Int): RandomState[Int] = State(_.next(bits))
 
-  extension [A](run: RandFunction[A])
-    def flatMap[B](f: A => RandFunction[B]): RandFunction[B] = random =>
-      val (nextRandom, a) = run(random)
-      f(a)(nextRandom)
-    end flatMap
-    def map[B](f: A => B): RandFunction[B] = random =>
-      val (nextRandom, a) = run(random)
-      (nextRandom, f(a))
-    end map
-  end extension
+  def nextInt: RandomState[Int] = State(_.nextInt)
 
-  private[this] def nextF(bits: Int): RandFunction[Int] = _.next(bits)
-  private[this] val nextIntF: RandFunction[Int] = _.nextInt
+  def nextIntBounded(bound: Int): RandomState[Int] = State(_.nextIntBounded(bound))
 
-  private val nextLongF: RandFunction[Long] =
-    for
-      high <- nextIntF
-      low <- nextIntF
-    yield (high.toLong << 32) + low
+  def between(minInclusive: Int, maxExclusive: Int): RandomState[Int] = State(_.between(minInclusive, maxExclusive))
 
-  private val nextDoubleF: RandFunction[Double] =
-    for
-      high <- nextF(26)
-      low <- nextF(27)
-    yield ((high.toLong << 27) + low) * doubleUnit
+  def nextBytes(n: Int): RandomState[Seq[Byte]] = State(_.nextBytes(n))
 
-  type Rand[A] = State[Random, A]
+  def nextLong: RandomState[Long] = State(_.nextLong)
 
-  def next(bits: Int): Rand[Int] = State(_.next(bits))
+  def nextLongBounded(n: Long): RandomState[Long] = State(_.nextLongBounded(n))
 
-  def nextInt: Rand[Int] = State(_.nextInt)
+  def between(minInclusive: Long, maxExclusive: Long): RandomState[Long] = State(_.between(minInclusive, maxExclusive))
 
-  def nextIntBounded(bound: Int): Rand[Int] = State(_.nextIntBounded(bound))
+  def nextBoolean: RandomState[Boolean] = State(_.nextBoolean)
 
-  def between(minInclusive: Int, maxExclusive: Int): Rand[Int] = State(_.between(minInclusive, maxExclusive))
+  def nextFloat: RandomState[Float] = State(_.nextFloat)
 
-  def nextBytes(n: Int): Rand[Seq[Byte]] = State(_.nextBytes(n))
+  def between(minInclusive: Float, maxExclusive: Float): RandomState[Float] = State(_.between(minInclusive, maxExclusive))
 
-  def nextLong: Rand[Long] = State(_.nextLong)
+  def nextDouble: RandomState[Double] = State(_.nextDouble)
 
-  def nextLongBounded(n: Long): Rand[Long] = State(_.nextLongBounded(n))
+  def between(minInclusive: Double, maxExclusive: Double): RandomState[Double] = State(_.between(minInclusive, maxExclusive))
 
-  def between(minInclusive: Long, maxExclusive: Long): Rand[Long] = State(_.between(minInclusive, maxExclusive))
+  def nextString(length: Int): RandomState[String] = State(_.nextString(length))
 
-  def nextBoolean: Rand[Boolean] = State(_.nextBoolean)
+  def nextPrintableChar: RandomState[Char] = State(_.nextPrintableChar)
 
-  def nextFloat: Rand[Float] = State(_.nextFloat)
+  def nextAlphaNumeric: RandomState[Char] = State(_.nextAlphaNumeric)
 
-  def between(minInclusive: Float, maxExclusive: Float): Rand[Float] = State(_.between(minInclusive, maxExclusive))
+  def shuffle[T, C](xs: IterableOnce[T])(using bf: BuildFrom[xs.type, T, C]): RandomState[C] = State(_.shuffle(xs))
 
-  def nextDouble: Rand[Double] = State(_.nextDouble)
+  def setSeed(seed: Long): RandomState[Unit] = State(random => (apply(seed), ()))
 
-  def between(minInclusive: Double, maxExclusive: Double): Rand[Double] = State(_.between(minInclusive, maxExclusive))
-
-  def nextString(length: Int): Rand[String] = State(_.nextString(length))
-
-  def nextPrintableChar: Rand[Char] = State(_.nextPrintableChar)
-
-  def nextAlphaNumeric: Rand[Char] = State(_.nextAlphaNumeric)
-
-  def shuffle[T, C](xs: IterableOnce[T])(using bf: BuildFrom[xs.type, T, C]): Rand[C] = State(_.shuffle(xs))
-
-  def setSeed(seed: Long): Rand[Unit] = State(random => (apply(seed), ()))
-
-  def nonNegativeInt: Rand[Int] = State(_.nonNegativeInt)
+  def nonNegativeInt: RandomState[Int] = State(_.nonNegativeInt)
 
 end Random
