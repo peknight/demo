@@ -86,6 +86,7 @@ lazy val demoFs2 = (project in file("demo-fs2"))
   .settings(
     name := "demo-fs2",
     libraryDependencies ++= Seq(
+      pekCommonCore,
       fs2Core,
       fs2IO,
       fs2ReactiveStreams,
@@ -131,6 +132,7 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     scalacOptions ++= Seq(
     ),
     libraryDependencies ++= Seq(
+      "com.peknight" %%% "common-core" % pekCommonVersion,
       "org.typelevel" %%% "cats-core" % catsVersion,
       "org.typelevel" %%% "cats-effect" % catsEffectVersion,
       "co.fs2" %%% "fs2-core" % fs2Version,
@@ -233,6 +235,12 @@ lazy val demoRx = (project in file("demo-rx"))
       "com.lihaoyi" %%% "utest" % uTestVersion,
     ),
   )
+
+// Peknight
+
+val pekCommonVersion = "0.1-SNAPSHOT"
+
+val pekCommonCore = "com.peknight" %% "common-core" % pekCommonVersion
 
 // Scala
 

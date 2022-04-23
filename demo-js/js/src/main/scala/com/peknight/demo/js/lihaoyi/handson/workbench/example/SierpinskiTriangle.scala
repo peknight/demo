@@ -2,8 +2,8 @@ package com.peknight.demo.js.lihaoyi.handson.workbench.example
 
 import cats.data.State
 import cats.syntax.traverse.*
+import com.peknight.common.core.std.Random
 import com.peknight.demo.js.dom.{Colored, Point}
-import com.peknight.demo.js.std.Random
 import fs2.{Pure, Stream}
 import org.scalajs.dom
 import org.scalajs.dom.{Element, html}
