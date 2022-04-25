@@ -1,19 +1,27 @@
 package com.peknight.demo.js.stream
 
 import cats.data.State
-import fs2.{Chunk, Stream}
+import cats.effect.Clock
+import fs2.{Chunk, Pipe, Stream}
+
+import scala.concurrent.duration.FiniteDuration
 
 object StreamOps:
 
-  extension [F[_], S, O](stream: Stream[F, State[S, O]])
-    def scanState(s: S): Stream[F, O] =
-      stream.scanChunks(s) { (ss, stateChunk) =>
-        stateChunk.foldLeft((ss, Chunk.empty[O])) { case ((sss, chunk), state) =>
-          val (ssss, o) = state.run(sss).value
-          (ssss, chunk ++ Chunk(o))
+  def state[F[_], S, O](s: S): Pipe[F, State[S, O], O] =
+    in => in.scanChunks(s) { (ss, stateChunk) =>
+      stateChunk.foldLeft((ss, Chunk.empty[O])) { case ((sss, chunk), state) =>
+        val (ssss, o) = state.run(sss).value
+        (ssss, chunk ++ Chunk(o))
+      }
+    }
+
+  def takeEvery[F[_]: Clock, O](interval: FiniteDuration): Pipe[F, O, O] =
+    in => in.zip(Stream.repeatEval(Clock[F].monotonic))
+      .scanChunks[Option[FiniteDuration], (O, FiniteDuration), O](None) { (previousOption, originChunk) =>
+        originChunk.foldLeft((previousOption, Chunk.empty[O])) { case ((prevOption, updatedChunk), (o, nano)) =>
+          if prevOption.forall(prev => nano - prev >= interval) then (Some(nano), updatedChunk ++ Chunk(o))
+          else (prevOption, updatedChunk)
         }
       }
-  end extension
-
-
 

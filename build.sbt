@@ -190,8 +190,6 @@ lazy val demoJs2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-js2"))
   .jsSettings(
     // Add JS-specific settings here
     // This is an application with a main method
-    scalaJSUseMainModuleInitializer := true,
-    Compile / mainClass := Some("com.peknight.demo.js.tutorial.webapp.TutorialApp"),
     jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
     testFrameworks += new TestFramework("utest.runner.Framework"),
     libraryDependencies ++= Seq(

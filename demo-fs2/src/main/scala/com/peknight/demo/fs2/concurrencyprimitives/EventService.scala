@@ -1,7 +1,6 @@
 package com.peknight.demo.fs2.concurrencyprimitives
 
-import cats.effect.Temporal
-import cats.effect.kernel.Clock
+import cats.effect.{Clock, Temporal}
 import cats.effect.std.Console
 import cats.implicits.toFunctorOps
 import com.peknight.demo.fs2.concurrencyprimitives.Event.{Quit, Text}
