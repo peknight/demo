@@ -11,11 +11,12 @@ import com.peknight.demo.js.dom.CanvasOps.*
 import com.peknight.demo.js.dom.Point
 import com.peknight.demo.js.io.IOOps.*
 import com.peknight.demo.js.stream.StreamOps
-import fs2.{Chunk, Stream}
 import fs2.concurrent.Topic
+import fs2.{Chunk, Stream}
 import org.scalajs.dom
 import org.scalajs.dom.{KeyCode, html}
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.scalajs.js.annotation.JSExportTopLevel
 
@@ -26,7 +27,6 @@ object SpaceInvaders extends App:
                            bulletsR: Ref[F, Seq[Point]],
                            keysDownR: Ref[F, Set[Int]],
                            waveR: Ref[F, Int],
-                           countR: Ref[F, Int],
                            timeR: Ref[F, FiniteDuration])
 
   def eventTopic[F[_]: Async, E](dispatcher: Dispatcher[F])(update: (E => Unit) => Unit)
@@ -70,21 +70,24 @@ object SpaceInvaders extends App:
 
   def next[F[_]: Clock: Monad](runtime: Runtime[F], width: Int): F[(Point, Seq[Point], Seq[Point])] =
     for
-      count <- runtime.countR.updateAndGet(_ + 1)
       keysDown <- runtime.keysDownR.get
       player <- runtime.playerR.updateAndGet(p => directions.view.filterKeys(keysDown(_)).values
         .foldLeft(p)((p, d) => Point(p.x + d.x, p.y + d.y)))
-      bullets <- runtime.bulletsR.updateAndGet(_.map(p => Point(p.x, p.y - 5)))
+      previousTime <- runtime.timeR.get
+      currentTime <- Clock[F].monotonic
+      duration = currentTime - previousTime
+      bullets <- runtime.bulletsR.updateAndGet(_.map{p => Point(p.x, p.y - duration.toUnit(TimeUnit.MILLISECONDS) / 4)})
       _ <- handleEnemyEmpty(runtime, width)
       enemies <- runtime.enemiesR
         .updateAndGet(_.filter(enemy => !bullets.exists(bullet => enemy.length(bullet) < 5))
           .map(enemy =>
-            val i = count % 200
-            if i < 50 then Point(enemy.x - 0.2, enemy.y)
-            else if i < 100 then Point(enemy.x, enemy.y + 0.2)
-            else if i < 150 then Point(enemy.x + 0.2, enemy.y)
+            val i = currentTime.toUnit(TimeUnit.SECONDS) % 4
+            if i <= 0 then Point(enemy.x - 0.2, enemy.y)
+            else if i <= 1 then Point(enemy.x, enemy.y + 0.2)
+            else if i <= 2 then Point(enemy.x + 0.2, enemy.y)
             else Point(enemy.x, enemy.y + 0.2)
           ))
+      _ <- runtime.timeR.update(_ => currentTime)
     yield (player, enemies, bullets)
 
   def draw[F[_]: Sync](canvas: html.Canvas, player: Point, enemies: Seq[Point], bullets: Seq[Point]): F[Unit] =
@@ -109,14 +112,13 @@ object SpaceInvaders extends App:
         Ref.of[F, Seq[Point]](Seq()),
         Ref.of[F, Set[Int]](Set()),
         Ref.of[F, Int](1),
-        Ref.of[F, Int](1),
         Ref.of[F, FiniteDuration](startTime)).mapN(Runtime.apply)
 
       // 监听事件
       keyPressTopic <- onKeyPressTopic(dispatcher)
       keyPressEvents = keyPressTopic.subscribe(16)
         .filter(_.keyCode == KeyCode.Space)
-        .through(StreamOps.takeEvery(1000.millis))
+        .through(StreamOps.takeEvery(20.millis))
         .evalMap(e => runtime.playerR.get.flatMap(player => runtime.bulletsR.update(player +: _)))
 
       keyDownTopic <- onKeyDownTopic(dispatcher)
