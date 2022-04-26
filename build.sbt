@@ -29,7 +29,6 @@ lazy val demo = (project in file("."))
     demoSpire.jvm,
     demoSpire.js,
     demoAkka,
-    demoMath,
     demoJs.jvm,
     demoJs.js,
     demoJs2.jvm,
@@ -123,15 +122,6 @@ lazy val demoAkka = (project in file("demo-akka"))
     libraryDependencies ++= Seq(
       akkaActorTyped,
       logbackClassic,
-    ),
-  )
-
-lazy val demoMath = (project in file("demo-math"))
-  .settings(commonSettings)
-  .settings(
-    name := "demo-math",
-    libraryDependencies ++= Seq(
-      apacheCommonsMath,
     ),
   )
 
