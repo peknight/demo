@@ -26,6 +26,8 @@ lazy val demo = (project in file("."))
     demoCatsEffect,
     demoFs2,
     demoCirce,
+    demoSpire.jvm,
+    demoSpire.js,
     demoAkka,
     demoMath,
     demoJs.jvm,
@@ -102,6 +104,15 @@ lazy val demoCirce = (project in file("demo-circe"))
       circeCore,
       circeGeneric,
       circeParser,
+    ),
+  )
+
+lazy val demoSpire = (crossProject(JSPlatform, JVMPlatform) in file("demo-spire"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-spire",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "spire" % spireVersion
     ),
   )
 
@@ -252,6 +263,7 @@ val catsVersion = "2.7.0"
 val catsEffectVersion = "3.3.11"
 val fs2Version = "3.2.7"
 val circeVersion = "0.14.1"
+val spireVersion = "0.18.0-M3"
 
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
 val catsEffect = "org.typelevel" %% "cats-effect" % catsEffectVersion withSources() withJavadoc()

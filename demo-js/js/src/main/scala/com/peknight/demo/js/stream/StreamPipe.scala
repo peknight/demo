@@ -6,7 +6,7 @@ import fs2.{Chunk, Pipe, Stream}
 
 import scala.concurrent.duration.FiniteDuration
 
-object StreamOps:
+object StreamPipe:
 
   def state[F[_], S, O](s: S): Pipe[F, State[S, O], O] =
     in => in.scanChunks(s) { (ss, stateChunk) =>

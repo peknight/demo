@@ -8,7 +8,7 @@ import com.peknight.common.core.std.Random
 import com.peknight.demo.js.dom.CanvasOps.*
 import com.peknight.demo.js.dom.{Colored, Point}
 import com.peknight.demo.js.io.IOOps.*
-import com.peknight.demo.js.stream.StreamOps
+import com.peknight.demo.js.stream.StreamPipe
 import fs2.Stream
 import org.scalajs.dom
 import org.scalajs.dom.{Element, html}
@@ -48,7 +48,7 @@ object SierpinskiTriangle:
   def stateStream[F[_]](runtime: Runtime, size: Int, width: Int, height: Int, repeat: Int)
   : Stream[F, Seq[Point & Colored]] =
     val drawStream = Stream(nextPoints(size, width, height)).repeatN(repeat)
-    (Stream(clear) ++ drawStream).repeat.through(StreamOps.state(runtime))
+    (Stream(clear) ++ drawStream).repeat.through(StreamPipe.state(runtime))
 
   def drawPoints[F[_]: Sync](points: Seq[Point & Colored], canvas: html.Canvas): F[Unit] =
     if points.isEmpty then canvas.clear[F]("black")
