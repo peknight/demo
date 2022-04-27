@@ -26,8 +26,8 @@ lazy val demo = (project in file("."))
     demoCatsEffect,
     demoFs2,
     demoCirce,
-    demoSpire.jvm,
-    demoSpire.js,
+    demoMonocle,
+    demoSpire,
     demoAkka,
     demoJs.jvm,
     demoJs.js,
@@ -106,12 +106,22 @@ lazy val demoCirce = (project in file("demo-circe"))
     ),
   )
 
-lazy val demoSpire = (crossProject(JSPlatform, JVMPlatform) in file("demo-spire"))
+lazy val demoMonocle = (project in file("demo-monocle"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-monocle",
+    libraryDependencies ++= Seq(
+      monocleCore,
+      monocleMacro,
+    ),
+  )
+
+lazy val demoSpire = (project in file("demo-spire"))
   .settings(commonSettings)
   .settings(
     name := "demo-spire",
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "spire" % spireVersion
+      spire,
     ),
   )
 
@@ -253,6 +263,7 @@ val catsVersion = "2.7.0"
 val catsEffectVersion = "3.3.11"
 val fs2Version = "3.2.7"
 val circeVersion = "0.14.1"
+val monocleVersion = "3.1.0"
 val spireVersion = "0.18.0-M3"
 
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
@@ -261,10 +272,12 @@ val fs2Core = "co.fs2" %% "fs2-core" % fs2Version
 val fs2IO = "co.fs2" %% "fs2-io" % fs2Version
 val fs2ReactiveStreams = "co.fs2" %% "fs2-reactive-streams" % fs2Version
 val fs2Scodec = "co.fs2" %% "fs2-scodec" % fs2Version
-
 val circeCore = "io.circe" %% "circe-core" % circeVersion
 val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
 val circeParser = "io.circe" %% "circe-parser" % circeVersion
+val monocleCore = "dev.optics" %% "monocle-core" % monocleVersion
+val monocleMacro = "dev.optics" %% "monocle-macro" % monocleVersion
+val spire = "org.typelevel" %% "spire" % spireVersion
 
 // Library
 
