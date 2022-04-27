@@ -25,3 +25,6 @@ object EventTopic:
   def onKeyUpTopic[F[_]: Async](dispatcher: Dispatcher[F]): F[Topic[F, dom.KeyboardEvent]] =
     eventTopic(dispatcher)(cb => dom.document.onkeyup = cb)
 
+  def onMouseMoveTopic[F[_]: Async](dispatcher: Dispatcher[F]): F[Topic[F, dom.MouseEvent]] =
+    eventTopic(dispatcher)(cb => dom.document.onmousemove = cb)
+

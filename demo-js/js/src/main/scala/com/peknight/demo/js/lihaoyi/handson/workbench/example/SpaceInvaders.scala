@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.scalajs.js.annotation.JSExportTopLevel
 
-object SpaceInvaders extends App:
+object SpaceInvaders:
 
   case class Runtime[F[_]](playerR: Ref[F, Point], enemiesR: Ref[F, Seq[Point]], bulletsR: Ref[F, Seq[Point]],
                            keysDownR: Ref[F, Set[Int]], waveR: Ref[F, Int], timeR: Ref[F, FiniteDuration])
@@ -94,7 +94,7 @@ object SpaceInvaders extends App:
         renderer.drawSquare(Point.colored(bullet.x - 2, bullet.y - 2, "red"), 4)).sequence.void
     yield ()
 
-  def program[F[_]: Async](canvas: html.Canvas) = Dispatcher[F].use { dispatcher =>
+  def program[F[_]: Async](canvas: html.Canvas): F[Unit] = Dispatcher[F].use { dispatcher =>
     for
       startTime <- Clock[F].monotonic
       // 变量定义
