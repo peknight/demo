@@ -113,6 +113,7 @@ lazy val demoMonocle = (project in file("demo-monocle"))
     libraryDependencies ++= Seq(
       monocleCore,
       monocleMacro,
+      alleyCatsCore,
     ),
   )
 
@@ -267,6 +268,7 @@ val monocleVersion = "3.1.0"
 val spireVersion = "0.18.0-M3"
 
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
+val alleyCatsCore = "org.typelevel" %% "alleycats-core" % catsVersion
 val catsEffect = "org.typelevel" %% "cats-effect" % catsEffectVersion withSources() withJavadoc()
 val fs2Core = "co.fs2" %% "fs2-core" % fs2Version
 val fs2IO = "co.fs2" %% "fs2-io" % fs2Version
