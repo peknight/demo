@@ -1,24 +1,20 @@
 package com.peknight.demo.js.dom
 
-trait Point:
-  def x: Double
-  def y: Double
-  def distance(p: Point = Point(0, 0)): Double =
-    val a = x - p.x
-    val b = y - p.y
-    Math.sqrt(a * a + b * b)
+import spire.algebra.{EuclideanRing, NRoot}
+
+trait Point[U] extends Vector[U]:
+  def +(v: Vector[U]): Point[U]
+  def -(v: Vector[U]): Point[U]
+  def *(u: U): Point[U]
+  def /(u: U): Point[U]
+  def distance(p: Point[U]): U
 
 object Point:
 
-  private[this] class SimplePoint(val x: Double, val y: Double) extends Point
+  def apply[U: EuclideanRing: NRoot](x: U, y: U): Point[U] = CartesianCoordinatePoint(x, y)
+  def unapply[U](p: Point[U]): Option[(U, U)] = Some((p.x, p.y))
 
-  def apply(x: Double, y: Double): Point = new SimplePoint(x, y)
+  def colored[U: EuclideanRing: NRoot](x: U, y: U, color: Color): Point[U] & Colored = ColoredPoint(x, y, color)
 
-  def unapply(p: Point): Option[(Double, Double)] = Some(p.x, p.y)
-
-  private[this] class ColoredPoint(val x: Double, val y: Double, val color: String) extends Point with Colored
-
-  def colored(x: Double, y: Double, color: String): Point & Colored = new ColoredPoint(x, y, color)
-
-  extension (p: Point)
-    def colored(color: String): Point & Colored = new ColoredPoint(p.x, p.y, color)
+  extension [U: EuclideanRing: NRoot](p: Point[U])
+    def colored(color: Color): Point[U] & Colored = ColoredPoint(p.x, p.y, color)

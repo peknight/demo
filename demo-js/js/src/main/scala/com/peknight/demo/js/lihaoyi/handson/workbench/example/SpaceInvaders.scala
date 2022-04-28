@@ -8,6 +8,7 @@ import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import cats.syntax.traverse.*
 import com.peknight.demo.js.dom.CanvasOps.*
+import com.peknight.demo.js.dom.Color.{Blue, Green, Red}
 import com.peknight.demo.js.dom.Point
 import com.peknight.demo.js.io.IOOps.*
 import com.peknight.demo.js.state.StateOps.*
@@ -17,17 +18,18 @@ import com.peknight.demo.js.stream.StreamPipe.*
 import fs2.Stream
 import org.scalajs.dom
 import org.scalajs.dom.{KeyCode, html}
+import spire.implicits.*
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.duration.{Duration, DurationInt, DurationLong}
 import scala.scalajs.js.annotation.JSExportTopLevel
 
 object SpaceInvaders:
 
-  case class Runtime(player: Point, enemies: Seq[Point], bullets: Seq[Point], keysDown: Set[Int], wave: Int,
-                     time: Duration, draw: Boolean = false)
+  case class Runtime(player: Point[Double], enemies: Seq[Point[Double]], bullets: Seq[Point[Double]],
+                     keysDown: Set[Int], wave: Int, time: Duration, draw: Boolean = false)
 
-  def handlePlayer(player: Point, keysDown: Set[Int], duration: Duration): Point =
+  def handlePlayer(player: Point[Double], keysDown: Set[Int], duration: Duration): Point[Double] =
     val length = duration.toMillis / 10
     keysDown.foldLeft(player){
       case (p, KeyCode.Left) => Point(p.x - length, p.y)
@@ -37,11 +39,11 @@ object SpaceInvaders:
       case (p, _) => p
     }
 
-  def handleBullets(bullets: Seq[Point], duration: Duration): Seq[Point] =
+  def handleBullets(bullets: Seq[Point[Double]], duration: Duration): Seq[Point[Double]] =
     val length = duration.toMillis / 4
     bullets.map(p => Point(p.x, p.y - length)).filter(_.y >= 0)
 
-  def handleWave(enemies: Seq[Point], wave: Int, width: Int): (Seq[Point], Int) =
+  def handleWave(enemies: Seq[Point[Double]], wave: Int, width: Int): (Seq[Point[Double]], Int) =
     if enemies.nonEmpty then (enemies, wave) else (
       for
         x <- 0 until width by 50
@@ -50,10 +52,10 @@ object SpaceInvaders:
       wave + 1
     )
 
-  def handleEnemies(enemies: Seq[Point], bullets: Seq[Point], previousTime: Duration, currentTime: Duration, height: Int)
-  : Seq[Point] =
+  def handleEnemies(enemies: Seq[Point[Double]], bullets: Seq[Point[Double]], previousTime: Duration,
+                    currentTime: Duration, height: Int): Seq[Point[Double]] =
     val (_, x, y) = (previousTime.toSeconds to currentTime.toSeconds)
-      .map(Duration(_, TimeUnit.SECONDS))
+      .map(_.seconds)
       .filter(sec => previousTime < sec && sec < currentTime)
       .appended(currentTime)
       .foldLeft((previousTime, 0.0, 0.0)) { case ((prev, x, y), current) =>
@@ -77,15 +79,16 @@ object SpaceInvaders:
   def nextState[F[_]: Clock: Functor](width: Int, height: Int): F[State[Runtime, Runtime]] =
     Clock[F].monotonic.map(currentTime => modifyAndGet[Runtime](next(_, currentTime, width, height)))
 
-  def draw[F[_]: Sync](canvas: html.Canvas, player: Point, enemies: Seq[Point], bullets: Seq[Point]): F[Unit] =
+  def draw[F[_]: Sync](canvas: html.Canvas, player: Point[Double], enemies: Seq[Point[Double]],
+                       bullets: Seq[Point[Double]]): F[Unit] =
     val renderer = canvas.context2d
     for
       _ <- canvas.clear[F]()
       _ <- bullets.map(bullet =>
-        renderer.drawSquare(Point.colored(bullet.x - 2, bullet.y - 2, "red"), 4)).sequence.void
+        renderer.drawSquare(Point.colored(bullet.x - 2, bullet.y - 2, Red), 4)).sequence.void
       _ <- enemies.map(enemy =>
-        renderer.drawSquare(Point.colored(enemy.x - 5, enemy.y - 5, "green"), 10)).sequence.void
-      _ <- renderer.drawSquare(Point.colored(player.x - 5, player.y - 5, "blue"), 10)
+        renderer.drawSquare(Point.colored(enemy.x - 5, enemy.y - 5, Green), 10)).sequence.void
+      _ <- renderer.drawSquare(Point.colored(player.x - 5, player.y - 5, Blue), 10)
     yield ()
 
   def program[F[_]: Async](canvas: html.Canvas): F[Unit] = Dispatcher[F].use { dispatcher =>

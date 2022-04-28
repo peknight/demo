@@ -6,51 +6,52 @@ import cats.syntax.functor.*
 import cats.syntax.traverse.*
 import com.peknight.common.core.std.Random
 import com.peknight.demo.js.dom.CanvasOps.*
+import com.peknight.demo.js.dom.Color.RGB
 import com.peknight.demo.js.dom.{Colored, Point}
 import com.peknight.demo.js.io.IOOps.*
 import com.peknight.demo.js.stream.StreamPipe
 import fs2.Stream
 import org.scalajs.dom
 import org.scalajs.dom.{Element, html}
+import spire.implicits.*
 
 import scala.concurrent.duration.*
 import scala.scalajs.js.annotation.JSExportTopLevel
 
 object SierpinskiTriangle:
 
-  case class Runtime(random: Random, point: Point)
+  case class Runtime(random: Random, point: Point[Double])
 
-  def nextPoint(width: Int, height: Int): State[Runtime, Point & Colored] = State { state =>
+  def nextPoint(width: Int, height: Int): State[Runtime, Point[Double] & Colored] = State { state =>
     val (random, index) = state.random.nextIntBounded(3)
-    val cornerPoint = index match
+    val cornerPoint: Point[Double] = index match
       case 0 => Point(width, height)
       case 1 => Point(0, height)
       case 2 => Point(width / 2, 0)
-    val point = (state.point, cornerPoint) match
-      case (Point(px, py), Point(cx, cy)) => colored(Point((px + cx) / 2, (py + cy) / 2), width, height)
+    val point = colored((state.point + cornerPoint) / 2, width, height)
     (Runtime(random, point), point)
   }
 
-  def colored(point: Point, width: Int, height: Int): Point & Colored =
+  def colored(point: Point[Double], width: Int, height: Int): Point[Double] & Colored =
     val x = point.x * 255 / width
     val y = point.y * 255 / height
     val colorHeight = 512.0 / (255 + y)
-    val r = (x * colorHeight).toInt
-    val g = ((255 - x) * colorHeight).toInt
+    val r = ((255 - x) * colorHeight).toInt
+    val g = (x * colorHeight).toInt
     val b = y.toInt
-    point.colored(s"rgb($g, $r, $b)")
+    point.colored(RGB(r, g, b))
 
-  def nextPoints(size: Int, width: Int, height: Int): State[Runtime, Seq[Point & Colored]] =
+  def nextPoints(size: Int, width: Int, height: Int): State[Runtime, Seq[Point[Double] & Colored]] =
     Seq.fill(size)(nextPoint(width, height)).sequence
 
-  def clear: State[Runtime, Seq[Point & Colored]] = State((_, Seq()))
+  def clear: State[Runtime, Seq[Point[Double] & Colored]] = State((_, Seq()))
 
   def stateStream[F[_]](runtime: Runtime, size: Int, width: Int, height: Int, repeat: Int)
-  : Stream[F, Seq[Point & Colored]] =
+  : Stream[F, Seq[Point[Double] & Colored]] =
     val drawStream = Stream(nextPoints(size, width, height)).repeatN(repeat)
     (Stream(clear) ++ drawStream).repeat.through(StreamPipe.state(runtime))
 
-  def drawPoints[F[_]: Sync](points: Seq[Point & Colored], canvas: html.Canvas): F[Unit] =
+  def drawPoints[F[_]: Sync](points: Seq[Point[Double] & Colored], canvas: html.Canvas): F[Unit] =
     if points.isEmpty then canvas.clear[F]()
     else
       val renderer = canvas.context2d
