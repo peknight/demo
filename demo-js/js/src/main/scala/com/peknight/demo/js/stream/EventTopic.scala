@@ -16,15 +16,6 @@ object EventTopic:
       _ <- Async[F].delay { update(e => dispatcher.unsafeToPromise(topic.publish1(e))) }
     yield topic
 
-  def onKeyPressTopic[F[_]: Async](dispatcher: Dispatcher[F]): F[Topic[F, dom.KeyboardEvent]] =
-    eventTopic(dispatcher)(cb => dom.document.onkeypress = cb)
-
-  def onKeyDownTopic[F[_]: Async](dispatcher: Dispatcher[F]): F[Topic[F, dom.KeyboardEvent]] =
-    eventTopic(dispatcher)(cb => dom.document.onkeydown = cb)
-
-  def onKeyUpTopic[F[_]: Async](dispatcher: Dispatcher[F]): F[Topic[F, dom.KeyboardEvent]] =
-    eventTopic(dispatcher)(cb => dom.document.onkeyup = cb)
-
-  def onMouseMoveTopic[F[_]: Async](dispatcher: Dispatcher[F]): F[Topic[F, dom.MouseEvent]] =
-    eventTopic(dispatcher)(cb => dom.document.onmousemove = cb)
-
+  def eventTopic[F[_]: Async, T <: dom.Event](eventType: EventType[T], target: dom.EventTarget = dom.document)
+                                             (dispatcher: Dispatcher[F]): F[Topic[F, T]] =
+    eventTopic(dispatcher)(cb => target.addEventListener[T](eventType.eventType, cb))

@@ -3,7 +3,7 @@ package com.peknight.demo.js.dom
 trait Point:
   def x: Double
   def y: Double
-  def length(p: Point): Double =
+  def distance(p: Point = Point(0, 0)): Double =
     val a = x - p.x
     val b = y - p.y
     Math.sqrt(a * a + b * b)
