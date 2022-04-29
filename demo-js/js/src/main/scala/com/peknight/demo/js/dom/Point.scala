@@ -9,6 +9,8 @@ trait Point[U] extends Vector[U]:
   def /(u: U): Point[U]
   def distance(p: Point[U]): U
 
+  override def toString: String = s"Point($x, $y)"
+
 object Point:
 
   def apply[U: EuclideanRing: NRoot](x: U, y: U): Point[U] = CartesianCoordinatePoint(x, y)

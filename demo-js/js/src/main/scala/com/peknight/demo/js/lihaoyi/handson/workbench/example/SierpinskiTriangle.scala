@@ -52,7 +52,7 @@ object SierpinskiTriangle:
     (Stream(clear) ++ drawStream).repeat.through(StreamPipe.state(runtime))
 
   def drawPoints[F[_]: Sync](points: Seq[Point[Double] & Colored], canvas: html.Canvas): F[Unit] =
-    if points.isEmpty then canvas.clear[F]()
+    if points.isEmpty then canvas.solid[F]()
     else
       val renderer = canvas.context2d
       points.map(renderer.drawSquare(_, 1)).sequence.void

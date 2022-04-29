@@ -45,7 +45,7 @@ object HandsOnScalaJs:
 
   def drawPoints[F[_]: Sync](points: Seq[Point[Double] & Colored], canvas: html.Canvas): F[Unit] =
     // 点列表为空时清屏
-    if points.isEmpty then canvas.clear[F]()
+    if points.isEmpty then canvas.solid[F]()
     else
       // 点列表不为空时画点
       val renderer = canvas.context2d

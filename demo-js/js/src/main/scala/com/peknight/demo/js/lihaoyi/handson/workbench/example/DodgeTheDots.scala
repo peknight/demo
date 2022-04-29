@@ -53,12 +53,14 @@ object DodgeTheDots:
   def handleEnemies(currentTime: Duration, width: Int, height: Int): State[Runtime, Runtime] = modifyAndGet { runtime =>
     val inBoundEnemies = runtime.enemies.filter(e => e.pos.x >= 0 && e.pos.x <= width && e.pos.y >= 0 && e.pos.y <= height)
     val (nextRandom, filledEnemies) =
-      if inBoundEnemies.size < 20 then createEnemies(20 - inBoundEnemies.size, width).run(runtime.random).value
+      if inBoundEnemies.size < 20 then
+        val (random, createdEnemies) = createEnemies(20 - inBoundEnemies.size, width).run(runtime.random).value
+        (random, createdEnemies ++ inBoundEnemies)
       else (runtime.random, inBoundEnemies)
     val movedEnemies = filledEnemies.map { enemy =>
-      val delta = runtime.player - enemy.pos
-      val vec = enemy.vel * (currentTime - runtime.previousTime).toMillis.toDouble
-      Enemy(enemy.pos + vec, vec + delta / delta.length / 100)
+      val toPlayer = runtime.player - enemy.pos
+      val delta = enemy.vel * (currentTime - runtime.previousTime).toMillis.toDouble
+      Enemy(enemy.pos + delta, enemy.vel + toPlayer / toPlayer.length / 2000)
     }
     runtime.copy(random = nextRandom, enemies = movedEnemies)
   }
@@ -88,17 +90,18 @@ object DodgeTheDots:
     val renderer = canvas.context2d
     val delta = Vector[Double](10, 10)
     for
-      _ <- canvas.clear[F](Black.value)
+      _ <- canvas.solid[F](Black)
       _ <- runtime.death match
         case None =>
           for
             _ <- renderer.drawSquare((runtime.player - delta).colored(White), 20)
+            _ <- renderer.withColor(White)(_.fillText("player", runtime.player.x - 15, runtime.player.y - 30))
             _ <- runtime.enemies.map(enemy => renderer.drawSquare((enemy.pos - delta).colored(Red), 20)).sequence
-            _ <- renderer.withFillStyle(White.value)(_.fillText(
+            _ <- renderer.withColor(White)(_.fillText(
               s"${(runtime.previousTime - runtime.startTime).toSeconds} seconds",
               canvas.width / 2 - 100, canvas.height / 5))
           yield ()
-        case Some((msg, _)) => renderer.withFillStyle(White.value)(_.fillText(
+        case Some((msg, _)) => renderer.withColor(White)(_.fillText(
           msg, canvas.width / 2 - 100, canvas.height / 2
         ))
     yield ()
@@ -106,10 +109,8 @@ object DodgeTheDots:
   def program[F[_]: Async](canvas: html.Canvas): F[Unit] = Dispatcher[F].use { dispatcher =>
     for
       mouseMoveTopic <- eventTopic(MouseMove)(dispatcher)
-      mouseMoveEvents = mouseMoveTopic.subscribe(1).through(takeEvery(5.millis))
-        .map(e => modifyAndGet[Runtime](r => r.copy(
-          player = Point(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop),
-          draw = false)))
+      mouseMoveEvents = mouseMoveTopic.subscribe(1).through(takeEvery(5.millis)).map(e => modifyAndGet[Runtime](r =>
+        r.copy(player = Point(e.pageX - canvas.offsetLeft, e.pageY - canvas.offsetTop), draw = false)))
 
       process = Stream.repeatEval(nextState(canvas.width, canvas.height)).metered(20.millis)
       startTime <- Clock[F].monotonic

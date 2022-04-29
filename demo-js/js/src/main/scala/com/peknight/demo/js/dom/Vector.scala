@@ -10,6 +10,7 @@ trait Vector[U]:
   def *(u: U): Vector[U]
   def /(u: U): Vector[U]
   def length: U
+  override def toString: String = s"Vector($x, $y)"
 
 object Vector:
   def apply[U: EuclideanRing: NRoot](x: U, y: U): Vector[U] = CartesianCoordinateVector(x, y)

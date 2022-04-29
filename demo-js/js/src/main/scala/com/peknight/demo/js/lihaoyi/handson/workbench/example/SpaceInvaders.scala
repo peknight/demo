@@ -29,13 +29,17 @@ object SpaceInvaders:
   case class Runtime(player: Point[Double], enemies: Seq[Point[Double]], bullets: Seq[Point[Double]],
                      keysDown: Set[Int], wave: Int, time: Duration, draw: Boolean = false)
 
-  def handlePlayer(player: Point[Double], keysDown: Set[Int], duration: Duration): Point[Double] =
+  def handlePlayer(player: Point[Double], keysDown: Set[Int], duration: Duration, width: Int, height: Int): Point[Double] =
     val length = duration.toMillis / 10
     keysDown.foldLeft(player){
-      case (p, KeyCode.Left) => Point(p.x - length, p.y)
-      case (p, KeyCode.Up) => Point(p.x, p.y - length)
-      case (p, KeyCode.Right) => Point(p.x + length, p.y)
-      case (p, KeyCode.Down) => Point(p.x, p.y + length)
+      case (p, KeyCode.Left) => Point(if p.x > length then p.x - length else 0, p.y)
+      case (p, KeyCode.Up) => Point(p.x, if p.y > length then p.y - length else 0)
+      case (p, KeyCode.Right) =>
+        val x = p.x + length
+        Point(if x < width then x else width, p.y)
+      case (p, KeyCode.Down) =>
+        val y = p.y + length
+        Point(p.x, if y < height then y else height)
       case (p, _) => p
     }
 
@@ -70,7 +74,7 @@ object SpaceInvaders:
 
   def next(runtime: Runtime, currentTime: Duration, width: Int, height: Int): Runtime =
     val duration = currentTime - runtime.time
-    val player = handlePlayer(runtime.player, runtime.keysDown, duration)
+    val player = handlePlayer(runtime.player, runtime.keysDown, duration, width, height)
     val (waveEnemies, wave) = handleWave(runtime.enemies, runtime.wave, width)
     val bullets = handleBullets(runtime.bullets, duration)
     val enemies = handleEnemies(waveEnemies, bullets, runtime.time, currentTime, height)
@@ -83,7 +87,7 @@ object SpaceInvaders:
                        bullets: Seq[Point[Double]]): F[Unit] =
     val renderer = canvas.context2d
     for
-      _ <- canvas.clear[F]()
+      _ <- canvas.solid[F]()
       _ <- bullets.map(bullet =>
         renderer.drawSquare(Point.colored(bullet.x - 2, bullet.y - 2, Red), 4)).sequence.void
       _ <- enemies.map(enemy =>
