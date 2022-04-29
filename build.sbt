@@ -56,7 +56,7 @@ lazy val demoFpInScala = (project in file("demo-fp"))
   .settings(
     name := "demo-fp",
     libraryDependencies ++= Seq(
-      scalacheck,
+      scalaCheck,
     ),
   )
 
@@ -87,7 +87,6 @@ lazy val demoFs2 = (project in file("demo-fs2"))
   .settings(
     name := "demo-fs2",
     libraryDependencies ++= Seq(
-      pekCommonCore,
       fs2Core,
       fs2IO,
       fs2ReactiveStreams,
@@ -141,27 +140,66 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
   .settings(commonSettings)
   .settings(
     name := "demo-js",
-    scalacOptions ++= Seq(
-    ),
     libraryDependencies ++= Seq(
       "com.peknight" %%% "common-core" % pekCommonVersion,
       "org.typelevel" %%% "cats-core" % catsVersion,
       "org.typelevel" %%% "cats-effect" % catsEffectVersion,
       "co.fs2" %%% "fs2-core" % fs2Version,
       "org.typelevel" %%% "spire" % spireVersion,
-      "com.lihaoyi" %%% "utest" % uTestVersion % "test",
-    ),
-  )
-  .jvmSettings(
-    // Add JVM-specific settings here
-    libraryDependencies ++= Seq(
+      "com.lihaoyi" %%% "utest" % uTestVersion % Test,
     ),
   )
   .jsSettings(
-    // Add JS-specific settings here
     // This is an application with a main method
     scalaJSUseMainModuleInitializer := true,
     Compile / mainClass := Some("com.peknight.demo.js.tutorial.webapp.TutorialApp"),
+    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+    testFrameworks += new TestFramework("utest.runner.Framework"),
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+    ),
+  )
+
+lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-playground"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-playground",
+    libraryDependencies ++= Seq(
+      "com.peknight" %%% "common-core" % pekCommonVersion,
+      "org.typelevel" %%% "cats-core" % catsVersion,
+      "org.typelevel" %%% "alleycats-core" % catsVersion,
+      "org.typelevel" %%% "cats-effect" % catsEffectVersion,
+      "co.fs2" %%% "fs2-core" % fs2Version,
+      "co.fs2" %%% "fs2-io" % fs2Version,
+      "co.fs2" %%% "fs2-scodec" % fs2Version,
+      "io.circe" %%% "circe-core" % circeVersion,
+      "io.circe" %%% "circe-generic" % circeVersion,
+      "io.circe" %%% "circe-parser" % circeVersion,
+      "dev.optics" %%% "monocle-core" % monocleVersion,
+      "dev.optics" %%% "monocle-macro" % monocleVersion,
+      "org.typelevel" %%% "spire" % spireVersion,
+      "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
+      "com.lihaoyi" %%% "upickle" % uPickleVersion,
+      "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % Test,
+      "org.scalatest" %%% "scalatest" % scalaTestVersion % Test,
+      "org.typelevel" %%% "cats-effect-testkit" % catsEffectVersion % Test,
+      "org.typelevel" %%% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion % Test,
+      "org.typelevel" %%% "munit-cats-effect-3" % mUnitCatsEffectVersion % Test,
+      "com.disneystreaming" %%% "weaver-cats" % weaverCatsVersion % Test,
+      "com.lihaoyi" %%% "utest" % uTestVersion % Test,
+    ),
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      fs2ReactiveStreams,
+      akkaActorTyped,
+      akkaActor,
+      akkaStream,
+      logbackClassic,
+      bootstrap,
+    ),
+  )
+  .jsSettings(
     jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
     testFrameworks += new TestFramework("utest.runner.Framework"),
     libraryDependencies ++= Seq(
@@ -185,7 +223,7 @@ lazy val demoJs2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-js2"))
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % catsVersion,
       "com.lihaoyi" %%% "scalarx" % scalaRxVersion,
-      "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
+      "com.lihaoyi" %%% "scalatags" % "0.9.4",
       "com.lihaoyi" %%% "upickle" % uPickleVersion,
       "com.lihaoyi" %%% "utest" % uTestVersion,
       "com.lihaoyi" %%% "autowire" % autowireVersion,
@@ -255,8 +293,10 @@ val pekCommonCore = "com.peknight" %% "common-core" % pekCommonVersion
 
 // Scala
 
+val scalaCheckVersion = "1.16.0"
 val scalaTestVersion = "3.2.11"
 
+val scalaCheck = "org.scalacheck" %% "scalacheck" % scalaCheckVersion
 val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
 
 // Functional
@@ -300,12 +340,10 @@ val bootstrap = "org.webjars" % "bootstrap" % bootstrapVersion
 
 // Test
 
-val scalacheckVersion = "1.15.4"
 val catsEffectTestingSpecsVersion = "1.4.0"
 val mUnitCatsEffectVersion = "1.0.7"
 val weaverCatsVersion = "0.7.11"
 
-val scalacheck = "org.scalacheck" %% "scalacheck" % scalacheckVersion
 val catsEffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
 val catsEffectTestingSpecs = "org.typelevel" %% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion
 val mUnitCatsEffect = "org.typelevel" %% "munit-cats-effect-3" % mUnitCatsEffectVersion
@@ -324,7 +362,7 @@ val scalaReflect = "org.scala-lang" % "scala-reflect" % scalaReflectVersion
 
 val scalaJsDomVersion = "2.1.0"
 val scalaRxVersion = "0.4.3"
-val scalaTagsVersion = "0.9.4"
-val uPickleVersion = "1.4.0"
+val scalaTagsVersion = "0.11.1"
+val uPickleVersion = "1.6.0"
 val uTestVersion = "0.7.11"
 val autowireVersion = "0.3.3"
