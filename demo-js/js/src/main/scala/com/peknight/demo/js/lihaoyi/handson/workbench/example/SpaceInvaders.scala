@@ -1,33 +1,33 @@
 package com.peknight.demo.js.lihaoyi.handson.workbench.example
 
-import cats.Functor
+import cats.Monad
 import cats.data.State
 import cats.effect.*
 import cats.effect.std.Dispatcher
 import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import cats.syntax.traverse.*
-import com.peknight.demo.js.dom.CanvasOps.*
-import com.peknight.demo.js.dom.Color.{Blue, Green, Red}
-import com.peknight.demo.js.dom.Point
-import com.peknight.demo.js.io.IOOps.*
-import com.peknight.demo.js.state.StateOps.*
-import com.peknight.demo.js.stream.EventTopic.*
-import com.peknight.demo.js.stream.EventType.*
-import com.peknight.demo.js.stream.StreamPipe.*
+import com.peknight.demo.js.common.dom.CanvasOps.*
+import com.peknight.demo.js.common.event.EventListenerOps.*
+import com.peknight.demo.js.common.event.EventType.*
+import com.peknight.demo.js.common.std.Color.{Blue, Green, Red}
+import com.peknight.demo.js.common.std.Point
+import com.peknight.demo.js.common.io.IOOps.*
+import com.peknight.demo.js.common.state.StateOps.*
+import com.peknight.demo.js.common.stream.StreamPipe.*
 import fs2.Stream
 import org.scalajs.dom
 import org.scalajs.dom.{KeyCode, html}
 import spire.implicits.*
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.{Duration, DurationInt, DurationLong}
+import scala.concurrent.duration.{Duration, DurationInt, DurationLong, FiniteDuration}
 import scala.scalajs.js.annotation.JSExportTopLevel
 
 object SpaceInvaders:
 
-  case class Runtime(player: Point[Double], enemies: Seq[Point[Double]], bullets: Seq[Point[Double]],
-                     keysDown: Set[Int], wave: Int, time: Duration, draw: Boolean = false)
+  case class Runtime(player: Point[Double], enemies: Seq[Point[Double]], bullets: Seq[Point[Double]], wave: Int,
+                     previousTime: Duration)
 
   def handlePlayer(player: Point[Double], keysDown: Set[Int], duration: Duration, width: Int, height: Int): Point[Double] =
     val length = duration.toMillis / 10
@@ -43,9 +43,11 @@ object SpaceInvaders:
       case (p, _) => p
     }
 
-  def handleBullets(bullets: Seq[Point[Double]], duration: Duration): Seq[Point[Double]] =
+  def handleBullets(bullets: Seq[Point[Double]], addBullet: Boolean, player: Point[Double], duration: Duration)
+  : Seq[Point[Double]] =
     val length = duration.toMillis / 4
-    bullets.map(p => Point(p.x, p.y - length)).filter(_.y >= 0)
+    val addedBullets = if addBullet then player +: bullets else bullets
+    addedBullets.map(p => Point(p.x, p.y - length)).filter(_.y >= 0)
 
   def handleWave(enemies: Seq[Point[Double]], wave: Int, width: Int): (Seq[Point[Double]], Int) =
     if enemies.nonEmpty then (enemies, wave) else (
@@ -72,16 +74,23 @@ object SpaceInvaders:
     enemies.map(enemy => Point(enemy.x + x, enemy.y + y))
       .filter(enemy => !bullets.exists(bullet => enemy.distance(bullet) < 5) && enemy.y <= height)
 
-  def next(runtime: Runtime, currentTime: Duration, width: Int, height: Int): Runtime =
-    val duration = currentTime - runtime.time
-    val player = handlePlayer(runtime.player, runtime.keysDown, duration, width, height)
+  def next(runtime: Runtime, addBullet: Boolean, keysDown: Set[Int], currentTime: Duration, width: Int, height: Int)
+  : Runtime =
+    val duration = currentTime - runtime.previousTime
+    val player = handlePlayer(runtime.player, keysDown, duration, width, height)
     val (waveEnemies, wave) = handleWave(runtime.enemies, runtime.wave, width)
-    val bullets = handleBullets(runtime.bullets, duration)
-    val enemies = handleEnemies(waveEnemies, bullets, runtime.time, currentTime, height)
-    Runtime(player, enemies, bullets, runtime.keysDown, wave, currentTime, true)
+    val bullets = handleBullets(runtime.bullets, addBullet, player, duration)
+    val enemies = handleEnemies(waveEnemies, bullets, runtime.previousTime, currentTime, height)
+    Runtime(player, enemies, bullets, wave, currentTime)
 
-  def nextState[F[_]: Clock: Functor](width: Int, height: Int): F[State[Runtime, Runtime]] =
-    Clock[F].monotonic.map(currentTime => modifyAndGet[Runtime](next(_, currentTime, width, height)))
+  def nextState[F[_]: Clock: Monad](addBulletR: Ref[F, Boolean], keysDownR: Ref[F, Set[Int]], width: Int, height: Int)
+  : F[State[Runtime, Runtime]] =
+    for
+      addBullet <- addBulletR.getAndSet(false)
+      keysDown <- keysDownR.get
+      currentTime <- Clock[F].monotonic
+    yield
+      modifyAndGet[Runtime](next(_, addBullet, keysDown, currentTime, width, height))
 
   def draw[F[_]: Sync](canvas: html.Canvas, player: Point[Double], enemies: Seq[Point[Double]],
                        bullets: Seq[Point[Double]]): F[Unit] =
@@ -95,33 +104,20 @@ object SpaceInvaders:
       _ <- renderer.drawSquare(Point.colored(player.x - 5, player.y - 5, Blue), 10)
     yield ()
 
-  def program[F[_]: Async](canvas: html.Canvas): F[Unit] = Dispatcher[F].use { dispatcher =>
+  def program[F[_]: Async](canvas: html.Canvas, rate: FiniteDuration): F[Unit] = Dispatcher[F].use { dispatcher =>
+    given Dispatcher[F] = dispatcher
     for
-      keyPressTopic <- eventTopic(KeyPress)(dispatcher)
-      keyPressEvents = keyPressTopic.subscribe(1).filter(_.keyCode == KeyCode.Space).through(takeEvery(20.millis))
-        .map(e => modifyAndGet[Runtime](r => r.copy(bullets = r.player +: r.bullets)))
-
-      keyDownTopic <- eventTopic(KeyDown)(dispatcher)
-      keyDownEvents = keyDownTopic.subscribe(1)
-        .map(e => modifyAndGet[Runtime](r => r.copy(keysDown = r.keysDown + e.keyCode)))
-
-      keyUpTopic <- eventTopic(KeyUp)(dispatcher)
-      keyUpEvents = keyUpTopic.subscribe(1)
-        .map(e => modifyAndGet[Runtime](r => r.copy(keysDown = r.keysDown - e.keyCode)))
-
-      process = Stream.repeatEval(nextState(canvas.width, canvas.height)).metered(20.millis)
-
+      addBulletR <- Ref.of[F, Boolean](false)
+      keysDownR <- Ref.of[F, Set[Int]](Set())
+      _ <- addEventListener(KeyPress) { case e if e.keyCode == KeyCode.Space => addBulletR.update(_ => true) }
+      _ <- addEventListener(KeyDown) { e => keysDownR.update(_ + e.keyCode) }
+      _ <- addEventListener(KeyUp) { e => keysDownR.update(_ - e.keyCode) }
       startTime <- Clock[F].monotonic
-      runtime = Runtime(Point(canvas.width / 2, canvas.height / 2), Seq(), Seq(), Set(), 1, startTime)
-
-      _ <- Stream(keyPressEvents, keyDownEvents, keyUpEvents, process)
-        .parJoin(4)
-        .through(state(runtime))
-        .filter(_.draw)
-        .evalMap(r => draw(canvas, r.player, r.enemies, r.bullets))
-        .compile.drain
+      runtime = Runtime(Point(canvas.width / 2, canvas.height / 2), Seq(), Seq(), 1, startTime)
+      _ <- Stream.repeatEval(nextState(addBulletR, keysDownR, canvas.width, canvas.height)).through(state(runtime))
+        .evalMap(r => draw(canvas, r.player, r.enemies, r.bullets)).metered(rate).compile.drain
     yield ()
   }
 
   @JSExportTopLevel("spaceInvaders")
-  def spaceInvaders(canvas: html.Canvas): Unit = program[IO](canvas).run()
+  def spaceInvaders(canvas: html.Canvas): Unit = program[IO](canvas, 20.millis).run()

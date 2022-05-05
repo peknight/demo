@@ -146,6 +146,7 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
       "org.typelevel" %%% "cats-effect" % catsEffectVersion,
       "co.fs2" %%% "fs2-core" % fs2Version,
       "org.typelevel" %%% "spire" % spireVersion,
+      "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.lihaoyi" %%% "utest" % uTestVersion % Test,
     ),
   )

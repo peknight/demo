@@ -1,18 +1,19 @@
 package com.peknight.demo.js.lihaoyi.handson.workbench.example
 
 import cats.data.State
-import cats.effect.{IO, Sync, Temporal}
+import cats.effect.*
+import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import cats.syntax.traverse.*
 import com.peknight.common.core.std.Random
-import com.peknight.demo.js.dom.CanvasOps.*
-import com.peknight.demo.js.dom.Color.RGB
-import com.peknight.demo.js.dom.{Colored, Point}
-import com.peknight.demo.js.io.IOOps.*
-import com.peknight.demo.js.stream.StreamPipe
+import com.peknight.demo.js.common.dom.CanvasOps.*
+import com.peknight.demo.js.common.std.Color.RGB
+import com.peknight.demo.js.common.std.{Colored, Point}
+import com.peknight.demo.js.common.io.IOOps.*
+import com.peknight.demo.js.common.stream.StreamPipe.*
 import fs2.Stream
 import org.scalajs.dom
-import org.scalajs.dom.{Element, html}
+import org.scalajs.dom.html
 import spire.implicits.*
 
 import scala.concurrent.duration.*
@@ -46,25 +47,25 @@ object SierpinskiTriangle:
 
   def clear: State[Runtime, Seq[Point[Double] & Colored]] = State((_, Seq()))
 
-  def stateStream[F[_]](runtime: Runtime, size: Int, width: Int, height: Int, repeat: Int)
+  def points[F[_]](runtime: Runtime, size: Int, width: Int, height: Int, repeat: Int)
   : Stream[F, Seq[Point[Double] & Colored]] =
     val drawStream = Stream(nextPoints(size, width, height)).repeatN(repeat)
-    (Stream(clear) ++ drawStream).repeat.through(StreamPipe.state(runtime))
+    (Stream(clear) ++ drawStream).repeat.through(state(runtime))
 
-  def drawPoints[F[_]: Sync](points: Seq[Point[Double] & Colored], canvas: html.Canvas): F[Unit] =
+  def draw[F[_]: Sync](canvas: html.Canvas, points: Seq[Point[Double] & Colored]): F[Unit] =
     if points.isEmpty then canvas.solid[F]()
     else
       val renderer = canvas.context2d
       points.map(renderer.drawSquare(_, 1)).sequence.void
-  end drawPoints
+  end draw
 
-  def program[F[_]: Sync: Temporal](canvas: html.Canvas, runtime: Runtime, size: Int, repeat: Int, rate: FiniteDuration)
+  def program[F[_]: Async](canvas: html.Canvas, size: Int, repeat: Int, rate: FiniteDuration)
   : F[Unit] =
-    stateStream[F](runtime, size, canvas.width, canvas.height, repeat)
-      .evalMap(drawPoints(_, canvas))
-      .metered(rate)
-      .compile.drain
+    for
+      currentTime <- Clock[F].monotonic
+      _ <- points[F](Runtime(Random(currentTime.toNanos), Point(0, 0)), size, canvas.width, canvas.height, repeat)
+        .evalMap(draw(canvas, _)).metered(rate).compile.drain
+    yield ()
 
   @JSExportTopLevel("sierpinskiTriangle")
-  def sierpinskiTriangle(canvas: html.Canvas): Unit =
-    program[IO](canvas, Runtime(Random(0), Point(0, 0)), 10, 500, 20.millis).run()
+  def sierpinskiTriangle(canvas: html.Canvas): Unit = program[IO](canvas, 10, 500, 20.millis).run()

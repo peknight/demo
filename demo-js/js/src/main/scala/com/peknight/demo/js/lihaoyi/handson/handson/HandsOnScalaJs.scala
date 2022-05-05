@@ -2,18 +2,17 @@ package com.peknight.demo.js.lihaoyi.handson.handson
 
 import cats.effect.{IO, Sync, Temporal}
 import cats.syntax.functor.*
-import cats.syntax.option.*
 import cats.syntax.traverse.*
-import com.peknight.demo.js.dom.*
-import com.peknight.demo.js.dom.CanvasOps.*
-import com.peknight.demo.js.dom.Color.{Blue, Green, Red}
-import com.peknight.demo.js.io.IOOps.*
+import com.peknight.demo.js.common.dom.CanvasOps.*
+import com.peknight.demo.js.common.std.Color.{Blue, Green, Red}
+import com.peknight.demo.js.common.std.{Color, Colored, Point}
+import com.peknight.demo.js.common.io.IOOps.*
 import fs2.{Pure, Stream}
 import org.scalajs.dom
 import org.scalajs.dom.html
 import spire.implicits.*
 
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.scalajs.js.Math.*
 import scala.scalajs.js.annotation.JSExportTopLevel
 
@@ -24,7 +23,7 @@ object HandsOnScalaJs:
   val graphs: Seq[(Graph, Int)] = Seq[Graph](
     (Red, sin),
     (Green, x => abs(x % 4 - 2) - 1),
-    (Blue, x => sin(x/12) * sin(x))
+    (Blue, x => sin(x / 12) * sin(x))
   ).zipWithIndex
 
   def points(w: Int, h: Int): Stream[Pure, Seq[Point[Double] & Colored]] =
@@ -43,17 +42,17 @@ object HandsOnScalaJs:
       end if
     }
 
-  def drawPoints[F[_]: Sync](points: Seq[Point[Double] & Colored], canvas: html.Canvas): F[Unit] =
+  def draw[F[_]: Sync](canvas: html.Canvas, points: Seq[Point[Double] & Colored]): F[Unit] =
     // 点列表为空时清屏
     if points.isEmpty then canvas.solid[F]()
     else
       // 点列表不为空时画点
       val renderer = canvas.context2d
       points.map(renderer.drawSquare(_, 3)).sequence.void
-  end drawPoints
+  end draw
 
-  def drawGraphs[F[_]: Sync: Temporal](canvas: html.Canvas): F[Unit] =
-    points(canvas.width, canvas.height).evalMap(drawPoints(_, canvas)).metered(20.millis).compile.drain
+  def program[F[_]: Sync: Temporal](canvas: html.Canvas, rate: FiniteDuration): F[Unit] =
+    points(canvas.width, canvas.height).evalMap(draw(canvas, _)).metered(rate).compile.drain
 
   @JSExportTopLevel("handsOn")
-  def handsOn(canvas: html.Canvas): Unit = drawGraphs[IO](canvas).run()
+  def handsOn(canvas: html.Canvas): Unit = program[IO](canvas, 20.millis).run()
