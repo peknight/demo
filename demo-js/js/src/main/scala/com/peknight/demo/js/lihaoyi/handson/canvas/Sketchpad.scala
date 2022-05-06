@@ -28,6 +28,7 @@ object Sketchpad:
   def program[F[_]: Async](canvas: html.Canvas): F[Unit] = Dispatcher[F].use{ dispatcher =>
     given Dispatcher[F] = dispatcher
     for
+      _ <- canvas.resize[F]
       _ <- canvas.solid[F](Hex("#f8f8f8"))
       downR <- Ref.of[F, Boolean](false)
       _ <- addEventListener(MouseDown, canvas)(e => downR.update(_ => true))

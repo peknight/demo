@@ -107,6 +107,7 @@ object SpaceInvaders:
   def program[F[_]: Async](canvas: html.Canvas, rate: FiniteDuration): F[Unit] = Dispatcher[F].use { dispatcher =>
     given Dispatcher[F] = dispatcher
     for
+      _ <- canvas.resize[F]
       addBulletR <- Ref.of[F, Boolean](false)
       keysDownR <- Ref.of[F, Set[Int]](Set())
       _ <- addEventListener(KeyPress) { case e if e.keyCode == KeyCode.Space => addBulletR.update(_ => true) }

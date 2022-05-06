@@ -29,4 +29,7 @@ object EventType:
   case object MouseUp extends MouseEventType:
     val eventType = "mouseup"
 
+  case object Click extends MouseEventType:
+    val eventType = "click"
+
 end EventType

@@ -9,13 +9,13 @@ import com.peknight.demo.js.common.std.Color.{Blue, Green, Red}
 import fs2.Stream
 import org.scalajs.dom.html
 
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{Duration, DurationInt}
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSExportTopLevel
 
 object CanvasClock:
 
-  def init[F[_]: Sync](canvas: html.Canvas): F[Unit] =
+  def initCanvas[F[_]: Sync](canvas: html.Canvas): F[Unit] =
     val renderer = canvas.context2d
     val gradient = renderer.createLinearGradient(canvas.width / 2 - 100, 0, canvas.width / 2 + 100, 0)
     gradient.addColorStop(0, Red.value)
@@ -25,20 +25,27 @@ object CanvasClock:
       renderer.fillStyle = gradient
       renderer.textAlign = "center"
       renderer.textBaseline = "middle"
+      renderer.font = "75px sans-serif"
     }
+
+  def format(time: Duration): String =
+    val date = new js.Date(time.toMillis.toDouble)
+    f"${date.getHours().toInt}%02d:${date.getMinutes().toInt}%02d:${date.getSeconds().toInt}%02d"
+
+  def show[F[_]: Async](canvas: html.Canvas): F[Unit] =
+    for
+      _ <- canvas.clear[F]
+      realTime <- Clock[F].realTime
+      _ <- Sync[F].delay(canvas.context2d.fillText(format(realTime), canvas.width / 2, canvas.height / 2))
+    yield ()
 
   def program[F[_]: Async](canvas: html.Canvas): F[Unit] =
     val renderer = canvas.context2d
-    val width = canvas.width
-    val height = canvas.height
     for
-      _ <- init(canvas)
-      _ <- Stream.repeatEval(Clock[F].realTime).evalMap(time => Sync[F].delay {
-        val date = new js.Date(time.toMillis.toDouble)
-        renderer.clearRect(0, 0, width, height)
-        renderer.font = "75px sans-serif"
-        renderer.fillText(Seq(date.getHours(), date.getMinutes(), date.getSeconds()).mkString(":"), width / 2, height / 2)
-      }).metered(1.second).compile.drain
+      _ <- canvas.resize[F]
+      _ <- initCanvas(canvas)
+      _ <- Stream.repeatEval(show(canvas)).metered(1.second)
+        .compile.drain
     yield ()
 
 

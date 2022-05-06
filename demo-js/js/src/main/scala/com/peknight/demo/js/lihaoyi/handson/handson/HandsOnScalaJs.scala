@@ -1,12 +1,13 @@
 package com.peknight.demo.js.lihaoyi.handson.handson
 
-import cats.effect.{IO, Sync, Temporal}
+import cats.effect.{Async, IO, Sync}
+import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import cats.syntax.traverse.*
 import com.peknight.demo.js.common.dom.CanvasOps.*
+import com.peknight.demo.js.common.io.IOOps.*
 import com.peknight.demo.js.common.std.Color.{Blue, Green, Red}
 import com.peknight.demo.js.common.std.{Color, Colored, Point}
-import com.peknight.demo.js.common.io.IOOps.*
 import fs2.{Pure, Stream}
 import org.scalajs.dom
 import org.scalajs.dom.html
@@ -51,8 +52,11 @@ object HandsOnScalaJs:
       points.map(renderer.drawSquare(_, 3)).sequence.void
   end draw
 
-  def program[F[_]: Sync: Temporal](canvas: html.Canvas, rate: FiniteDuration): F[Unit] =
-    points(canvas.width, canvas.height).evalMap(draw(canvas, _)).metered(rate).compile.drain
+  def program[F[_]: Async](canvas: html.Canvas, rate: FiniteDuration): F[Unit] =
+    for
+      _ <- canvas.resize[F]
+      _ <- points(canvas.width, canvas.height).evalMap(draw(canvas, _)).metered(rate).compile.drain
+    yield ()
 
   @JSExportTopLevel("handsOn")
   def handsOn(canvas: html.Canvas): Unit = program[IO](canvas, 20.millis).run()

@@ -62,6 +62,7 @@ object SierpinskiTriangle:
   def program[F[_]: Async](canvas: html.Canvas, size: Int, repeat: Int, rate: FiniteDuration)
   : F[Unit] =
     for
+      _ <- canvas.resize[F]
       currentTime <- Clock[F].monotonic
       _ <- points[F](Runtime(Random(currentTime.toNanos), Point(0, 0)), size, canvas.width, canvas.height, repeat)
         .evalMap(draw(canvas, _)).metered(rate).compile.drain

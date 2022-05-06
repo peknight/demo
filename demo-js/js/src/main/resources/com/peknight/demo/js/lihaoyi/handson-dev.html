@@ -1,38 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Hands On Scala JS</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Hands-on Scala.js 学习Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .demo_box {
+            float: left;
+        }
+        .demo_std {
+            width: 255px;
+            height: 255px;
+        }
+        .demo_std_2w {
+            width: 511px;
+            height: 255px;
+        }
+        .demo_flappy_box {
+            width: 800px;
+            height: 400px;
+        }
+    </style>
 </head>
-<body style="margin: 0px">
+<body>
 
-<div>
-    <canvas style="display: block" id="handsOn" width="255" height="255"/>
+<div class = "demo_box">
+    <canvas class="demo_std" id="handsOn"/>
 </div>
-<div>
-    <canvas style="display: block" id="sierpinskiTriangle" width="255" height="255"/>
+<div class = "demo_box">
+    <canvas class="demo_std" id="sierpinskiTriangle"/>
 </div>
-<div>
-    <canvas style="display: block" id="spaceInvaders" width="255" height="255"/>
+<div class = "demo_box">
+    <canvas class="demo_std" id="spaceInvaders"/>
 </div>
-<div>
-    <canvas style="display: block" id="dodgeTheDots" width="255" height="255"/>
+<div class = "demo_box">
+    <canvas class="demo_std" id="dodgeTheDots"/>
 </div>
-<div>
-    <canvas style="display: block" id="sketchpad" width="255" height="255"/>
+<div class = "demo_box">
+    <canvas class="demo_std" id="sketchpad"/>
 </div>
-<div>
-    <canvas style="display: block" id="canvasClock" width="511" height="255"/>
+<div class = "demo_box">
+    <canvas class="demo_std_2w" id="canvasClock"/>
+</div>
+<div class = "demo_box">
+    <canvas class="demo_flappy_box" id="flappyBox"/>
 </div>
 
 <script type="text/javascript" src="../../../../../target/scala-3.1.2/demo-js-fastopt/main.js"></script>
 <script>
-    handsOn(document.getElementById('handsOn'))
+    handsOn(document.getElementById("handsOn"))
     sierpinskiTriangle(document.getElementById("sierpinskiTriangle"))
     spaceInvaders(document.getElementById("spaceInvaders"))
     dodgeTheDots(document.getElementById("dodgeTheDots"))
     sketchpad(document.getElementById("sketchpad"))
     canvasClock(document.getElementById("canvasClock"))
+    flappyBox(document.getElementById("flappyBox"))
 </script>
 </body>
 </html>

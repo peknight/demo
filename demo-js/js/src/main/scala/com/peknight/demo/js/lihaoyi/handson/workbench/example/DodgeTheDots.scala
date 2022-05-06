@@ -103,6 +103,7 @@ object DodgeTheDots:
     Dispatcher[F].use { dispatcher =>
       given Dispatcher[F] = dispatcher
       for
+        _ <- canvas.resize
         playerR <- Ref.of[F, Point[Double]](Point(canvas.width / 2, canvas.height / 2))
         _ <- addEventListener(MouseMove)(e => playerR.update(_ =>
           Point(e.pageX - canvas.offsetLeft, e.pageY - canvas.offsetTop)))

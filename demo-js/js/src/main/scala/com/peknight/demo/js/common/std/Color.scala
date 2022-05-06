@@ -15,11 +15,20 @@ object Color:
   case object Red extends Color:
     val value: String = "red"
 
+  case object DarkRed extends Color:
+    val value: String = "darkred"
+
   case object Green extends Color:
     val value: String = "green"
 
+  case object DarkGreen extends Color:
+    val value: String = "darkgreen"
+
   case object Blue extends Color:
     val value: String = "blue"
+
+  case object DarkBlue extends Color:
+    val value: String = "darkblue"
 
   case object Black extends Color:
     val value: String = "black"
