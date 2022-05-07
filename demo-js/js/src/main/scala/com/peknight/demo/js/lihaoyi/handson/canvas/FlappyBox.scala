@@ -60,9 +60,9 @@ object FlappyBox:
 
   def handleObstacles(random: Random, frame: Frame, obstacles: Queue[Int], duration: Duration, height: Int)
   : (Random, Frame, Queue[Int]) =
-    val nextFrame = frame + 2
+    val nextFrame = frame + (duration.toMillis / 10).toInt
     val (nextRandom, nextObstacles) =
-      if nextFrame >= 0 && nextFrame % obstacleGap == 0 then
+      if nextFrame >= 0 && obstacles.length * obstacleGap <= nextFrame then
         val (rnd, holeY) = random.between(holeSize, height - holeSize)
         (rnd, obstacles.enqueue(holeY))
       else
@@ -134,8 +134,10 @@ object FlappyBox:
 
   def draw[F[_]: Sync](canvas: html.Canvas, playerY: PlayerY, frame: Frame, obstacles: Queue[Int],
                        dead: Option[Duration]): F[Unit] =
+    canvas.clear[F].flatMap { _ =>
       if dead.isDefined then drawDead(canvas)
       else drawLive(canvas, playerY, getHoles(frame, obstacles, canvas.width))
+    }
 
   def program[F[_]: Async](canvas: html.Canvas, rate: FiniteDuration): F[Unit] = Dispatcher[F].use { dispatcher =>
     given Dispatcher[F] = dispatcher
@@ -148,7 +150,7 @@ object FlappyBox:
       startTime <- Clock[F].monotonic
       runtime = Runtime(Random(startTime.toNanos), canvas.height / 2, 0, -50, Queue(), None, startTime)
       _ <- Stream.repeatEval(nextState(clickCountR, canvas.width, canvas.height)).through(state(runtime))
-        .evalMap(r => canvas.clear.flatMap(_ => draw(canvas, r.playerY, r.frame, r.obstacles, r.dead)))
+        .evalMap(r => draw(canvas, r.playerY, r.frame, r.obstacles, r.dead))
         .metered(rate).compile.drain
     yield ()
   }
