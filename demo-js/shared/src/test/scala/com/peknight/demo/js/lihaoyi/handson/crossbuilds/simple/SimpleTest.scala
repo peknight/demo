@@ -1,12 +1,12 @@
 package com.peknight.demo.js.lihaoyi.handson.crossbuilds.simple
 
-import utest._
+import utest.*
 
-object SimpleTest extends TestSuite {
+object SimpleTest extends TestSuite:
   val tests = Tests {
-    Symbol("format") {
-      Symbol("nil") - assert(Simple.formatTimes(Nil) == Nil)
-      Symbol("timeZero") - {
+    test("format") {
+      test("nil") - assert(Simple.formatTimes(Nil) == Nil)
+      test("timeZero") - {
         val timestamps = Seq(0L, 1L << 32)
         val expected = Seq(
           "1970-01-01T00:00:00",
@@ -16,8 +16,5 @@ object SimpleTest extends TestSuite {
         assert(formatted == expected)
       }
     }
-    Symbol("zero") {
-      0.0
-    }
+    test("zero") { 0.0 }
   }
-}

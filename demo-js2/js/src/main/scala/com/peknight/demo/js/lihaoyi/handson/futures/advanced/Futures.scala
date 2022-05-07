@@ -1,6 +1,5 @@
 package com.peknight.demo.js.lihaoyi.handson.futures.advanced
 
-import com.peknight.demo.js.lihaoyi.handson.webpage.OpenWeatherAppid
 import org.scalajs.dom
 import org.scalajs.dom.ext.{Ajax, KeyCode}
 import org.scalajs.dom.html
