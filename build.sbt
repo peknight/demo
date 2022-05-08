@@ -130,6 +130,9 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
   .settings(
     name := "demo-http4s",
     libraryDependencies ++= Seq(
+      "org.http4s" %%% "http4s-dsl" % http4sVersion,
+      "org.http4s" %%% "http4s-ember-server" % http4sVersion,
+      "org.http4s" %%% "http4s-ember-client" % http4sVersion,
     ),
   )
   .jvmSettings(
@@ -195,6 +198,9 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "dev.optics" %%% "monocle-core" % monocleVersion,
       "dev.optics" %%% "monocle-macro" % monocleVersion,
       "org.typelevel" %%% "spire" % spireVersion,
+      "org.http4s" %%% "http4s-dsl" % http4sVersion,
+      "org.http4s" %%% "http4s-ember-server" % http4sVersion,
+      "org.http4s" %%% "http4s-ember-client" % http4sVersion,
       "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.lihaoyi" %%% "upickle" % uPickleVersion,
       "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % Test,
@@ -238,11 +244,9 @@ lazy val demoJs2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-js2"))
       "-language:strictEquality",
     ),
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-core" % catsVersion,
       "com.lihaoyi" %%% "scalarx" % scalaRxVersion,
       "com.lihaoyi" %%% "scalatags" % "0.9.4",
       "com.lihaoyi" %%% "upickle" % uPickleVersion,
-      "com.lihaoyi" %%% "utest" % uTestVersion,
       "com.lihaoyi" %%% "autowire" % autowireVersion,
     ),
   )
@@ -324,6 +328,7 @@ val fs2Version = "3.2.7"
 val circeVersion = "0.14.1"
 val monocleVersion = "3.1.0"
 val spireVersion = "0.18.0-M3"
+val http4sVersion = "1.0.0-M32"
 
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
 val alleyCatsCore = "org.typelevel" %% "alleycats-core" % catsVersion
