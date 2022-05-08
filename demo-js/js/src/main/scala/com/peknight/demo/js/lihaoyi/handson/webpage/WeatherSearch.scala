@@ -1,5 +1,6 @@
 package com.peknight.demo.js.lihaoyi.handson.webpage
 
+import com.peknight.demo.js.lihaoyi.handson.webpage.OpenWeatherApi.{*, given}
 import io.circe.*
 import io.circe.generic.auto.*
 import io.circe.parser.*
@@ -72,11 +73,4 @@ object WeatherSearch:
         hr, output, hr
       ).render
     )
-
-  case class Result(list: List[Info])
-  case class Info(name: String, main: Main, sys: Sys, weather: List[Weather])
-  case class Main(tempMin: Double, tempMax: Double, humidity: Double)
-  given mainDecoder: Decoder[Main] = Decoder.forProduct3("temp_min", "temp_max", "humidity")(Main.apply)
-  case class Sys(country: String)
-  case class Weather(main: String)
 

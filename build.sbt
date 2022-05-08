@@ -125,6 +125,18 @@ lazy val demoSpire = (project in file("demo-spire"))
     ),
   )
 
+lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4s"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-http4s",
+    libraryDependencies ++= Seq(
+    ),
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+    ),
+  )
+
 lazy val demoAkka = (project in file("demo-akka"))
   .settings(commonSettings)
   .settings(
