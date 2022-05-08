@@ -137,6 +137,7 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
+      logbackClassic % Runtime,
     ),
   )
 
