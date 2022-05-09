@@ -3,10 +3,15 @@ package com.peknight.demo.http4s.middleware
 import cats.data.Kleisli
 import cats.effect.*
 import cats.syntax.all.*
+import com.codahale.metrics.SharedMetricRegistries
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.implicits.*
-import org.http4s.server.Middleware
+import org.http4s.metrics.dropwizard.Dropwizard
+import org.http4s.metrics.prometheus.{Prometheus, PrometheusExportService}
+import org.http4s.server.middleware.{Metrics, RequestId}
+import org.http4s.server.{Middleware, Router}
+import org.typelevel.ci.*
 
 /**
  * 中间件是对服务(service)的一个包装，它提供了对传入服务的请求(Request)和服务返回的响应(Response)做操作的能力，甚至可以阻止服务被调用
@@ -53,6 +58,29 @@ object MiddlewareApp extends IOApp.Simple:
   val aggregateService = apiService <+> MyMiddle(service, "SomeKey" -> "SomeValue")
   val apiRequest = Request[IO](Method.GET, uri"/api")
 
+  val registry = SharedMetricRegistries.getOrCreate("default")
+
+  val meteredRoutes = Metrics[IO](Dropwizard(registry, "server"))(apiService)
+
+  val prometheusMeteredRouter: Resource[IO, HttpRoutes[IO]] =
+    for
+      metricsSvc <- PrometheusExportService.build[IO]
+      metrics <- Prometheus.metricsOps[IO](metricsSvc.collectorRegistry, "server")
+      router = Router[IO](
+        "/api" -> Metrics[IO](metrics)(apiService),
+        "/" -> metricsSvc.routes
+      )
+    yield router
+
+  val requestIdService = RequestId.httpRoutes(HttpRoutes.of[IO] {
+    case req =>
+      val reqId = req.headers.get(ci"X-Request-ID").fold("null")(_.head.value)
+      // use request id to correlate logs with the request
+      IO(println(s"request received, cid=$reqId")) *> Ok()
+  })
+
+  val responseIO = requestIdService.orNotFound(goodRequest)
+
   val run =
     for
       goodResp <- service.orNotFound(goodRequest)
@@ -71,5 +99,8 @@ object MiddlewareApp extends IOApp.Simple:
       _ <- IO.println(aggregateGoodResp)
       aggregateApiResp <- aggregateService.orNotFound(apiRequest)
       _ <- IO.println(aggregateApiResp)
+      requestIdResp <- responseIO
+      _ <- IO.println(requestIdResp.headers)
+      _ <- IO.println(requestIdResp.attributes.lookup(RequestId.requestIdAttrKey))
     yield ()
 

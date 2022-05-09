@@ -133,10 +133,14 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
       "org.http4s" %%% "http4s-dsl" % http4sVersion,
       "org.http4s" %%% "http4s-ember-server" % http4sVersion,
       "org.http4s" %%% "http4s-ember-client" % http4sVersion,
+      "org.http4s" %%% "http4s-server" % http4sVersion,
+
     ),
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
+      http4sDropwizardMetrics,
+      http4sPrometheusMetrics,
       logbackClassic % Runtime,
     ),
   )
@@ -202,6 +206,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.http4s" %%% "http4s-dsl" % http4sVersion,
       "org.http4s" %%% "http4s-ember-server" % http4sVersion,
       "org.http4s" %%% "http4s-ember-client" % http4sVersion,
+      "org.http4s" %%% "http4s-server" % http4sVersion,
       "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.lihaoyi" %%% "upickle" % uPickleVersion,
       "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % Test,
@@ -219,6 +224,8 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       akkaActorTyped,
       akkaActor,
       akkaStream,
+      http4sDropwizardMetrics,
+      http4sPrometheusMetrics,
       logbackClassic,
       bootstrap,
     ),
@@ -344,6 +351,8 @@ val circeParser = "io.circe" %% "circe-parser" % circeVersion
 val monocleCore = "dev.optics" %% "monocle-core" % monocleVersion
 val monocleMacro = "dev.optics" %% "monocle-macro" % monocleVersion
 val spire = "org.typelevel" %% "spire" % spireVersion
+val http4sDropwizardMetrics = "org.http4s" %% "http4s-dropwizard-metrics" % http4sVersion
+val http4sPrometheusMetrics = "org.http4s" %% "http4s-prometheus-metrics" % http4sVersion
 
 // Library
 
