@@ -4,6 +4,7 @@ import cats.data.NonEmptyList
 import cats.effect.*
 import cats.syntax.all.*
 import com.comcast.ip4s.*
+import com.peknight.demo.http4s.runEmberServer
 import fs2.Stream
 import org.http4s.*
 import org.http4s.CacheDirective.`no-cache`
@@ -188,7 +189,6 @@ object DslApp extends IOApp.Simple:
     validatingWeatherService <+>
     optionalInvalidService).orNotFound
 
-  //noinspection DuplicatedCode
   def run =
     for
       response <- serviceIO
@@ -233,11 +233,6 @@ object DslApp extends IOApp.Simple:
       _ <- IO.println(greetingResponse)
       greetingWithIdResponse <- greetingWithId
       _ <- IO.println(greetingWithIdResponse)
-      _ <- EmberServerBuilder.default[IO]
-        .withHost(ipv4"0.0.0.0")
-        .withPort(port"8080")
-        .withHttpApp(httpApp)
-        .build
-        .use(_ => IO.never)
+      _ <- runEmberServer[IO](httpApp)
     yield ()
 
