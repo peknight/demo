@@ -4,7 +4,7 @@ import cats.data.NonEmptyList
 import cats.effect.*
 import cats.syntax.all.*
 import com.comcast.ip4s.*
-import com.peknight.demo.http4s.runEmberServer
+import com.peknight.demo.http4s.runLogEmberServer
 import fs2.Stream
 import org.http4s.*
 import org.http4s.CacheDirective.`no-cache`
@@ -233,6 +233,6 @@ object DslApp extends IOApp.Simple:
       _ <- IO.println(greetingResponse)
       greetingWithIdResponse <- greetingWithId
       _ <- IO.println(greetingWithIdResponse)
-      _ <- runEmberServer[IO](httpApp)
+      _ <- runLogEmberServer[IO](httpApp)
     yield ()
 

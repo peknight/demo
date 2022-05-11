@@ -141,6 +141,7 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
     libraryDependencies ++= Seq(
       http4sDropwizardMetrics,
       http4sPrometheusMetrics,
+      jQuery,
       logbackClassic % Runtime,
     ),
   )
@@ -228,6 +229,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       http4sPrometheusMetrics,
       logbackClassic,
       bootstrap,
+      jQuery,
     ),
   )
   .jsSettings(
@@ -369,6 +371,7 @@ val akkaStream = "com.typesafe.akka" %% "akka-stream" % akkaVersion
 val akkaHttp = "com.typesafe.akka" %% "akka-http" % akkaHttpVersion
 val apacheCommonsMath = "org.apache.commons" % "commons-math3" % apacheCommonsMathVersion
 val bootstrap = "org.webjars" % "bootstrap" % bootstrapVersion
+val jQuery = "org.webjars" % "jquery" % "3.6.0"
 
 // Test
 

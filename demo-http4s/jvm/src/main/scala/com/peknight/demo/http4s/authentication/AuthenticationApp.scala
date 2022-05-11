@@ -4,7 +4,7 @@ import cats.*
 import cats.data.*
 import cats.effect.*
 import cats.implicits.*
-import com.peknight.demo.http4s.runEmberServer
+import com.peknight.demo.http4s.runLogEmberServer
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.server.*
@@ -68,6 +68,6 @@ object AuthenticationApp extends IOApp.Simple:
 
   val run =
     for
-      _ <- runEmberServer[IO](serviceFS.orNotFound)
+      _ <- runLogEmberServer[IO](serviceFS.orNotFound)
     yield ()
 

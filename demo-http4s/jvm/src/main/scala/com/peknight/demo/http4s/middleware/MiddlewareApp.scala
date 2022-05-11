@@ -4,7 +4,7 @@ import cats.data.Kleisli
 import cats.effect.*
 import cats.syntax.all.*
 import com.codahale.metrics.SharedMetricRegistries
-import com.peknight.demo.http4s.runEmberServer
+import com.peknight.demo.http4s.runLogEmberServer
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.implicits.*
@@ -103,6 +103,6 @@ object MiddlewareApp extends IOApp.Simple:
       requestIdResp <- responseIO
       _ <- IO.println(requestIdResp.headers)
       _ <- IO.println(requestIdResp.attributes.lookup(RequestId.requestIdAttrKey))
-      _ <- runEmberServer[IO]((aggregateService <+> meteredRoutes).orNotFound)
+      _ <- runLogEmberServer[IO]((aggregateService <+> meteredRoutes).orNotFound)
     yield ()
 

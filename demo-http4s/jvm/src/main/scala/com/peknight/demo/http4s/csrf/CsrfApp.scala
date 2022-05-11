@@ -6,6 +6,9 @@ import org.http4s.dsl.io.*
 import org.http4s.implicits.*
 import org.http4s.server.middleware.*
 
+/**
+ * Cross-Site Request Forgery
+ */
 object CsrfApp extends IOApp.Simple:
 
   val service = HttpRoutes.of[IO] { case _ => Ok() }
