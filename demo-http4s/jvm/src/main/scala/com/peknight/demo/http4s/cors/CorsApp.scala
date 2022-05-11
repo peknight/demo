@@ -27,11 +27,20 @@ object CorsApp extends IOApp.Simple:
 
   val yahooPut = Request[IO](Method.PUT, uri"/", headers = Headers("Origin" -> "https://yahoo.com"))
 
-  val duckPost = Request[IO](Method.POST, uri"/", headers = Headers("Origin" -> "https://docuduckgo.com"))
+  val duckPost = Request[IO](Method.POST, uri"/", headers = Headers("Origin" -> "https://duckduckgo.com"))
 
   val corsMethodSvc = CORS.policy
     .withAllowOriginAll
     .withAllowMethodsIn(Set(Method.GET, Method.POST))
+    .withAllowCredentials(false)
+    .withMaxAge(1.day)
+    .apply(service)
+
+  val corsOriginSvc = CORS.policy
+    .withAllowOriginHost(Set(
+      Origin.Host(Uri.Scheme.https, Uri.RegName("yahoo.com"), None),
+      Origin.Host(Uri.Scheme.https, Uri.RegName("duckduckgo.com"), None)
+    ))
     .withAllowCredentials(false)
     .withMaxAge(1.day)
     .apply(service)
@@ -50,5 +59,11 @@ object CorsApp extends IOApp.Simple:
       _ <- IO.println(yahooPutResp)
       duckPostResp <- corsMethodSvc.orNotFound(duckPost)
       _ <- IO.println(duckPostResp)
+      googleGetOriginResp <- corsOriginSvc.orNotFound(googleGet)
+      _ <- IO.println(googleGetOriginResp)
+      yahooPutOriginResp <- corsOriginSvc.orNotFound(yahooPut)
+      _ <- IO.println(yahooPutOriginResp)
+      duckPostOriginResp <- corsOriginSvc.orNotFound(duckPost)
+      _ <- IO.println(duckPostOriginResp)
     yield ()
 
