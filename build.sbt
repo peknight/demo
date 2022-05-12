@@ -134,7 +134,8 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
       "org.http4s" %%% "http4s-ember-server" % http4sVersion,
       "org.http4s" %%% "http4s-ember-client" % http4sVersion,
       "org.http4s" %%% "http4s-server" % http4sVersion,
-
+      "org.http4s" %%% "http4s-circe" % http4sVersion,
+      "io.circe" %%% "circe-generic" % circeVersion,
     ),
   )
   .jvmSettings(
@@ -208,6 +209,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.http4s" %%% "http4s-ember-server" % http4sVersion,
       "org.http4s" %%% "http4s-ember-client" % http4sVersion,
       "org.http4s" %%% "http4s-server" % http4sVersion,
+      "org.http4s" %%% "http4s-circe" % http4sVersion,
       "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.lihaoyi" %%% "upickle" % uPickleVersion,
       "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % Test,

@@ -15,5 +15,5 @@ object ServiceApp:
   val httpApp = Router("/" -> HelloWorldRoutes.helloWorldRoutes, "/api" -> services).orNotFound
   val server = emberServer[IO](httpApp)
   import cats.effect.unsafe.implicits.global
-  val shutdown = server.allocated.unsafeRunSync()._2
+  val shutdown = server.allocated.map(_._2)
 
