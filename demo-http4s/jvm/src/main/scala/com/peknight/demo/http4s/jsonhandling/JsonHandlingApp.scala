@@ -7,10 +7,6 @@ import io.circe.parser.*
 import io.circe.syntax.*
 import org.http4s.*
 import org.http4s.circe.*
-// 可以用替换下面两个import
-// import org.http4s.circe.CirceEntityCodec.*
-// 为每个A创建EntityDecoder[A]的解码实例。小心使用：这个隐式引入会导致http4s总是尝试使用json解码http实体（比如实体实际是XML或普通文本的情况）
-import org.http4s.circe.CirceEntityDecoder.*
 import org.http4s.circe.CirceEntityEncoder.*
 import org.http4s.client.dsl.io.*
 import org.http4s.dsl.io.*
@@ -27,6 +23,22 @@ object JsonHandlingApp extends IOApp.Simple:
 
   given helloEncoder: Encoder[Hello] = Encoder.forProduct1("hello")(h => h.name)
 
+  given userDecoder: EntityDecoder[IO, User] = jsonOf[IO, User]
+
+  val decodeIO =
+    // 为每个A创建EntityDecoder[A]的解码实例。小心使用：这个隐式引入会导致http4s总是尝试使用json解码http实体（比如实体实际是XML或普通文本的情况）
+    import org.http4s.circe.CirceEntityDecoder.*
+    // import org.http4s.circe.CirceEntityEncoder.*
+    // 可以用Codec替换上面两个import
+    // import org.http4s.circe.CirceEntityCodec.*
+    for
+      aliceUser <- Ok("""{"name":"Alice"}""").flatMap(_.as[User])
+      _ <- IO.println(aliceUser)
+      bobUser <- POST("""{"name":"Bob"}""", uri"/hello").as[User]
+      _ <- IO.println(bobUser)
+    yield ()
+
+
   val run =
     for
       greetingResp <- Ok(greeting)
@@ -41,4 +53,5 @@ object JsonHandlingApp extends IOApp.Simple:
       _ <- IO.println(aliceJson)
       bobJson <- POST("""{"name":"Bob"}""", uri"/hello").as[Json]
       _ <- IO.println(bobJson)
+      _ <- decodeIO
     yield ()
