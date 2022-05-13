@@ -11,7 +11,9 @@ import org.http4s.headers.`Content-Type`
 
 object EntityHandlingApp extends IOApp.Simple:
 
-  val response = Ok("").map(_.withContentType(`Content-Type`(MediaType.audio.ogg)))
+  val audioResponse = Ok("").map(_.withContentType(`Content-Type`(MediaType.audio.ogg)))
+
+  val videoResponse = Ok("").map(_.withContentType(`Content-Type`(MediaType.video.ogg)))
 
   val audioDec = EntityDecoder.decodeBy(MediaType.audio.ogg) { (m: Media[IO]) =>
     EitherT { m.as[String].map(s => Audio(s).asRight[DecodeFailure]) }
@@ -25,7 +27,10 @@ object EntityHandlingApp extends IOApp.Simple:
 
   def run =
     for
-      resp <- response
-      r <- resp.as[Resp]
-      _ <- IO.println(r)
+      audioResp <- audioResponse
+      audio <- audioResp.as[Resp]
+      _ <- IO.println(audio)
+      videoResp <- videoResponse
+      video <- videoResp.as[Resp]
+      _ <- IO.println(video)
     yield ()
