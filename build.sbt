@@ -134,6 +134,7 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
       "org.http4s" %%% "http4s-ember-server" % http4sVersion,
       "org.http4s" %%% "http4s-ember-client" % http4sVersion,
       "org.http4s" %%% "http4s-server" % http4sVersion,
+      "org.http4s" %%% "http4s-client" % http4sVersion,
       "org.http4s" %%% "http4s-circe" % http4sVersion,
       "io.circe" %%% "circe-generic" % circeVersion,
       "io.circe" %%% "circe-parser" % circeVersion,
@@ -143,8 +144,14 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
     libraryDependencies ++= Seq(
       http4sDropwizardMetrics,
       http4sPrometheusMetrics,
+      http4sJdkHttpClient,
       jQuery,
       logbackClassic % Runtime,
+    ),
+  )
+  .jsSettings(
+    libraryDependencies ++= Seq(
+      "org.http4s" %%% "http4s-dom" % http4sVersion,
     ),
   )
 
@@ -210,6 +217,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.http4s" %%% "http4s-ember-server" % http4sVersion,
       "org.http4s" %%% "http4s-ember-client" % http4sVersion,
       "org.http4s" %%% "http4s-server" % http4sVersion,
+      "org.http4s" %%% "http4s-client" % http4sVersion,
       "org.http4s" %%% "http4s-circe" % http4sVersion,
       "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.lihaoyi" %%% "upickle" % uPickleVersion,
@@ -230,6 +238,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       akkaStream,
       http4sDropwizardMetrics,
       http4sPrometheusMetrics,
+      http4sJdkHttpClient,
       logbackClassic,
       bootstrap,
       jQuery,
@@ -240,6 +249,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
     testFrameworks += new TestFramework("utest.runner.Framework"),
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+      "org.http4s" %%% "http4s-dom" % http4sVersion,
     ),
   )
 
@@ -342,6 +352,7 @@ val circeVersion = "0.14.1"
 val monocleVersion = "3.1.0"
 val spireVersion = "0.18.0-M3"
 val http4sVersion = "1.0.0-M32"
+val http4sJdkHttpClientVersion = "1.0.0-M1"
 
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
 val alleyCatsCore = "org.typelevel" %% "alleycats-core" % catsVersion
@@ -358,6 +369,7 @@ val monocleMacro = "dev.optics" %% "monocle-macro" % monocleVersion
 val spire = "org.typelevel" %% "spire" % spireVersion
 val http4sDropwizardMetrics = "org.http4s" %% "http4s-dropwizard-metrics" % http4sVersion
 val http4sPrometheusMetrics = "org.http4s" %% "http4s-prometheus-metrics" % http4sVersion
+val http4sJdkHttpClient = "org.http4s" %% "http4s-jdk-http-client" % http4sJdkHttpClientVersion
 
 // Library
 
