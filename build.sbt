@@ -413,6 +413,6 @@ val scalaReflect = "org.scala-lang" % "scala-reflect" % scalaReflectVersion
 val scalaJsDomVersion = "2.1.0"
 val scalaRxVersion = "0.4.3"
 val scalaTagsVersion = "0.11.1"
-val uPickleVersion = "1.6.0"
+val uPickleVersion = "2.0.0"
 val uTestVersion = "0.7.11"
 val autowireVersion = "0.3.3"
