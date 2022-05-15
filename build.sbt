@@ -31,10 +31,6 @@ lazy val demo = (project in file("."))
     demoAkka,
     demoJs.jvm,
     demoJs.js,
-    demoJs2.jvm,
-    demoJs2.js,
-    demoAsync,
-    demoRx,
   )
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
@@ -246,14 +242,11 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
     libraryDependencies ++= Seq(
       fs2ReactiveStreams,
       akkaActorTyped,
-      akkaActor,
-      akkaStream,
       http4sScalaTags,
       http4sDropwizardMetrics,
       http4sPrometheusMetrics,
       http4sJdkHttpClient,
       logbackClassic,
-      bootstrap,
       jQuery,
     ),
   )
@@ -263,82 +256,6 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
       "org.http4s" %%% "http4s-dom" % http4sVersion,
-    ),
-  )
-
-lazy val demoJs2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-js2"))
-  //  .enablePlugins(ScalaJSPlugin) crossProject下看起来不需要设置
-  .settings(commonSettings)
-  .settings(
-    name := "demo-js2",
-    scalaVersion := scala2Version,
-    scalacOptions ++= Seq(
-      "-Ymacro-annotations",
-      "-Xasync",
-    ),
-    scalacOptions --= Seq(
-      "-language:strictEquality",
-    ),
-    libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "scalarx" % scalaRxVersion,
-      "com.lihaoyi" %%% "scalatags" % "0.9.4",
-      "com.lihaoyi" %%% "upickle" % uPickleVersion,
-      "com.lihaoyi" %%% "autowire" % autowireVersion,
-    ),
-  )
-  .jvmSettings(
-    // Add JVM-specific settings here
-    libraryDependencies ++= Seq(
-      akkaActor,
-      akkaStream,
-      akkaHttp,
-      bootstrap,
-    ),
-  )
-  .jsSettings(
-    // Add JS-specific settings here
-    // This is an application with a main method
-    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
-    testFrameworks += new TestFramework("utest.runner.Framework"),
-    libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % "1.2.0",
-      scalaAsync,
-    ),
-  )
-
-lazy val demoAsync = (project in file("demo-async"))
-  .settings(commonSettings)
-  .settings(
-    name := "demo-async",
-    scalaVersion := scala2Version,
-    scalacOptions ++= Seq(
-      "-Ymacro-annotations",
-      "-Xasync",
-    ),
-    scalacOptions --= Seq(
-      "-language:strictEquality",
-    ),
-    libraryDependencies ++= Seq(
-      scalaAsync,
-      scalaReflect % Provided,
-    ),
-  )
-
-lazy val demoRx = (project in file("demo-rx"))
-  .settings(commonSettings)
-  .settings(
-    name := "demo-rx",
-    scalaVersion := scala2Version,
-    scalacOptions ++= Seq(
-      "-Ymacro-annotations",
-      "-Xasync",
-    ),
-    scalacOptions --= Seq(
-      "-language:strictEquality",
-    ),
-    libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "scalarx" % scalaRxVersion,
-      "com.lihaoyi" %%% "utest" % uTestVersion,
     ),
   )
 
@@ -389,17 +306,11 @@ val http4sJdkHttpClient = "org.http4s" %% "http4s-jdk-http-client" % http4sJdkHt
 
 val logbackVersion = "1.2.11"
 val akkaVersion = "2.6.19"
-val akkaHttpVersion = "10.2.9"
 val apacheCommonsMathVersion = "3.6.1"
-val bootstrapVersion = "5.1.3"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
 val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
-val akkaActor = "com.typesafe.akka" %% "akka-actor" % akkaVersion
-val akkaStream = "com.typesafe.akka" %% "akka-stream" % akkaVersion
-val akkaHttp = "com.typesafe.akka" %% "akka-http" % akkaHttpVersion
 val apacheCommonsMath = "org.apache.commons" % "commons-math3" % apacheCommonsMathVersion
-val bootstrap = "org.webjars" % "bootstrap" % bootstrapVersion
 val jQuery = "org.webjars" % "jquery" % "3.6.0"
 
 // Test
@@ -416,17 +327,10 @@ val weaverCats = "com.disneystreaming" %% "weaver-cats" % weaverCatsVersion
 // Scala 2
 
 val scala2Version = "2.13.8"
-val scalaAsyncVersion = "1.0.1"
-val scalaReflectVersion = "2.13.8"
-
-val scalaAsync = "org.scala-lang.modules" %% "scala-async" % scalaAsyncVersion
-val scalaReflect = "org.scala-lang" % "scala-reflect" % scalaReflectVersion
 
 // Scala JS
 
 val scalaJsDomVersion = "2.1.0"
-val scalaRxVersion = "0.4.3"
 val scalaTagsVersion = "0.11.1"
 val uPickleVersion = "2.0.0"
 val uTestVersion = "0.7.11"
-val autowireVersion = "0.3.3"

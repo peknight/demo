@@ -27,26 +27,29 @@
 </head>
 <body>
 
-<div class = "demo_box">
+<div class="demo_box">
     <canvas class="demo_std" id="handsOn"/>
 </div>
-<div class = "demo_box">
+<div class="demo_box">
     <canvas class="demo_std" id="sierpinskiTriangle"/>
 </div>
-<div class = "demo_box">
+<div class="demo_box">
     <canvas class="demo_std" id="spaceInvaders"/>
 </div>
-<div class = "demo_box">
+<div class="demo_box">
     <canvas class="demo_std" id="dodgeTheDots"/>
 </div>
-<div class = "demo_box">
+<div class="demo_box">
     <canvas class="demo_std" id="sketchpad"/>
 </div>
-<div class = "demo_box">
+<div class="demo_box">
     <canvas class="demo_std_2w" id="canvasClock"/>
 </div>
-<div class = "demo_box">
+<div class="demo_box">
     <canvas class="demo_flappy_box" id="flappyBox"/>
+</div>
+<div class="demo_box">
+    <canvas class="demo_async_advanced" id="asyncAdvanced"/>
 </div>
 
 <script type="text/javascript" src="../../../../../target/scala-3.1.2/demo-js-fastopt/main.js"></script>
@@ -58,6 +61,7 @@
     sketchpad(document.getElementById("sketchpad"))
     canvasClock(document.getElementById("canvasClock"))
     flappyBox(document.getElementById("flappyBox"))
+    AsyncAdvanced.main(document.getElementById("asyncAdvanced"))
 </script>
 </body>
 </html>
