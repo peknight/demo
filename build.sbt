@@ -142,6 +142,7 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
+      http4sScalaTags,
       http4sDropwizardMetrics,
       http4sPrometheusMetrics,
       http4sJdkHttpClient,
@@ -179,9 +180,19 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
       "io.circe" %%% "circe-generic" % circeVersion,
       "io.circe" %%% "circe-parser" % circeVersion,
       "org.typelevel" %%% "spire" % spireVersion,
+      "org.http4s" %%% "http4s-dsl" % http4sVersion,
+      "org.http4s" %%% "http4s-ember-server" % http4sVersion,
+      "org.http4s" %%% "http4s-ember-client" % http4sVersion,
+      "org.http4s" %%% "http4s-circe" % http4sVersion,
       "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.lihaoyi" %%% "upickle" % uPickleVersion,
       "com.lihaoyi" %%% "utest" % uTestVersion % Test,
+    ),
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      http4sScalaTags,
+      logbackClassic % Runtime,
     ),
   )
   .jsSettings(
@@ -192,6 +203,7 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     testFrameworks += new TestFramework("utest.runner.Framework"),
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+      "org.http4s" %%% "http4s-dom" % http4sVersion,
     ),
   )
 
@@ -236,6 +248,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       akkaActorTyped,
       akkaActor,
       akkaStream,
+      http4sScalaTags,
       http4sDropwizardMetrics,
       http4sPrometheusMetrics,
       http4sJdkHttpClient,
@@ -367,6 +380,7 @@ val circeParser = "io.circe" %% "circe-parser" % circeVersion
 val monocleCore = "dev.optics" %% "monocle-core" % monocleVersion
 val monocleMacro = "dev.optics" %% "monocle-macro" % monocleVersion
 val spire = "org.typelevel" %% "spire" % spireVersion
+val http4sScalaTags = "org.http4s" %% "http4s-scalatags" % http4sVersion
 val http4sDropwizardMetrics = "org.http4s" %% "http4s-dropwizard-metrics" % http4sVersion
 val http4sPrometheusMetrics = "org.http4s" %% "http4s-prometheus-metrics" % http4sVersion
 val http4sJdkHttpClient = "org.http4s" %% "http4s-jdk-http-client" % http4sJdkHttpClientVersion
