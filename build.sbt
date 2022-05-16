@@ -28,9 +28,14 @@ lazy val demo = (project in file("."))
     demoCirce,
     demoMonocle,
     demoSpire,
+    demoHttp4s.jvm,
+    demoHttp4s.js,
+    demoDoobie,
     demoAkka,
     demoJs.jvm,
     demoJs.js,
+    demoPlayground.jvm,
+    demoPlayground.js,
   )
   .enablePlugins(JavaAppPackaging)
   .settings(commonSettings)
@@ -152,6 +157,20 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
     ),
   )
 
+lazy val demoDoobie = (project in file("demo-doobie"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-doobie",
+    libraryDependencies ++= Seq(
+      doobieCore,
+      doobieH2,
+      doobieHikari,
+      doobiePostgres,
+      doobieScalaTest % Test,
+      h2 % Test,
+    )
+  )
+
 lazy val demoAkka = (project in file("demo-akka"))
   .settings(commonSettings)
   .settings(
@@ -246,8 +265,14 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       http4sDropwizardMetrics,
       http4sPrometheusMetrics,
       http4sJdkHttpClient,
+      doobieCore,
+      doobieH2,
+      doobieHikari,
+      doobiePostgres,
       logbackClassic,
       jQuery,
+      doobieScalaTest % Test,
+      h2 % Test,
     ),
   )
   .jsSettings(
@@ -283,6 +308,7 @@ val monocleVersion = "3.1.0"
 val spireVersion = "0.18.0-M3"
 val http4sVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M1"
+val doobieVersion = "1.0.0-RC2"
 
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
 val alleyCatsCore = "org.typelevel" %% "alleycats-core" % catsVersion
@@ -301,16 +327,24 @@ val http4sScalaTags = "org.http4s" %% "http4s-scalatags" % http4sVersion
 val http4sDropwizardMetrics = "org.http4s" %% "http4s-dropwizard-metrics" % http4sVersion
 val http4sPrometheusMetrics = "org.http4s" %% "http4s-prometheus-metrics" % http4sVersion
 val http4sJdkHttpClient = "org.http4s" %% "http4s-jdk-http-client" % http4sJdkHttpClientVersion
+val doobieCore = "org.tpolecat" %% "doobie-core" % doobieVersion
+val doobieH2 = "org.tpolecat" %% "doobie-h2" % doobieVersion
+val doobieHikari = "org.tpolecat" %% "doobie-hikari" % doobieVersion
+val doobiePostgres = "org.tpolecat" %% "doobie-postgres" % doobieVersion
+val doobieScalaTest = "org.tpolecat" %% "doobie-scalatest" % doobieVersion
+
 
 // Library
 
 val logbackVersion = "1.2.11"
 val akkaVersion = "2.6.19"
 val apacheCommonsMathVersion = "3.6.1"
+val h2Version = "2.1.212"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
 val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
 val apacheCommonsMath = "org.apache.commons" % "commons-math3" % apacheCommonsMathVersion
+val h2 = "com.h2database" % "h2" % h2Version
 val jQuery = "org.webjars" % "jquery" % "3.6.0"
 
 // Test
@@ -323,10 +357,6 @@ val catsEffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVer
 val catsEffectTestingSpecs = "org.typelevel" %% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion
 val mUnitCatsEffect = "org.typelevel" %% "munit-cats-effect-3" % mUnitCatsEffectVersion
 val weaverCats = "com.disneystreaming" %% "weaver-cats" % weaverCatsVersion
-
-// Scala 2
-
-val scala2Version = "2.13.8"
 
 // Scala JS
 
