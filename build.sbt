@@ -166,6 +166,9 @@ lazy val demoDoobie = (project in file("demo-doobie"))
       doobieH2,
       doobieHikari,
       doobiePostgres,
+      circeCore,
+      circeGeneric,
+      circeParser,
       doobieScalaTest % Test,
       h2 % Test,
     )
