@@ -166,9 +166,11 @@ lazy val demoDoobie = (project in file("demo-doobie"))
       doobieH2,
       doobieHikari,
       doobiePostgres,
+      doobiePostgresCirce,
       circeCore,
       circeGeneric,
       circeParser,
+      logbackClassic % Runtime,
       doobieScalaTest % Test,
       h2 % Test,
     )
@@ -272,6 +274,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       doobieH2,
       doobieHikari,
       doobiePostgres,
+      doobiePostgresCirce,
       logbackClassic,
       jQuery,
       doobieScalaTest % Test,
@@ -334,6 +337,7 @@ val doobieCore = "org.tpolecat" %% "doobie-core" % doobieVersion
 val doobieH2 = "org.tpolecat" %% "doobie-h2" % doobieVersion
 val doobieHikari = "org.tpolecat" %% "doobie-hikari" % doobieVersion
 val doobiePostgres = "org.tpolecat" %% "doobie-postgres" % doobieVersion
+val doobiePostgresCirce = "org.tpolecat" %% "doobie-postgres-circe" % doobieVersion
 val doobieScalaTest = "org.tpolecat" %% "doobie-scalatest" % doobieVersion
 
 
@@ -343,12 +347,15 @@ val logbackVersion = "1.2.11"
 val akkaVersion = "2.6.19"
 val apacheCommonsMathVersion = "3.6.1"
 val h2Version = "2.1.212"
+val jQueryVersion = "3.6.0"
+val postgisJdbcVersion = "2021.1.0"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
 val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
 val apacheCommonsMath = "org.apache.commons" % "commons-math3" % apacheCommonsMathVersion
 val h2 = "com.h2database" % "h2" % h2Version
-val jQuery = "org.webjars" % "jquery" % "3.6.0"
+val jQuery = "org.webjars" % "jquery" % jQueryVersion
+val postgisJdbc = "net.postgis" % "postgis-jdbc" % postgisJdbcVersion
 
 // Test
 
