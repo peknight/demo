@@ -34,6 +34,8 @@ lazy val demo = (project in file("."))
     demoAkka,
     demoJs.jvm,
     demoJs.js,
+    demoOAuth2.jvm,
+    demoOAuth2.js,
     demoPlayground.jvm,
     demoPlayground.js,
   )
@@ -206,6 +208,7 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
       "org.http4s" %%% "http4s-circe" % http4sVersion,
       "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.lihaoyi" %%% "upickle" % uPickleVersion,
+      "com.github.japgolly.scalacss" %% "core" % scalaCssVersion,
       "com.lihaoyi" %%% "utest" % uTestVersion % Test,
     ),
   )
@@ -223,6 +226,33 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     testFrameworks += new TestFramework("utest.runner.Framework"),
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+      "org.http4s" %%% "http4s-dom" % http4sVersion,
+    ),
+  )
+
+lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth2"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-oauth2",
+    libraryDependencies ++= Seq(
+      "org.http4s" %%% "http4s-dsl" % http4sVersion,
+      "org.http4s" %%% "http4s-ember-server" % http4sVersion,
+      "org.http4s" %%% "http4s-ember-client" % http4sVersion,
+      "org.http4s" %%% "http4s-circe" % http4sVersion,
+      "io.circe" %%% "circe-generic" % circeVersion,
+      "io.circe" %%% "circe-parser" % circeVersion,
+      "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
+      "com.github.japgolly.scalacss" %% "core" % scalaCssVersion,
+    ),
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      http4sScalaTags,
+      logbackClassic % Runtime,
+    ),
+  )
+  .jsSettings(
+    libraryDependencies ++= Seq(
       "org.http4s" %%% "http4s-dom" % http4sVersion,
     ),
   )
@@ -253,6 +283,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.http4s" %%% "http4s-circe" % http4sVersion,
       "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.lihaoyi" %%% "upickle" % uPickleVersion,
+      "com.github.japgolly.scalacss" %% "core" % scalaCssVersion,
       "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % Test,
       "org.scalatest" %%% "scalatest" % scalaTestVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % catsEffectVersion % Test,
@@ -374,3 +405,4 @@ val scalaJsDomVersion = "2.1.0"
 val scalaTagsVersion = "0.11.1"
 val uPickleVersion = "2.0.0"
 val uTestVersion = "0.7.11"
+val scalaCssVersion = "1.0.0"
