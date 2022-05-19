@@ -7,8 +7,10 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.scalatags.*
 import org.http4s.server.middleware.Logger
 import org.http4s.server.staticcontent.*
-import org.http4s.{HttpRoutes, Method}
+import org.http4s.HttpRoutes
+import org.http4s.Method
 import scalatags.Text.all.*
+import scalacss.ProdDefaults.*
 
 object ScalaTagsEntityApp extends IOApp.Simple:
 
@@ -16,7 +18,7 @@ object ScalaTagsEntityApp extends IOApp.Simple:
   given CanEqual[Method, Method] = CanEqual.derived
 
   val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root => Ok(html(body(h1("ScalaTagsEntityDemo"))))
+    case GET -> Root => Ok(html(head(style(CustomStyle.render)), body(h1("ScalaTagsEntityDemo"))))
   }
 
   val run =
