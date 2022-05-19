@@ -13,7 +13,7 @@ object TutorialTest extends TestSuite:
     test("HelloWorld") {
       // `querySelectorAll` to find all the `<p>` elements in the document, and `count` those whose `textContent` is the
       // `"Hello World"`. The `count` method is part of the Scala collections API, and is provided on DOM `NodeList`s
-      // by the `import org.scalajs.dom.ext._`
+      // by the `import org.scalajs.dom.ext.*`
       assert(document.querySelectorAll("p").count(_.textContent == "Hello World") == 1)
     }
 

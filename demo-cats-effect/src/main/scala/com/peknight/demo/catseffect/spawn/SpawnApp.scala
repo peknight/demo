@@ -1,9 +1,9 @@
 package com.peknight.demo.catseffect.spawn
 
 import cats.effect.kernel.MonadCancel
-import cats.effect.syntax.all._
+import cats.effect.syntax.all.*
 import cats.effect.{IO, IOApp, Spawn}
-import cats.syntax.all._
+import cats.syntax.all.*
 
 import scala.concurrent.duration.DurationInt
 

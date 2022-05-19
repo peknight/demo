@@ -13,7 +13,7 @@ import fs2.Stream
 object ParameterizedApp extends IOApp.Simple:
 
   val y = xa.yolo
-  import y._
+  import y.*
 
   def biggerThan(minPop: Int) =
     sql"""select code, name, population, gnp from country where population > $minPop""".query[Country]

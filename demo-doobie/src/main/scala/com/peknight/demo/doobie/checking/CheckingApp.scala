@@ -11,7 +11,7 @@ import doobie.implicits.*
 object CheckingApp extends IOApp.Simple:
 
   val y = xa.yolo
-  import y._
+  import y.*
 
   def biggerThan(minPop: Int) =
     sql"""select code, name, population, gnp, indepyear from country where population > $minPop""".query[Country]

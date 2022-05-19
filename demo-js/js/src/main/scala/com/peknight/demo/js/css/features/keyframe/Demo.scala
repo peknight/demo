@@ -4,7 +4,7 @@ import scalacss.DevDefaults.*
 
 object Demo extends StyleSheet.Inline:
 
-  import dsl._
+  import dsl.*
 
   val hello = style(height(100.px), width(30.px))
 
