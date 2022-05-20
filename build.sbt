@@ -132,6 +132,7 @@ lazy val demoLog4Cats = (crossProject(JSPlatform, JVMPlatform) in file("demo-log
   .jvmSettings(
     libraryDependencies ++= Seq(
       log4CatsSlf4j,
+      logbackClassic % Runtime,
     ),
   )
 

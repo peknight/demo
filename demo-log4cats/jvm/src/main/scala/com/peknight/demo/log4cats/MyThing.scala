@@ -8,6 +8,7 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 object MyThing:
 
+  // 并不是纯函数，但是大多数人都这么搞
   given logger[F[_]: Sync]: Logger[F] = Slf4jLogger.getLogger[F]
 
   def doSomething[F[_]: Sync: Console]: F[Unit] =
