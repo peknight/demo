@@ -27,8 +27,7 @@ lazy val demo = (project in file("."))
     demoFs2,
     demoCirce,
     demoMonocle,
-    demoLog4Cats.jvm,
-    demoLog4Cats.js,
+    demoLog4Cats,
     demoSpire,
     demoHttp4s.jvm,
     demoHttp4s.js,
@@ -121,15 +120,10 @@ lazy val demoMonocle = (project in file("demo-monocle"))
     ),
   )
 
-lazy val demoLog4Cats = (crossProject(JSPlatform, JVMPlatform) in file("demo-log4cats"))
+lazy val demoLog4Cats = (project in file("demo-log4cats"))
   .settings(commonSettings)
   .settings(
     name := "demo-log4cats",
-    libraryDependencies ++= Seq(
-      "org.typelevel" %% "log4cats-core" % log4CatsVersion,
-    ),
-  )
-  .jvmSettings(
     libraryDependencies ++= Seq(
       log4CatsSlf4j,
       logbackClassic % Runtime,
