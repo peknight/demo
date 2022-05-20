@@ -28,6 +28,7 @@ lazy val demo = (project in file("."))
     demoCirce,
     demoMonocle,
     demoLog4Cats,
+    demoCiris,
     demoSpire,
     demoHttp4s.jvm,
     demoHttp4s.js,
@@ -127,6 +128,22 @@ lazy val demoLog4Cats = (project in file("demo-log4cats"))
     libraryDependencies ++= Seq(
       log4CatsSlf4j,
       logbackClassic % Runtime,
+    ),
+  )
+
+lazy val demoCiris = (project in file("demo-ciris"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-ciris",
+    libraryDependencies ++= Seq(
+      ciris,
+      cirisCirce,
+      cirisCirceYaml,
+      cirisHttp4s,
+      cirisRefined,
+      cirisSquants,
+      cirisHocon,
+      refinedCats,
     ),
   )
 
@@ -354,6 +371,9 @@ val fs2Version = "3.2.7"
 val circeVersion = "0.14.1"
 val monocleVersion = "3.1.0"
 val log4CatsVersion = "2.3.1"
+val cirisVersion = "2.3.2"
+val cirisHoconVersion = "1.0.1"
+val refinedCatsVersion = "0.9.29"
 val spireVersion = "0.18.0-M3"
 val http4sVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M1"
@@ -372,6 +392,14 @@ val circeParser = "io.circe" %% "circe-parser" % circeVersion
 val monocleCore = "dev.optics" %% "monocle-core" % monocleVersion
 val monocleMacro = "dev.optics" %% "monocle-macro" % monocleVersion
 val log4CatsSlf4j = "org.typelevel" %% "log4cats-slf4j" % log4CatsVersion
+val ciris = "is.cir" %% "ciris" % cirisVersion
+val cirisCirce = "is.cir" %% "ciris-circe" % cirisVersion
+val cirisCirceYaml = "is.cir" %% "ciris-circe-yaml" % cirisVersion
+val cirisHttp4s = "is.cir" %% "ciris-http4s" % cirisVersion
+val cirisRefined = "is.cir" %% "ciris-refined" % cirisVersion
+val cirisSquants = "is.cir" %% "ciris-squants" % cirisVersion
+val cirisHocon = "lt.dvim.ciris-hocon" %% "ciris-hocon" % cirisHoconVersion
+val refinedCats = "eu.timepit" %% "refined-cats" % refinedCatsVersion
 val spire = "org.typelevel" %% "spire" % spireVersion
 val http4sScalaTags = "org.http4s" %% "http4s-scalatags" % http4sVersion
 val http4sDropwizardMetrics = "org.http4s" %% "http4s-dropwizard-metrics" % http4sVersion
@@ -383,7 +411,6 @@ val doobieHikari = "org.tpolecat" %% "doobie-hikari" % doobieVersion
 val doobiePostgres = "org.tpolecat" %% "doobie-postgres" % doobieVersion
 val doobiePostgresCirce = "org.tpolecat" %% "doobie-postgres-circe" % doobieVersion
 val doobieScalaTest = "org.tpolecat" %% "doobie-scalatest" % doobieVersion
-
 
 // Library
 
