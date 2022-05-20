@@ -27,6 +27,8 @@ lazy val demo = (project in file("."))
     demoFs2,
     demoCirce,
     demoMonocle,
+    demoLog4Cats.jvm,
+    demoLog4Cats.js,
     demoSpire,
     demoHttp4s.jvm,
     demoHttp4s.js,
@@ -116,6 +118,20 @@ lazy val demoMonocle = (project in file("demo-monocle"))
       monocleCore,
       monocleMacro,
       alleyCatsCore,
+    ),
+  )
+
+lazy val demoLog4Cats = (crossProject(JSPlatform, JVMPlatform) in file("demo-log4cats"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-log4cats",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "log4cats-core" % log4CatsVersion,
+    ),
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      log4CatsSlf4j,
     ),
   )
 
@@ -342,6 +358,7 @@ val catsEffectVersion = "3.3.11"
 val fs2Version = "3.2.7"
 val circeVersion = "0.14.1"
 val monocleVersion = "3.1.0"
+val log4CatsVersion = "2.3.1"
 val spireVersion = "0.18.0-M3"
 val http4sVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M1"
@@ -359,6 +376,7 @@ val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
 val circeParser = "io.circe" %% "circe-parser" % circeVersion
 val monocleCore = "dev.optics" %% "monocle-core" % monocleVersion
 val monocleMacro = "dev.optics" %% "monocle-macro" % monocleVersion
+val log4CatsSlf4j = "org.typelevel" %% "log4cats-slf4j" % log4CatsVersion
 val spire = "org.typelevel" %% "spire" % spireVersion
 val http4sScalaTags = "org.http4s" %% "http4s-scalatags" % http4sVersion
 val http4sDropwizardMetrics = "org.http4s" %% "http4s-dropwizard-metrics" % http4sVersion
