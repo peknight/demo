@@ -143,6 +143,7 @@ lazy val demoCiris = (project in file("demo-ciris"))
       cirisRefined,
       cirisSquants,
       cirisHocon,
+      circeGeneric,
       refinedCats,
     ),
   )
