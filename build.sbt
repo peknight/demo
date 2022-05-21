@@ -276,6 +276,7 @@ lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
+      log4CatsSlf4j,
       http4sScalaTags,
       logbackClassic % Runtime,
     ),

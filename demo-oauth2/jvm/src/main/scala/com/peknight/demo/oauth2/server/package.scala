@@ -9,10 +9,9 @@ import org.http4s.server.middleware.Logger
 
 package object server:
 
-  def start[F[_]: Async](port: Port)(httpApp: HttpApp[F]): F[Unit] =
+  def start[F[_]: Async](port: Port)(httpApp: HttpApp[F]): F[(Server, F[Unit])] =
     EmberServerBuilder.default[F]
       .withHost(ipv4"0.0.0.0")
       .withPort(port)
       .withHttpApp(Logger.httpApp(true, true)(httpApp))
-      .build
-      .use(_ => Async[F].never)
+      .build.allocated

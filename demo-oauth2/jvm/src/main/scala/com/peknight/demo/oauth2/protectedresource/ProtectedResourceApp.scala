@@ -22,6 +22,7 @@ object ProtectedResourceApp extends IOApp.Simple:
   val run =
     for
       _ <- start[IO](port"8002")(app)
+      _ <- IO.never
     yield ()
 
 
