@@ -31,17 +31,26 @@ object ClientApp extends IOApp.Simple:
   object StateQueryParamMatcher extends QueryParamDecoderMatcher[String]("state")
   object ErrorQueryParamMatcher extends QueryParamDecoderMatcher[String]("error")
 
-  val authServer = AuthServerInfo(uri"http://localhost:9001/authorize", uri"http://localhost:9001/token")
-  val client = ClientInfo("oauth-client-1", "oauth-client-secret-1", NonEmptyList(uri"http://localhost:8000/callback", Nil))
+  val authServer: AuthServerInfo = AuthServerInfo(
+    uri"http://localhost:9001/authorize",
+    uri"http://localhost:9001/token"
+  )
+  val client: ClientInfo = ClientInfo(
+    "oauth-client-1",
+    "oauth-client-secret-1",
+    NonEmptyList(uri"http://localhost:8000/callback", Nil)
+  )
   val protectedResource = uri"http://localhost:9002/resource"
 
   def authorize(stateR: Ref[IO, Option[String]], random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
     for
-      stateChars <- List.fill(32)(random.nextAlphaNumeric).sequence
-      state = stateChars.mkString
+      state <- List.fill(32)(random.nextAlphaNumeric).sequence.map(_.mkString)
       _ <- stateR.set(Some(state))
       authorizeUrl = authServer.authorizationEndpoint
-        .withQueryParams(Map("response_type" -> "code", "client_id" -> client.id, "state" -> state))
+        .withQueryParams(Map(
+          "response_type" -> "code",
+          "client_id" -> client.id,
+          "state" -> state))
         .withQueryParam("redirect_uri", client.redirectUris.head)
       _ <- info"redirect: $authorizeUrl"
       resp <- Found(Location(authorizeUrl))

@@ -9,7 +9,7 @@ case class OAuthToken(accessToken: String, tokenType: String, refreshToken: Stri
 
 object OAuthToken:
   given Codec[OAuthToken] =
-    Codec.forProduct2("access_token", "token_type")(OAuthToken.apply)(t =>
-      (t.accessToken, t.tokenType)
+    Codec.forProduct3("access_token", "token_type", "refresh_token")(OAuthToken.apply)(t =>
+      (t.accessToken, t.tokenType, t.refreshToken)
     )
   given [F[_]: Concurrent]: EntityDecoder[F, OAuthToken] = jsonOf[F, OAuthToken]
