@@ -331,7 +331,6 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       ciris,
       cirisCirce,
       cirisCirceYaml,
-      cirisHttp4s,
       cirisRefined,
       cirisSquants,
       cirisHocon,
