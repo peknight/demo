@@ -132,7 +132,7 @@ object ClientApp extends IOApp.Simple:
     )
 
   def refreshAccessToken(oauthTokenCacheR: Ref[IO, OAuthTokenCache], oauthTokenCache: OAuthTokenCache, error: String)
-          (using Logger[IO]): IO[Response[IO]] =
+                        (using Logger[IO]): IO[Response[IO]] =
     oauthTokenCache.refreshToken.fold(Ok(ClientPage.error(error)))(refreshToken =>
       EmberClientBuilder.default[IO].build.use { httpClient =>
         httpClient.run(refreshTokenRequest(refreshToken)).use { refreshTokenResponse =>
