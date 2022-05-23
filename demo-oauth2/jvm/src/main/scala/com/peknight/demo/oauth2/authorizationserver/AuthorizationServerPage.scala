@@ -14,7 +14,7 @@ object AuthorizationServerPage:
         li(b("client_id: "), client.id),
         li(b("client_secret: "), client.secret),
         li(b("scope: "), client.scope),
-        li(b("redirect_uri: "), client.redirectUris)
+        li(b("redirect_uri: "), client.redirectUri)
       )
 
     skeleton(

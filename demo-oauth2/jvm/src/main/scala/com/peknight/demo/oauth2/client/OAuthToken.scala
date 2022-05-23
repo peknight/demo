@@ -5,11 +5,16 @@ import io.circe.Codec
 import org.http4s.EntityDecoder
 import org.http4s.circe.*
 
-case class OAuthToken(accessToken: String, tokenType: String, refreshToken: String)
+case class OAuthToken(accessToken: String, tokenType: String, refreshToken: Option[String], scope: String)
 
 object OAuthToken:
+
   given Codec[OAuthToken] =
-    Codec.forProduct3("access_token", "token_type", "refresh_token")(OAuthToken.apply)(t =>
-      (t.accessToken, t.tokenType, t.refreshToken)
-    )
+    Codec.forProduct4(
+      "access_token",
+      "token_type",
+      "refresh_token",
+      "scope"
+    )(OAuthToken.apply)(t => (t.accessToken, t.tokenType, t.refreshToken, t.scope))
+
   given [F[_]: Concurrent]: EntityDecoder[F, OAuthToken] = jsonOf[F, OAuthToken]

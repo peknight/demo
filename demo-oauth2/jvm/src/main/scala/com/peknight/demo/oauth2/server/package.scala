@@ -9,9 +9,11 @@ import org.http4s.server.middleware.Logger
 
 package object server:
 
+  val host = host"localhost"
+
   def start[F[_]: Async](port: Port)(httpApp: HttpApp[F]): F[(Server, F[Unit])] =
     EmberServerBuilder.default[F]
-      .withHost(ipv4"0.0.0.0")
+      .withHost(host)
       .withPort(port)
       .withHttpApp(Logger.httpApp(true, true)(httpApp))
       .build.allocated

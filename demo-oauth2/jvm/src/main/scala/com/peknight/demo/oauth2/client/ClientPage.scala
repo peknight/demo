@@ -9,8 +9,10 @@ import scalatags.Text.tags2.{nav, style, title}
 
 object ClientPage:
 
-  def index(accessToken: Option[String]) = skeleton(
-    p("Access token value: ", span(cls := "label label-danger")(accessToken.getOrElse("NONE"))),
+  def index(oauthTokenCache: OAuthTokenCache) = skeleton(
+    p("Access token value: ", span(cls := "label label-danger")(oauthTokenCache.accessToken.getOrElse("NONE"))),
+    p("Scope value: ", span(cls := "label label-danger")(oauthTokenCache.scope.getOrElse("NONE"))),
+    p("Refresh token value: ", span(cls := "label label-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
     a(cls := "btn btn-default", href := "/authorize")("Get OAuth Token"), " ",
     a(cls := "btn btn-default", href := "/fetch_resource")("Get Protected Resource")
   )
