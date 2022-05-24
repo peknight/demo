@@ -99,6 +99,40 @@ lazy val demoFs2 = (project in file("demo-fs2"))
     ),
   )
 
+lazy val demoFs2Grpc = (project in file("demo-fs2-grpc"))
+  .aggregate(demoFs2GrpcProtobuf, demoFs2GrpcClient, demoFs2GrpcServer)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-fs2-grpc",
+  )
+
+lazy val demoFs2GrpcProtobuf = (project in file("demo-fs2-grpc/protobuf"))
+  .enablePlugins(Fs2Grpc)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-fs2-grpc-protobuf",
+  )
+
+lazy val demoFs2GrpcClient = (project in file("demo-fs2-grpc/client"))
+  .dependsOn(demoFs2GrpcProtobuf)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-fs2-grpc-client",
+    libraryDependencies ++= Seq(
+      grpcNettyShaded,
+    )
+  )
+
+lazy val demoFs2GrpcServer = (project in file("demo-fs2-grpc/server"))
+  .dependsOn(demoFs2GrpcProtobuf)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-fs2-grpc-server",
+    libraryDependencies ++= Seq(
+      grpcNettyShaded,
+    )
+  )
+
 lazy val demoCirce = (project in file("demo-circe"))
   .settings(commonSettings)
   .settings(
@@ -438,6 +472,7 @@ val apacheCommonsMath = "org.apache.commons" % "commons-math3" % apacheCommonsMa
 val h2 = "com.h2database" % "h2" % h2Version
 val jQuery = "org.webjars" % "jquery" % jQueryVersion
 val postgisJdbc = "net.postgis" % "postgis-jdbc" % postgisJdbcVersion
+val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
 
 // Test
 
