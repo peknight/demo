@@ -33,6 +33,7 @@ lazy val demo = (project in file("."))
     demoHttp4s.jvm,
     demoHttp4s.js,
     demoDoobie,
+    demoRedis4Cats,
     demoAkka,
     demoJs.jvm,
     demoJs.js,
@@ -241,6 +242,17 @@ lazy val demoDoobie = (project in file("demo-doobie"))
     )
   )
 
+lazy val demoRedis4Cats = (project in file("demo-redis4cats"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-redis4cats",
+    libraryDependencies ++= Seq(
+      redis4CatsEffects,
+      redis4CatsStreams,
+      redis4CatsLog4Cats,
+    )
+  )
+
 lazy val demoAkka = (project in file("demo-akka"))
   .settings(commonSettings)
   .settings(
@@ -379,6 +391,9 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       doobieHikari,
       doobiePostgres,
       doobiePostgresCirce,
+      redis4CatsEffects,
+      redis4CatsStreams,
+      redis4CatsLog4Cats,
       logbackClassic,
       jQuery,
       doobieScalaTest % Test,
@@ -423,6 +438,7 @@ val spireVersion = "0.18.0-M3"
 val http4sVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M1"
 val doobieVersion = "1.0.0-RC2"
+val redis4CatsVersion = "1.2.0"
 
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
 val alleyCatsCore = "org.typelevel" %% "alleycats-core" % catsVersion
@@ -456,6 +472,9 @@ val doobieHikari = "org.tpolecat" %% "doobie-hikari" % doobieVersion
 val doobiePostgres = "org.tpolecat" %% "doobie-postgres" % doobieVersion
 val doobiePostgresCirce = "org.tpolecat" %% "doobie-postgres-circe" % doobieVersion
 val doobieScalaTest = "org.tpolecat" %% "doobie-scalatest" % doobieVersion
+val redis4CatsEffects = "dev.profunktor" %% "redis4cats-effects" % redis4CatsVersion
+val redis4CatsStreams = "dev.profunktor" %% "redis4cats-streams" % redis4CatsVersion
+val redis4CatsLog4Cats = "dev.profunktor" %% "redis4cats-log4cats" % redis4CatsVersion
 
 // Library
 
