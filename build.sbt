@@ -250,6 +250,11 @@ lazy val demoRedis4Cats = (project in file("demo-redis4cats"))
       redis4CatsEffects,
       redis4CatsStreams,
       redis4CatsLog4Cats,
+      circeCore,
+      circeGeneric,
+      circeParser,
+      log4CatsSlf4j,
+      logbackClassic,
     )
   )
 
