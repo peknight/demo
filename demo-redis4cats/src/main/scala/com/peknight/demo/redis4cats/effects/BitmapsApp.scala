@@ -1,7 +1,7 @@
 package com.peknight.demo.redis4cats.effects
 
 import cats.effect.{IO, IOApp, Resource}
-import com.peknight.demo.redis4cats.redisUri
+import com.peknight.demo.redis4cats.{commandsApi, redisUri}
 import dev.profunktor.redis4cats.Redis
 import dev.profunktor.redis4cats.algebra.BitCommandOperation.{IncrUnsignedBy, SetUnsigned}
 import dev.profunktor.redis4cats.algebra.BitCommands
@@ -16,11 +16,6 @@ object BitmapsApp extends IOApp.Simple:
   val testKey3 = "baz"
 
   def putStrLn(str: String): IO[Unit] = IO.println(str)
-
-  val commandsApi: Resource[IO, BitCommands[IO, String, String]] =
-    RedisClient[IO]
-      .from(redisUri)
-      .flatMap(Redis[IO].fromClient(_, RedisCodec.Utf8))
 
   val run = commandsApi.use { cmd =>
     for

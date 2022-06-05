@@ -27,9 +27,7 @@ object RedisClientApp extends IOApp.Simple:
   val stringCodec: RedisCodec[String, String] = RedisCodec.Utf8
 
   val commandsApi: Resource[IO, StringCommands[IO, String, String]] =
-    RedisClient[IO]
-      .from(redisUri)
-      .flatMap(Redis[IO].fromClient(_, stringCodec))
+    RedisClient[IO].from(redisUri).flatMap(Redis[IO].fromClient(_, stringCodec))
 
   val mkOpts: IO[ClientOptions] = IO {
     ClientOptions.builder()
