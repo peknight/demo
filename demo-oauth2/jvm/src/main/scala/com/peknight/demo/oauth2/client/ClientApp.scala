@@ -41,7 +41,7 @@ object ClientApp extends IOApp.Simple:
     NonEmptyList(uri"http://localhost:8000/callback", Nil),
     "foo"
   )
-  val protectedResource = uri"http://localhost:9002/resource"
+  val protectedResource = uri"http://localhost:8002/resource"
 
   def authorize(stateR: Ref[IO, Option[String]], random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
     for
