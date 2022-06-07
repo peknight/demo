@@ -5,7 +5,7 @@ import io.circe.Codec
 import org.http4s.EntityDecoder
 import org.http4s.circe.*
 
-case class OAuthToken(accessToken: String, tokenType: String, refreshToken: Option[String], scope: String)
+case class OAuthToken(accessToken: String, tokenType: String, refreshToken: Option[String], scope: Option[String])
 
 object OAuthToken:
 

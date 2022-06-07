@@ -81,7 +81,7 @@ object ClientApp extends IOApp.Simple:
       oauthTokenCache <- oauthTokenCacheR.updateAndGet(origin => OAuthTokenCache(
         accessToken = Some(oauthToken.accessToken),
         refreshToken = oauthToken.refreshToken.orElse(origin.refreshToken),
-        scope = Some(oauthToken.scope)
+        scope = oauthToken.scope.orElse(origin.scope)
       ))
       _ <- info"Got access token: ${oauthToken.accessToken}"
       _ <- oauthToken.refreshToken.fold(IO.unit)(refresh => info"Got refresh_token: $refresh")
@@ -174,7 +174,7 @@ object ClientApp extends IOApp.Simple:
 
   val run =
     for
-      oauthTokenCacheR <- Ref.of[IO, OAuthTokenCache](OAuthTokenCache(None, None, None))
+      oauthTokenCacheR <- Ref.of[IO, OAuthTokenCache](OAuthTokenCache(None, Some("j2r3oj32r23rmasd98uhjrk2o3i"), None))
       stateR <- Ref.of[IO, Option[String]](None)
       random <- Random.scalaUtilRandom[IO]
       logger <- Slf4jLogger.create[IO]
