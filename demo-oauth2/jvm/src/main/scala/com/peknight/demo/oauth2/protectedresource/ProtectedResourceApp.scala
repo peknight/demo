@@ -1,10 +1,12 @@
 package com.peknight.demo.oauth2.protectedresource
 
+import cats.Functor
 import cats.data.OptionT
 import cats.effect.{IO, IOApp}
+import cats.syntax.functor.*
 import cats.syntax.option.*
 import com.comcast.ip4s.*
-import com.peknight.demo.oauth2.databaseNoSqlPath
+import com.peknight.demo.oauth2.*
 import com.peknight.demo.oauth2.server.{host, start}
 import fs2.io.file.Files
 import fs2.text
@@ -48,7 +50,7 @@ object ProtectedResourceApp extends IOApp.Simple:
             case _ => req.as[UrlForm].attempt
               .map(_.toOption.flatMap(_.get(accessTokenKey).headOption).orElse(queryAccessToken))
           )
-          _ <- OptionT(info"Incoming token: $accessToken".as(Some(())))
+          _ <- info"Incoming token: $accessToken".optionT
           record <- OptionT(getRecordByAccessToken(accessToken))
         yield record
       oauthTokenRecord.value.flatMap {
@@ -76,7 +78,7 @@ object ProtectedResourceApp extends IOApp.Simple:
       given Logger[IO] = logger
       serverPort = port"8002"
       _ <- start[IO](serverPort)(service.orNotFound)
-      _ <- info"OAuth Resource Server is listening at http://$host:$serverPort";
+      _ <- info"OAuth Resource Server is listening at http://$host:$serverPort"
       _ <- IO.never
     yield ()
 

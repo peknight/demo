@@ -11,10 +11,10 @@ object AuthorizationServerPage:
   def index(authServer: AuthServerInfo, clients: Seq[ClientInfo]) =
     val clientElements = for client <- clients yield
       ul(
-        li(b("client_id: "), client.id),
-        li(b("client_secret: "), client.secret),
-        li(b("scope: "), client.scope),
-        li(b("redirect_uri: "), client.redirectUri)
+        li(b("client_id: "), code(client.id)),
+        li(b("client_secret: "), code(client.secret)),
+        li(b("scope: "), code(client.scope.mkString(" "))),
+        li(b("redirect_uris: "), code(client.redirectUris.map(_.toString)))
       )
 
     skeleton(
@@ -22,8 +22,8 @@ object AuthorizationServerPage:
       clientElements,
       h2("Server information:"),
       ul(
-        li(b("authorization_endpoint: "), authServer.authorizationEndpoint),
-        li(b("token_endpoint: "), authServer.tokenEndpoint)
+        li(b("authorization_endpoint: "), code(authServer.authorizationEndpoint.toString)),
+        li(b("token_endpoint: "), code(authServer.tokenEndpoint.toString))
       )
     )
   end index

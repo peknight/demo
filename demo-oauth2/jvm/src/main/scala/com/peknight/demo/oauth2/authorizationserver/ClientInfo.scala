@@ -1,3 +1,5 @@
 package com.peknight.demo.oauth2.authorizationserver
 
-case class ClientInfo(id: String, secret: String, scope: String, redirectUri: String)
+import org.http4s.Uri
+
+case class ClientInfo(id: String, secret: String, scope: List[String], redirectUris: List[Uri])
