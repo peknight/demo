@@ -30,7 +30,7 @@ object AuthorizationServerPage:
 
   def error(error: String) = skeleton(h2(cls := "text-danger")("Error"), error)
 
-  def approve(client: ClientApproveInfo, reqId: String, scopes: Seq[String]) =
+  def approve(client: ClientInfo, reqId: String, scopes: List[String]) =
     skeleton(
       h2("Approve this client?"),
       client.name.fold[Modifier]("")(name => p(b("Name: "), code(name))),
@@ -46,11 +46,13 @@ object AuthorizationServerPage:
             for scope <- scopes yield
               li(
                 input(`type` := "checkbox", name := s"scope_$scope", id := s"scope_$scope", checked := "checked"),
+                " ",
                 label(`for` := s"scope_$scope")(scope)
               )
           )
         ),
         input(`type` := "submit", cls := "btn btn-success", name := "approve", value := "Approve"),
+        " ",
         input(`type` := "submit", cls := "btn btn-danger", name := "deny", value := "Deny")
       )
     )

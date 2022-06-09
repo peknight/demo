@@ -7,7 +7,6 @@ import cats.syntax.functor.*
 import cats.syntax.option.*
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.*
-import com.peknight.demo.oauth2.server.{host, start}
 import fs2.io.file.Files
 import fs2.text
 import io.circe.generic.auto.*
@@ -78,7 +77,7 @@ object ProtectedResourceApp extends IOApp.Simple:
       given Logger[IO] = logger
       serverPort = port"8002"
       _ <- start[IO](serverPort)(service.orNotFound)
-      _ <- info"OAuth Resource Server is listening at http://$host:$serverPort"
+      _ <- info"OAuth Resource Server is listening at http://$serverHost:$serverPort"
       _ <- IO.never
     yield ()
 

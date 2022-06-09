@@ -5,7 +5,8 @@ import cats.effect.std.Random
 import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.traverse.*
 import com.comcast.ip4s.port
-import com.peknight.demo.oauth2.server.{host, start}
+import com.peknight.demo.oauth2.domain.{AuthorizeParam, ResponseType}
+import com.peknight.demo.oauth2.{serverHost, start}
 import io.circe.Json
 import io.circe.generic.auto.*
 import io.circe.syntax.*
@@ -39,7 +40,7 @@ object ClientApp extends IOApp.Simple:
     "oauth-client-1",
     "oauth-client-secret-1",
     NonEmptyList(uri"http://localhost:8000/callback", Nil),
-    "foo"
+    Set("foo")
   )
   val protectedResource = uri"http://localhost:8002/resource"
 
@@ -47,13 +48,8 @@ object ClientApp extends IOApp.Simple:
     for
       state <- List.fill(32)(random.nextAlphaNumeric).sequence.map(_.mkString)
       _ <- stateR.set(Some(state))
-      authorizeUrl = authServer.authorizationEndpoint
-        .withQueryParams(Map(
-          "response_type" -> "code",
-          "scope" -> client.scope,
-          "client_id" -> client.id,
-          "state" -> state))
-        .withQueryParam("redirect_uri", client.redirectUris.head)
+      authorizeUrl = authServer.authorizationEndpoint.withQueryParams(AuthorizeParam(client.id,
+        client.redirectUris.head, client.scope, ResponseType.Code, Some(state)))
       _ <- info"redirect: $authorizeUrl"
       resp <- Found(Location(authorizeUrl))
     yield resp
@@ -181,6 +177,6 @@ object ClientApp extends IOApp.Simple:
       given Logger[IO] = logger
       serverPort = port"8000"
       _ <- start[IO](serverPort)(app(oauthTokenCacheR, stateR, random))
-      _ <- info"OAuth Client is listening at http://$host:$serverPort"
+      _ <- info"OAuth Client is listening at http://$serverHost:$serverPort"
       _ <- IO.never
     yield ()
