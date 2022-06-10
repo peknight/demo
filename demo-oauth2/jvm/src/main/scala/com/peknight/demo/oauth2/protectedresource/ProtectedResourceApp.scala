@@ -1,25 +1,16 @@
 package com.peknight.demo.oauth2.protectedresource
 
-import cats.Functor
 import cats.data.OptionT
 import cats.effect.{IO, IOApp}
-import cats.syntax.functor.*
-import cats.syntax.option.*
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.*
-import com.peknight.demo.oauth2.domain.OAuthTokenRecord
-import fs2.io.file.Files
-import fs2.text
-import io.circe.fs2.*
 import io.circe.generic.auto.*
-import io.circe.parser.*
 import io.circe.syntax.*
 import org.http4s.*
 import org.http4s.circe.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.*
 import org.http4s.scalatags.*
-import org.http4s.syntax.literals.uri
 import org.typelevel.ci.CIString
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -61,16 +52,6 @@ object ProtectedResourceApp extends IOApp.Simple:
           Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "Protected Resource")))
       }
   }
-
-  def getRecordByAccessToken(accessToken: String): IO[Option[OAuthTokenRecord]] =
-    Files[IO].readAll(databaseNoSqlPath)
-      .through(byteStreamParser)
-      .through(decoder[IO, OAuthTokenRecord])
-      .filter {
-        case OAuthTokenRecord(_, Some(access), _, _) if access == accessToken => true
-        case _ => false
-      }
-      .pull.take(1).void.stream.compile.toList.map(_.headOption)
 
   val run =
     for

@@ -11,7 +11,7 @@ object ClientPage:
 
   def index(oauthTokenCache: OAuthTokenCache) = skeleton(
     p("Access token value: ", span(cls := "label label-danger")(oauthTokenCache.accessToken.getOrElse("NONE"))),
-    p("Scope value: ", span(cls := "label label-danger")(oauthTokenCache.scope.getOrElse("NONE"))),
+    p("Scope value: ", span(cls := "label label-danger")(oauthTokenCache.scope.map(_.mkString(" ")).getOrElse("NONE"))),
     p("Refresh token value: ", span(cls := "label label-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
     a(cls := "btn btn-default", href := "/authorize")("Get OAuth Token"), " ",
     a(cls := "btn btn-default", href := "/fetch_resource")("Get Protected Resource")

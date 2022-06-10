@@ -8,10 +8,11 @@ import cats.syntax.option.*
 import cats.syntax.traverse.*
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.domain.*
-import com.peknight.demo.oauth2.{databaseNoSqlPath, serverHost, start}
+import com.peknight.demo.oauth2.*
 import fs2.io.file.Files
 import fs2.io.file.Flags.Append
 import fs2.{Stream, text}
+import io.circe.fs2.*
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.http4s.*
@@ -61,11 +62,42 @@ object AuthorizationServerApp extends IOApp.Simple:
             Found(Location(redirectUri.withQueryParam("error", "invalid_scope")))
           else
             for
-              reqId <- List.fill(8)(random.nextAlphaNumeric).sequence.map(_.mkString)
+              reqId <- randomString[IO](random, 8)
               _ <- requestsR.update(_ + (reqId -> param))
               resp <- Ok(AuthorizationServerPage.approve(client, reqId, param.scope.toList))
             yield resp
   end authorize
+
+  def approve(body: UrlForm, random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
+              codesR: Ref[IO, Map[String, AuthorizeCodeCache]]) =
+    body.get("reqid").find(_.nonEmpty) match
+      case None => Ok(AuthorizationServerPage.error("No matching authorization request"))
+      case Some(reqId) => requestsR.modify(requests => (requests.removed(reqId), requests.get(reqId))).flatMap {
+        case None => Ok(AuthorizationServerPage.error("No matching authorization request"))
+        case Some(query) => body.get("approve").find(_ == "Approve") match
+          case Some(_) => query.responseType match
+            case ResponseType.Code =>
+              val scope = body.values.keys.filter(_.startsWith("scope_")).map(_.substring("scope_".length)).toSet[String]
+              val cScope = getClient(query.clientId).map(_.scope).getOrElse(Set.empty[String])
+              if scope.diff(cScope).nonEmpty then
+                Found(Location(query.redirectUri.withQueryParam("error", "invalid_scope")))
+              else
+                val user = body.get("user").find(_.nonEmpty)
+                for
+                  code <- randomString[IO](random, 8)
+                  _ <- codesR.update(_ + (code -> AuthorizeCodeCache(query, scope, user)))
+                  resp <- Found(Location(query.redirectUri
+                    .withQueryParam("code", code)
+                    .withOptionQueryParam("state", query.state)
+                  ))
+                yield resp
+            // 后续支持其它响应类型扩展
+            case null => Found(Location(query.redirectUri
+              .withQueryParam("error", "unsupported_response_type")
+            ))
+          case None => Found(Location(query.redirectUri.withQueryParam("error", "access_denied")))
+      }
+  end approve
 
   def service(random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
               codesR: Ref[IO, Map[String, AuthorizeCodeCache]])(using Logger[IO]) = HttpRoutes.of[IO] {
@@ -73,35 +105,7 @@ object AuthorizationServerApp extends IOApp.Simple:
     case GET -> Root / "authorize" :? AuthorizeParam(authorizeParamValid) => authorizeParamValid.fold(
       msg => Ok(AuthorizationServerPage.error(msg)), param => authorize(param, random, requestsR)
     )
-    case req @ POST -> Root / "approve" => req.as[UrlForm].flatMap { body =>
-      body.get("reqid").find(_.nonEmpty) match
-        case None => Ok(AuthorizationServerPage.error("No matching authorization request"))
-        case Some(reqId) => requestsR.modify(requests => (requests.removed(reqId), requests.get(reqId))).flatMap {
-          case None => Ok(AuthorizationServerPage.error("No matching authorization request"))
-          case Some(query) => body.get("approve").find(_ == "Approve") match
-            case Some(_) => query.responseType match
-              case ResponseType.Code =>
-                val scope = body.values.keys.filter(_.startsWith("scope_")).map(_.substring("scope_".length)).toSet[String]
-                val cScope = getClient(query.clientId).map(_.scope).getOrElse(Set.empty[String])
-                if scope.diff(cScope).nonEmpty then
-                  Found(Location(query.redirectUri.withQueryParam("error", "invalid_scope")))
-                else
-                  val user = body.get("user").find(_.nonEmpty)
-                  for
-                    code <- List.fill(8)(random.nextAlphaNumeric).sequence.map(_.mkString)
-                    _ <- codesR.update(_ + (code -> AuthorizeCodeCache(query, scope, user)))
-                    resp <- Found(Location(query.redirectUri
-                      .withQueryParam("code", code)
-                      .withOptionQueryParam("state", query.state)
-                    ))
-                  yield resp
-              // 后续支持其它响应类型扩展
-              case null => Found(Location(query.redirectUri
-                .withQueryParam("error", "unsupported_response_type")
-              ))
-            case None => Found(Location(query.redirectUri.withQueryParam("error", "access_denied")))
-        }
-    }
+    case req @ POST -> Root / "approve" => req.as[UrlForm].flatMap { body => approve(body, random, requestsR, codesR) }
     case req @ POST -> Root / "token" => req.as[UrlForm].flatMap { body =>
       val (hClientId, hClientSecret) = req.headers.get[Authorization] match
         case Some(Authorization(BasicCredentials((clientId, clientSecret)))) =>
@@ -120,20 +124,54 @@ object AuthorizationServerApp extends IOApp.Simple:
             case None => info"Unknown client $clientId" *> invalidClientResp
             case Some(client) if client.secret != clientSecret =>
               info"Mismatched client secret, expected ${client.secret} got $clientSecret" *> invalidClientResp
-            case Some(client) => Ok()
+            case Some(client) => body.get("grant_type").map(GrantType.fromString).find(_.isDefined).flatten match
+              case Some(GrantType.AuthorizationCode) =>
+                for
+                  codeCache <- body.get("code").find(_.nonEmpty) match
+                    case Some(code) => codesR.modify(codes => (codes.removed(code), code.some -> codes.get(code)))
+                    case None => IO((none[String], none[AuthorizeCodeCache]))
+                  resp <- codeCache match
+                    case (Some(code), Some(cache)) =>
+                      for
+                        accessToken <- randomString[IO](random, 32)
+                        _ <- insertRecord(OAuthTokenRecord(clientId, Some(accessToken), None, Some(cache.scope)))
+                        _ <- info"Issuing access token $accessToken"
+                        _ <- info"with scope ${cache.scope.mkString(" ")}"
+                        _ <- info"Issued tokens for code $code"
+                        resp <- Ok(OAuthToken(accessToken, AuthScheme.Bearer, None, Some(cache.scope)).asJson)
+                      yield resp
+                    case (code, _) => info"Unknown code, ${code.getOrElse("None")}" *>
+                      BadRequest(ErrorInfo("invalid_grant").asJson)
+                yield resp
+              case Some(GrantType.RefreshToken) =>
+                for
+                  refreshTokenRecord <- body.get("refresh_token").find(_.nonEmpty) match
+                    case r @ Some(refreshToken) => getRecordByRefreshToken(refreshToken).map(r -> _)
+                    case None => IO((none[String], none[OAuthTokenRecord]))
+                  _ <- refreshTokenRecord match
+                    case (Some(refreshToken), Some(record)) if record.clientId != clientId =>
+                      info"Invalid client using a refresh token, expected ${record.clientId} got $clientId" *>
+                        removeRecordByRefreshToken(refreshToken) *>
+                        BadRequest()
+                    case (Some(refreshToken), Some(_)) =>
+                      for
+                        _ <- info"We found a matching refresh token $refreshToken"
+                        accessToken <- randomString[IO](random, 32)
+                        _ <- insertRecord(OAuthTokenRecord(clientId, Some(accessToken), None, None))
+                        _ <- info"Issuing access token $accessToken for refresh token $refreshToken"
+                        resp <- Ok(OAuthToken(accessToken, AuthScheme.Bearer, body.get("refresh_token").find(_.nonEmpty),
+                          None).asJson)
+                      yield resp
+                    case _ => info"No matching token was found." *>
+                      Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "Refresh Token")))
+                  resp <- Ok()
+                yield resp
+              case grantType => info"Unknown grant type ${grantType.getOrElse("None")}" *>
+                Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "Grant Type")))
     }
   }
 
   val invalidClientResp = Ok(ErrorInfo("invalid_client").asJson).map(_.copy(status = Status.Unauthorized))
-
-  val clearRecord = Stream[IO, Byte]().through(Files[IO].writeAll(databaseNoSqlPath)).compile.drain
-
-  def insertRecord(record: OAuthTokenRecord) =
-    Stream(s"${record.asJson.noSpaces}\n").covary[IO]
-      .through(text.utf8.encode)
-      .through(Files[IO].writeAll(databaseNoSqlPath, Append))
-      .compile.drain
-      .timeout(5.seconds)
 
   val run =
     for

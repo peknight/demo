@@ -3,10 +3,9 @@ package com.peknight.demo.oauth2.client
 import cats.data.NonEmptyList
 import cats.effect.std.Random
 import cats.effect.{IO, IOApp, Ref}
-import cats.syntax.traverse.*
 import com.comcast.ip4s.port
-import com.peknight.demo.oauth2.domain.{AuthorizeParam, ResponseType}
-import com.peknight.demo.oauth2.{serverHost, start}
+import com.peknight.demo.oauth2.*
+import com.peknight.demo.oauth2.domain.{AuthorizeParam, OAuthToken, ResponseType}
 import io.circe.Json
 import io.circe.generic.auto.*
 import io.circe.syntax.*
@@ -16,7 +15,6 @@ import org.http4s.client.dsl.io.*
 import org.http4s.dsl.io.*
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.headers.{Authorization, Location}
-import org.http4s.internal.CharPredicate.AlphaNum
 import org.http4s.scalatags.scalatagsEncoder
 import org.http4s.syntax.literals.uri
 import org.typelevel.log4cats.Logger
@@ -46,7 +44,7 @@ object ClientApp extends IOApp.Simple:
 
   def authorize(stateR: Ref[IO, Option[String]], random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
     for
-      state <- List.fill(32)(random.nextAlphaNumeric).sequence.map(_.mkString)
+      state <- randomString[IO](random, 32)
       _ <- stateR.set(Some(state))
       authorizeUrl = authServer.authorizationEndpoint.withQueryParams(AuthorizeParam(client.id,
         client.redirectUris.head, client.scope, ResponseType.Code, Some(state)))
