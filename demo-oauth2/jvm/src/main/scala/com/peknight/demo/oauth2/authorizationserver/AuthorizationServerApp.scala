@@ -99,76 +99,83 @@ object AuthorizationServerApp extends IOApp.Simple:
       }
   end approve
 
+  def authorizationCode(clientId: String, body: UrlForm, random: Random[IO],
+                        codesR: Ref[IO, Map[String, AuthorizeCodeCache]])(using Logger[IO]) =
+    for
+      codeCache <- body.get("code").find(_.nonEmpty) match
+        case Some(code) => codesR.modify(codes => (codes.removed(code), code.some -> codes.get(code)))
+        case None => IO((none[String], none[AuthorizeCodeCache]))
+      resp <- codeCache match
+        case (Some(code), Some(cache)) =>
+          for
+            accessToken <- randomString[IO](random, 32)
+            _ <- insertRecord(OAuthTokenRecord(clientId, Some(accessToken), None, Some(cache.scope)))
+            _ <- info"Issuing access token $accessToken"
+            _ <- info"with scope ${cache.scope.mkString(" ")}"
+            _ <- info"Issued tokens for code $code"
+            resp <- Ok(OAuthToken(accessToken, AuthScheme.Bearer, None, Some(cache.scope)).asJson)
+          yield resp
+        case (code, _) => info"Unknown code, ${code.getOrElse("None")}" *>
+          BadRequest(ErrorInfo("invalid_grant").asJson)
+    yield resp
+
+  def refreshToken(clientId: String, body: UrlForm, random: Random[IO])(using Logger[IO]) =
+    for
+      refreshTokenRecord <- body.get("refresh_token").find(_.nonEmpty) match
+        case r @ Some(refreshToken) => getRecordByRefreshToken(refreshToken).map(r -> _)
+        case None => IO((none[String], none[OAuthTokenRecord]))
+      resp <- refreshTokenRecord match
+        case (Some(refreshToken), Some(record)) if record.clientId != clientId =>
+          info"Invalid client using a refresh token, expected ${record.clientId} got $clientId" *>
+            removeRecordByRefreshToken(refreshToken) *>
+            BadRequest()
+        case (Some(refreshToken), Some(_)) =>
+          for
+            _ <- info"We found a matching refresh token $refreshToken"
+            accessToken <- randomString[IO](random, 32)
+            _ <- insertRecord(OAuthTokenRecord(clientId, Some(accessToken), None, None))
+            _ <- info"Issuing access token $accessToken for refresh token $refreshToken"
+            resp <- Ok(OAuthToken(accessToken, AuthScheme.Bearer, body.get("refresh_token").find(_.nonEmpty),
+              None).asJson)
+          yield resp
+        case _ => info"No matching token was found." *>
+          Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "Refresh Token")))
+    yield resp
+
+  def token(req: Request[IO], body: UrlForm, random: Random[IO], codesR: Ref[IO, Map[String, AuthorizeCodeCache]])
+           (using Logger[IO]) =
+    val (hClientId, hClientSecret) = req.headers.get[Authorization] match
+      case Some(Authorization(BasicCredentials((clientId, clientSecret)))) =>
+        (Uri.decode(clientId).some, Uri.decode(clientSecret).some)
+      case _ => (none[String], none[String])
+    val bClientId = body.get("client_id").find(_.nonEmpty)
+    val bClientSecret = body.get("client_secret").find(_.nonEmpty)
+    (hClientId, bClientId) match
+      // if we've already seen the client's credentials in the authorization header, this is an error
+      case (Some(_), Some(_)) => info"Client attempted to authenticate with multiple methods" *> invalidClientResp
+      case (None, None) => info"Unknown client" *> invalidClientResp
+      case _ =>
+        val clientId = hClientId.orElse(bClientId).get
+        val clientSecret = hClientSecret.orElse(bClientSecret).getOrElse("")
+        getClient(clientId) match
+          case None => info"Unknown client $clientId" *> invalidClientResp
+          case Some(client) if client.secret != clientSecret =>
+            info"Mismatched client secret, expected ${client.secret} got $clientSecret" *> invalidClientResp
+          case Some(_) => body.get("grant_type").map(GrantType.fromString).find(_.isDefined).flatten match
+            case Some(GrantType.AuthorizationCode) => authorizationCode(clientId, body, random, codesR)
+            case Some(GrantType.RefreshToken) => refreshToken(clientId, body, random)
+            case grantType => info"Unknown grant type ${grantType.getOrElse("None")}" *>
+              Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "Grant Type")))
+  end token
+
   def service(random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
               codesR: Ref[IO, Map[String, AuthorizeCodeCache]])(using Logger[IO]) = HttpRoutes.of[IO] {
     case GET -> Root => Ok(AuthorizationServerPage.index(authServer, clients))
     case GET -> Root / "authorize" :? AuthorizeParam(authorizeParamValid) => authorizeParamValid.fold(
       msg => Ok(AuthorizationServerPage.error(msg)), param => authorize(param, random, requestsR)
     )
-    case req @ POST -> Root / "approve" => req.as[UrlForm].flatMap { body => approve(body, random, requestsR, codesR) }
-    case req @ POST -> Root / "token" => req.as[UrlForm].flatMap { body =>
-      val (hClientId, hClientSecret) = req.headers.get[Authorization] match
-        case Some(Authorization(BasicCredentials((clientId, clientSecret)))) =>
-          (Uri.decode(clientId).some, Uri.decode(clientSecret).some)
-        case _ => (none[String], none[String])
-      val bClientId = body.get("client_id").find(_.nonEmpty)
-      val bClientSecret = body.get("client_secret").find(_.nonEmpty)
-      (hClientId, bClientId) match
-        // if we've already seen the client's credentials in the authorization header, this is an error
-        case (Some(_), Some(_)) => info"Client attempted to authenticate with multiple methods" *> invalidClientResp
-        case (None, None) => info"Unknown client" *> invalidClientResp
-        case _ =>
-          val clientId = hClientId.orElse(bClientId).get
-          val clientSecret = hClientSecret.orElse(bClientSecret).getOrElse("")
-          getClient(clientId) match
-            case None => info"Unknown client $clientId" *> invalidClientResp
-            case Some(client) if client.secret != clientSecret =>
-              info"Mismatched client secret, expected ${client.secret} got $clientSecret" *> invalidClientResp
-            case Some(client) => body.get("grant_type").map(GrantType.fromString).find(_.isDefined).flatten match
-              case Some(GrantType.AuthorizationCode) =>
-                for
-                  codeCache <- body.get("code").find(_.nonEmpty) match
-                    case Some(code) => codesR.modify(codes => (codes.removed(code), code.some -> codes.get(code)))
-                    case None => IO((none[String], none[AuthorizeCodeCache]))
-                  resp <- codeCache match
-                    case (Some(code), Some(cache)) =>
-                      for
-                        accessToken <- randomString[IO](random, 32)
-                        _ <- insertRecord(OAuthTokenRecord(clientId, Some(accessToken), None, Some(cache.scope)))
-                        _ <- info"Issuing access token $accessToken"
-                        _ <- info"with scope ${cache.scope.mkString(" ")}"
-                        _ <- info"Issued tokens for code $code"
-                        resp <- Ok(OAuthToken(accessToken, AuthScheme.Bearer, None, Some(cache.scope)).asJson)
-                      yield resp
-                    case (code, _) => info"Unknown code, ${code.getOrElse("None")}" *>
-                      BadRequest(ErrorInfo("invalid_grant").asJson)
-                yield resp
-              case Some(GrantType.RefreshToken) =>
-                for
-                  refreshTokenRecord <- body.get("refresh_token").find(_.nonEmpty) match
-                    case r @ Some(refreshToken) => getRecordByRefreshToken(refreshToken).map(r -> _)
-                    case None => IO((none[String], none[OAuthTokenRecord]))
-                  _ <- refreshTokenRecord match
-                    case (Some(refreshToken), Some(record)) if record.clientId != clientId =>
-                      info"Invalid client using a refresh token, expected ${record.clientId} got $clientId" *>
-                        removeRecordByRefreshToken(refreshToken) *>
-                        BadRequest()
-                    case (Some(refreshToken), Some(_)) =>
-                      for
-                        _ <- info"We found a matching refresh token $refreshToken"
-                        accessToken <- randomString[IO](random, 32)
-                        _ <- insertRecord(OAuthTokenRecord(clientId, Some(accessToken), None, None))
-                        _ <- info"Issuing access token $accessToken for refresh token $refreshToken"
-                        resp <- Ok(OAuthToken(accessToken, AuthScheme.Bearer, body.get("refresh_token").find(_.nonEmpty),
-                          None).asJson)
-                      yield resp
-                    case _ => info"No matching token was found." *>
-                      Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "Refresh Token")))
-                  resp <- Ok()
-                yield resp
-              case grantType => info"Unknown grant type ${grantType.getOrElse("None")}" *>
-                Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "Grant Type")))
-    }
+    case req @ POST -> Root / "approve" => req.as[UrlForm].flatMap(body => approve(body, random, requestsR, codesR))
+    case req @ POST -> Root / "token" => req.as[UrlForm].flatMap(body => token(req, body, random, codesR))
   }
 
   val invalidClientResp = Ok(ErrorInfo("invalid_client").asJson).map(_.copy(status = Status.Unauthorized))
