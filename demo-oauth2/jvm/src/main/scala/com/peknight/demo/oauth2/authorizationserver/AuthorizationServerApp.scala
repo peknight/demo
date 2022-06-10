@@ -6,7 +6,7 @@ import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.either.*
 import cats.syntax.traverse.*
 import com.comcast.ip4s.*
-import com.peknight.demo.oauth2.domain.AuthorizeParam
+import com.peknight.demo.oauth2.domain.{AuthorizeParam, ResponseType}
 import com.peknight.demo.oauth2.{serverHost, start}
 import org.http4s.*
 import org.http4s.dsl.io.*
@@ -63,12 +63,22 @@ object AuthorizationServerApp extends IOApp.Simple:
                 yield resp
       })
 
-    case req @ POST -> Root / "approve" =>
-      for
-        body <- req.as[UrlForm]
-        // TODO
-        resp <- Ok()
-      yield resp
+    case req @ POST -> Root / "approve" => req.as[UrlForm].flatMap { body =>
+      body.get("reqid").find(_.nonEmpty) match
+        case None => Ok(AuthorizationServerPage.error("No matching authorization request"))
+        case Some(reqId) => requestsR.modify(requests => (requests.removed(reqId), requests.get(reqId))).flatMap {
+          case None => Ok(AuthorizationServerPage.error("No matching authorization request"))
+          case Some(query) => body.get("approve").find(_ == "Approve") match
+            case Some(_) => query.responseType match
+              case ResponseType.Code =>
+                for
+                  code <- List.fill(8)(random.nextAlphaNumeric).sequence.map(_.mkString)
+                  resp <- Ok()
+                yield resp
+              case null => Ok()
+            case None => Ok()
+        }
+    }
   }
 
   val run =
