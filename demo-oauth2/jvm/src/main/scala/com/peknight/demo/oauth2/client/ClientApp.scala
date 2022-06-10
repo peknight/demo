@@ -33,8 +33,8 @@ object ClientApp extends IOApp.Simple:
   object ErrorQueryParamMatcher extends QueryParamDecoderMatcher[String]("error")
 
   val authServer: AuthServerInfo = AuthServerInfo(
-    uri"http://localhost:9001/authorize",
-    uri"http://localhost:9001/token"
+    uri"http://localhost:8001/authorize",
+    uri"http://localhost:8001/token"
   )
   val client: ClientInfo = ClientInfo(
     "oauth-client-1",

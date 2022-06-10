@@ -329,6 +329,7 @@ lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth
     libraryDependencies ++= Seq(
       log4CatsSlf4j,
       http4sScalaTags,
+      circeFs2,
       logbackClassic % Runtime,
     ),
   )
@@ -376,6 +377,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
+      circeFs2,
       fs2ReactiveStreams,
       akkaActorTyped,
       log4CatsSlf4j,
@@ -434,6 +436,7 @@ val catsVersion = "2.7.0"
 val catsEffectVersion = "3.3.11"
 val fs2Version = "3.2.7"
 val circeVersion = "0.14.1"
+val circeFs2Version = "0.14.0"
 val monocleVersion = "3.1.0"
 val log4CatsVersion = "2.3.1"
 val cirisVersion = "2.3.2"
@@ -455,6 +458,7 @@ val fs2Scodec = "co.fs2" %% "fs2-scodec" % fs2Version
 val circeCore = "io.circe" %% "circe-core" % circeVersion
 val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
 val circeParser = "io.circe" %% "circe-parser" % circeVersion
+val circeFs2 = "io.circe" %% "circe-fs2" % circeFs2Version
 val monocleCore = "dev.optics" %% "monocle-core" % monocleVersion
 val monocleMacro = "dev.optics" %% "monocle-macro" % monocleVersion
 val log4CatsSlf4j = "org.typelevel" %% "log4cats-slf4j" % log4CatsVersion

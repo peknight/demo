@@ -7,8 +7,10 @@ import cats.syntax.functor.*
 import cats.syntax.option.*
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.*
+import com.peknight.demo.oauth2.domain.OAuthTokenRecord
 import fs2.io.file.Files
 import fs2.text
+import io.circe.fs2.*
 import io.circe.generic.auto.*
 import io.circe.parser.*
 import io.circe.syntax.*
@@ -62,14 +64,13 @@ object ProtectedResourceApp extends IOApp.Simple:
 
   def getRecordByAccessToken(accessToken: String): IO[Option[OAuthTokenRecord]] =
     Files[IO].readAll(databaseNoSqlPath)
-      .through(text.utf8.decode)
-      .through(text.lines)
-      .filter(_.nonEmpty)
-      .map { json => decode[OAuthTokenRecord](json) match
-        case Right(record @ OAuthTokenRecord(_, Some(access), _, _)) if access == accessToken => record.some
-        case _ => none[OAuthTokenRecord]
+      .through(byteStreamParser)
+      .through(decoder[IO, OAuthTokenRecord])
+      .filter {
+        case OAuthTokenRecord(_, Some(access), _, _) if access == accessToken => true
+        case _ => false
       }
-      .filter(_.isDefined).pull.take(1).void.stream.compile.toList.map(_.headOption.flatten)
+      .pull.take(1).void.stream.compile.toList.map(_.headOption)
 
   val run =
     for
