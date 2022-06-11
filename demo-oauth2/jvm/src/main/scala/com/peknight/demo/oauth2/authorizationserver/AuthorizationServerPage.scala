@@ -1,20 +1,23 @@
 package com.peknight.demo.oauth2.authorizationserver
 
+import com.peknight.demo.oauth2.domain.{AuthServerInfo, ClientInfo}
 import com.peknight.demo.oauth2.page.{OAuthPage, OAuthStyles}
 import scalacss.ProdDefaults.{cssEnv, cssStringRenderer}
 import scalacss.internal.Dsl.c
 import scalatags.Text.all.{style as _, title as _, *}
 import scalatags.Text.tags2.{nav, style, title}
+import scalatags.generic.Frag
+import scalatags.text.Builder
 
 object AuthorizationServerPage:
 
-  def index(authServer: AuthServerInfo, clients: Seq[ClientInfo]) =
+  def index(authServer: AuthServerInfo, clients: Seq[ClientInfo]): Frag[Builder, String] =
     val clientElements = for client <- clients yield
       ul(
         li(b("client_id: "), code(client.id)),
         li(b("client_secret: "), code(client.secret)),
         li(b("scope: "), code(client.scope.mkString(" "))),
-        li(b("redirect_uris: "), code(client.redirectUris.map(_.toString)))
+        li(b("redirect_uris: "), code(client.redirectUris.toList.map(_.toString)))
       )
 
     skeleton(
@@ -28,9 +31,9 @@ object AuthorizationServerPage:
     )
   end index
 
-  def error(error: String) = skeleton(h2(cls := "text-danger")("Error"), error)
+  def error(error: String): Frag[Builder, String] = skeleton(h2(cls := "text-danger")("Error"), error)
 
-  def approve(client: ClientInfo, reqId: String, scopes: List[String]) =
+  def approve(client: ClientInfo, reqId: String, scopes: List[String]): Frag[Builder, String] =
     skeleton(
       h2("Approve this client?"),
       client.name.fold[Modifier]("")(name => p(b("Name: "), code(name))),
@@ -58,5 +61,5 @@ object AuthorizationServerPage:
     )
   end approve
 
-  private[this] def skeleton(jumbotron: Modifier*) =
+  private[this] def skeleton(jumbotron: Modifier*): Frag[Builder, String] =
     OAuthPage.skeleton("Authorization Server", "danger", c"#322")(jumbotron)

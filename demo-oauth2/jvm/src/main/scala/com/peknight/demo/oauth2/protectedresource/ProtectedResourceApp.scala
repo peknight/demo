@@ -4,6 +4,7 @@ import cats.data.OptionT
 import cats.effect.{IO, IOApp}
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.*
+import com.peknight.demo.oauth2.domain.Resource
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.http4s.*
@@ -26,12 +27,12 @@ object ProtectedResourceApp extends IOApp.Simple:
 
   object OptionalAccessTokenQueryParamMatcher extends OptionalQueryParamDecoderMatcher[String](accessTokenKey)
 
-  val resource = Resource("Protected Resource", "This data has been protected by OAuth 2.0")
+  private[this] val resource: Resource = Resource("Protected Resource", "This data has been protected by OAuth 2.0")
 
-  val accessTokenKey = "access_token"
+  private[this] val accessTokenKey: String = "access_token"
 
   // TODO cors
-  def service(using Logger[IO]) = HttpRoutes.of[IO] {
+  def service(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(ProtectedResourcePage.index)
     case OPTIONS -> Root / "resource" => NoContent()
     case req @ POST -> Root / "resource" :? OptionalAccessTokenQueryParamMatcher(queryAccessToken) =>
@@ -53,7 +54,8 @@ object ProtectedResourceApp extends IOApp.Simple:
       }
   }
 
-  val run =
+  //noinspection HttpUrlsUsage
+  val run: IO[Unit] =
     for
       logger <- Slf4jLogger.create[IO]
       given Logger[IO] = logger

@@ -34,11 +34,11 @@ package object oauth2:
   def randomString[F[_]: Applicative](random: Random[F], length: Int): F[String] =
     List.fill(length)(random.nextAlphaNumeric).sequence.map(_.mkString)
 
-  val databaseNoSqlPath = Path("demo-oauth2/database.nosql")
+  private[this] val databaseNoSqlPath: Path = Path("demo-oauth2/database.nosql")
 
-  val clearRecord = Stream[IO, Byte]().through(Files[IO].writeAll(databaseNoSqlPath)).compile.drain
+  val clearRecord: IO[Unit] = Stream[IO, Byte]().through(Files[IO].writeAll(databaseNoSqlPath)).compile.drain
 
-  def insertRecord(record: OAuthTokenRecord) =
+  def insertRecord(record: OAuthTokenRecord): IO[Unit] =
     Stream(s"${record.asJson.noSpaces}\n").covary[IO]
       .through(text.utf8.encode)
       .through(Files[IO].writeAll(databaseNoSqlPath, Append))

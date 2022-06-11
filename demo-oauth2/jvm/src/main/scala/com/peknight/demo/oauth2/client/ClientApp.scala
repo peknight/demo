@@ -5,7 +5,7 @@ import cats.effect.std.Random
 import cats.effect.{IO, IOApp, Ref}
 import com.comcast.ip4s.port
 import com.peknight.demo.oauth2.*
-import com.peknight.demo.oauth2.domain.{AuthorizeParam, OAuthToken, ResponseType}
+import com.peknight.demo.oauth2.domain.*
 import io.circe.Json
 import io.circe.generic.auto.*
 import io.circe.syntax.*
@@ -30,15 +30,15 @@ object ClientApp extends IOApp.Simple:
   object StateQueryParamMatcher extends QueryParamDecoderMatcher[String]("state")
   object ErrorQueryParamMatcher extends QueryParamDecoderMatcher[String]("error")
 
-  val authServer: AuthServerInfo = AuthServerInfo(
+  val authServer: AuthServerInfo = domain.AuthServerInfo(
     uri"http://localhost:8001/authorize",
     uri"http://localhost:8001/token"
   )
   val client: ClientInfo = ClientInfo(
     "oauth-client-1",
     "oauth-client-secret-1",
-    NonEmptyList(uri"http://localhost:8000/callback", Nil),
-    Set("foo")
+    Set("foo"),
+    NonEmptyList.one(uri"http://localhost:8000/callback")
   )
   val protectedResource = uri"http://localhost:8002/resource"
 
@@ -134,7 +134,7 @@ object ClientApp extends IOApp.Simple:
           if statusCode >= 200 && statusCode < 300 then
             for
               oauthToken <- refreshTokenResponse.as[OAuthToken]
-              oauthTokenCache <- updateOAuthTokenCache(oauthTokenCacheR, oauthToken)
+              _ <- updateOAuthTokenCache(oauthTokenCacheR, oauthToken)
               resp <- Found(Location(uri"/fetch_resource"))
             yield resp
           else
@@ -148,7 +148,7 @@ object ClientApp extends IOApp.Simple:
     )
 
   def app(oauthTokenCacheR: Ref[IO, OAuthTokenCache], stateR: Ref[IO, Option[String]], random: Random[IO])
-         (using Logger[IO]) =
+         (using Logger[IO]): HttpApp[IO] =
     HttpRoutes.of[IO] {
       case GET -> Root => oauthTokenCacheR.get.flatMap(oauthTokenCache => Ok(ClientPage.index(oauthTokenCache)))
       case GET -> Root / "authorize" => authorize(stateR, random)
@@ -166,7 +166,8 @@ object ClientApp extends IOApp.Simple:
         )
     }.orNotFound
 
-  val run =
+  //noinspection HttpUrlsUsage
+  val run: IO[Unit] =
     for
       oauthTokenCacheR <- Ref.of[IO, OAuthTokenCache](OAuthTokenCache(None, Some("j2r3oj32r23rmasd98uhjrk2o3i"), None))
       stateR <- Ref.of[IO, Option[String]](None)

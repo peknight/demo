@@ -1,14 +1,14 @@
 package com.peknight.demo.oauth2.authorizationserver
 
-import cats.data.OptionT
+import cats.data.{NonEmptyList, OptionT}
 import cats.effect.std.Random
 import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.either.*
 import cats.syntax.option.*
 import cats.syntax.traverse.*
 import com.comcast.ip4s.*
-import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.*
+import com.peknight.demo.oauth2.domain.*
 import fs2.io.file.Files
 import fs2.io.file.Flags.Append
 import fs2.{Stream, text}
@@ -36,26 +36,26 @@ object AuthorizationServerApp extends IOApp.Simple:
   given CanEqual[CIString, AuthScheme] = CanEqual.derived
   given CanEqual[Uri, Uri] = CanEqual.derived
 
-  val authServer = AuthServerInfo(uri"http://localhost:8001/authorize", uri"http://localhost:8001/token")
+  val authServer: AuthServerInfo = AuthServerInfo(uri"http://localhost:8001/authorize", uri"http://localhost:8001/token")
 
-  val clients = Seq(
+  val clients: Seq[ClientInfo] = Seq(
     ClientInfo(
       "oauth-client-1",
       "oauth-client-secret-1",
       Set("foo", "bar"),
-      List(uri"http://localhost:8000/callback")
+      NonEmptyList.one(uri"http://localhost:8000/callback")
     )
   )
 
   def getClient(clientId: String): Option[ClientInfo] = clients.find(_.id == clientId)
 
   def authorize(param: AuthorizeParam, random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]])
-               (using Logger[IO]) =
+               (using Logger[IO]): IO[Response[IO]] =
     getClient(param.clientId) match
       case None => info"Unknown client ${param.clientId}" *> Ok(AuthorizationServerPage.error("Unknown client"))
       case Some(client) => client.redirectUris.find(_ == param.redirectUri) match
         case None =>
-          info"Mismatched redirect URI, expected ${client.redirectUris.mkString(" ")} got ${param.redirectUri}" *>
+          info"Mismatched redirect URI, expected ${client.redirectUris.toList.mkString(" ")} got ${param.redirectUri}" *>
             Ok(AuthorizationServerPage.error("Invalid redirect URI"))
         case Some(redirectUri) =>
           if param.scope.diff(client.scope).nonEmpty then
@@ -69,7 +69,7 @@ object AuthorizationServerApp extends IOApp.Simple:
   end authorize
 
   def approve(body: UrlForm, random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
-              codesR: Ref[IO, Map[String, AuthorizeCodeCache]]) =
+              codesR: Ref[IO, Map[String, AuthorizeCodeCache]]): IO[Response[IO]] =
     body.get("reqid").find(_.nonEmpty) match
       case None => Ok(AuthorizationServerPage.error("No matching authorization request"))
       case Some(reqId) => requestsR.modify(requests => (requests.removed(reqId), requests.get(reqId))).flatMap {
@@ -100,7 +100,7 @@ object AuthorizationServerApp extends IOApp.Simple:
   end approve
 
   def authorizationCode(clientId: String, body: UrlForm, random: Random[IO],
-                        codesR: Ref[IO, Map[String, AuthorizeCodeCache]])(using Logger[IO]) =
+                        codesR: Ref[IO, Map[String, AuthorizeCodeCache]])(using Logger[IO]): IO[Response[IO]] =
     for
       codeCache <- body.get("code").find(_.nonEmpty) match
         case Some(code) => codesR.modify(codes => (codes.removed(code), code.some -> codes.get(code)))
@@ -119,7 +119,7 @@ object AuthorizationServerApp extends IOApp.Simple:
           BadRequest(ErrorInfo("invalid_grant").asJson)
     yield resp
 
-  def refreshToken(clientId: String, body: UrlForm, random: Random[IO])(using Logger[IO]) =
+  def refreshToken(clientId: String, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
     for
       refreshTokenRecord <- body.get("refresh_token").find(_.nonEmpty) match
         case r @ Some(refreshToken) => getRecordByRefreshToken(refreshToken).map(r -> _)
@@ -142,8 +142,10 @@ object AuthorizationServerApp extends IOApp.Simple:
           Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "Refresh Token")))
     yield resp
 
+  val invalidClientResp: IO[Response[IO]] = Ok(ErrorInfo("invalid_client").asJson).map(_.copy(status = Status.Unauthorized))
+
   def token(req: Request[IO], body: UrlForm, random: Random[IO], codesR: Ref[IO, Map[String, AuthorizeCodeCache]])
-           (using Logger[IO]) =
+           (using Logger[IO]): IO[Response[IO]] =
     val (hClientId, hClientSecret) = req.headers.get[Authorization] match
       case Some(Authorization(BasicCredentials((clientId, clientSecret)))) =>
         (Uri.decode(clientId).some, Uri.decode(clientSecret).some)
@@ -169,7 +171,7 @@ object AuthorizationServerApp extends IOApp.Simple:
   end token
 
   def service(random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
-              codesR: Ref[IO, Map[String, AuthorizeCodeCache]])(using Logger[IO]) = HttpRoutes.of[IO] {
+              codesR: Ref[IO, Map[String, AuthorizeCodeCache]])(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(AuthorizationServerPage.index(authServer, clients))
     case GET -> Root / "authorize" :? AuthorizeParam(authorizeParamValid) => authorizeParamValid.fold(
       msg => Ok(AuthorizationServerPage.error(msg)), param => authorize(param, random, requestsR)
@@ -178,9 +180,8 @@ object AuthorizationServerApp extends IOApp.Simple:
     case req @ POST -> Root / "token" => req.as[UrlForm].flatMap(body => token(req, body, random, codesR))
   }
 
-  val invalidClientResp = Ok(ErrorInfo("invalid_client").asJson).map(_.copy(status = Status.Unauthorized))
-
-  val run =
+  //noinspection HttpUrlsUsage
+  val run: IO[Unit] =
     for
       requestsR <- Ref.of[IO, Map[String, AuthorizeParam]](Map.empty)
       codesR <- Ref.of[IO, Map[String, AuthorizeCodeCache]](Map.empty)

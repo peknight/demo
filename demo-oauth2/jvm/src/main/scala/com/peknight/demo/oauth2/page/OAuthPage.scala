@@ -5,12 +5,14 @@ import scalacss.internal.ValueT
 import scalacss.internal.ValueT.Color
 import scalatags.Text.all.{style as _, title as _, *}
 import scalatags.Text.tags2.{nav, style, title}
+import scalatags.generic.Frag
+import scalatags.text.Builder
 
 object OAuthPage:
 
   private[oauth2] def skeleton(pageName: String, navbarBrandLabelPosix: String,
                                navbarInverseBackgroundColor: ValueT[Color])
-                              (jumbotron: Modifier*) =
+                              (jumbotron: Modifier*): Frag[Builder, String] =
     html(lang := "en")(
       head(
         meta(charset := "utf-8"),
