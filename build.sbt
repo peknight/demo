@@ -37,8 +37,7 @@ lazy val demo = (project in file("."))
     demoAkka,
     demoJs.jvm,
     demoJs.js,
-    demoOAuth2.jvm,
-    demoOAuth2.js,
+    demoOAuth2,
     demoPlayground.jvm,
     demoPlayground.js,
   )
@@ -310,32 +309,23 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     ),
   )
 
-lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth2"))
+lazy val demoOAuth2 = (project in file("demo-oauth2"))
   .settings(commonSettings)
   .settings(
     name := "demo-oauth2",
     libraryDependencies ++= Seq(
-      "org.http4s" %%% "http4s-dsl" % http4sVersion,
-      "org.http4s" %%% "http4s-ember-server" % http4sVersion,
-      "org.http4s" %%% "http4s-ember-client" % http4sVersion,
-      "org.http4s" %%% "http4s-circe" % http4sVersion,
-      "io.circe" %%% "circe-generic" % circeVersion,
-      "io.circe" %%% "circe-parser" % circeVersion,
-      "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
-      "com.github.japgolly.scalacss" %% "core" % scalaCssVersion,
-    ),
-  )
-  .jvmSettings(
-    libraryDependencies ++= Seq(
-      log4CatsSlf4j,
+      http4sDsl,
+      http4sEmberServer,
+      http4sEmberClient,
+      http4sCirce,
       http4sScalaTags,
+      circeGeneric,
+      circeParser,
       circeFs2,
+      scalaTags,
+      scalaCssCore,
+      log4CatsSlf4j,
       logbackClassic % Runtime,
-    ),
-  )
-  .jsSettings(
-    libraryDependencies ++= Seq(
-      "org.http4s" %%% "http4s-dom" % http4sVersion,
     ),
   )
 
@@ -471,6 +461,10 @@ val cirisSquants = "is.cir" %% "ciris-squants" % cirisVersion
 val cirisHocon = "lt.dvim.ciris-hocon" %% "ciris-hocon" % cirisHoconVersion
 val refinedCats = "eu.timepit" %% "refined-cats" % refinedCatsVersion
 val spire = "org.typelevel" %% "spire" % spireVersion
+val http4sDsl = "org.http4s" %% "http4s-dsl" % http4sVersion
+val http4sEmberServer = "org.http4s" %% "http4s-ember-server" % http4sVersion
+val http4sEmberClient = "org.http4s" %% "http4s-ember-client" % http4sVersion
+val http4sCirce = "org.http4s" %% "http4s-circe" % http4sVersion
 val http4sScalaTags = "org.http4s" %% "http4s-scalatags" % http4sVersion
 val http4sDropwizardMetrics = "org.http4s" %% "http4s-dropwizard-metrics" % http4sVersion
 val http4sPrometheusMetrics = "org.http4s" %% "http4s-prometheus-metrics" % http4sVersion
@@ -484,6 +478,7 @@ val doobieScalaTest = "org.tpolecat" %% "doobie-scalatest" % doobieVersion
 val redis4CatsEffects = "dev.profunktor" %% "redis4cats-effects" % redis4CatsVersion
 val redis4CatsStreams = "dev.profunktor" %% "redis4cats-streams" % redis4CatsVersion
 val redis4CatsLog4Cats = "dev.profunktor" %% "redis4cats-log4cats" % redis4CatsVersion
+
 
 // Library
 
@@ -520,3 +515,6 @@ val scalaTagsVersion = "0.11.1"
 val uPickleVersion = "2.0.0"
 val uTestVersion = "0.7.11"
 val scalaCssVersion = "1.0.0"
+
+val scalaTags = "com.lihaoyi" %% "scalatags" % scalaTagsVersion
+val scalaCssCore = "com.github.japgolly.scalacss" %% "core" % scalaCssVersion
