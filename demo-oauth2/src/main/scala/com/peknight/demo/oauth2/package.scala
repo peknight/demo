@@ -39,7 +39,7 @@ package object oauth2:
   val clearRecord: IO[Unit] = Stream[IO, Byte]().through(Files[IO].writeAll(databaseNoSqlPath)).compile.drain
 
   def insertRecord(record: OAuthTokenRecord): IO[Unit] =
-    Stream(s"${record.asJson.noSpaces}\n").covary[IO]
+    Stream(s"${record.asJson.deepDropNullValues.noSpaces}\n").covary[IO]
       .through(text.utf8.encode)
       .through(Files[IO].writeAll(databaseNoSqlPath, Append))
       .compile.drain
@@ -67,7 +67,7 @@ package object oauth2:
         case OAuthTokenRecord(_, _, Some(refresh), _) if refresh == refreshToken => false
         case _ => true
       }.compile.toList
-      _ <- Stream(records.map(record => s"${record.asJson.noSpaces}\n")*).covary[IO]
+      _ <- Stream(records.map(record => s"${record.asJson.deepDropNullValues.noSpaces}\n")*).covary[IO]
         .through(text.utf8.encode)
         .through(Files[IO].writeAll(databaseNoSqlPath))
         .compile.drain
