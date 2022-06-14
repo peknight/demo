@@ -7,11 +7,11 @@ import cats.effect.std.Dispatcher
 import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import cats.syntax.traverse.*
-import com.peknight.common.core.std.Random
 import com.peknight.demo.js.common.dom.CanvasOps.*
 import com.peknight.demo.js.common.event.EventListenerOps.*
 import com.peknight.demo.js.common.event.EventType.*
 import com.peknight.demo.js.common.io.IOOps.*
+import com.peknight.demo.js.common.random.Random
 import com.peknight.demo.js.common.state.StateOps.*
 import com.peknight.demo.js.common.std.Color.{DarkBlue, DarkGreen, DarkRed}
 import com.peknight.demo.js.common.std.Point

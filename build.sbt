@@ -38,6 +38,7 @@ lazy val demo = (project in file("."))
     demoJs.jvm,
     demoJs.js,
     demoOAuth2,
+    demoAcme4j,
     demoPlayground.jvm,
     demoPlayground.js,
   )
@@ -273,7 +274,6 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
   .settings(
     name := "demo-js",
     libraryDependencies ++= Seq(
-      "com.peknight" %%% "common-core" % pekCommonVersion,
       "org.typelevel" %%% "cats-core" % catsVersion,
       "org.typelevel" %%% "cats-effect" % catsEffectVersion,
       "co.fs2" %%% "fs2-core" % fs2Version,
@@ -329,12 +329,21 @@ lazy val demoOAuth2 = (project in file("demo-oauth2"))
     ),
   )
 
+lazy val demoAcme4j = (project in file("demo-acme4j"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-acme4j",
+    libraryDependencies ++= Seq(
+      acme4jClient,
+      acme4jUtils,
+    ),
+  )
+
 lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-playground"))
   .settings(commonSettings)
   .settings(
     name := "demo-playground",
     libraryDependencies ++= Seq(
-      "com.peknight" %%% "common-core" % pekCommonVersion,
       "org.typelevel" %%% "cats-core" % catsVersion,
       "org.typelevel" %%% "alleycats-core" % catsVersion,
       "org.typelevel" %%% "cats-effect" % catsEffectVersion,
@@ -405,12 +414,6 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.http4s" %%% "http4s-dom" % http4sVersion,
     ),
   )
-
-// Peknight
-
-val pekCommonVersion = "0.1-SNAPSHOT"
-
-val pekCommonCore = "com.peknight" %% "common-core" % pekCommonVersion
 
 // Scala
 
@@ -488,6 +491,7 @@ val apacheCommonsMathVersion = "3.6.1"
 val h2Version = "2.1.212"
 val jQueryVersion = "3.6.0"
 val postgisJdbcVersion = "2021.1.0"
+val acme4jVersion = "2.13"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
 val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
@@ -496,6 +500,8 @@ val h2 = "com.h2database" % "h2" % h2Version
 val jQuery = "org.webjars" % "jquery" % jQueryVersion
 val postgisJdbc = "net.postgis" % "postgis-jdbc" % postgisJdbcVersion
 val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
+val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jVersion
+val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jVersion
 
 // Test
 

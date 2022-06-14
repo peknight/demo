@@ -5,11 +5,11 @@ import cats.effect.*
 import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import cats.syntax.traverse.*
-import com.peknight.common.core.std.Random
 import com.peknight.demo.js.common.dom.CanvasOps.*
+import com.peknight.demo.js.common.io.IOOps.*
+import com.peknight.demo.js.common.random.Random
 import com.peknight.demo.js.common.std.Color.RGB
 import com.peknight.demo.js.common.std.{Colored, Point}
-import com.peknight.demo.js.common.io.IOOps.*
 import com.peknight.demo.js.common.stream.StreamPipe.*
 import fs2.Stream
 import org.scalajs.dom

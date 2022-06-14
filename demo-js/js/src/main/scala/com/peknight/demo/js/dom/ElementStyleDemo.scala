@@ -1,6 +1,6 @@
 package com.peknight.demo.js.dom
 
-import com.peknight.common.core.std.Random
+import com.peknight.demo.js.common.random.Random
 import com.peknight.demo.js.common.std.Color.{Blue, Green, Red}
 import org.scalajs.dom.html
 

@@ -7,15 +7,14 @@ import cats.effect.std.Dispatcher
 import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import cats.syntax.traverse.*
-import com.peknight.common.core.std.Random
-import com.peknight.demo.js.common
 import com.peknight.demo.js.common.dom.CanvasOps.*
 import com.peknight.demo.js.common.event.EventListenerOps.*
 import com.peknight.demo.js.common.event.EventType.*
+import com.peknight.demo.js.common.io.IOOps.*
+import com.peknight.demo.js.common.random.Random
+import com.peknight.demo.js.common.state.StateOps.*
 import com.peknight.demo.js.common.std.Color.*
 import com.peknight.demo.js.common.std.{Point, Vector}
-import com.peknight.demo.js.common.io.IOOps.*
-import com.peknight.demo.js.common.state.StateOps.*
 import com.peknight.demo.js.common.stream.StreamPipe.*
 import fs2.Stream
 import org.scalajs.dom
@@ -27,7 +26,7 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 
 object DodgeTheDots:
 
-  case class Enemy(pos: Point[Double], vel: common.std.Vector[Double])
+  case class Enemy(pos: Point[Double], vel: Vector[Double])
 
   case class Runtime(random: Random, player: Point[Double], enemies: Seq[Enemy], death: Option[(String, Duration)],
                      startTime: Duration, previousTime: Duration)
