@@ -39,6 +39,7 @@ lazy val demo = (project in file("."))
     demoJs.js,
     demoOAuth2,
     demoAcme4j,
+    demoSecurity,
     demoPlayground.jvm,
     demoPlayground.js,
   )
@@ -339,6 +340,15 @@ lazy val demoAcme4j = (project in file("demo-acme4j"))
     ),
   )
 
+lazy val demoSecurity = (project in file("demo-security"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-security",
+    libraryDependencies ++= Seq(
+      apacheCommonsCodec,
+    ),
+  )
+
 lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-playground"))
   .settings(commonSettings)
   .settings(
@@ -400,6 +410,9 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       redis4CatsEffects,
       redis4CatsStreams,
       redis4CatsLog4Cats,
+      acme4jClient,
+      acme4jUtils,
+      apacheCommonsCodec,
       logbackClassic,
       jQuery,
       doobieScalaTest % Test,
@@ -487,7 +500,7 @@ val redis4CatsLog4Cats = "dev.profunktor" %% "redis4cats-log4cats" % redis4CatsV
 
 val logbackVersion = "1.2.11"
 val akkaVersion = "2.6.19"
-val apacheCommonsMathVersion = "3.6.1"
+val apacheCommonsCodecVersion = "1.15"
 val h2Version = "2.1.212"
 val jQueryVersion = "3.6.0"
 val postgisJdbcVersion = "2021.1.0"
@@ -495,7 +508,7 @@ val acme4jVersion = "2.13"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
 val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
-val apacheCommonsMath = "org.apache.commons" % "commons-math3" % apacheCommonsMathVersion
+val apacheCommonsCodec = "commons-codec" % "commons-codec" % apacheCommonsCodecVersion
 val h2 = "com.h2database" % "h2" % h2Version
 val jQuery = "org.webjars" % "jquery" % jQueryVersion
 val postgisJdbc = "net.postgis" % "postgis-jdbc" % postgisJdbcVersion
