@@ -7,6 +7,9 @@ import java.security.GeneralSecurityException
 import javax.crypto.Mac
 import scala.annotation.tailrec
 
+/**
+ * @see https://github.com/google/google-authenticator-android/blob/master/java/com/google/android/apps/authenticator/otp/PasscodeGenerator.java
+ */
 class OneTimePassword(private[this] val signer: Signer, private[this] val codeLength: Int):
   assert(0 <= codeLength && codeLength <= MAX_PASSCODE_LENGTH,
     s"PassCodeLength must be between 1 and ${MAX_PASSCODE_LENGTH} digits.")
