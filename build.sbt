@@ -345,6 +345,8 @@ lazy val demoSecurity = (project in file("demo-security"))
   .settings(
     name := "demo-security",
     libraryDependencies ++= Seq(
+      fs2Core,
+      bouncyCastle,
       apacheCommonsCodec,
     ),
   )
@@ -410,6 +412,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       redis4CatsEffects,
       redis4CatsStreams,
       redis4CatsLog4Cats,
+      bouncyCastle,
       acme4jClient,
       acme4jUtils,
       apacheCommonsCodec,
@@ -505,6 +508,7 @@ val h2Version = "2.1.212"
 val jQueryVersion = "3.6.0"
 val postgisJdbcVersion = "2021.1.0"
 val acme4jVersion = "2.13"
+val bouncyCastleVersion = "1.70"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
 val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
@@ -515,6 +519,7 @@ val postgisJdbc = "net.postgis" % "postgis-jdbc" % postgisJdbcVersion
 val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
 val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jVersion
 val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jVersion
+val bouncyCastle = "org.bouncycastle" % "bcprov-jdk15on" % bouncyCastleVersion
 
 // Test
 

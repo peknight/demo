@@ -16,13 +16,13 @@
 
 #### demo-fp
 
-* Scala函数式编程，函数式理论知识丰富，构建自己的FP库。
+* Scala函数式编程，函数式理论知识丰富，构建自己的FP库，可对照Cats全家桶学习。
 * 参考: 小红书[Functional Programming in Scala](https://www.manning.com/books/functional-programming-in-scala)（推荐看英文版，中文版翻译质量不敢恭维）、[代码](https://github.com/fpinscala/fpinscala)
 * 进度: 100%，代码已迁移Scala3。
 
 #### demo-cats
 
-* Cats全家桶基础，推荐用于函数式编程入门
+* Cats全家桶基础，推荐用于函数式编程入门。
 * 参考: 猫书[Scala with Cats](https://underscore.io/books/scala-with-cats/)
 * 进度: 100%，代码已迁移Scala3。
 
@@ -34,7 +34,7 @@
 
 #### demo-fs2
 
-* Cats函数式流库，可参照《Functional Programming in Scala》第15章进行学习
+* Cats函数式流库，可对照《Functional Programming in Scala》第15章进行学习
 * 参考: [Fs2官方文档](https://fs2.io/)
 * 进度: 100%（仅学习了3.x版本），代码已迁移Scala3。
 
