@@ -17,8 +17,7 @@
 #### demo-fp
 
 * Scala函数式编程，函数式理论知识丰富，构建自己的FP库。
-* 参考: 小红书[Functional Programming in Scala](https://www.manning.com/books/functional-programming-in-scala)，推荐看英文版，中文版翻译质量不敢恭维。
-* 练习官方参考答案: [FpInScala](https://github.com/fpinscala/fpinscala)
+* 参考: 小红书[Functional Programming in Scala](https://www.manning.com/books/functional-programming-in-scala)（推荐看英文版，中文版翻译质量不敢恭维）、[代码](https://github.com/fpinscala/fpinscala)
 * 进度: 100%，代码已迁移Scala3。
 
 #### demo-cats
@@ -30,13 +29,13 @@
 #### demo-cats-effect
 
 * Cats函数式IO基础，可对照《Functional Programming in Scala》第13章进行学习
-* 参考: Cats Effect官方文档[Cats Effect](https://typelevel.org/cats-effect/docs/getting-started)
+* 参考: [Cats Effect官方文档](https://typelevel.org/cats-effect/docs/getting-started)
 * 进度: 100%（仅学习了3.x版本），代码已迁移Scala3。
 
 #### demo-fs2
 
 * Cats函数式流库，可参照《Functional Programming in Scala》第15章进行学习
-* 参考: Fs2官方文档[Fs2](https://fs2.io/)
+* 参考: [Fs2官方文档](https://fs2.io/)
 * 进度: 100%（仅学习了3.x版本），代码已迁移Scala3。
 
 #### demo-fs2-grpc
@@ -48,73 +47,73 @@
 #### demo-doobie
 
 * Cats全家桶，基于Fs2的数据库操作库。写SQL的纯函数式操作。就是还没出正式版。
-* 参考: Doobie官方文档[Doobie](https://tpolecat.github.io/doobie/)
+* 参考: [Doobie官方文档](https://tpolecat.github.io/doobie/)
 * 进度: 100%
 
 #### demo-circe
 
 * Cats全家桶的JSON库
-* 参考: Circe官方文档[Circe Home](https://circe.github.io/circe/)
+* 参考: [Circe官方文档](https://circe.github.io/circe/)
 * 进度: 100%，已迁移Scala3，文档中介绍的部分模块暂不支持Scala3（比如Shapless不支持Scala3，但被Scala3集成了，而这些模块还是不能直接用），这部分未保留。
 
 #### demo-monocle
 
 * Cats全家桶的Optics库，感觉处理一些比较复杂的模型会很有用。
-* 参考: Monocle官方文档[Monocle](https://www.optics.dev/Monocle/)
+* 参考: [Monocle官方文档](https://www.optics.dev/Monocle/)
 * 进度: 100%，已迁移Scala3。
 
 #### demo-ciris
 
 * Cats全家桶的配置读取库，因为pureconfig暂不支持scala3，先学了ciris。
-* 参考: Ciris官方文档[Ciris](https://cir.is/) 
+* 参考: [Ciris官方文档](https://cir.is/) 
 * 进度: 100%(照抄文档)，但是没做深入研究，后面实践用到再说。
 
 #### demo-log4cats
 
 * Cats全家桶的日志库，底层还是要用Slf4j、Logback这套的，只是一层函数式的封装。
-* 参考: Log4Cats官方文档[Log4Cats](https://typelevel.org/log4cats/)
+* 参考: [Log4Cats官方文档](https://typelevel.org/log4cats/)
 * 进度: 100%
 
 #### demo-redis4cats
 
 * Cats全家桶的Redis操作库。
-* 参考: Redis4Cats官方文档[Redis4Cats Home](https://redis4cats.profunktor.dev/)
+* 参考: [Redis4Cats官方文档](https://redis4cats.profunktor.dev/)
 * 进度: 100%
 
 #### demo-spire
 
 * Cats全家桶的数学库，还没出正式版。
-* 参考: Spire官方文档[Spire](https://typelevel.org/spire/)
+* 参考: [Spire官方文档](https://typelevel.org/spire/)
 * 进度: 100%
 
 #### demo-http4s
 
 * Cats全家桶，基于Fs2的HTTP库。挺好用的，就是还没出正式版。
-* 参考: http4s官方文档[Http4s](https://http4s.org/v1/docs/quickstart.html)
+* 参考: [Http4s官方文档](https://http4s.org/v1/docs/quickstart.html)
 * 进度: 100%，有些涉及前端安全等领域的中间件内容还没深入研究，后面结合前端知识学习补充。
 
 #### demo-js
 
 * Scala JS，支持Scala3，Cats全家桶也基本都支持，虽然有些文档比较老了，但是也很实用。
-* 参考: Scala JS官方文档[Basic Tutorial](https://www.scala-js.org/doc/tutorial/basic/)、Lihaiyi的[Hands-on Scala.js](https://www.lihaoyi.com/hands-on-scala-js/)、Lihaoyi的[uPickle](https://com-lihaoyi.github.io/upickle/)、Lihaoyi的[ScalaTags](https://com-lihaoyi.github.io/scalatags/)、[ScalaCss](https://japgolly.github.io/scalacss/book/)
+* 参考: ScalaJS官方文档[Basic Tutorial](https://www.scala-js.org/doc/tutorial/basic/)、Lihaiyi的[Hands-on Scala.js](https://www.lihaoyi.com/hands-on-scala-js/)、Lihaoyi的[uPickle](https://com-lihaoyi.github.io/upickle/)、Lihaoyi的[ScalaTags](https://com-lihaoyi.github.io/scalatags/)、[ScalaCss](https://japgolly.github.io/scalacss/book/)
 * 进度: 100%，学习scalajs时正好刚学完Fs2这些Cats全家桶知识，把练习的代码用Cats全家桶改写了一波巩固一下。另外Lihaoyi的Autowire库不支持Scala3，只能用Http4s自己手动完成了相关练习。
 
 #### demo-h5
 
 * 前端知识学习
-* 参考: B站黑马前端[H5+CSS3](https://www.bilibili.com/video/BV14J4114768?p=1)
+* 参考: [B站黑马前端H5+CSS3](https://www.bilibili.com/video/BV14J4114768?p=1)
 * 进度: P302品优购项目，暂停了一年了，前面有些东西忘了，后面再补上吧。
 
 #### demo-oauth2
 
 * OAuth2学习，OAuth2目前主要基于HTTPS实现。
-* 参考: 书[《OAuth2实战》](https://www.manning.com/books/oauth-2-in-action)、代码[oauth-in-action-code](https://github.com/oauthinaction/oauth-in-action-code)
+* 参考: 书[《OAuth2实战》](https://www.manning.com/books/oauth-2-in-action)、[代码](https://github.com/oauthinaction/oauth-in-action-code)
 * 进度: 完成第三章客户端实现，书中代码由node.js实现，我在练习中用Scala重新实现（大量使用http4s，页面使用ScalaTags及ScalaCss构建）。
 
 #### demo-akka
 
 * 基于Actor模型的重型框架
-* 参考: Akka官方文档[Akka Documentation](https://doc.akka.io/docs/akka/current/typed/actors.html)
+* 参考: [Akka官方文档](https://doc.akka.io/docs/akka/current/typed/actors.html)
 * 进度: 由于近期沉迷函数式编辑，akka学习被无限延后，进度1%。
 
 #### demo-security
@@ -126,7 +125,7 @@
 #### demo-acme4j
 
 * Let's Encrypt证书管理
-* 参考: Acme4j官方文档[acme4j](https://shredzone.org/maven/acme4j/index.html)
+* 参考: [Acme4j官方文档](https://shredzone.org/maven/acme4j/index.html)
 * 进度: 0%，刚提起兴趣，没正式开学。
 
 #### demo-playground
@@ -136,12 +135,12 @@
 #### demo-monix
 
 * Cats全家桶，响应式编程库，等它支持Cats Effect 3.x我就开始学。不过看他们意思迁移到CE3.x是个复杂的过程，不知道要等多久，先占个坑。
-* 参考: Monix官方文档[Monix](https://monix.io/)
+* 参考: [Monix官方文档](https://monix.io/)
 * 进度: 0%
 
 #### demo-squants
 
 * 单位换算相关库，有点感兴趣，但是学习优先级不高，先占个坑。
-* 参考: Squants官方文档[Squants](https://www.squants.com/)
+* 参考: [Squants官方文档](https://www.squants.com/)
 * 进度: 0%
 
