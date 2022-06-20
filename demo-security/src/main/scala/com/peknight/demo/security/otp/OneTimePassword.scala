@@ -54,7 +54,7 @@ class OneTimePassword(private[this] val signer: Signer, private[this] val codeLe
   end challengeToBytes
 
   private[this] def truncate(hash: Seq[Byte], codeLength: Int): String =
-    val offset = hash(hash.length - 1) & 0xF
+    val offset = hash.last & 0xF
     val truncatedHash = hashToInt(hash, offset) & 0x7FFFFFFF
     val pinValue = truncatedHash % DIGITS_POWER(codeLength)
     padOutput(pinValue, codeLength)
