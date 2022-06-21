@@ -2,7 +2,7 @@ package com.peknight.demo.security.cipher
 
 import cats.effect.{IO, IOApp}
 import fs2.text.{base64, hex, utf8}
-import fs2.{Chunk, Pipe, Pull, Stream}
+import fs2.{Chunk, INothing, Pipe, Pull, Stream}
 
 import java.math.BigInteger
 import java.nio.charset.StandardCharsets.UTF_8
@@ -18,8 +18,9 @@ object AesApp extends IOApp.Simple:
 
   object ecb:
     object pkcs5padding:
-//      val transformation = "AES/ECB/PKCS5Padding"
-      val transformation = "AES/ECB/NoPadding"
+      val transformation = "AES/ECB/PKCS5Padding"
+      // val transformation = "AES/ECB/NoPadding"
+
       def encrypt[F[_]](key: => SecretKey): Pipe[F, Byte, Byte] = in =>
         in.chunkN(size).flatMap { chunk =>
           val cipher: Cipher = Cipher.getInstance(transformation)
@@ -56,14 +57,14 @@ object AesApp extends IOApp.Simple:
       key <- keySpec("1234567890abcdef".getBytes(UTF_8))
       // 8ea36c8e64c178b321c41dd3c67cfeff8ea36c8e64c178b321c41dd3c67cfeff02dec5652c0215f93af69f009f0f6d58
       // 8ea36c8e64c178b321c41dd3c67cfeff8ea36c8e64c178b321c41dd3c67cfeff02dec5652c0215f93af69f009f0f6d58
-      message = "Hello, world!abc" * 2
+      message = "Hello, world!abcd"
 
-//      encryptedBytes = Stream(message).through(utf8.encode).through(ecb.pkcs5padding.encrypt(key))
-//      decryptedBytes = encryptedBytes.through(ecb.pkcs5padding.decrypt(key))
-//      encryptedHex = encryptedBytes.through(hex.encode).toList.mkString("")
-//      decryptedMessage = decryptedBytes.through(utf8.decode).toList.mkString("")
+     // encryptedBytes = Stream(message).through(utf8.encode).through(ecb.pkcs5padding.encrypt(key))
+     // decryptedBytes = encryptedBytes.through(ecb.pkcs5padding.decrypt(key))
+     // encryptedHex = encryptedBytes.through(hex.encode).toList.mkString("")
+     // decryptedMessage = decryptedBytes.through(utf8.decode).toList.mkString("")
 
-      data = message.getBytes(UTF_8) ++ Array.fill(16)(16.toByte)
+      data = message.getBytes(UTF_8)
       javaEncryptedBytes = javaEncrypt(key.getEncoded, data)
       javaDecryptedBytes = javaDecrypt(key.getEncoded, javaEncryptedBytes)
       javaEncryptedHex = new BigInteger(1, javaEncryptedBytes).toString(16)
@@ -77,5 +78,5 @@ object AesApp extends IOApp.Simple:
       _ <- IO.println(s"Message             : $message")
       //      _ <- IO.println(s"DecryptedMessage    : $decryptedMessage")
       _ <- IO.println(s"JavaDecryptedMessage: $javaDecryptedMessage")
-//      _ <- IO.println(s"Decrypted Correct   : ${Set(message, decryptedMessage, javaDecryptedMessage).size == 1}")
+      // _ <- IO.println(s"Decrypted Correct   : ${Set(message, decryptedMessage, javaDecryptedMessage).size == 1}")
     yield ()
