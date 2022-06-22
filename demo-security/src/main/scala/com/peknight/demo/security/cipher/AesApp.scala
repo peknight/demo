@@ -4,11 +4,10 @@ import cats.effect.{IO, IOApp}
 import fs2.text.{hex, utf8}
 import fs2.{Chunk, Pipe, Pull, Stream}
 
-import java.math.BigInteger
 import java.nio.charset.StandardCharsets.UTF_8
 import java.security.SecureRandom
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
-import javax.crypto.{Cipher, SecretKey}
+import javax.crypto.{BadPaddingException, Cipher, SecretKey}
 
 object AesApp extends IOApp.Simple:
 
@@ -170,7 +169,11 @@ object AesApp extends IOApp.Simple:
           case None =>
             // 流结束 校验填充内容并去除
             val padSize: Byte = acc.last.getOrElse(0)
-            assert((acc.size - padSize).until(acc.size).forall(acc(_) == padSize))
+            val badPadding: Boolean = padSize <= 0 || acc.size - padSize < 0 ||
+              (acc.size - padSize).until(acc.size).exists(acc(_) != padSize)
+            if badPadding then
+              throw new BadPaddingException("Given final block not properly padded. " +
+                "Such issues can arise if a bad key is used during decryption.")
             Pull.output(acc.dropRight(padSize)).as(None)
           case Some((hd, tl)) =>
             // 流还有值，留下一个分组用于最后处理去除填充，其余分组直接输出
@@ -202,12 +205,12 @@ object AesApp extends IOApp.Simple:
 
       javaEcbEncryptedBytes = AES.ECB.javaEncrypt(key.getEncoded, data)
       javaEcbDecryptedBytes = AES.ECB.javaDecrypt(key.getEncoded, javaEcbEncryptedBytes)
-      javaEcbEncryptedHex = new BigInteger(1, javaEcbEncryptedBytes).toString(16)
+      javaEcbEncryptedHex = Stream.chunk(Chunk.array(javaEcbEncryptedBytes)).through(hex.encode).toList.mkString("")
       javaEcbDecryptedMessage = new String(javaEcbDecryptedBytes, UTF_8)
 
       javaCbcEncryptedBytes = AES.CBC.javaEncrypt(key.getEncoded, ivps.getIV, data)
       javaCbcDecryptedBytes = AES.CBC.javaDecrypt(key.getEncoded, ivps.getIV, javaCbcEncryptedBytes)
-      javaCbcEncryptedHex = new BigInteger(1, javaCbcEncryptedBytes).toString(16)
+      javaCbcEncryptedHex = Stream.chunk(Chunk.array(javaCbcEncryptedBytes)).through(hex.encode).toList.mkString("")
       javaCbcDecryptedMessage = new String(javaCbcDecryptedBytes, UTF_8)
 
       _ <- IO.println(s"Data length             : ${data.length}")
