@@ -103,30 +103,39 @@ object AesApp extends IOApp.Simple:
           val output = cipher.doFinal(chunks.flatMap(identity).toArray)
           val outputChunk = Chunk.array(output)
           val nextIv: Array[Byte] = outputChunk.splitAt(outputChunk.size - blockSize)._2.toArray
-          (new IvParameterSpec(nextIv), outputChunk)
+          val nextIvps: IvParameterSpec = new IvParameterSpec(nextIv)
+          println(s"encrypt key = ${Chunk.array(key.getEncoded)} ivps = ${Chunk.array(ivps.getIV)} input = $chunks output = $outputChunk nextIvps = ${Chunk.array(nextIvps.getIV)}")
+          (nextIvps, outputChunk)
         }
 
       def decrypt[F[_]](key: => SecretKey, ivps: => IvParameterSpec): Pipe[F, Byte, Byte] = in =>
         in.through(chunkTimesN(blockSize)).scanChunks(ivps) { (ivps, chunks) =>
           val cipher: Cipher = Cipher.getInstance(transformation)
           cipher.init(Cipher.DECRYPT_MODE, key, ivps)
-          val output = cipher.doFinal(chunks.flatMap(identity).toArray)
+          val inputChunk = chunks.flatMap(identity)
+          val output = cipher.doFinal(inputChunk.toArray)
           val outputChunk = Chunk.array(output)
-          val nextIv: Array[Byte] = outputChunk.splitAt(outputChunk.size - blockSize)._2.toArray
-          (new IvParameterSpec(nextIv), Chunk(outputChunk))
+          val nextIv: Array[Byte] = inputChunk.splitAt(inputChunk.size - blockSize)._2.toArray
+          val nextIvps: IvParameterSpec = new IvParameterSpec(nextIv)
+          println(s"decrypt key = ${Chunk.array(key.getEncoded)} ivps = ${Chunk.array(ivps.getIV)} input = $chunks output = $outputChunk nextIvps = ${Chunk.array(nextIvps.getIV)}")
+          (nextIvps, Chunk(outputChunk))
         }.through(PKCS5Padding.unPadding)
 
       def javaEncrypt(key: Array[Byte], ivps: IvParameterSpec, input: Array[Byte]): Array[Byte] =
         val cipher: Cipher = Cipher.getInstance(javaTransformation)
         val keySpec: SecretKey = new SecretKeySpec(key, aesAlgo)
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivps)
-        cipher.doFinal(input)
+        val output: Array[Byte] = cipher.doFinal(input)
+        println(s"javaEncrypt key = ${Chunk.array(key)} ivps = ${Chunk.array(ivps.getIV)} input = ${Chunk.array(input)} output = ${Chunk.array(output)}")
+        output
 
       def javaDecrypt(key: Array[Byte], ivps: IvParameterSpec, input: Array[Byte]): Array[Byte] =
         val cipher: Cipher = Cipher.getInstance(javaTransformation)
         val keySpec: SecretKey = new SecretKeySpec(key, aesAlgo)
         cipher.init(Cipher.DECRYPT_MODE, keySpec, ivps)
-        cipher.doFinal(input)
+        val output: Array[Byte] = cipher.doFinal(input)
+        println(s"javaDecrypt key = ${Chunk.array(key)} ivps = ${Chunk.array(ivps.getIV)} input = ${Chunk.array(input)} output = ${Chunk.array(output)}")
+        output
 
     end CBC
   end AES
@@ -170,10 +179,12 @@ object AesApp extends IOApp.Simple:
         s.pull.uncons.flatMap {
           case None =>
             val padSize: Byte = acc.last.getOrElse(0)
+            println(s"unPadding None acc = $acc padSize = $padSize")
             assert((acc.size - padSize).until(acc.size).forall(acc(_) == padSize))
             Pull.output(acc.dropRight(padSize)).flatMap(_ => Pull.pure(None))
           case Some((hd, tl)) =>
             val (pfx, sfx) = hd.splitAt(hd.size - 1)
+            println(s"unPadding Some(($hd, $tl)) acc = $acc pfx = $pfx sfx = $sfx")
             Pull.output(acc ++ pfx.flatMap(identity)).flatMap(_ => go(sfx.flatMap(identity), tl))
         }
       in => in.repeatPull(pull => go(Chunk.empty, pull.echo.stream))
@@ -185,11 +196,11 @@ object AesApp extends IOApp.Simple:
       key <- keySpec("1234567890abcdef1234567890abcdef".getBytes(UTF_8))
       ivps <- ivParameterSpec
 
-      message = "Hello, world!" * 2
-      // encryptedBytes = Stream(message).through(utf8.encode).through(AES.ECB.encrypt(key))
-      // decryptedBytes = encryptedBytes.through(AES.ECB.decrypt(key))
-      // encryptedHex = encryptedBytes.through(hex.encode).toList.mkString("")
-      // decryptedMessage = decryptedBytes.through(utf8.decode).toList.mkString("")
+      message = "Hello, world!" * 50
+      encryptedBytes = Stream(message).through(utf8.encode).through(AES.ECB.encrypt(key))
+      decryptedBytes = encryptedBytes.through(AES.ECB.decrypt(key))
+      encryptedHex = encryptedBytes.through(hex.encode).toList.mkString("")
+      decryptedMessage = decryptedBytes.through(utf8.decode).toList.mkString("")
 
       cbcEncryptedBytes = Stream(message).through(utf8.encode).through(AES.CBC.encrypt(key, ivps))
       cbcDecryptedBytes = cbcEncryptedBytes.through(AES.CBC.decrypt(key, ivps))
@@ -197,10 +208,10 @@ object AesApp extends IOApp.Simple:
       cbcDecryptedMessage = cbcDecryptedBytes.through(utf8.decode).toList.mkString("")
 
       data = message.getBytes(UTF_8)
-      // javaEncryptedBytes = AES.ECB.javaEncrypt(key.getEncoded, data)
-      // javaDecryptedBytes = AES.ECB.javaDecrypt(key.getEncoded, javaEncryptedBytes)
-      // javaEncryptedHex = new BigInteger(1, javaEncryptedBytes).toString(16)
-      // javaDecryptedMessage = new String(javaDecryptedBytes, UTF_8)
+      javaEncryptedBytes = AES.ECB.javaEncrypt(key.getEncoded, data)
+      javaDecryptedBytes = AES.ECB.javaDecrypt(key.getEncoded, javaEncryptedBytes)
+      javaEncryptedHex = new BigInteger(1, javaEncryptedBytes).toString(16)
+      javaDecryptedMessage = new String(javaDecryptedBytes, UTF_8)
 
       javaCbcEncryptedBytes = AES.CBC.javaEncrypt(key.getEncoded, ivps, data)
       javaCbcDecryptedBytes = AES.CBC.javaDecrypt(key.getEncoded, ivps, javaCbcEncryptedBytes)
@@ -208,17 +219,17 @@ object AesApp extends IOApp.Simple:
       javaCbcDecryptedMessage = new String(javaCbcDecryptedBytes, UTF_8)
 
       _ <- IO.println(s"Data length             : ${data.length}")
-      // _ <- IO.println(s"EncryptedHex            : $encryptedHex")
-      // _ <- IO.println(s"JavaEncryptedHex        : $javaEncryptedHex")
+      _ <- IO.println(s"EncryptedHex            : $encryptedHex")
+      _ <- IO.println(s"JavaEncryptedHex        : $javaEncryptedHex")
       _ <- IO.println(s"CbcEncryptedHex         : $cbcEncryptedHex")
       _ <- IO.println(s"JavaCbcEncryptedHex     : $javaCbcEncryptedHex")
-      // _ <- IO.println(s"Encrypted Correct       : ${Set(encryptedHex, javaEncryptedHex).size == 1}")
+      _ <- IO.println(s"Encrypted Correct       : ${Set(encryptedHex, javaEncryptedHex).size == 1}")
       _ <- IO.println(s"CbcEncrypted Correct    : ${Set(cbcEncryptedHex, javaCbcEncryptedHex).size == 1}")
       _ <- IO.println(s"Message                 : $message")
-      // _ <- IO.println(s"DecryptedMessage        : $decryptedMessage")
-      // _ <- IO.println(s"JavaDecryptedMessage    : $javaDecryptedMessage")
+      _ <- IO.println(s"DecryptedMessage        : $decryptedMessage")
+      _ <- IO.println(s"JavaDecryptedMessage    : $javaDecryptedMessage")
       _ <- IO.println(s"CbcDecryptedMessage     : $cbcDecryptedMessage")
       _ <- IO.println(s"JavaCbcDecryptedMessage : $javaCbcDecryptedMessage")
-      // _ <- IO.println(s"Decrypted Correct       : ${Set(message, decryptedMessage, javaDecryptedMessage).size == 1}")
+      _ <- IO.println(s"Decrypted Correct       : ${Set(message, decryptedMessage, javaDecryptedMessage).size == 1}")
       _ <- IO.println(s"CbcDecrypted Correct    : ${Set(message, cbcDecryptedMessage, javaCbcDecryptedMessage).size == 1}")
     yield ()
