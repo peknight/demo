@@ -1,8 +1,7 @@
 package com.peknight.demo.security.cipher
 
 import cats.effect.{IO, IOApp}
-import fs2.text.hex
-import fs2.{Chunk, Stream}
+import com.peknight.demo.security.*
 
 import java.security.*
 import java.security.spec.X509EncodedKeySpec
@@ -62,14 +61,12 @@ object DiffieHellmanApp extends IOApp.Simple:
   // 最终双方协商出的密钥s1/s2是121
 
   case class Person(name: String, publicKey: PublicKey, privateKey: PrivateKey, secretKey: Array[Byte]):
-    private[this] def toHex(bytes: Array[Byte]): String =
-      Stream.chunk(Chunk.array(bytes)).through(hex.encode).toList.mkString("")
     def show: String =
       s"""
          |Name: $name
-         |Private key: ${toHex(privateKey.getEncoded)}
-         |Public key: ${toHex(publicKey.getEncoded)}
-         |Secret key: ${toHex(secretKey)}
+         |Private key: ${privateKey.getEncoded.hex}
+         |Public key: ${publicKey.getEncoded.hex}
+         |Secret key: ${secretKey.hex}
       """.trim.stripMargin
 
     val printKeys: IO[Unit] = IO.println(show)
