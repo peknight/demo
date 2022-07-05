@@ -1,6 +1,7 @@
 package com.peknight.demo.security.cipher
 
 import cats.effect.{IO, IOApp}
+import com.peknight.demo.security.*
 import fs2.text.{hex, utf8}
 import fs2.{Chunk, Pipe, Pull, Stream}
 
@@ -20,68 +21,49 @@ object AesApp extends IOApp.Simple:
     new IvParameterSpec(iv)
   }
 
-  // 将流中的Chunk大小调整为n的整数倍，并直接输出Chunk。参考`fs2.Stream#chunkN`实现
-  def chunkTimesN[F[_], O](n: Int): Pipe[F, O, Chunk[O]] =
-    def go(acc: Chunk[O], s: Stream[F, O]): Pull[F, Chunk[O], Option[Stream[F, O]]] =
-      s.pull.uncons.flatMap {
-        // 流结束: 没有剩余Chunk => 结束，有剩余值 => 将余下的值作为一个Chunk输出后结束
-        case None => if acc.isEmpty then Pull.pure(None) else Pull.output1(acc).as(None)
-        // 流还有值
-        case Some((hd, tl)) =>
-          // 判断此前剩余Chunk + 当前Chunk大小
-          val size = acc.size + hd.size
-          // 小于n 打包留给流后续处理
-          if size < n then go(acc ++ hd, tl)
-          // 正好是整数倍，直接输出
-          else if size % n == 0 then Pull.output1(acc ++ hd).as(Some(tl))
-          else
-            // 多余整数倍，把零头(sfx)提出来
-            val (pfx, sfx) = hd.splitAt(hd.size - size % n)
-            // 将整数倍的部分输出，零头拼到流的后续
-            Pull.output1(acc ++ pfx).as(Some(tl.cons(sfx)))
-      }
-    in => in.repeatPull(pull => go(Chunk.empty, pull.echo.stream))
-  end chunkTimesN
-
   object AES:
     // AES分组加密，每组16字节
     val blockSize = 16
 
     object ECB:
       // 由于原生不支持流操作，只能手动padding后使用NoPadding
-      private[this] val transformation = "AES/ECB/NoPadding"
+      private[this] val noPaddingTransformation = "AES/ECB/NoPadding"
+      private[this] val pkcs5PaddingTransformation = "AES/ECB/PKCS5Padding"
 
       // 加密
-      def encrypt[F[_]](key: => SecretKey): Pipe[F, Byte, Byte] = in =>
-        // 手动使用PKCS5Padding填充
-        in.through(PKCS5Padding.padding).flatMap { chunk =>
-          val cipher: Cipher = Cipher.getInstance(transformation)
+      def encrypt[F[_]](key: => SecretKey): Pipe[F, Byte, Byte] =
+        mapChunkTimesNLast[F, Byte, Byte](blockSize){ chunk =>
+          val cipher: Cipher = Cipher.getInstance(noPaddingTransformation)
           cipher.init(Cipher.ENCRYPT_MODE, key)
-          Stream.chunk(Chunk.array(cipher.doFinal(chunk.toArray)))
+          Chunk.array(cipher.doFinal(chunk.toArray))
+        }{ chunk =>
+          val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
+          cipher.init(Cipher.ENCRYPT_MODE, key)
+          Chunk.array(cipher.doFinal(chunk.toArray))
         }
 
       // 解密
-      def decrypt[F[_]](key: => SecretKey): Pipe[F, Byte, Byte] = in =>
-        // 将密文分组（分成16字节的整数倍即可）
-        in.through(chunkTimesN(blockSize)).map { chunk =>
-          val cipher: Cipher = Cipher.getInstance(transformation)
+      def decrypt[F[_]](key: => SecretKey): Pipe[F, Byte, Byte] =
+        mapChunkTimesNLast[F, Byte, Byte](blockSize){ chunk =>
+          val cipher: Cipher = Cipher.getInstance(noPaddingTransformation)
           cipher.init(Cipher.DECRYPT_MODE, key)
           Chunk.array(cipher.doFinal(chunk.toArray))
-        // 手动使用PKCS5Padding把填充内容去除
-        }.through(PKCS5Padding.unPadding)
-
-      private[this] val javaTransformation = "AES/ECB/PKCS5Padding"
+        }{ chunk =>
+          val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
+          cipher.init(Cipher.DECRYPT_MODE, key)
+          Chunk.array(cipher.doFinal(chunk.toArray))
+        }
 
       // Java版加密
       def javaEncrypt(key: Array[Byte], input: Array[Byte]): Array[Byte] =
-        val cipher: Cipher = Cipher.getInstance(javaTransformation)
+        val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
         val keySpec: SecretKey = new SecretKeySpec(key, aesAlgo)
         cipher.init(Cipher.ENCRYPT_MODE, keySpec)
         cipher.doFinal(input)
 
       // Java版解密
       def javaDecrypt(key: Array[Byte], input: Array[Byte]): Array[Byte] =
-        val cipher: Cipher = Cipher.getInstance(javaTransformation)
+        val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
         val keySpec: SecretKey = new SecretKeySpec(key, aesAlgo)
         cipher.init(Cipher.DECRYPT_MODE, keySpec)
         cipher.doFinal(input)
@@ -90,34 +72,37 @@ object AesApp extends IOApp.Simple:
     object CBC:
 
       // 由于原生不支持流操作，只能手动padding后使用NoPadding
-      private[this] val transformation = "AES/CBC/NoPadding"
+      private[this] val noPaddingTransformation = "AES/CBC/NoPadding"
+      private[this] val pkcs5PaddingTransformation = "AES/CBC/PKCS5Padding"
 
       // 加密
-      def encrypt[F[_]](key: => SecretKey, ivps: => IvParameterSpec): Pipe[F, Byte, Byte] = in =>
-        // 手动使用PKCS5Padding填充
-        in.through(PKCS5Padding.padding).scanChunks(ivps) { (ivps, chunks) =>
-          val cipher: Cipher = Cipher.getInstance(transformation)
+      def encrypt[F[_]](key: => SecretKey, ivps: => IvParameterSpec): Pipe[F, Byte, Byte] =
+        scanChunkTimesNLast[F, Byte, Byte, IvParameterSpec](blockSize)(ivps) { (ivps, chunk) =>
+          val cipher: Cipher = Cipher.getInstance(noPaddingTransformation)
           cipher.init(Cipher.ENCRYPT_MODE, key, ivps)
-          val outputChunk = Chunk.array(cipher.doFinal(chunks.flatMap(identity).toArray))
+          val outputChunk = Chunk.array(cipher.doFinal(chunk.toArray))
           // 密文的最后一个分组用于下一个向量
           val nextIv: Array[Byte] = outputChunk.takeRight(blockSize).toArray
           (new IvParameterSpec(nextIv), outputChunk)
+        } { (ivps, chunk) =>
+          val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
+          cipher.init(Cipher.ENCRYPT_MODE, key, ivps)
+          Chunk.array(cipher.doFinal(chunk.toArray))
         }
 
-      def decrypt[F[_]](key: => SecretKey, ivps: => IvParameterSpec): Pipe[F, Byte, Byte] = in =>
-        // 将密文分组（分成16字节的整数倍即可）
-        in.through(chunkTimesN(blockSize)).scanChunks(ivps) { (ivps, chunks) =>
-          val cipher: Cipher = Cipher.getInstance(transformation)
+      def decrypt[F[_]](key: => SecretKey, ivps: => IvParameterSpec): Pipe[F, Byte, Byte] =
+        scanChunkTimesNLast[F, Byte, Byte, IvParameterSpec](blockSize)(ivps) { (ivps, chunk) =>
+          val cipher: Cipher = Cipher.getInstance(noPaddingTransformation)
           cipher.init(Cipher.DECRYPT_MODE, key, ivps)
-          val inputChunk = chunks.flatMap(identity)
-          val outputChunk = Chunk.array(cipher.doFinal(inputChunk.toArray))
+          val outputChunk = Chunk.array(cipher.doFinal(chunk.toArray))
           // 密文的最后一个分组用于下一个向量
-          val nextIv: Array[Byte] = inputChunk.takeRight(blockSize).toArray
-          (new IvParameterSpec(nextIv), Chunk(outputChunk))
-        // 手动使用PKCS5Padding把填充内容去除
-        }.through(PKCS5Padding.unPadding)
-
-      private[this] val javaTransformation = "AES/CBC/PKCS5Padding"
+          val nextIv: Array[Byte] = chunk.takeRight(blockSize).toArray
+          (new IvParameterSpec(nextIv), outputChunk)
+        } { (ivps, chunk) =>
+          val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
+          cipher.init(Cipher.DECRYPT_MODE, key, ivps)
+          Chunk.array(cipher.doFinal(chunk.toArray))
+        }
 
       // Java版加密
       def javaEncrypt(key: Array[Byte], iv: Array[Byte], input: Array[Byte]): Array[Byte] =
@@ -128,7 +113,7 @@ object AesApp extends IOApp.Simple:
         javaCipher(key, iv, input, Cipher.DECRYPT_MODE)
 
       private[this] def javaCipher(key: Array[Byte], iv: Array[Byte], input: Array[Byte], opmode: Int): Array[Byte] =
-        val cipher: Cipher = Cipher.getInstance(javaTransformation)
+        val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
         val keySpec: SecretKey = new SecretKeySpec(key, aesAlgo)
         val ivps: IvParameterSpec = new IvParameterSpec(iv)
         cipher.init(opmode, keySpec, ivps)
@@ -136,60 +121,12 @@ object AesApp extends IOApp.Simple:
     end CBC
   end AES
 
-  object PKCS5Padding:
-    // 填充分组
-    def padding[F[_]]: Pipe[F, Byte, Chunk[Byte]] =
-      def go(acc: Chunk[Byte], s: Stream[F, Byte]): Pull[F, Chunk[Byte], Option[Stream[F, Byte]]] =
-        s.pull.uncons.flatMap {
-          // 流结束，按PKCS5Padding填充
-          case None =>
-            val paddingSize = AES.blockSize - acc.size
-            Pull.output1(acc ++ Chunk.seq(List.fill(paddingSize)(paddingSize.toByte))).as(None)
-          // 流还有值
-          case Some((hd, tl)) =>
-            // 判断此前剩余Chunk + 当前Chunk大小
-            val size = acc.size + hd.size
-            // 小于分组大小 打包留给流后续处理
-            if size < AES.blockSize then go(acc ++ hd, tl)
-            // 正好是整数倍，直接输出
-            else if size % AES.blockSize == 0 then Pull.output1(acc ++ hd).as(Some(tl))
-            else
-              // 多余整数倍，把零头(sfx)提出来
-              val (pfx, sfx) = hd.splitAt(hd.size - size % AES.blockSize)
-              // 将整数倍的部分输出，零头拼到流的后续
-              Pull.output1(acc ++ pfx).as(Some(tl.cons(sfx)))
-        }
-      in => in.repeatPull(pull => go(Chunk.empty, pull.echo.stream))
-    end padding
-
-    // 去除填充
-    def unPadding[F[_]]: Pipe[F, Chunk[Byte], Byte] =
-      def go(acc: Chunk[Byte], s: Stream[F, Chunk[Byte]]): Pull[F, Byte, Option[Stream[F, Chunk[Byte]]]] =
-        s.pull.uncons.flatMap {
-          case None =>
-            // 流结束 校验填充内容并去除
-            val padSize: Byte = acc.last.getOrElse(0)
-            val badPadding: Boolean = padSize <= 0 || acc.size - padSize < 0 ||
-              (acc.size - padSize).until(acc.size).exists(acc(_) != padSize)
-            if badPadding then
-              throw new BadPaddingException("Given final block not properly padded. " +
-                "Such issues can arise if a bad key is used during decryption.")
-            Pull.output(acc.dropRight(padSize)).as(None)
-          case Some((hd, tl)) =>
-            // 流还有值，留下一个分组用于最后处理去除填充，其余分组直接输出
-            val (pfx, sfx) = hd.splitAt(hd.size - 1)
-            Pull.output(acc ++ pfx.flatMap(identity)) >> go(sfx.flatMap(identity), tl)
-        }
-      in => in.repeatPull(pull => go(Chunk.empty, pull.echo.stream))
-    end unPadding
-  end PKCS5Padding
-
   val run: IO[Unit] =
     for
       key <- keySpec("1234567890abcdef1234567890abcdef".getBytes(UTF_8))
       ivps <- ivParameterSpec
 
-      message = "Hello, world!"
+      message = "Hello, world!" * 50
 
       ecbEncryptedBytes = Stream(message).through(utf8.encode).through(AES.ECB.encrypt(key))
       ecbDecryptedBytes = ecbEncryptedBytes.through(AES.ECB.decrypt(key))
