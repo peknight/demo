@@ -27,7 +27,7 @@ object Server extends Api[IO] with IOApp.Simple:
   val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(Page.skeleton)
     case req @ GET -> Root / "main.js" =>
-      StaticFile.fromPath(file.Path("./demo-js/js/target/scala-3.1.2/demo-js-opt/main.js"), Some(req))
+      StaticFile.fromPath(file.Path("./demo-js/js/target/scala-3.1.3/demo-js-opt/main.js"), Some(req))
         .getOrElseF(NotFound())
     case req @ POST -> "ajax" /: rest =>
       given EntityDecoder[IO, FilePath] = jsonOf[IO, FilePath]
