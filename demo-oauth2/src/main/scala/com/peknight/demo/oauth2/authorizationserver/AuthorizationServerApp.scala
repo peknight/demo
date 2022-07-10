@@ -47,7 +47,35 @@ object AuthorizationServerApp extends IOApp.Simple:
     )
   )
 
+  val userInfos: Map[String, UserInfo] = Map(
+    "alice" -> UserInfo(
+      "9XE3-JI34-00132A",
+      "alice",
+      "Alice",
+      "alice.wonderland@example.com",
+      true
+    ),
+    "bob" -> UserInfo(
+      "1ZT5-OE63-57383B",
+      "bob",
+      "Bob",
+      "bob.loblob@example.net",
+      false
+    ),
+    "carol" -> UserInfo(
+      "F5Q1-L6LGG-959FS",
+      "carol",
+      "Carol",
+      "carol.lewis@example.net",
+      true,
+      Some("clewis"),
+      Some("user password!")
+    )
+  )
+
   def getClient(clientId: String): Option[ClientInfo] = clients.find(_.id == clientId)
+
+  def getUser(username: String): Option[UserInfo] = userInfos.values.find(_.username.contains(username))
 
   def authorize(param: AuthorizeParam, random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]])
                (using Logger[IO]): IO[Response[IO]] =
@@ -91,6 +119,10 @@ object AuthorizationServerApp extends IOApp.Simple:
                     .withOptionQueryParam("state", query.state)
                   ))
                 yield resp
+            case ResponseType.Token =>
+              val user = body.get("user").find(_.nonEmpty)
+
+              ???
             // 后续支持其它响应类型扩展
             case null => Found(Location(query.redirectUri
               .withQueryParam("error", "unsupported_response_type")
