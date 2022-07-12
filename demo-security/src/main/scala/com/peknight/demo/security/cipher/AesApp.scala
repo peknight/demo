@@ -1,6 +1,6 @@
 package com.peknight.demo.security.cipher
 
-import cats.effect.{IO, IOApp}
+import cats.effect.{IO, IOApp, Sync}
 import com.peknight.demo.security.*
 import fs2.text.{hex, utf8}
 import fs2.{Chunk, Pipe, Pull, Stream}
@@ -28,96 +28,130 @@ object AesApp extends IOApp.Simple:
     object ECB:
       // 由于原生不支持流操作，只能手动padding后使用NoPadding
       private[this] val noPaddingTransformation = "AES/ECB/NoPadding"
-      private[this] val pkcs5PaddingTransformation = "AES/ECB/PKCS5Padding"
 
-      // 加密
-      def encrypt[F[_]](key: => SecretKey): Pipe[F, Byte, Byte] =
-        mapChunkTimesNLast[F, Byte, Byte](blockSize){ chunk =>
-          val cipher: Cipher = Cipher.getInstance(noPaddingTransformation)
-          cipher.init(Cipher.ENCRYPT_MODE, key)
-          Chunk.array(cipher.doFinal(chunk.toArray))
-        }{ chunk =>
-          val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
-          cipher.init(Cipher.ENCRYPT_MODE, key)
-          Chunk.array(cipher.doFinal(chunk.toArray))
-        }
+      object PKCS5Padding:
 
-      // 解密
-      def decrypt[F[_]](key: => SecretKey): Pipe[F, Byte, Byte] =
-        mapChunkTimesNLast[F, Byte, Byte](blockSize){ chunk =>
-          val cipher: Cipher = Cipher.getInstance(noPaddingTransformation)
-          cipher.init(Cipher.DECRYPT_MODE, key)
-          Chunk.array(cipher.doFinal(chunk.toArray))
-        }{ chunk =>
-          val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
-          cipher.init(Cipher.DECRYPT_MODE, key)
-          Chunk.array(cipher.doFinal(chunk.toArray))
-        }
+        private[this] val pkcs5PaddingTransformation = "AES/ECB/PKCS5Padding"
+
+        // 加密
+        def encrypt[F[_]: Sync](key: => SecretKey): Pipe[F, Byte, Byte] =
+          _.chunkTimesN(blockSize).evalMapChunkLast {
+            crypto(noPaddingTransformation, Cipher.ENCRYPT_MODE, key)
+          }{
+            crypto(pkcs5PaddingTransformation, Cipher.ENCRYPT_MODE, key)
+          }
+
+        // 解密
+        def decrypt[F[_]: Sync](key: => SecretKey): Pipe[F, Byte, Byte] =
+          _.chunkTimesN(blockSize).evalMapChunkLast {
+            crypto(noPaddingTransformation, Cipher.DECRYPT_MODE, key)
+          }{
+            crypto(pkcs5PaddingTransformation, Cipher.DECRYPT_MODE, key)
+          }
+
+        private[this] def crypto[F[_]: Sync](transformation: String, opmode: Int, key: SecretKey)
+        : Chunk[Byte] => F[Chunk[Byte]] =
+          input => Sync[F].delay {
+            val cipher: Cipher = Cipher.getInstance(transformation)
+            cipher.init(opmode, key)
+            Chunk.array(cipher.doFinal(input.toArray))
+          }
 
       // Java版加密
-      def javaEncrypt(key: Array[Byte], input: Array[Byte]): Array[Byte] =
-        val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
-        val keySpec: SecretKey = new SecretKeySpec(key, aesAlgo)
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec)
-        cipher.doFinal(input)
+        def javaEncrypt(key: Array[Byte], input: Array[Byte]): Array[Byte] =
+          val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
+          val keySpec: SecretKey = new SecretKeySpec(key, aesAlgo)
+          cipher.init(Cipher.ENCRYPT_MODE, keySpec)
+          cipher.doFinal(input)
 
-      // Java版解密
-      def javaDecrypt(key: Array[Byte], input: Array[Byte]): Array[Byte] =
-        val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
-        val keySpec: SecretKey = new SecretKeySpec(key, aesAlgo)
-        cipher.init(Cipher.DECRYPT_MODE, keySpec)
-        cipher.doFinal(input)
+        // Java版解密
+        def javaDecrypt(key: Array[Byte], input: Array[Byte]): Array[Byte] =
+          val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
+          val keySpec: SecretKey = new SecretKeySpec(key, aesAlgo)
+          cipher.init(Cipher.DECRYPT_MODE, keySpec)
+          cipher.doFinal(input)
+      end PKCS5Padding
+
     end ECB
 
     object CBC:
 
       // 由于原生不支持流操作，只能手动padding后使用NoPadding
       private[this] val noPaddingTransformation = "AES/CBC/NoPadding"
-      private[this] val pkcs5PaddingTransformation = "AES/CBC/PKCS5Padding"
 
-      // 加密
-      def encrypt[F[_]](key: => SecretKey, ivps: => IvParameterSpec): Pipe[F, Byte, Byte] =
-        scanChunkTimesNLast[F, Byte, Byte, IvParameterSpec](blockSize)(ivps) { (ivps, chunk) =>
-          val cipher: Cipher = Cipher.getInstance(noPaddingTransformation)
-          cipher.init(Cipher.ENCRYPT_MODE, key, ivps)
-          val outputChunk = Chunk.array(cipher.doFinal(chunk.toArray))
-          // 密文的最后一个分组用于下一个向量
-          val nextIv: Array[Byte] = outputChunk.takeRight(blockSize).toArray
-          (new IvParameterSpec(nextIv), outputChunk)
-        } { (ivps, chunk) =>
+      object PKCS5Padding:
+        private[this] val pkcs5PaddingTransformation = "AES/CBC/PKCS5Padding"
+
+        def encryptIvps[F[_]: Sync](transformation: String, key: SecretKey)
+        : (IvParameterSpec, Chunk[Byte]) => F[(IvParameterSpec, Chunk[Byte])] =
+          (ivps, input) => Sync[F].delay {
+            val cipher: Cipher = Cipher.getInstance(transformation)
+            cipher.init(Cipher.ENCRYPT_MODE, key, ivps)
+            val outputChunk = Chunk.array(cipher.doFinal(input.toArray))
+            // 密文的最后一个分组用于下一个向量
+            val nextIv: Array[Byte] = outputChunk.takeRight(blockSize).toArray
+            (new IvParameterSpec(nextIv), outputChunk)
+          }
+
+        def decryptIvps[F[_]: Sync](transformation: String, key: SecretKey)
+        : (IvParameterSpec, Chunk[Byte]) => F[(IvParameterSpec, Chunk[Byte])] =
+          (ivps, input) => Sync[F].delay {
+            val cipher: Cipher = Cipher.getInstance(transformation)
+            cipher.init(Cipher.DECRYPT_MODE, key, ivps)
+            val outputChunk = Chunk.array(cipher.doFinal(input.toArray))
+            // 密文的最后一个分组用于下一个向量
+            val nextIv: Array[Byte] = input.takeRight(blockSize).toArray
+            (new IvParameterSpec(nextIv), outputChunk)
+          }
+
+        // 加密
+        def encrypt[F[_]: Sync](key: => SecretKey, ivps: => IvParameterSpec): Pipe[F, Byte, Byte] =
+//          _.chunkTimesN(blockSize).evalScanChunksLast[F, Byte, Byte, (IvParameterSpec, Chunk[Byte])]((ivps, Chunk.empty)) {
+//            (tuple, acc) =>
+//
+//          }
+          scanChunkTimesNLast[F, Byte, Byte, IvParameterSpec](blockSize)(ivps) { (ivps, chunk) =>
+            val cipher: Cipher = Cipher.getInstance(noPaddingTransformation)
+            cipher.init(Cipher.ENCRYPT_MODE, key, ivps)
+            val outputChunk = Chunk.array(cipher.doFinal(chunk.toArray))
+            // 密文的最后一个分组用于下一个向量
+            val nextIv: Array[Byte] = outputChunk.takeRight(blockSize).toArray
+            (new IvParameterSpec(nextIv), outputChunk)
+          } { (ivps, chunk) =>
+            val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
+            cipher.init(Cipher.ENCRYPT_MODE, key, ivps)
+            Chunk.array(cipher.doFinal(chunk.toArray))
+          }
+
+        def decrypt[F[_]](key: => SecretKey, ivps: => IvParameterSpec): Pipe[F, Byte, Byte] =
+          scanChunkTimesNLast[F, Byte, Byte, IvParameterSpec](blockSize)(ivps) { (ivps, chunk) =>
+            val cipher: Cipher = Cipher.getInstance(noPaddingTransformation)
+            cipher.init(Cipher.DECRYPT_MODE, key, ivps)
+            val outputChunk = Chunk.array(cipher.doFinal(chunk.toArray))
+            // 密文的最后一个分组用于下一个向量
+            val nextIv: Array[Byte] = chunk.takeRight(blockSize).toArray
+            (new IvParameterSpec(nextIv), outputChunk)
+          } { (ivps, chunk) =>
+            val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
+            cipher.init(Cipher.DECRYPT_MODE, key, ivps)
+            Chunk.array(cipher.doFinal(chunk.toArray))
+          }
+
+        // Java版加密
+        def javaEncrypt(key: Array[Byte], iv: Array[Byte], input: Array[Byte]): Array[Byte] =
+          javaCrypto(key, iv, input, Cipher.ENCRYPT_MODE)
+
+        // Java版解密
+        def javaDecrypt(key: Array[Byte], iv: Array[Byte], input: Array[Byte]): Array[Byte] =
+          javaCrypto(key, iv, input, Cipher.DECRYPT_MODE)
+
+        private[this] def javaCrypto(key: Array[Byte], iv: Array[Byte], input: Array[Byte], opmode: Int): Array[Byte] =
           val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
-          cipher.init(Cipher.ENCRYPT_MODE, key, ivps)
-          Chunk.array(cipher.doFinal(chunk.toArray))
-        }
-
-      def decrypt[F[_]](key: => SecretKey, ivps: => IvParameterSpec): Pipe[F, Byte, Byte] =
-        scanChunkTimesNLast[F, Byte, Byte, IvParameterSpec](blockSize)(ivps) { (ivps, chunk) =>
-          val cipher: Cipher = Cipher.getInstance(noPaddingTransformation)
-          cipher.init(Cipher.DECRYPT_MODE, key, ivps)
-          val outputChunk = Chunk.array(cipher.doFinal(chunk.toArray))
-          // 密文的最后一个分组用于下一个向量
-          val nextIv: Array[Byte] = chunk.takeRight(blockSize).toArray
-          (new IvParameterSpec(nextIv), outputChunk)
-        } { (ivps, chunk) =>
-          val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
-          cipher.init(Cipher.DECRYPT_MODE, key, ivps)
-          Chunk.array(cipher.doFinal(chunk.toArray))
-        }
-
-      // Java版加密
-      def javaEncrypt(key: Array[Byte], iv: Array[Byte], input: Array[Byte]): Array[Byte] =
-        javaCipher(key, iv, input, Cipher.ENCRYPT_MODE)
-
-      // Java版解密
-      def javaDecrypt(key: Array[Byte], iv: Array[Byte], input: Array[Byte]): Array[Byte] =
-        javaCipher(key, iv, input, Cipher.DECRYPT_MODE)
-
-      private[this] def javaCipher(key: Array[Byte], iv: Array[Byte], input: Array[Byte], opmode: Int): Array[Byte] =
-        val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
-        val keySpec: SecretKey = new SecretKeySpec(key, aesAlgo)
-        val ivps: IvParameterSpec = new IvParameterSpec(iv)
-        cipher.init(opmode, keySpec, ivps)
-        cipher.doFinal(input)
+          val keySpec: SecretKey = new SecretKeySpec(key, aesAlgo)
+          val ivps: IvParameterSpec = new IvParameterSpec(iv)
+          cipher.init(opmode, keySpec, ivps)
+          cipher.doFinal(input)
+      end PKCS5Padding
     end CBC
   end AES
 
@@ -128,25 +162,25 @@ object AesApp extends IOApp.Simple:
 
       message = "Hello, world!" * 50
 
-      ecbEncryptedBytes = Stream(message).through(utf8.encode).through(AES.ECB.encrypt(key))
-      ecbDecryptedBytes = ecbEncryptedBytes.through(AES.ECB.decrypt(key))
-      ecbEncryptedHex = ecbEncryptedBytes.through(hex.encode).toList.mkString("")
-      ecbDecryptedMessage = ecbDecryptedBytes.through(utf8.decode).toList.mkString("")
+      ecbEncryptedBytes = Stream(message).through(utf8.encode).covary[IO].through(AES.ECB.PKCS5Padding.encrypt(key))
+      ecbDecryptedBytes = ecbEncryptedBytes.through(AES.ECB.PKCS5Padding.decrypt(key))
+      ecbEncryptedHex <- ecbEncryptedBytes.through(hex.encode).compile.toList.map(_.mkString(""))
+      ecbDecryptedMessage <- ecbDecryptedBytes.through(utf8.decode).compile.toList.map(_.mkString(""))
 
-      cbcEncryptedBytes = Stream(message).through(utf8.encode).through(AES.CBC.encrypt(key, ivps))
-      cbcDecryptedBytes = cbcEncryptedBytes.through(AES.CBC.decrypt(key, ivps))
-      cbcEncryptedHex = cbcEncryptedBytes.through(hex.encode).toList.mkString("")
-      cbcDecryptedMessage = cbcDecryptedBytes.through(utf8.decode).toList.mkString("")
+      cbcEncryptedBytes = Stream(message).through(utf8.encode).covary[IO].through(AES.CBC.PKCS5Padding.encrypt(key, ivps))
+      cbcDecryptedBytes = cbcEncryptedBytes.through(AES.CBC.PKCS5Padding.decrypt(key, ivps))
+      cbcEncryptedHex <- cbcEncryptedBytes.through(hex.encode).compile.toList.map(_.mkString(""))
+      cbcDecryptedMessage <- cbcDecryptedBytes.through(utf8.decode).compile.toList.map(_.mkString(""))
 
       data = message.getBytes(UTF_8)
 
-      javaEcbEncryptedBytes = AES.ECB.javaEncrypt(key.getEncoded, data)
-      javaEcbDecryptedBytes = AES.ECB.javaDecrypt(key.getEncoded, javaEcbEncryptedBytes)
+      javaEcbEncryptedBytes = AES.ECB.PKCS5Padding.javaEncrypt(key.getEncoded, data)
+      javaEcbDecryptedBytes = AES.ECB.PKCS5Padding.javaDecrypt(key.getEncoded, javaEcbEncryptedBytes)
       javaEcbEncryptedHex = Stream.chunk(Chunk.array(javaEcbEncryptedBytes)).through(hex.encode).toList.mkString("")
       javaEcbDecryptedMessage = new String(javaEcbDecryptedBytes, UTF_8)
 
-      javaCbcEncryptedBytes = AES.CBC.javaEncrypt(key.getEncoded, ivps.getIV, data)
-      javaCbcDecryptedBytes = AES.CBC.javaDecrypt(key.getEncoded, ivps.getIV, javaCbcEncryptedBytes)
+      javaCbcEncryptedBytes = AES.CBC.PKCS5Padding.javaEncrypt(key.getEncoded, ivps.getIV, data)
+      javaCbcDecryptedBytes = AES.CBC.PKCS5Padding.javaDecrypt(key.getEncoded, ivps.getIV, javaCbcEncryptedBytes)
       javaCbcEncryptedHex = Stream.chunk(Chunk.array(javaCbcEncryptedBytes)).through(hex.encode).toList.mkString("")
       javaCbcDecryptedMessage = new String(javaCbcDecryptedBytes, UTF_8)
 
