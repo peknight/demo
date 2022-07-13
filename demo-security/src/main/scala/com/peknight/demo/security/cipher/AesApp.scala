@@ -1,6 +1,7 @@
 package com.peknight.demo.security.cipher
 
 import cats.effect.{IO, IOApp, Sync}
+import cats.syntax.functor.*
 import com.peknight.demo.security.*
 import fs2.text.{hex, utf8}
 import fs2.{Chunk, Pipe, Pull, Stream}
@@ -57,7 +58,7 @@ object AesApp extends IOApp.Simple:
             Chunk.array(cipher.doFinal(input.toArray))
           }
 
-      // Java版加密
+        // Java版加密
         def javaEncrypt(key: Array[Byte], input: Array[Byte]): Array[Byte] =
           val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
           val keySpec: SecretKey = new SecretKeySpec(key, aesAlgo)
@@ -82,59 +83,42 @@ object AesApp extends IOApp.Simple:
       object PKCS5Padding:
         private[this] val pkcs5PaddingTransformation = "AES/CBC/PKCS5Padding"
 
-        def encryptIvps[F[_]: Sync](transformation: String, key: SecretKey)
-        : (IvParameterSpec, Chunk[Byte]) => F[(IvParameterSpec, Chunk[Byte])] =
+        private[this] def crypto[F[_]: Sync](transformation: String, opmode: Int, key: SecretKey)
+        : (IvParameterSpec, Chunk[Byte]) => F[Chunk[Byte]] =
           (ivps, input) => Sync[F].delay {
             val cipher: Cipher = Cipher.getInstance(transformation)
-            cipher.init(Cipher.ENCRYPT_MODE, key, ivps)
-            val outputChunk = Chunk.array(cipher.doFinal(input.toArray))
-            // 密文的最后一个分组用于下一个向量
-            val nextIv: Array[Byte] = outputChunk.takeRight(blockSize).toArray
-            (new IvParameterSpec(nextIv), outputChunk)
+            cipher.init(opmode, key, ivps)
+            Chunk.array(cipher.doFinal(input.toArray))
           }
 
-        def decryptIvps[F[_]: Sync](transformation: String, key: SecretKey)
+        private[this] def ivpsOutput(ivpsChunk: Chunk[Byte], outputChunk: Chunk[Byte]): (IvParameterSpec, Chunk[Byte]) =
+          val nextIv: Array[Byte] = ivpsChunk.takeRight(blockSize).toArray
+          (new IvParameterSpec(nextIv), outputChunk)
+
+        private[this] def encrypt[F[_]: Sync](transformation: String, key: SecretKey)
         : (IvParameterSpec, Chunk[Byte]) => F[(IvParameterSpec, Chunk[Byte])] =
-          (ivps, input) => Sync[F].delay {
-            val cipher: Cipher = Cipher.getInstance(transformation)
-            cipher.init(Cipher.DECRYPT_MODE, key, ivps)
-            val outputChunk = Chunk.array(cipher.doFinal(input.toArray))
-            // 密文的最后一个分组用于下一个向量
-            val nextIv: Array[Byte] = input.takeRight(blockSize).toArray
-            (new IvParameterSpec(nextIv), outputChunk)
-          }
+          (ivps, input) => crypto(transformation, Cipher.ENCRYPT_MODE, key).apply(ivps, input)
+            .map(output => ivpsOutput(output, output))
+
+        private[this] def decrypt[F[_]: Sync](transformation: String, key: SecretKey)
+        : (IvParameterSpec, Chunk[Byte]) => F[(IvParameterSpec, Chunk[Byte])] =
+          (ivps, input) => crypto(transformation, Cipher.DECRYPT_MODE, key).apply(ivps, input)
+            .map(output => ivpsOutput(input, output))
 
         // 加密
         def encrypt[F[_]: Sync](key: => SecretKey, ivps: => IvParameterSpec): Pipe[F, Byte, Byte] =
-//          _.chunkTimesN(blockSize).evalScanChunksLast[F, Byte, Byte, (IvParameterSpec, Chunk[Byte])]((ivps, Chunk.empty)) {
-//            (tuple, acc) =>
-//
-//          }
-          scanChunkTimesNLast[F, Byte, Byte, IvParameterSpec](blockSize)(ivps) { (ivps, chunk) =>
-            val cipher: Cipher = Cipher.getInstance(noPaddingTransformation)
-            cipher.init(Cipher.ENCRYPT_MODE, key, ivps)
-            val outputChunk = Chunk.array(cipher.doFinal(chunk.toArray))
-            // 密文的最后一个分组用于下一个向量
-            val nextIv: Array[Byte] = outputChunk.takeRight(blockSize).toArray
-            (new IvParameterSpec(nextIv), outputChunk)
-          } { (ivps, chunk) =>
-            val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
-            cipher.init(Cipher.ENCRYPT_MODE, key, ivps)
-            Chunk.array(cipher.doFinal(chunk.toArray))
+          _.chunkTimesN(blockSize).evalScanChunksLast[F, Byte, Byte, IvParameterSpec](ivps) {
+            encrypt(noPaddingTransformation, key)
+          } {
+            (ivps, c) => encrypt(pkcs5PaddingTransformation, key).apply(ivps, c).map(_._2)
           }
 
-        def decrypt[F[_]](key: => SecretKey, ivps: => IvParameterSpec): Pipe[F, Byte, Byte] =
-          scanChunkTimesNLast[F, Byte, Byte, IvParameterSpec](blockSize)(ivps) { (ivps, chunk) =>
-            val cipher: Cipher = Cipher.getInstance(noPaddingTransformation)
-            cipher.init(Cipher.DECRYPT_MODE, key, ivps)
-            val outputChunk = Chunk.array(cipher.doFinal(chunk.toArray))
-            // 密文的最后一个分组用于下一个向量
-            val nextIv: Array[Byte] = chunk.takeRight(blockSize).toArray
-            (new IvParameterSpec(nextIv), outputChunk)
-          } { (ivps, chunk) =>
-            val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
-            cipher.init(Cipher.DECRYPT_MODE, key, ivps)
-            Chunk.array(cipher.doFinal(chunk.toArray))
+        // 解密
+        def decrypt[F[_]: Sync](key: => SecretKey, ivps: => IvParameterSpec): Pipe[F, Byte, Byte] =
+          _.chunkTimesN(blockSize).evalScanChunksLast[F, Byte, Byte, IvParameterSpec](ivps) {
+            decrypt(noPaddingTransformation, key)
+          } {
+            (ivps, c) => decrypt(pkcs5PaddingTransformation, key).apply(ivps, c).map(_._2)
           }
 
         // Java版加密

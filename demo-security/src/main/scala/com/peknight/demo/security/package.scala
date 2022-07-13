@@ -1,5 +1,8 @@
 package com.peknight.demo
 
+import cats.Applicative
+import cats.syntax.applicative.*
+import cats.syntax.functor.*
 import fs2.{Chunk, Pipe, Pull, Stream, text}
 
 package object security:
@@ -20,8 +23,13 @@ package object security:
     }
 
   def scanChunksLast[F[_], I, I2 >: I, O, S](init: => S)(f: (S, Chunk[I2]) => (S, Chunk[O]))
-      (last: S => Chunk[O]): Pipe[F, I, O] =
-    _.pull.scanChunks(init)(f).flatMap(s => Pull.output(last(s)).void).stream
+      (last: (S, Chunk[I2]) => Chunk[O]): Pipe[F, I, O] =
+    _.pull.scanChunks((init, Chunk.empty[I])){ (stateAccTuple, hd) =>
+      val (current, acc) = stateAccTuple
+      if acc.isEmpty then ((current, hd), Chunk.empty[O]) else
+        val (next, os) = f.tupled(stateAccTuple)
+        ((next, hd), os)
+    }.flatMap(stateAccTuple => Pull.output(last.tupled(stateAccTuple)).void).stream
 
   def mapChunkLast[F[_], I, I2 >: I, O](f: Chunk[I2] => Chunk[O])(last: Chunk[I2] => Chunk[O]): Pipe[F, I, O] =
     _.pull.scanChunks(Chunk.empty[I])((acc, hd) => (hd, f(acc)))
@@ -45,10 +53,16 @@ package object security:
       (f: (S, Chunk[I2]) => F2[(S, Chunk[O])]): Stream[F, I] => Stream[F2, O] =
     evalScanChunksOpt(init)(s => Some(c => f(s, c)))
 
-  def evalScanChunksLast[F[_], F2[x] >: F[x], I, I2 >: I, O, S](init: => S)(f: (S, Chunk[I2]) => F2[(S, Chunk[O])])
-      (last: S => F2[Chunk[O]]): Stream[F, I] => Stream[F2, O] =
-    in => evalScanChunksOptPull(init, in)(s => Some(c => f(s, c)))
-      .flatMap(acc => Pull.eval(last(acc)).flatMap(Pull.output(_).void)).stream
+  def evalScanChunksLast[F[_], F2[x] >: F[x] : Applicative, I, I2 >: I, O, S](init: => S)(f: (S, Chunk[I2]) => F2[(S, Chunk[O])])
+      (last: (S, Chunk[I2]) => F2[Chunk[O]]): Stream[F, I] => Stream[F2, O] =
+    in => evalScanChunksOptPull[F, F2, I, I2, O, (S, Chunk[I2])]((init, Chunk.empty[I2]), in)(stateAccTuple => Some { hd =>
+      val (current, acc) = stateAccTuple
+      if acc.isEmpty then Applicative[F2].pure(((current, hd), Chunk.empty[O])) else
+        f(current, acc).map { nextOsTuple =>
+          val (next, os) = nextOsTuple
+          ((next, hd), os)
+        }
+    }).flatMap(stateAccTuple => Pull.eval(last.tupled(stateAccTuple)).flatMap(Pull.output(_).void)).stream
 
   def evalMapChunk[F[_], F2[x] >: F[x], I, I2 >: I, O](f: Chunk[I2] => F2[Chunk[O]]): Stream[F, I] => Stream[F2, O] =
     in => in.chunks.flatMap(o => Stream.evalUnChunk(f(o)))
@@ -65,7 +79,7 @@ package object security:
   extension [F[_], I](stream: Stream[F, I])
     def arrange(f: (Chunk[I], Chunk[I]) => (Chunk[I], Chunk[I])): Stream[F, I] = stream.through(security.arrange(f))
     def chunkTimesN(n: Int): Stream[F, I] = stream.through(security.chunkTimesN(n))
-    def scanChunksLast[O, S](init: => S)(f: (S, Chunk[I]) => (S, Chunk[O]))(last: S => Chunk[O]): Stream[F, O] =
+    def scanChunksLast[I2 >: I, O, S](init: => S)(f: (S, Chunk[I2]) => (S, Chunk[O]))(last: (S, Chunk[I2]) => Chunk[O]): Stream[F, O] =
       stream.through(security.scanChunksLast(init)(f)(last))
     def mapChunkLast[I2 >: I, O](f: Chunk[I2] => Chunk[O])(last: Chunk[I2] => Chunk[O]): Stream[F, O] =
       stream.through(security.mapChunkLast[F, I, I2, O](f)(last))
@@ -75,8 +89,8 @@ package object security:
     def evalScanChunks[F2[x] >: F[x], I2 >: I, O, S](init: => S)
         (f: (S, Chunk[I2]) => F2[(S, Chunk[O])]): Stream[F2, O] =
       stream.through(security.evalScanChunks[F, F2, I, I2, O, S](init)(f))
-    def evalScanChunksLast[F2[x] >: F[x], I2 >: I, O, S](init: => S)
-        (f: (S, Chunk[I2]) => F2[(S, Chunk[O])])(last: S => F2[Chunk[O]]): Stream[F2, O] =
+    def evalScanChunksLast[F2[x] >: F[x]: Applicative, I2 >: I, O, S](init: => S)
+        (f: (S, Chunk[I2]) => F2[(S, Chunk[O])])(last: (S, Chunk[I2]) => F2[Chunk[O]]): Stream[F2, O] =
       stream.through(security.evalScanChunksLast[F, F2, I, I2, O, S](init)(f)(last))
     def evalMapChunk[F2[x] >: F[x], I2 >: I, O](f: Chunk[I2] => F2[Chunk[O]]): Stream[F2, O] =
       stream.through(security.evalMapChunk[F, F2, I, I2, O](f))
@@ -89,29 +103,4 @@ package object security:
     def hex: String = Stream.chunk(Chunk.array(bytes)).through(text.hex.encode).toList.mkString("")
     def utf8: String = Stream.chunk(Chunk.array(bytes)).through(text.utf8.decode).toList.mkString("")
   end extension
-
-  def scanChunkTimesNLast[F[_], I, O, S](n: Int)(init: => S)
-                                    (f: (S, Chunk[I]) => (S, Chunk[O]))
-                                    (lastF: (S, Chunk[I]) => Chunk[O]): Pipe[F, I, O] =
-    assert(n > 0, s"n($n) must be positive!")
-    scanChunksLast[F, I, I, O, (S, Chunk[I])]((init, Chunk.empty[I])) { (stateAccTuple, hd) =>
-      val (current, acc) = stateAccTuple
-      val headSize = hd.size
-      // 判断此前剩余Chunk + 当前Chunk大小
-      val size = acc.size + headSize
-      // 小于等于n 打包留给流后续处理
-      if size <= n then ((current, acc ++ hd), Chunk.empty[O]) else
-        val mod = size % n
-        val lastSize = if mod == 0 then n else mod
-        if lastSize == headSize then
-          val (next, os) = f(current, acc)
-          ((next, hd), os)
-        else
-          val (pfx, sfx) = hd.splitAt(headSize - lastSize)
-          val (next, os) = f(current, acc ++ pfx)
-          ((next, sfx), os)
-    } {
-      case (current, acc) => lastF(current, acc)
-    }
-  end scanChunkTimesNLast
 
