@@ -96,20 +96,41 @@ object AuthorizationServerApp extends IOApp.Simple:
             yield resp
   end authorize
 
+  def generateTokens(random: Random[IO], clientId: String, scope: Set[String], user: UserInfo,
+                     generateRefreshToken: Boolean)(using Logger[IO]): IO[OAuthToken] =
+    for
+      accessToken <- randomString(random, 32)
+      _ <- insertRecord(OAuthTokenRecord(clientId, accessToken.some, None, scope.some, user.some))
+      _ <- info"Issuing accessToken $accessToken"
+      refreshTokenOption <-
+        if generateRefreshToken then
+          for
+            refresh <- randomString(random, 32)
+            refreshOption = refresh.some
+            _ <- insertRecord(OAuthTokenRecord(clientId, None, refreshOption, scope.some, user.some))
+            _ <- info"and refresh token $refresh"
+          yield refreshOption
+        else IO.pure(None)
+      _ <- info"with scope $scope"
+    yield OAuthToken(accessToken, AuthScheme.Bearer, refreshTokenOption, scope.some)
+
   def approve(body: UrlForm, random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
-              codesR: Ref[IO, Map[String, AuthorizeCodeCache]]): IO[Response[IO]] =
+              codesR: Ref[IO, Map[String, AuthorizeCodeCache]])(using Logger[IO]): IO[Response[IO]] =
     body.get("reqid").find(_.nonEmpty) match
       case None => Ok(AuthorizationServerPage.error("No matching authorization request"))
       case Some(reqId) => requestsR.modify(requests => (requests.removed(reqId), requests.get(reqId))).flatMap {
         case None => Ok(AuthorizationServerPage.error("No matching authorization request"))
         case Some(query) => body.get("approve").find(_ == "Approve") match
-          case Some(_) => query.responseType match
-            case ResponseType.Code =>
+          case Some(_) =>
+            def checkScope(resp: Set[String] => IO[Response[IO]]): IO[Response[IO]] =
               val scope = body.values.keys.filter(_.startsWith("scope_")).map(_.substring("scope_".length)).toSet[String]
               val cScope = getClient(query.clientId).map(_.scope).getOrElse(Set.empty[String])
               if scope.diff(cScope).nonEmpty then
                 Found(Location(query.redirectUri.withQueryParam("error", "invalid_scope")))
-              else
+              else resp(scope)
+            end checkScope
+            query.responseType match
+              case ResponseType.Code => checkScope { scope =>
                 val user = body.get("user").find(_.nonEmpty)
                 for
                   code <- randomString[IO](random, 8)
@@ -119,13 +140,23 @@ object AuthorizationServerApp extends IOApp.Simple:
                     .withOptionQueryParam("state", query.state)
                   ))
                 yield resp
-            case ResponseType.Token =>
-              val user = body.get("user").find(_.nonEmpty)
-
-              ???
-            // 后续支持其它响应类型扩展
-            case null => Found(Location(query.redirectUri
-              .withQueryParam("error", "unsupported_response_type")
+              }
+              case ResponseType.Token => checkScope { scope =>
+                val user = body.get("user").find(_.nonEmpty)
+                user.flatMap(userInfos.get(_)) match
+                  case None => info"Unknown user ${user.getOrElse("None")}" *>
+                    Ok(AuthorizationServerPage.error(s"Unknown user ${user.getOrElse("None")}"))
+                      .map(_.copy(status = Status.InternalServerError))
+                  case Some(userInfo) =>
+                    for
+                      _ <- info"User $userInfo"
+                      // TODO
+                      resp <- Ok()
+                    yield resp
+              }
+              // 后续支持其它响应类型扩展
+              case null => Found(Location(query.redirectUri
+                .withQueryParam("error", "unsupported_response_type")
             ))
           case None => Found(Location(query.redirectUri.withQueryParam("error", "access_denied")))
       }
@@ -141,7 +172,7 @@ object AuthorizationServerApp extends IOApp.Simple:
         case (Some(code), Some(cache)) =>
           for
             accessToken <- randomString[IO](random, 32)
-            _ <- insertRecord(OAuthTokenRecord(clientId, Some(accessToken), None, Some(cache.scope)))
+            _ <- insertRecord(OAuthTokenRecord(clientId, Some(accessToken), None, Some(cache.scope), None))
             _ <- info"Issuing access token $accessToken"
             _ <- info"with scope ${cache.scope.mkString(" ")}"
             _ <- info"Issued tokens for code $code"
@@ -165,7 +196,7 @@ object AuthorizationServerApp extends IOApp.Simple:
           for
             _ <- info"We found a matching refresh token $refreshToken"
             accessToken <- randomString[IO](random, 32)
-            _ <- insertRecord(OAuthTokenRecord(clientId, Some(accessToken), None, None))
+            _ <- insertRecord(OAuthTokenRecord(clientId, Some(accessToken), None, None, None))
             _ <- info"Issuing access token $accessToken for refresh token $refreshToken"
             resp <- Ok(OAuthToken(accessToken, AuthScheme.Bearer, body.get("refresh_token").find(_.nonEmpty),
               None).asJson)
@@ -223,7 +254,7 @@ object AuthorizationServerApp extends IOApp.Simple:
       serverPort = port"8001"
       _ <- clearRecord
       _ <- insertRecord(OAuthTokenRecord("oauth-client-1", None, Some("j2r3oj32r23rmasd98uhjrk2o3i"),
-        Some(Set("foo", "bar"))))
+        Some(Set("foo", "bar")), None))
       _ <- start[IO](serverPort)(service(random, requestsR, codesR).orNotFound)
       _ <- info"OAuth Authorization Server is listening at http://$serverHost:$serverPort"
       _ <- IO.never
