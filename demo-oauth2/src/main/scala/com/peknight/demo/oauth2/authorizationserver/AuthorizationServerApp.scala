@@ -68,8 +68,8 @@ object AuthorizationServerApp extends IOApp.Simple:
       "Carol",
       "carol.lewis@example.net",
       true,
-      Some("clewis"),
-      Some("user password!")
+      "clewis".some,
+      "user password!".some
     )
   )
 
@@ -96,23 +96,23 @@ object AuthorizationServerApp extends IOApp.Simple:
             yield resp
   end authorize
 
-  def generateTokens(random: Random[IO], clientId: String, scope: Set[String], user: UserInfo,
-                     generateRefreshToken: Boolean)(using Logger[IO]): IO[OAuthToken] =
+  def generateTokens(random: Random[IO], clientId: String, user: Option[UserInfo], scope: Set[String],
+                     state: Option[String], generateRefreshToken: Boolean)(using Logger[IO]): IO[OAuthToken] =
     for
       accessToken <- randomString(random, 32)
-      _ <- insertRecord(OAuthTokenRecord(clientId, accessToken.some, None, scope.some, user.some))
+      _ <- insertRecord(OAuthTokenRecord(clientId, accessToken.some, None, scope.some, user))
       _ <- info"Issuing accessToken $accessToken"
       refreshTokenOption <-
         if generateRefreshToken then
           for
             refresh <- randomString(random, 32)
             refreshOption = refresh.some
-            _ <- insertRecord(OAuthTokenRecord(clientId, None, refreshOption, scope.some, user.some))
+            _ <- insertRecord(OAuthTokenRecord(clientId, None, refreshOption, scope.some, user))
             _ <- info"and refresh token $refresh"
           yield refreshOption
         else IO.pure(None)
-      _ <- info"with scope $scope"
-    yield OAuthToken(accessToken, AuthScheme.Bearer, refreshTokenOption, scope.some)
+      _ <- info"with scope ${scope.mkString(" ")}"
+    yield OAuthToken(accessToken, AuthScheme.Bearer, refreshTokenOption, scope.some, state)
 
   def approve(body: UrlForm, random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
               codesR: Ref[IO, Map[String, AuthorizeCodeCache]])(using Logger[IO]): IO[Response[IO]] =
@@ -143,15 +143,17 @@ object AuthorizationServerApp extends IOApp.Simple:
               }
               case ResponseType.Token => checkScope { scope =>
                 val user = body.get("user").find(_.nonEmpty)
-                user.flatMap(userInfos.get(_)) match
+                val userInfoOption = user.flatMap(userInfos.get)
+                userInfoOption match
                   case None => info"Unknown user ${user.getOrElse("None")}" *>
                     Ok(AuthorizationServerPage.error(s"Unknown user ${user.getOrElse("None")}"))
                       .map(_.copy(status = Status.InternalServerError))
                   case Some(userInfo) =>
                     for
                       _ <- info"User $userInfo"
-                      // TODO
-                      resp <- Ok()
+                      tokenResponse <- generateTokens(random, query.clientId, userInfoOption, scope, query.state,
+                        false)
+                      resp <- Found(Location(query.redirectUri.withFragment(tokenResponse.toFragment)))
                     yield resp
               }
               // 后续支持其它响应类型扩展
@@ -171,16 +173,27 @@ object AuthorizationServerApp extends IOApp.Simple:
       resp <- codeCache match
         case (Some(code), Some(cache)) =>
           for
-            accessToken <- randomString[IO](random, 32)
-            _ <- insertRecord(OAuthTokenRecord(clientId, Some(accessToken), None, Some(cache.scope), None))
-            _ <- info"Issuing access token $accessToken"
-            _ <- info"with scope ${cache.scope.mkString(" ")}"
+            tokenResponse <- generateTokens(random, clientId, cache.user.flatMap(userInfos.get), cache.scope, None,
+              true)
             _ <- info"Issued tokens for code $code"
-            resp <- Ok(OAuthToken(accessToken, AuthScheme.Bearer, None, Some(cache.scope)).asJson)
+            resp <- Ok(tokenResponse.asJson)
           yield resp
         case (code, _) => info"Unknown code, ${code.getOrElse("None")}" *>
           BadRequest(ErrorInfo("invalid_grant").asJson)
     yield resp
+
+  def getScope(body: UrlForm): Set[String] =
+    body.get("scope").find(_.nonEmpty).map(_.split("\\s++").toSet[String]).getOrElse(Set.empty[String])
+
+  def clientCredentials(client: ClientInfo, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
+    val scope = getScope(body)
+    if scope.diff(client.scope).nonEmpty then
+      BadRequest(ErrorInfo("invalid_scope").asJson)
+    else
+      for
+        tokenResponse <- generateTokens(random, client.id, None, scope, None, false)
+        resp <- Ok(tokenResponse.asJson)
+      yield resp
 
   def refreshToken(clientId: String, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
     for
@@ -196,16 +209,38 @@ object AuthorizationServerApp extends IOApp.Simple:
           for
             _ <- info"We found a matching refresh token $refreshToken"
             accessToken <- randomString[IO](random, 32)
-            _ <- insertRecord(OAuthTokenRecord(clientId, Some(accessToken), None, None, None))
+            _ <- insertRecord(OAuthTokenRecord(clientId, accessToken.some, None, None, None))
             _ <- info"Issuing access token $accessToken for refresh token $refreshToken"
             resp <- Ok(OAuthToken(accessToken, AuthScheme.Bearer, body.get("refresh_token").find(_.nonEmpty),
-              None).asJson)
+              None, None).asJson)
           yield resp
         case _ => info"No matching token was found." *>
           Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "Refresh Token")))
     yield resp
 
-  val invalidClientResp: IO[Response[IO]] = Ok(ErrorInfo("invalid_client").asJson).map(_.copy(status = Status.Unauthorized))
+  def password(clientId: String, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
+    val usernameOption = body.get("username").find(_.nonEmpty)
+    val userOption = usernameOption.flatMap(getUser)
+    userOption match
+      case None => info"Unknown user ${usernameOption.getOrElse("None")}" *> invalidGrantResp
+      case Some(user) =>
+        for
+          _ <- info"user is $user"
+          password = body.get("password").find(_.nonEmpty)
+          resp <-
+            if password.exists(user.password.contains) then
+              for
+                tokenResponse <- generateTokens(random, clientId, userOption, getScope(body), None, false)
+                resp <- Ok(tokenResponse.asJson)
+              yield resp
+            else info"Mismatched resource owner password, expected ${user.password.getOrElse("None")} got ${password.getOrElse("None")}" *>
+              invalidGrantResp
+        yield resp
+
+  val invalidClientResp: IO[Response[IO]] = invalidResp("invalid_client")
+  val invalidGrantResp: IO[Response[IO]] = invalidResp("invalid_grant")
+
+  def invalidResp(error: String): IO[Response[IO]] = Ok(ErrorInfo(error).asJson).map(_.copy(status = Status.Unauthorized))
 
   def token(req: Request[IO], body: UrlForm, random: Random[IO], codesR: Ref[IO, Map[String, AuthorizeCodeCache]])
            (using Logger[IO]): IO[Response[IO]] =
@@ -226,9 +261,11 @@ object AuthorizationServerApp extends IOApp.Simple:
           case None => info"Unknown client $clientId" *> invalidClientResp
           case Some(client) if client.secret != clientSecret =>
             info"Mismatched client secret, expected ${client.secret} got $clientSecret" *> invalidClientResp
-          case Some(_) => body.get("grant_type").map(GrantType.fromString).find(_.isDefined).flatten match
+          case Some(client) => body.get("grant_type").map(GrantType.fromString).find(_.isDefined).flatten match
             case Some(GrantType.AuthorizationCode) => authorizationCode(clientId, body, random, codesR)
+            case Some(GrantType.ClientCredentials) => clientCredentials(client, body, random)
             case Some(GrantType.RefreshToken) => refreshToken(clientId, body, random)
+            case Some(GrantType.Password) => password(clientId, body, random)
             case grantType => info"Unknown grant type ${grantType.getOrElse("None")}" *>
               Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "Grant Type")))
   end token
@@ -253,8 +290,8 @@ object AuthorizationServerApp extends IOApp.Simple:
       given Logger[IO] = logger
       serverPort = port"8001"
       _ <- clearRecord
-      _ <- insertRecord(OAuthTokenRecord("oauth-client-1", None, Some("j2r3oj32r23rmasd98uhjrk2o3i"),
-        Some(Set("foo", "bar")), None))
+      _ <- insertRecord(OAuthTokenRecord("oauth-client-1", None, "j2r3oj32r23rmasd98uhjrk2o3i".some,
+        Set("foo", "bar").some, None)).timeout(5.seconds)
       _ <- start[IO](serverPort)(service(random, requestsR, codesR).orNotFound)
       _ <- info"OAuth Authorization Server is listening at http://$serverHost:$serverPort"
       _ <- IO.never
