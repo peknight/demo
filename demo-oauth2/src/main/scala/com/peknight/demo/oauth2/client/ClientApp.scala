@@ -30,10 +30,7 @@ object ClientApp extends IOApp.Simple:
   object StateQueryParamMatcher extends QueryParamDecoderMatcher[String]("state")
   object ErrorQueryParamMatcher extends QueryParamDecoderMatcher[String]("error")
 
-  val authServer: AuthServerInfo = domain.AuthServerInfo(
-    uri"http://localhost:8001/authorize",
-    uri"http://localhost:8001/token"
-  )
+  val authServer: AuthServerInfo = AuthServerInfo()
   val client: ClientInfo = ClientInfo(
     "oauth-client-1",
     "oauth-client-secret-1",
@@ -61,7 +58,7 @@ object ClientApp extends IOApp.Simple:
   def tokenRequest(code: String): Request[IO] =
     POST(
       UrlForm(
-        "grant_type" -> "authorization_code",
+        "grant_type" -> GrantType.AuthorizationCode.value,
         "code" -> code,
         "redirect_uri" -> client.redirectUris.head.toString
       ),
@@ -155,7 +152,7 @@ object ClientApp extends IOApp.Simple:
       case GET -> Root / "callback" :? CodeQueryParamMatcher(code) +& StateQueryParamMatcher(state) =>
         stateR.get.flatMap(originState =>
           if !originState.contains(state) then callbackStateNotMatch(originState, state)
-          else callbackWithCode(oauthTokenCacheR, code)
+          else info"State value matches: expected $state got $state" *> callbackWithCode(oauthTokenCacheR, code)
         )
       case GET -> Root / "callback" :? ErrorQueryParamMatcher(error) => Ok(ClientPage.error(error))
       case GET -> Root / "fetch_resource" =>

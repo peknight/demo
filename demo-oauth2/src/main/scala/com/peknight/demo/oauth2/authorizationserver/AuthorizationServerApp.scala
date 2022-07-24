@@ -36,7 +36,7 @@ object AuthorizationServerApp extends IOApp.Simple:
   given CanEqual[CIString, AuthScheme] = CanEqual.derived
   given CanEqual[Uri, Uri] = CanEqual.derived
 
-  val authServer: AuthServerInfo = AuthServerInfo(uri"http://localhost:8001/authorize", uri"http://localhost:8001/token")
+  val authServer: AuthServerInfo = AuthServerInfo()
 
   val clients: Seq[ClientInfo] = Seq(
     ClientInfo(
