@@ -37,7 +37,7 @@ object AuthorizationServerApp extends IOApp.Simple:
     ClientInfo(
       "oauth-client-1",
       "oauth-client-secret-1",
-      Set("foo", "bar", "read", "write", "delete"),
+      Set("foo", "bar", "read", "write", "delete", "fruit", "veggies", "meats", "movies", "foods", "music"),
       NonEmptyList.one(uri"http://localhost:8000/callback")
     )
   )
@@ -276,14 +276,14 @@ object AuthorizationServerApp extends IOApp.Simple:
                      state: Option[String], generateRefreshToken: Boolean)(using Logger[IO]): IO[OAuthToken] =
     for
       accessToken <- randomString(random, 32)
-      _ <- insertRecord(OAuthTokenRecord(clientId, accessToken.some, None, scope.some, user))
+      _ <- insertRecord(OAuthTokenRecord(clientId, accessToken.some, None, scope.some, user.map(_.preferredUsername)))
       _ <- info"Issuing accessToken $accessToken"
       refreshTokenOption <-
         if generateRefreshToken then
           for
             refresh <- randomString(random, 32)
             refreshOption = refresh.some
-            _ <- insertRecord(OAuthTokenRecord(clientId, None, refreshOption, scope.some, user))
+            _ <- insertRecord(OAuthTokenRecord(clientId, None, refreshOption, scope.some, user.map(_.preferredUsername)))
             _ <- info"and refresh token $refresh"
           yield refreshOption
         else IO.pure(None)

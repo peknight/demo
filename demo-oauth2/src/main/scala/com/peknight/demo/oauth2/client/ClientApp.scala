@@ -25,6 +25,21 @@ import org.typelevel.log4cats.syntax.*
 
 object ClientApp extends IOApp.Simple:
 
+  val authServer: AuthServerInfo = AuthServerInfo()
+
+  val client: ClientInfo = ClientInfo(
+    "oauth-client-1",
+    "oauth-client-secret-1",
+    Set("foo", "read", "write", "delete", "fruit", "veggies", "meats"),
+    NonEmptyList.one(uri"http://localhost:8000/callback")
+  )
+
+  val protectedResource = uri"http://localhost:8002/resource"
+
+  val wordApi = uri"http://localhost:8002/words"
+
+  val produceApi = uri"http://localhost:8002/produce"
+
   //noinspection HttpUrlsUsage
   val run: IO[Unit] =
     for
@@ -44,6 +59,7 @@ object ClientApp extends IOApp.Simple:
 
   given CanEqual[Path, Path] = CanEqual.derived
   given CanEqual[Method, Method] = CanEqual.derived
+  given EntityDecoder[IO, ProduceData] = jsonOf[IO, ProduceData]
 
   object CodeQueryParamMatcher extends QueryParamDecoderMatcher[String]("code")
   object StateQueryParamMatcher extends QueryParamDecoderMatcher[String]("state")
@@ -68,20 +84,8 @@ object ClientApp extends IOApp.Simple:
       case GET -> Root / "add_word" :? WordQueryParamMatcher(word) =>
         getOrRefreshAccessToken(oauthTokenCacheR)(token => addWords(token, word))
       case GET -> Root / "delete_word" => getOrRefreshAccessToken(oauthTokenCacheR)(deleteWords)
+      case GET -> Root / "produce" => getOrRefreshAccessToken(oauthTokenCacheR)(token => produce(token, oauthTokenCacheR))
     }.orNotFound
-
-  val authServer: AuthServerInfo = AuthServerInfo()
-
-  val client: ClientInfo = ClientInfo(
-    "oauth-client-1",
-    "oauth-client-secret-1",
-    Set("foo", "read", "write", "delete"),
-    NonEmptyList.one(uri"http://localhost:8000/callback")
-  )
-
-  val protectedResource = uri"http://localhost:8002/resource"
-
-  val wordApi = uri"http://localhost:8002/words"
 
   def authorize(stateR: Ref[IO, Option[String]], random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
     for
@@ -181,11 +185,7 @@ object ClientApp extends IOApp.Simple:
     )
 
   def getWords(accessToken: String): IO[Response[IO]] =
-    val req = GET(wordApi, Headers(
-      Authorization(Credentials.Token(AuthScheme.Bearer, accessToken)),
-      `Content-Type`(MediaType.application.`x-www-form-urlencoded`)
-    ))
-    runHttpRequest(req) { response =>
+    runHttpRequest(GET(wordApi, bearerHeaders(accessToken))) { response =>
       for
         model <- response.as[WordsModel]
         resp <- Ok(ClientPage.words(model.copy(result = Get.some)))
@@ -195,25 +195,34 @@ object ClientApp extends IOApp.Simple:
     }
 
   def addWords(accessToken: String, word: String): IO[Response[IO]] =
-    val req = POST(UrlForm("word" -> word), wordApi, Headers(
-      Authorization(Credentials.Token(AuthScheme.Bearer, accessToken)),
-      `Content-Type`(MediaType.application.`x-www-form-urlencoded`)
-    ))
-    runHttpRequest(req) { _ =>
+    runHttpRequest(POST(UrlForm("word" -> word), wordApi, bearerHeaders(accessToken))) { _ =>
       Ok(ClientPage.words(WordsModel(Seq.empty[String], 0L, Add.some)))
     } { _ =>
       Ok(ClientPage.words(WordsModel(Seq.empty[String], 0L, NoAdd.some)))
     }
 
   def deleteWords(accessToken: String): IO[Response[IO]] =
-    val req = DELETE(wordApi, Headers(
-      Authorization(Credentials.Token(AuthScheme.Bearer, accessToken)),
-      `Content-Type`(MediaType.application.`x-www-form-urlencoded`)
-    ))
-    runHttpRequest(req) { _ =>
+    runHttpRequest(DELETE(wordApi, bearerHeaders(accessToken))) { _ =>
       Ok(ClientPage.words(WordsModel(Seq.empty[String], 0L, Rm.some)))
     } { _ =>
       Ok(ClientPage.words(WordsModel(Seq.empty[String], 0L, NoRm.some)))
+    }
+
+  def produce(accessToken: String, oauthTokenCacheR: Ref[IO, OAuthTokenCache]): IO[Response[IO]] =
+    runHttpRequest(GET(produceApi, bearerHeaders(accessToken))) { response =>
+      for
+        data <- response.as[ProduceData]
+        cache <- oauthTokenCacheR.get
+        resp <- Ok(ClientPage.produce(ProduceModel(cache.scope.getOrElse(Set.empty[String]), data)))
+      yield resp
+    } { _ =>
+      for
+        cache <- oauthTokenCacheR.get
+        resp <- Ok(ClientPage.produce(ProduceModel(
+          cache.scope.getOrElse(Set.empty[String]),
+          ProduceData(Seq.empty[String], Seq.empty[String], Seq.empty[String])
+        )))
+      yield resp
     }
 
   private[this] def getOrRefreshAccessToken(oauthTokenCacheR: Ref[IO, OAuthTokenCache])
@@ -221,6 +230,11 @@ object ClientApp extends IOApp.Simple:
     oauthTokenCacheR.get.flatMap(oauthTokenCache => oauthTokenCache.accessToken
       .fold(refreshAccessToken(oauthTokenCacheR, oauthTokenCache, "Missing access token."))(handleToken)
     )
+
+  private[this] def bearerHeaders(accessToken: String): Headers = Headers(
+    Authorization(Credentials.Token(AuthScheme.Bearer, accessToken)),
+    `Content-Type`(MediaType.application.`x-www-form-urlencoded`)
+  )
 
   private[this] def runHttpRequest(req: Request[IO])
                                   (onSuccess: Response[IO] => IO[Response[IO]])

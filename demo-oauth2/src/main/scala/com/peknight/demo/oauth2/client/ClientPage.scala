@@ -1,7 +1,7 @@
 package com.peknight.demo.oauth2.client
 
 import com.peknight.demo.oauth2.domain.WordsResult.*
-import com.peknight.demo.oauth2.domain.{OAuthTokenCache, WordsModel}
+import com.peknight.demo.oauth2.domain.{FavoritesModel, OAuthTokenCache, ProduceModel, WordsModel}
 import com.peknight.demo.oauth2.page.{OAuthPage, OAuthStyles}
 import io.circe.Json
 import org.http4s.Method.GET
@@ -20,7 +20,9 @@ object ClientPage:
     p("Refresh token value: ", span(cls := "label label-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
     a(cls := "btn btn-default", href := "/authorize")("Get OAuth Token"), " ",
     a(cls := "btn btn-default", href := "/fetch_resource")("Get Protected Resource"), " ",
-    a(cls := "btn btn-default", href := "/words")("Access the Words API")
+    a(cls := "btn btn-default", href := "/words")("Access the Words API"), " ",
+    a(cls := "btn btn-default", href := "/produce")("Access the Produce API"), " ",
+    a(cls := "btn btn-default", href := "/favorites")("Access the Favorites API")
   )
 
   def error(error: String): Frag[Builder, String] = jumbotron(h2(cls := "text-danger")("Error"), error)
@@ -68,6 +70,30 @@ object ClientPage:
         )
       )
     )
+  )
+
+  def produce(model: ProduceModel): Frag[Builder, String] = jumbotron(
+    h2("Produce API"),
+    p("Current scope:", span(cls := "label label-info")(model.scope.mkString(" "))),
+    p("Fruits:"),
+    ul(model.data.fruit.map(li(_))),
+    p("Veggies:"),
+    ul(model.data.veggies.map(li(_))),
+    p("Meats:"),
+    ul(model.data.meats.map(li(_))),
+    a(href := "/produce", cls := "btn btn-default")("Get Produce")
+  )
+
+  def favorites(model: FavoritesModel): Frag[Builder, String] = jumbotron(
+    h2("Favorites API"),
+    p(s"Resource owner's name: $model.user"),
+    p("Movies:"),
+    ul(model.favorites.movies.map(li(_))),
+    p("Foods:"),
+    ul(model.favorites.foods.map(li(_))),
+    p("Music:"),
+    ul(model.favorites.music.map(li(_))),
+    a(href := "/favorites", cls := "btn btn-default")("Get Favorites")
   )
 
   private[this] def jumbotron(jumbotron: Modifier*): Frag[Builder, String] =

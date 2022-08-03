@@ -5,7 +5,7 @@ import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.option.*
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.*
-import com.peknight.demo.oauth2.domain.{Resource, WordsModel}
+import com.peknight.demo.oauth2.domain.{OAuthTokenRecord, ProduceData, Resource, WordsModel}
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.http4s.*
@@ -22,6 +22,10 @@ import scala.collection.immutable.Queue
 import scala.concurrent.duration.FiniteDuration
 
 object ProtectedResourceApp extends IOApp.Simple:
+
+  private[this] val resource: Resource = Resource("Protected Resource", "This data has been protected by OAuth 2.0")
+
+  private[this] val accessTokenKey: String = "access_token"
 
   //noinspection HttpUrlsUsage
   val run: IO[Unit] =
@@ -41,35 +45,49 @@ object ProtectedResourceApp extends IOApp.Simple:
 
   given EntityDecoder[IO, Resource] = jsonOf[IO, Resource]
 
-  private[this] val resource: Resource = Resource("Protected Resource", "This data has been protected by OAuth 2.0")
-
-  private[this] val accessTokenKey: String = "access_token"
-
   // TODO cors
   def service(savedWordsR: Ref[IO, Queue[String]])(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(ProtectedResourcePage.index)
     case OPTIONS -> Root / "resource" => NoContent()
-    case req @ POST -> Root / "resource" => requireAccessToken(req, None)(Ok(resource.asJson))
-    case req @ GET -> Root / "words" => requireAccessToken(req, "read".some) {
+    case req @ POST -> Root / "resource" => requireAccessToken(req)(_ => Ok(resource.asJson))
+    case req @ GET -> Root / "words" => requireAccessTokenScope(req, "read") {
       for
         savedWords <- savedWordsR.get
         realTime <- IO.realTime
         resp <- Ok(WordsModel(savedWords, realTime.toMillis, None).asJson)
       yield resp
     }
-    case req @ POST -> Root / "words" => requireAccessToken(req, "write".some) {
+    case req @ POST -> Root / "words" => requireAccessTokenScope(req, "write") {
       for
         body <- req.as[UrlForm]
         _ <- body.get("word").find(_.nonEmpty).fold(IO.unit)(word => savedWordsR.update(_.appended(word)))
         resp <- Created()
       yield resp
     }
-    case req @ DELETE -> Root / "words" => requireAccessToken(req, "delete".some) {
+    case req @ DELETE -> Root / "words" => requireAccessTokenScope(req, "delete") {
       savedWordsR.update(_.init) *> NoContent()
+    }
+    case req @ GET -> Root / "produce" => requireAccessToken(req) { record =>
+      val fruit = if record.scope.exists(_.contains("fruit")) then Seq("apple", "banana", "kiwi") else Seq.empty[String]
+      val veggies = if record.scope.exists(_.contains("veggies")) then Seq("lettuce", "onion", "potato") else Seq.empty[String]
+      val meats = if record.scope.exists(_.contains("meats")) then Seq("becon", "steak", "chicken breast") else Seq.empty[String]
+      val produce = ProduceData(fruit, veggies, meats)
+      info"Sending produce: $produce" *> Ok(produce.asJson)
     }
   }
 
-  private[this] def requireAccessToken(req: Request[IO], scopeOption: Option[String])(pass: => IO[Response[IO]])
+  private[this] def requireAccessTokenScope(req: Request[IO], scope: String)(pass: => IO[Response[IO]])
+                                      (using Logger[IO]): IO[Response[IO]] =
+    requireAccessToken(req) { record =>
+      if record.scope.exists(_.contains(scope)) then pass
+      else
+        Forbidden.headers(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "localhost:8002", Map(
+          "error" -> "insufficient_scope",
+          "scope" -> scope
+        ))))
+    }
+
+  private[this] def requireAccessToken(req: Request[IO])(handleOAuthTokenRecord: OAuthTokenRecord => IO[Response[IO]])
                                       (using Logger[IO]): IO[Response[IO]] =
     val oauthTokenRecord =
       for
@@ -83,14 +101,7 @@ object ProtectedResourceApp extends IOApp.Simple:
       yield record
     oauthTokenRecord.value.flatMap {
       case Some(record) => info"We found a matching token: ${record.accessToken.getOrElse("")}" *>
-        scopeOption.fold(pass) { scope =>
-          if record.scope.exists(_.contains(scope)) then pass
-          else
-            Forbidden.headers(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "localhost:8002", Map(
-              "error" -> "insufficient_scope",
-              "scope" -> scope
-            ))))
-        }
+        handleOAuthTokenRecord(record)
       case _ => info"No matching token was found." *>
         Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "localhost:8002")))
     }

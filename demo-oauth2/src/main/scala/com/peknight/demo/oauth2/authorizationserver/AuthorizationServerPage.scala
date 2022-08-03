@@ -41,6 +41,11 @@ object AuthorizationServerPage:
       client.uri.fold[Modifier]("")(uri => p(b("URI: "), code(uri))),
       client.logoUri.fold[Modifier]("")(logoUri => p(b("logo: "), img(src := logoUri))),
       form(cls := "form", action := "/approve", method := "POST")(
+        label("Select user:"),
+        select(name := "user")(
+          option(value := "alice")("Alice"),
+          option(value := "bob")("Bob")
+        ),
         input(`type` := "hidden", name := "reqid", value := reqId),
         if scopes.isEmpty then ""
         else frag(
