@@ -11,7 +11,7 @@ import scalatags.text.Builder
 object ProtectedResourcePage:
 
   val index: Frag[Builder, String] =
-    OAuthPage.skeleton("Protected Resource", "success", c"#232")(
+    OAuthPage.jumbotron("Protected Resource", "success", c"#232")(
       "To access the resource, send a ", code("POST"), " request to ",
       code("http://localhost:8002/resource"), " and include a valid OAuth token."
     )

@@ -62,4 +62,4 @@ object AuthorizationServerPage:
   end approve
 
   private[this] def skeleton(jumbotron: Modifier*): Frag[Builder, String] =
-    OAuthPage.skeleton("Authorization Server", "danger", c"#322")(jumbotron)
+    OAuthPage.jumbotron("Authorization Server", "danger", c"#322")(jumbotron)

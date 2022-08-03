@@ -10,9 +10,14 @@ import scalatags.text.Builder
 
 object OAuthPage:
 
+  private[oauth2] def jumbotron(pageName: String, navbarBrandLabelPosix: String,
+                                navbarInverseBackgroundColor: ValueT[Color])
+                               (jumbotron: Modifier*): Frag[Builder, String] =
+    skeleton(pageName, navbarBrandLabelPosix, navbarInverseBackgroundColor)(div(cls := "jumbotron")(jumbotron))
+
   private[oauth2] def skeleton(pageName: String, navbarBrandLabelPosix: String,
                                navbarInverseBackgroundColor: ValueT[Color])
-                              (jumbotron: Modifier*): Frag[Builder, String] =
+                              (main: Modifier*): Frag[Builder, String] =
     html(lang := "en")(
       head(
         meta(charset := "utf-8"),
@@ -35,7 +40,7 @@ object OAuthPage:
           )
         ),
         div(cls := "container")(
-          div(cls := "jumbotron")(jumbotron)
+          main
         ),
         script(src := "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"),
         script(src := "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js")
