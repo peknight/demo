@@ -1,7 +1,7 @@
 package com.peknight.demo.oauth2.client
 
+import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.domain.WordsResult.*
-import com.peknight.demo.oauth2.domain.{FavoritesModel, OAuthTokenCache, ProduceModel, WordsModel}
 import com.peknight.demo.oauth2.page.{OAuthPage, OAuthStyles}
 import io.circe.Json
 import org.http4s.Method.GET
@@ -29,31 +29,31 @@ object ClientPage:
 
   def data(resource: Json): Frag[Builder, String] = jumbotron(h2("Data from protected resource:"), pre(resource.spaces4))
 
-  def words(model: WordsModel): Frag[Builder, String] = skeleton(
+  def words(words: Seq[String], timestamp: Long, result: WordsResult): Frag[Builder, String] = skeleton(
     div(cls := "row")(
       div(cls := "col-md-4")(
         div(cls := "well")(
           h3("Read the current value"),
-          model.result match {
-            case Some(Get) => p(span(cls := "label label-success")("Success"))
-            case Some(NoGet) => p(span(cls := "label label-danger")("Failure"))
+          result match {
+            case Get => p(span(cls := "label label-success")("Success"))
+            case NoGet => p(span(cls := "label label-danger")("Failure"))
             case _ => ""
           },
-          p(if model.words.nonEmpty then s"Words: ${model.words.mkString(" ")}" else ""),
-          p(if model.timestamp > 0 then s"Timestamp: ${model.timestamp}" else ""),
+          p(if words.nonEmpty then s"Words: ${words.mkString(" ")}" else ""),
+          p(if timestamp > 0 then s"Timestamp: $timestamp" else ""),
           a(cls := "btn btn-info", href := "/get_words")("GET current value")
         )
       ),
       div(cls := "col-md-4")(
         div(cls := "well")(
           h3("Add a word to the list"),
-          model.result match {
-            case Some(Add) => p(span(cls := "label label-success")("Success"))
-            case Some(NoAdd) => p(span(cls := "label label-danger")("Failure"))
+          result match {
+            case Add => p(span(cls := "label label-success")("Success"))
+            case NoAdd => p(span(cls := "label label-danger")("Failure"))
             case _ => ""
           },
           form(cls := "form", action := "/add_word", method := GET.name)(
-            input(`type` := "text", name := "word", placeholder := "word"),
+            input(`type` := "text", name := "word", placeholder := "word"), " ",
             input(`type` := "submit", cls := "btn btn-warning", href := "/", value := "POST a new word")
           )
         )
@@ -61,9 +61,9 @@ object ClientPage:
       div(cls := "col-md-4")(
         div(cls := "well")(
           h3("Remove the last word from the list"),
-          model.result match {
-            case Some(Rm) => p(span(cls := "label label-success")("Success"))
-            case Some(NoRm) => p(span(cls := "label label-danger")("Failure"))
+          result match {
+            case Rm => p(span(cls := "label label-success")("Success"))
+            case NoRm => p(span(cls := "label label-danger")("Failure"))
             case _ => ""
           },
           a(cls := "btn btn-danger", href := "/delete_word")("DELETE the last word")
@@ -72,27 +72,27 @@ object ClientPage:
     )
   )
 
-  def produce(model: ProduceModel): Frag[Builder, String] = jumbotron(
+  def produce(scope: Set[String], data: ProduceData): Frag[Builder, String] = jumbotron(
     h2("Produce API"),
-    p("Current scope:", span(cls := "label label-info")(model.scope.mkString(" "))),
+    p("Current scope:", span(cls := "label label-info")(scope.mkString(" "))),
     p("Fruits:"),
-    ul(model.data.fruit.map(li(_))),
+    ul(data.fruit.map(li(_))),
     p("Veggies:"),
-    ul(model.data.veggies.map(li(_))),
+    ul(data.veggies.map(li(_))),
     p("Meats:"),
-    ul(model.data.meats.map(li(_))),
+    ul(data.meats.map(li(_))),
     a(href := "/produce", cls := "btn btn-default")("Get Produce")
   )
 
-  def favorites(model: FavoritesModel): Frag[Builder, String] = jumbotron(
+  def favorites(data: UserFavoritesData): Frag[Builder, String] = jumbotron(
     h2("Favorites API"),
-    p(s"Resource owner's name: $model.user"),
+    p(s"Resource owner's name: ${data.user}"),
     p("Movies:"),
-    ul(model.favorites.movies.map(li(_))),
+    ul(data.favorites.movies.map(li(_))),
     p("Foods:"),
-    ul(model.favorites.foods.map(li(_))),
+    ul(data.favorites.foods.map(li(_))),
     p("Music:"),
-    ul(model.favorites.music.map(li(_))),
+    ul(data.favorites.music.map(li(_))),
     a(href := "/favorites", cls := "btn btn-default")("Get Favorites")
   )
 

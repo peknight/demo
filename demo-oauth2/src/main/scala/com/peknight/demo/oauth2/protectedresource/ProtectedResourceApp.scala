@@ -5,7 +5,7 @@ import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.option.*
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.*
-import com.peknight.demo.oauth2.domain.{OAuthTokenRecord, ProduceData, Resource, WordsModel}
+import com.peknight.demo.oauth2.domain.{FavoritesData, OAuthTokenRecord, ProduceData, Resource, UserFavoritesData, WordsData}
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.http4s.*
@@ -26,6 +26,18 @@ object ProtectedResourceApp extends IOApp.Simple:
   private[this] val resource: Resource = Resource("Protected Resource", "This data has been protected by OAuth 2.0")
 
   private[this] val accessTokenKey: String = "access_token"
+
+  private[this] val aliceFavorites: FavoritesData = FavoritesData(
+    Seq("The Multidimensional Vector", "Space Fights", "Jewelry Boss"),
+    Seq("bacon", "pizza", "bacon pizza"),
+    Seq("techno", "industrial", "alternative")
+  )
+
+  private[this] val bobFavorites: FavoritesData = FavoritesData(
+    Seq("An Unrequited Love", "Several Shades of Turquoise", "Think Of The Children"),
+    Seq("bacon", "kale", "gravel"),
+    Seq("baroque", "ukulele", "baroque ukulele")
+  )
 
   //noinspection HttpUrlsUsage
   val run: IO[Unit] =
@@ -54,7 +66,7 @@ object ProtectedResourceApp extends IOApp.Simple:
       for
         savedWords <- savedWordsR.get
         realTime <- IO.realTime
-        resp <- Ok(WordsModel(savedWords, realTime.toMillis, None).asJson)
+        resp <- Ok(WordsData(savedWords, realTime.toMillis).asJson)
       yield resp
     }
     case req @ POST -> Root / "words" => requireAccessTokenScope(req, "write") {
@@ -73,6 +85,12 @@ object ProtectedResourceApp extends IOApp.Simple:
       val meats = if record.scope.exists(_.contains("meats")) then Seq("becon", "steak", "chicken breast") else Seq.empty[String]
       val produce = ProduceData(fruit, veggies, meats)
       info"Sending produce: $produce" *> Ok(produce.asJson)
+    }
+    case req @ GET -> Root / "favorites" => requireAccessToken(req) { record =>
+      record.user match
+        case Some("alice") => Ok(UserFavoritesData("Alice", aliceFavorites).asJson)
+        case Some("bob") => Ok(UserFavoritesData("Bob", bobFavorites).asJson)
+        case _ => Ok(UserFavoritesData("Unknown", FavoritesData.empty).asJson)
     }
   }
 

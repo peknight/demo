@@ -127,44 +127,37 @@ object AuthorizationServerApp extends IOApp.Simple:
       case Some(reqId) => requestsR.modify(requests => (requests.removed(reqId), requests.get(reqId))).flatMap {
         case None => Ok(AuthorizationServerPage.error("No matching authorization request"))
         case Some(query) => body.get("approve").find(_ == "Approve") match
-          case Some(_) =>
-            def checkScope(resp: Set[String] => IO[Response[IO]]): IO[Response[IO]] =
-              val scope = body.values.keys.filter(_.startsWith("scope_")).map(_.substring("scope_".length)).toSet[String]
-              val cScope = getClient(query.clientId).map(_.scope).getOrElse(Set.empty[String])
-              if scope.diff(cScope).nonEmpty then
-                Found(Location(query.redirectUri.withQueryParam("error", "invalid_scope")))
-              else resp(scope)
-            end checkScope
-            query.responseType match
-              case ResponseType.Code => checkScope { scope =>
-                val user = body.get("user").find(_.nonEmpty)
-                for
-                  code <- randomString[IO](random, 8)
-                  _ <- codesR.update(_ + (code -> AuthorizeCodeCache(query, scope, user)))
-                  resp <- Found(Location(query.redirectUri
-                    .withQueryParam("code", code)
-                    .withOptionQueryParam("state", query.state)
-                  ))
-                yield resp
-              }
-              case ResponseType.Token => checkScope { scope =>
-                val user = body.get("user").find(_.nonEmpty)
-                val userInfoOption = user.flatMap(userInfos.get)
-                userInfoOption match
-                  case None => info"Unknown user ${user.getOrElse("None")}" *>
-                    Ok(AuthorizationServerPage.error(s"Unknown user ${user.getOrElse("None")}"))
-                      .map(_.copy(status = Status.InternalServerError))
-                  case Some(userInfo) =>
-                    for
-                      _ <- info"User $userInfo"
-                      tokenResponse <- generateTokens(random, query.clientId, userInfoOption, scope, query.state,
-                        false)
-                      resp <- Found(Location(query.redirectUri.withFragment(tokenResponse.toFragment)))
-                    yield resp
-              }
-              // 后续支持其它响应类型扩展
-              case null => Found(Location(query.redirectUri
-                .withQueryParam("error", "unsupported_response_type")
+          case Some(_) => query.responseType match
+            case ResponseType.Code => checkScope(body, query) { scope =>
+              val user = body.get("user").find(_.nonEmpty)
+              for
+                code <- randomString[IO](random, 8)
+                _ <- codesR.update(_ + (code -> AuthorizeCodeCache(query, scope, user)))
+                resp <- Found(Location(query.redirectUri
+                  .withQueryParam("code", code)
+                  .withOptionQueryParam("state", query.state)
+                ))
+              yield resp
+            }
+            case ResponseType.Token => checkScope(body, query) { scope =>
+              val user = body.get("user").find(_.nonEmpty)
+              val userInfoOption = user.flatMap(userInfos.get)
+              userInfoOption match
+                case None =>
+                  val username = user.getOrElse("None")
+                  info"Unknown user $username" *>
+                    InternalServerError(AuthorizationServerPage.error(s"Unknown user $username"))
+                case Some(userInfo) =>
+                  for
+                    _ <- info"User $userInfo"
+                    tokenResponse <- generateTokens(random, query.clientId, userInfoOption, scope, query.state,
+                      false)
+                    resp <- Found(Location(query.redirectUri.withFragment(tokenResponse.toFragment)))
+                  yield resp
+            }
+            // 后续支持其它响应类型扩展
+            case null => Found(Location(query.redirectUri
+              .withQueryParam("error", "unsupported_response_type")
             ))
           case None => Found(Location(query.redirectUri.withQueryParam("error", "access_denied")))
       }
@@ -207,13 +200,22 @@ object AuthorizationServerApp extends IOApp.Simple:
         case Some(code) => codesR.modify(codes => (codes.removed(code), code.some -> codes.get(code)))
         case None => IO((none[String], none[AuthorizeCodeCache]))
       resp <- codeCache match
-        case (Some(code), Some(cache)) =>
-          for
-            tokenResponse <- generateTokens(random, clientId, cache.user.flatMap(userInfos.get), cache.scope, None,
-              true)
-            _ <- info"Issued tokens for code $code"
-            resp <- Ok(tokenResponse.asJson)
-          yield resp
+        case (Some(code), Some(cache)) if cache.authorizationEndpointRequest.clientId == clientId =>
+          cache.user.flatMap(userInfos.get) match
+            case Some(user) =>
+              for
+                _ <- info"User $user"
+                tokenResponse <- generateTokens(random, clientId, cache.user.flatMap(userInfos.get), cache.scope, None,
+                  true)
+                _ <- info"Issued tokens for code $code"
+                resp <- Ok(tokenResponse.asJson)
+              yield resp
+            case None =>
+              val preferredUsername = cache.user.getOrElse("None")
+              info"Unknown user $preferredUsername" *>
+                InternalServerError(AuthorizationServerPage.error(s"Unknown user $preferredUsername"))
+        case (_, Some(cache)) =>
+          info"Client mismatch, expected ${cache.authorizationEndpointRequest.clientId} got $clientId" *> invalidGrantResp
         case (code, _) => info"Unknown code, ${code.getOrElse("None")}" *>
           BadRequest(ErrorInfo("invalid_grant").asJson)
     yield resp
@@ -289,6 +291,13 @@ object AuthorizationServerApp extends IOApp.Simple:
         else IO.pure(None)
       _ <- info"with scope ${scope.mkString(" ")}"
     yield OAuthToken(accessToken, AuthScheme.Bearer, refreshTokenOption, scope.some, state)
+
+  def checkScope(body: UrlForm, query: AuthorizeParam)(resp: Set[String] => IO[Response[IO]]): IO[Response[IO]] =
+    val scope = body.values.keys.filter(_.startsWith("scope_")).map(_.substring("scope_".length)).toSet[String]
+    val cScope = getClient(query.clientId).map(_.scope).getOrElse(Set.empty[String])
+    if scope.diff(cScope).nonEmpty then
+      Found(Location(query.redirectUri.withQueryParam("error", "invalid_scope")))
+    else resp(scope)
 
   def getClient(clientId: String): Option[ClientInfo] = clients.find(_.id == clientId)
 

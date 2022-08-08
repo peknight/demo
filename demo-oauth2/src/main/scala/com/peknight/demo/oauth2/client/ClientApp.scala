@@ -1,6 +1,6 @@
 package com.peknight.demo.oauth2.client
 
-import cats.data.NonEmptyList
+import cats.data.{Chain, NonEmptyList}
 import cats.effect.std.Random
 import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.option.*
@@ -30,7 +30,7 @@ object ClientApp extends IOApp.Simple:
   val client: ClientInfo = ClientInfo(
     "oauth-client-1",
     "oauth-client-secret-1",
-    Set("foo", "read", "write", "delete", "fruit", "veggies", "meats"),
+    Set("foo", "read", "write", "delete", "fruit", "veggies", "meats", "movies", "foods", "music"),
     NonEmptyList.one(uri"http://localhost:8000/callback")
   )
 
@@ -39,6 +39,8 @@ object ClientApp extends IOApp.Simple:
   val wordApi = uri"http://localhost:8002/words"
 
   val produceApi = uri"http://localhost:8002/produce"
+
+  val favoritesApi = uri"http://localhost:8002/favorites"
 
   //noinspection HttpUrlsUsage
   val run: IO[Unit] =
@@ -59,7 +61,10 @@ object ClientApp extends IOApp.Simple:
 
   given CanEqual[Path, Path] = CanEqual.derived
   given CanEqual[Method, Method] = CanEqual.derived
+  given EntityDecoder[IO, WordsData] = jsonOf[IO, WordsData]
   given EntityDecoder[IO, ProduceData] = jsonOf[IO, ProduceData]
+  given EntityDecoder[IO, FavoritesData] = jsonOf[IO,FavoritesData]
+  given EntityDecoder[IO, UserFavoritesData] = jsonOf[IO, UserFavoritesData]
 
   object CodeQueryParamMatcher extends QueryParamDecoderMatcher[String]("code")
   object StateQueryParamMatcher extends QueryParamDecoderMatcher[String]("state")
@@ -79,12 +84,13 @@ object ClientApp extends IOApp.Simple:
       case GET -> Root / "callback" :? ErrorQueryParamMatcher(error) => Ok(ClientPage.error(error))
       case GET -> Root / "fetch_resource" =>
         getOrRefreshAccessToken(oauthTokenCacheR)(token => fetchResource(oauthTokenCacheR, token))
-      case GET -> Root / "words" => Ok(ClientPage.words(WordsModel(Seq.empty[String], 0L, NoGet.some)))
+      case GET -> Root / "words" => Ok(ClientPage.words(Seq.empty[String], 0L, NoGet))
       case GET -> Root / "get_words" => getOrRefreshAccessToken(oauthTokenCacheR)(getWords)
       case GET -> Root / "add_word" :? WordQueryParamMatcher(word) =>
         getOrRefreshAccessToken(oauthTokenCacheR)(token => addWords(token, word))
       case GET -> Root / "delete_word" => getOrRefreshAccessToken(oauthTokenCacheR)(deleteWords)
       case GET -> Root / "produce" => getOrRefreshAccessToken(oauthTokenCacheR)(token => produce(token, oauthTokenCacheR))
+      case GET -> Root / "favorites" => getOrRefreshAccessToken(oauthTokenCacheR)(token => favorites(token, oauthTokenCacheR))
     }.orNotFound
 
   def authorize(stateR: Ref[IO, Option[String]], random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
@@ -175,11 +181,14 @@ object ClientApp extends IOApp.Simple:
     )
 
   def refreshTokenRequest(refreshToken: String): Request[IO] =
+    val urlForm = UrlForm(
+      "grant_type" -> "refresh_token",
+      "refresh_token" -> refreshToken,
+      "client_id" -> client.id,
+      "client_secret" -> client.secret
+    ).updateFormFields("redirect_uri", Chain.fromSeq(client.redirectUris.toList))
     POST(
-      UrlForm(
-        "grant_type" -> "refresh_token",
-        "refresh_token" -> refreshToken
-      ),
+      urlForm,
       authServer.tokenEndpoint,
       Headers(Authorization(BasicCredentials(Uri.encode(client.id), Uri.encode(client.secret))))
     )
@@ -187,25 +196,25 @@ object ClientApp extends IOApp.Simple:
   def getWords(accessToken: String): IO[Response[IO]] =
     runHttpRequest(GET(wordApi, bearerHeaders(accessToken))) { response =>
       for
-        model <- response.as[WordsModel]
-        resp <- Ok(ClientPage.words(model.copy(result = Get.some)))
+        data <- response.as[WordsData]
+        resp <- Ok(ClientPage.words(data.words, data.timestamp, Get))
       yield resp
     } { _ =>
-      Ok(ClientPage.words(WordsModel(Seq.empty[String], 0L, NoGet.some)))
+      Ok(ClientPage.words(Seq.empty[String], 0L, NoGet))
     }
 
   def addWords(accessToken: String, word: String): IO[Response[IO]] =
     runHttpRequest(POST(UrlForm("word" -> word), wordApi, bearerHeaders(accessToken))) { _ =>
-      Ok(ClientPage.words(WordsModel(Seq.empty[String], 0L, Add.some)))
+      Ok(ClientPage.words(Seq.empty[String], 0L, Add))
     } { _ =>
-      Ok(ClientPage.words(WordsModel(Seq.empty[String], 0L, NoAdd.some)))
+      Ok(ClientPage.words(Seq.empty[String], 0L, NoAdd))
     }
 
   def deleteWords(accessToken: String): IO[Response[IO]] =
     runHttpRequest(DELETE(wordApi, bearerHeaders(accessToken))) { _ =>
-      Ok(ClientPage.words(WordsModel(Seq.empty[String], 0L, Rm.some)))
+      Ok(ClientPage.words(Seq.empty[String], 0L, Rm))
     } { _ =>
-      Ok(ClientPage.words(WordsModel(Seq.empty[String], 0L, NoRm.some)))
+      Ok(ClientPage.words(Seq.empty[String], 0L, NoRm))
     }
 
   def produce(accessToken: String, oauthTokenCacheR: Ref[IO, OAuthTokenCache]): IO[Response[IO]] =
@@ -213,16 +222,24 @@ object ClientApp extends IOApp.Simple:
       for
         data <- response.as[ProduceData]
         cache <- oauthTokenCacheR.get
-        resp <- Ok(ClientPage.produce(ProduceModel(cache.scope.getOrElse(Set.empty[String]), data)))
+        resp <- Ok(ClientPage.produce(cache.scope.getOrElse(Set.empty[String]), data))
       yield resp
     } { _ =>
       for
         cache <- oauthTokenCacheR.get
-        resp <- Ok(ClientPage.produce(ProduceModel(
-          cache.scope.getOrElse(Set.empty[String]),
-          ProduceData(Seq.empty[String], Seq.empty[String], Seq.empty[String])
-        )))
+        resp <- Ok(ClientPage.produce(cache.scope.getOrElse(Set.empty[String]), ProduceData.empty))
       yield resp
+    }
+
+  def favorites(accessToken: String, oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
+    runHttpRequest(GET(favoritesApi, bearerHeaders(accessToken))) { response =>
+      for
+        data <- response.as[UserFavoritesData]
+        _ <- info"Got data: $data"
+        resp <- Ok(ClientPage.favorites(data))
+      yield resp
+    } { _ =>
+      Ok(ClientPage.favorites(UserFavoritesData("", FavoritesData.empty)))
     }
 
   private[this] def getOrRefreshAccessToken(oauthTokenCacheR: Ref[IO, OAuthTokenCache])
