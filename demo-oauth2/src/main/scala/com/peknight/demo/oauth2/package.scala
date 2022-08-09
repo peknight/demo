@@ -38,6 +38,7 @@ package object oauth2:
 
   val clearRecord: IO[Unit] = Stream[IO, Byte]().through(Files[IO].writeAll(databaseNoSqlPath)).compile.drain
 
+  // 为了增强突发，你可以只存储令牌值的加密散列
   def insertRecord(record: OAuthTokenRecord): IO[Unit] =
     Stream(s"${record.asJson.deepDropNullValues.noSpaces}\n").covary[IO]
       .through(text.utf8.encode)

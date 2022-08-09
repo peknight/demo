@@ -230,6 +230,8 @@ object AuthorizationServerApp extends IOApp.Simple:
         resp <- Ok(tokenResponse.asJson)
       yield resp
 
+  val invalidGrantResp: IO[Response[IO]] = invalidResp("invalid_grant")
+
   def refreshToken(clientId: String, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
     for
       refreshTokenRecord <- body.get("refresh_token").find(_.nonEmpty) match
@@ -239,7 +241,7 @@ object AuthorizationServerApp extends IOApp.Simple:
         case (Some(refreshToken), Some(record)) if record.clientId != clientId =>
           info"Invalid client using a refresh token, expected ${record.clientId} got $clientId" *>
             removeRecordByRefreshToken(refreshToken) *>
-            BadRequest()
+            BadRequest(ErrorInfo("invalid_grant").asJson)
         case (Some(refreshToken), Some(_)) =>
           for
             _ <- info"We found a matching refresh token $refreshToken"
@@ -249,11 +251,8 @@ object AuthorizationServerApp extends IOApp.Simple:
             resp <- Ok(OAuthToken(accessToken, AuthScheme.Bearer, body.get("refresh_token").find(_.nonEmpty),
               None, None).asJson)
           yield resp
-        case _ => info"No matching token was found." *>
-          Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "Refresh Token")))
+        case _ => info"No matching token was found." *> invalidGrantResp
     yield resp
-
-  val invalidGrantResp: IO[Response[IO]] = invalidResp("invalid_grant")
 
   def password(clientId: String, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
     val usernameOption = body.get("username").find(_.nonEmpty)

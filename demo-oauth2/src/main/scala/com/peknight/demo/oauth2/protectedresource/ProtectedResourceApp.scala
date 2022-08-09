@@ -5,7 +5,7 @@ import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.option.*
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.*
-import com.peknight.demo.oauth2.domain.{FavoritesData, OAuthTokenRecord, ProduceData, Resource, UserFavoritesData, WordsData}
+import com.peknight.demo.oauth2.domain.{FavoritesData, OAuthTokenRecord, ProduceData, Resource, ResourceScope, UserFavoritesData, WordsData}
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.http4s.*
@@ -56,12 +56,15 @@ object ProtectedResourceApp extends IOApp.Simple:
   given CanEqual[CIString, AuthScheme] = CanEqual.derived
 
   given EntityDecoder[IO, Resource] = jsonOf[IO, Resource]
+  given EntityDecoder[IO, ResourceScope] = jsonOf[IO, ResourceScope]
 
   // TODO cors
   def service(savedWordsR: Ref[IO, Queue[String]])(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(ProtectedResourcePage.index)
     case OPTIONS -> Root / "resource" => NoContent()
-    case req @ POST -> Root / "resource" => requireAccessToken(req)(_ => Ok(resource.asJson))
+    case req @ POST -> Root / "resource" => requireAccessToken(req) { record =>
+      Ok(ResourceScope(resource, record.scope).asJson)
+    }
     case req @ GET -> Root / "words" => requireAccessTokenScope(req, "read") {
       for
         savedWords <- savedWordsR.get

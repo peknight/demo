@@ -19,6 +19,7 @@ object ClientPage:
     p("Scope value: ", span(cls := "label label-danger")(oauthTokenCache.scope.map(_.mkString(" ")).getOrElse("NONE"))),
     p("Refresh token value: ", span(cls := "label label-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
     a(cls := "btn btn-default", href := "/authorize")("Get OAuth Token"), " ",
+    a(cls := "btn btn-default", href := "/refresh")("Refresh Access Token"), " ",
     a(cls := "btn btn-default", href := "/fetch_resource")("Get Protected Resource"), " ",
     a(cls := "btn btn-default", href := "/words")("Access the Words API"), " ",
     a(cls := "btn btn-default", href := "/produce")("Access the Produce API"), " ",

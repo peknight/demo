@@ -27,10 +27,12 @@ object ClientApp extends IOApp.Simple:
 
   val authServer: AuthServerInfo = AuthServerInfo()
 
+  val rsaKey: RsaKey = RsaKey("RS256", "AQAB", "p8eP5gL1H_H9UNzCuQS-vNRVz3NWxZTHYk1tG9VpkfFjWNKG3MFTNZJ1l5g_COMm2_2i_YhQNH8MJ_nQ4exKMXrWJB4tyVZohovUxfw-eLgu1XQ8oYcVYW8ym6Um-BkqwwWL6CXZ70X81YyIMrnsGTyTV6M8gBPun8g2L8KbDbXR1lDfOOWiZ2ss1CRLrmNM-GRp3Gj-ECG7_3Nx9n_s5to2ZtwJ1GS1maGjrSZ9GRAYLrHhndrL_8ie_9DS2T-ML7QNQtNkg2RvLv4f0dpjRYI23djxVtAylYK4oiT_uEMgSkc4dxwKwGuBxSO0g9JOobgfy0--FUHHYtRi0dOFZw", "RSA", "authserver")
+
   val client: ClientInfo = ClientInfo(
     "oauth-client-1",
     "oauth-client-secret-1",
-    Set("foo", "read", "write", "delete", "fruit", "veggies", "meats", "movies", "foods", "music"),
+    Set("foo", "bar", "read", "write", "delete", "fruit", "veggies", "meats", "movies", "foods", "music"),
     NonEmptyList.one(uri"http://localhost:8000/callback")
   )
 
@@ -82,6 +84,7 @@ object ClientApp extends IOApp.Simple:
           else info"State value matches: expected $state got $state" *> callbackWithCode(oauthTokenCacheR, code)
         )
       case GET -> Root / "callback" :? ErrorQueryParamMatcher(error) => Ok(ClientPage.error(error))
+      case GET -> Root / "refresh" => refresh(oauthTokenCacheR)
       case GET -> Root / "fetch_resource" =>
         getOrRefreshAccessToken(oauthTokenCacheR)(token => fetchResource(oauthTokenCacheR, token))
       case GET -> Root / "words" => Ok(ClientPage.words(Seq.empty[String], 0L, NoGet))
@@ -90,7 +93,7 @@ object ClientApp extends IOApp.Simple:
         getOrRefreshAccessToken(oauthTokenCacheR)(token => addWords(token, word))
       case GET -> Root / "delete_word" => getOrRefreshAccessToken(oauthTokenCacheR)(deleteWords)
       case GET -> Root / "produce" => getOrRefreshAccessToken(oauthTokenCacheR)(token => produce(token, oauthTokenCacheR))
-      case GET -> Root / "favorites" => getOrRefreshAccessToken(oauthTokenCacheR)(token => favorites(token, oauthTokenCacheR))
+      case GET -> Root / "favorites" => getOrRefreshAccessToken(oauthTokenCacheR)(favorites)
     }.orNotFound
 
   def authorize(stateR: Ref[IO, Option[String]], random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
@@ -128,11 +131,19 @@ object ClientApp extends IOApp.Simple:
       UrlForm(
         "grant_type" -> GrantType.AuthorizationCode.value,
         "code" -> code,
+        // "client_id" -> client.id,
+        // "client_secret" -> client.secret,
         "redirect_uri" -> client.redirectUris.head.toString
       ),
       authServer.tokenEndpoint,
       Headers(Authorization(BasicCredentials(Uri.encode(client.id), Uri.encode(client.secret))))
     )
+
+  def refresh(oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
+    for
+      oauthTokenCache <- oauthTokenCacheR.get
+      resp <- refreshAccessToken(oauthTokenCacheR, oauthTokenCache, "Missing refresh token.")
+    yield resp
 
   def updateOAuthTokenCache(oauthTokenCacheR: Ref[IO, OAuthTokenCache], oauthToken: OAuthToken)
                            (using Logger[IO]): IO[OAuthTokenCache] =
@@ -147,7 +158,6 @@ object ClientApp extends IOApp.Simple:
       _ <- info"Got scope: ${oauthToken.scope}"
     yield oauthTokenCache
 
-
   def fetchResource(oauthTokenCacheR: Ref[IO, OAuthTokenCache], accessToken: String)(using Logger[IO]): IO[Response[IO]] =
     info"Making request with access token $accessToken" *>
       runHttpRequest(resourceRequest(accessToken)) { response =>
@@ -161,37 +171,6 @@ object ClientApp extends IOApp.Simple:
 
   def resourceRequest(accessToken: String): Request[IO] =
     POST(protectedResource, Headers(Authorization(Credentials.Token(AuthScheme.Bearer, accessToken))))
-
-  def refreshAccessToken(oauthTokenCacheR: Ref[IO, OAuthTokenCache], oauthTokenCache: OAuthTokenCache, error: String)
-                        (using Logger[IO]): IO[Response[IO]] =
-    oauthTokenCache.refreshToken.fold(Ok(ClientPage.error(error)))(refreshToken =>
-      runHttpRequest(refreshTokenRequest(refreshToken)) { response =>
-        for
-          oauthToken <- response.as[OAuthToken]
-          _ <- updateOAuthTokenCache(oauthTokenCacheR, oauthToken)
-          resp <- Found(Location(uri"/fetch_resource"))
-        yield resp
-      } { _ =>
-        for
-          _ <- info"No refresh token, asking the user to get a new access token"
-          _ <- oauthTokenCacheR.update(_.copy(refreshToken = None))
-          resp <- Ok(ClientPage.error("Unable to refresh token."))
-        yield resp
-      }
-    )
-
-  def refreshTokenRequest(refreshToken: String): Request[IO] =
-    val urlForm = UrlForm(
-      "grant_type" -> "refresh_token",
-      "refresh_token" -> refreshToken,
-      "client_id" -> client.id,
-      "client_secret" -> client.secret
-    ).updateFormFields("redirect_uri", Chain.fromSeq(client.redirectUris.toList))
-    POST(
-      urlForm,
-      authServer.tokenEndpoint,
-      Headers(Authorization(BasicCredentials(Uri.encode(client.id), Uri.encode(client.secret))))
-    )
 
   def getWords(accessToken: String): IO[Response[IO]] =
     runHttpRequest(GET(wordApi, bearerHeaders(accessToken))) { response =>
@@ -231,7 +210,7 @@ object ClientApp extends IOApp.Simple:
       yield resp
     }
 
-  def favorites(accessToken: String, oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
+  def favorites(accessToken: String)(using Logger[IO]): IO[Response[IO]] =
     runHttpRequest(GET(favoritesApi, bearerHeaders(accessToken))) { response =>
       for
         data <- response.as[UserFavoritesData]
@@ -241,6 +220,37 @@ object ClientApp extends IOApp.Simple:
     } { _ =>
       Ok(ClientPage.favorites(UserFavoritesData("", FavoritesData.empty)))
     }
+
+  def refreshAccessToken(oauthTokenCacheR: Ref[IO, OAuthTokenCache], oauthTokenCache: OAuthTokenCache, error: String)
+                        (using Logger[IO]): IO[Response[IO]] =
+    oauthTokenCache.refreshToken.fold(Ok(ClientPage.error(error)))(refreshToken =>
+      runHttpRequest(refreshTokenRequest(refreshToken)) { response =>
+        for
+          oauthToken <- response.as[OAuthToken]
+          _ <- updateOAuthTokenCache(oauthTokenCacheR, oauthToken)
+          resp <- Found(Location(uri"/fetch_resource"))
+        yield resp
+      } { _ =>
+        for
+          _ <- info"No refresh token, asking the user to get a new access token"
+          _ <- oauthTokenCacheR.update(_.copy(refreshToken = None))
+          resp <- Ok(ClientPage.error("Unable to refresh token."))
+        // resp <- Found(Location(uri"/authorize"))
+        yield resp
+      }
+    )
+
+  def refreshTokenRequest(refreshToken: String): Request[IO] =
+    POST(
+      UrlForm(
+        "grant_type" -> "refresh_token",
+        "refresh_token" -> refreshToken
+        // "client_id" -> client.id,
+        // "client_secret" -> client.secret
+      ).updateFormFields("redirect_uri", Chain.fromSeq(client.redirectUris.toList)),
+      authServer.tokenEndpoint,
+      Headers(Authorization(BasicCredentials(Uri.encode(client.id), Uri.encode(client.secret))))
+    )
 
   private[this] def getOrRefreshAccessToken(oauthTokenCacheR: Ref[IO, OAuthTokenCache])
                                            (handleToken: String => IO[Response[IO]])(using Logger[IO]): IO[Response[IO]] =
