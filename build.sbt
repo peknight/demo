@@ -37,7 +37,8 @@ lazy val demo = (project in file("."))
     demoAkka,
     demoJs.jvm,
     demoJs.js,
-    demoOAuth2,
+    demoOAuth2.jvm,
+    demoOAuth2.js,
     demoAcme4j,
     demoSecurity,
     demoPlayground.jvm,
@@ -310,23 +311,32 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     ),
   )
 
-lazy val demoOAuth2 = (project in file("demo-oauth2"))
+lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth2"))
   .settings(commonSettings)
   .settings(
     name := "demo-oauth2",
     libraryDependencies ++= Seq(
-      http4sDsl,
-      http4sEmberServer,
-      http4sEmberClient,
-      http4sCirce,
-      http4sScalaTags,
-      circeGeneric,
-      circeParser,
+      "org.http4s" %%% "http4s-dsl" % http4sVersion,
+      "org.http4s" %%% "http4s-ember-server" % http4sVersion,
+      "org.http4s" %%% "http4s-ember-client" % http4sVersion,
+      "org.http4s" %%% "http4s-circe" % http4sVersion,
+      "io.circe" %%% "circe-generic" % circeVersion,
+      "io.circe" %%% "circe-parser" % circeVersion,
+      "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
+      "com.github.japgolly.scalacss" %% "core" % scalaCssVersion,
+    ),
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
       circeFs2,
-      scalaTags,
-      scalaCssCore,
+      http4sScalaTags,
       log4CatsSlf4j,
       logbackClassic % Runtime,
+    ),
+  )
+  .jsSettings(
+    libraryDependencies ++= Seq(
+      "org.http4s" %%% "http4s-dom" % http4sVersion,
     ),
   )
 
@@ -539,6 +549,3 @@ val scalaTagsVersion = "0.11.1"
 val uPickleVersion = "2.0.0"
 val uTestVersion = "0.7.11"
 val scalaCssVersion = "1.0.0"
-
-val scalaTags = "com.lihaoyi" %% "scalatags" % scalaTagsVersion
-val scalaCssCore = "com.github.japgolly.scalacss" %% "core" % scalaCssVersion

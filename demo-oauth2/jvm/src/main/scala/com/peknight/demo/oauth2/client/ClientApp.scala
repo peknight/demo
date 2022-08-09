@@ -25,16 +25,7 @@ import org.typelevel.log4cats.syntax.*
 
 object ClientApp extends IOApp.Simple:
 
-  val authServer: AuthServerInfo = AuthServerInfo()
-
   val rsaKey: RsaKey = RsaKey("RS256", "AQAB", "p8eP5gL1H_H9UNzCuQS-vNRVz3NWxZTHYk1tG9VpkfFjWNKG3MFTNZJ1l5g_COMm2_2i_YhQNH8MJ_nQ4exKMXrWJB4tyVZohovUxfw-eLgu1XQ8oYcVYW8ym6Um-BkqwwWL6CXZ70X81YyIMrnsGTyTV6M8gBPun8g2L8KbDbXR1lDfOOWiZ2ss1CRLrmNM-GRp3Gj-ECG7_3Nx9n_s5to2ZtwJ1GS1maGjrSZ9GRAYLrHhndrL_8ie_9DS2T-ML7QNQtNkg2RvLv4f0dpjRYI23djxVtAylYK4oiT_uEMgSkc4dxwKwGuBxSO0g9JOobgfy0--FUHHYtRi0dOFZw", "RSA", "authserver")
-
-  val client: ClientInfo = ClientInfo(
-    "oauth-client-1",
-    "oauth-client-secret-1",
-    Set("foo", "bar", "read", "write", "delete", "fruit", "veggies", "meats", "movies", "foods", "music"),
-    NonEmptyList.one(uri"http://localhost:8000/callback")
-  )
 
   val protectedResource = uri"http://localhost:8002/resource"
 
@@ -100,8 +91,8 @@ object ClientApp extends IOApp.Simple:
     for
       state <- randomString[IO](random, 32)
       _ <- stateR.set(Some(state))
-      authorizeUrl = authServer.authorizationEndpoint.withQueryParams(AuthorizeParam(client.id,
-        client.redirectUris.head, client.scope, ResponseType.Code, Some(state)))
+      authorizeUrl = AuthServerInfo.authServer.authorizationEndpoint.withQueryParams(AuthorizeParam(ClientInfo.client.id,
+        ClientInfo.client.redirectUris.head, ClientInfo.client.scope, ResponseType.Code, Some(state)))
       _ <- info"redirect: $authorizeUrl"
       resp <- Found(Location(authorizeUrl))
     yield resp
@@ -131,12 +122,12 @@ object ClientApp extends IOApp.Simple:
       UrlForm(
         "grant_type" -> GrantType.AuthorizationCode.value,
         "code" -> code,
-        // "client_id" -> client.id,
-        // "client_secret" -> client.secret,
-        "redirect_uri" -> client.redirectUris.head.toString
+        // "client_id" -> ClientInfo.client.id,
+        // "client_secret" -> ClientInfo.client.secret,
+        "redirect_uri" -> ClientInfo.client.redirectUris.head.toString
       ),
-      authServer.tokenEndpoint,
-      Headers(Authorization(BasicCredentials(Uri.encode(client.id), Uri.encode(client.secret))))
+      AuthServerInfo.authServer.tokenEndpoint,
+      Headers(Authorization(BasicCredentials(Uri.encode(ClientInfo.client.id), Uri.encode(ClientInfo.client.secret))))
     )
 
   def refresh(oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
@@ -245,11 +236,11 @@ object ClientApp extends IOApp.Simple:
       UrlForm(
         "grant_type" -> "refresh_token",
         "refresh_token" -> refreshToken
-        // "client_id" -> client.id,
-        // "client_secret" -> client.secret
-      ).updateFormFields("redirect_uri", Chain.fromSeq(client.redirectUris.toList)),
-      authServer.tokenEndpoint,
-      Headers(Authorization(BasicCredentials(Uri.encode(client.id), Uri.encode(client.secret))))
+        // "client_id" -> ClientInfo.client.id,
+        // "client_secret" -> ClientInfo.client.secret
+      ).updateFormFields("redirect_uri", Chain.fromSeq(ClientInfo.client.redirectUris.toList)),
+      AuthServerInfo.authServer.tokenEndpoint,
+      Headers(Authorization(BasicCredentials(Uri.encode(ClientInfo.client.id), Uri.encode(ClientInfo.client.secret))))
     )
 
   private[this] def getOrRefreshAccessToken(oauthTokenCacheR: Ref[IO, OAuthTokenCache])

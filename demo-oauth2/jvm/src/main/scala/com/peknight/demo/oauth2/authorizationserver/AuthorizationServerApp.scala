@@ -31,16 +31,7 @@ import scala.util.Try
 
 object AuthorizationServerApp extends IOApp.Simple:
 
-  val authServer: AuthServerInfo = AuthServerInfo()
-
-  val clients: Seq[ClientInfo] = Seq(
-    ClientInfo(
-      "oauth-client-1",
-      "oauth-client-secret-1",
-      Set("foo", "bar", "read", "write", "delete", "fruit", "veggies", "meats", "movies", "foods", "music"),
-      NonEmptyList.one(uri"http://localhost:8000/callback")
-    )
-  )
+  val clients: Seq[ClientInfo] = Seq(ClientInfo.client)
 
   val userInfos: Map[String, UserInfo] = Map(
     "alice" -> UserInfo(
@@ -93,7 +84,7 @@ object AuthorizationServerApp extends IOApp.Simple:
 
   def service(random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
               codesR: Ref[IO, Map[String, AuthorizeCodeCache]])(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root => Ok(AuthorizationServerPage.index(authServer, clients))
+    case GET -> Root => Ok(AuthorizationServerPage.index(AuthServerInfo.authServer, clients))
     case GET -> Root / "authorize" :? AuthorizeParam(authorizeParamValid) => authorizeParamValid.fold(
       msg => Ok(AuthorizationServerPage.error(msg)), param => authorize(param, random, requestsR)
     )
@@ -242,11 +233,11 @@ object AuthorizationServerApp extends IOApp.Simple:
           info"Invalid client using a refresh token, expected ${record.clientId} got $clientId" *>
             removeRecordByRefreshToken(refreshToken) *>
             BadRequest(ErrorInfo("invalid_grant").asJson)
-        case (Some(refreshToken), Some(_)) =>
+        case (Some(refreshToken), Some(record)) =>
           for
             _ <- info"We found a matching refresh token $refreshToken"
             accessToken <- randomString[IO](random, 32)
-            _ <- insertRecord(OAuthTokenRecord(clientId, accessToken.some, None, None, None))
+            _ <- insertRecord(OAuthTokenRecord(clientId, accessToken.some, None, record.scope, record.user))
             _ <- info"Issuing access token $accessToken for refresh token $refreshToken"
             resp <- Ok(OAuthToken(accessToken, AuthScheme.Bearer, body.get("refresh_token").find(_.nonEmpty),
               None, None).asJson)
