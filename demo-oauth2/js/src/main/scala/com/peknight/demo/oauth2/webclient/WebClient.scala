@@ -9,12 +9,12 @@ import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.random.*
 import com.peknight.demo.oauth2.request.*
 import io.circe.Json
+import org.http4s.*
 import org.http4s.circe.*
 import org.http4s.client.dsl.io.*
 import org.http4s.dom.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.*
-import org.http4s.{client as _, *}
 import org.scalajs.dom
 import org.scalajs.dom.{Event, document}
 
@@ -25,7 +25,7 @@ object WebClient:
 
   def main(args: Array[String]): Unit =
     val io: IO[Unit] = for
-      _ <- textContent(oauthScopeValueCls)(client.scope.mkString(" "))
+      _ <- textContent(oauthScopeValueCls)(webClient.scope.mkString(" "))
       _ <- onClick(oauthAuthorizeCls)(_ => handleAuthorizationRequestClick().run())
       callbackDataR <- Ref.of[IO, Option[OAuthToken]](None)
       _ <- onClick(oauthFetchResourceCls)(_ => handleFetchResourceClick(callbackDataR).run())
@@ -91,8 +91,5 @@ object WebClient:
   extension[A] (io: IO[A])
     def run(): Unit =
       import cats.effect.unsafe.implicits.global
-      try
-        io.unsafeRunAndForget()
-      catch
-        case e => println(e)
+      io.unsafeRunAndForget()
   end extension
