@@ -1,23 +1,24 @@
 package com.peknight.demo.oauth2.page
 
+import org.http4s.Uri
 import scalacss.ProdDefaults.{cssEnv, cssStringRenderer}
 import scalacss.internal.ValueT
 import scalacss.internal.ValueT.Color
-import scalatags.Text.all.{style as _, title as _, *}
-import scalatags.Text.tags2.{nav, style, title}
-import scalatags.generic.Frag
+import scalatags.generic.Bundle
 import scalatags.text.Builder
 
-object OAuthPage:
+class OAuthPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, Output, FragT]):
+  import bundle.all.{style as _, title as _, *}
+  import bundle.tags2.{nav, style, title}
 
-  private[oauth2] def jumbotron(pageName: String, navbarBrandLabelPosix: String,
+  protected[oauth2] def jumbotron(pageName: String, navbarBrandLabelPosix: String,
                                 navbarInverseBackgroundColor: ValueT[Color])
-                               (jumbotron: Modifier*): Frag[Builder, String] =
-    skeleton(pageName, navbarBrandLabelPosix, navbarInverseBackgroundColor)(div(cls := "jumbotron")(jumbotron))
+                               (jumbotron: Modifier*): Frag =
+    skeleton(pageName, navbarBrandLabelPosix, navbarInverseBackgroundColor)(div(cls := "jumbotron")(jumbotron))(None)
 
-  private[oauth2] def skeleton(pageName: String, navbarBrandLabelPosix: String,
+  protected[oauth2] def skeleton(pageName: String, navbarBrandLabelPosix: String,
                                navbarInverseBackgroundColor: ValueT[Color])
-                              (main: Modifier*): Frag[Builder, String] =
+                              (main: Modifier*)(scriptSrc: Option[Uri]): Frag =
     html(lang := "en")(
       head(
         meta(charset := "utf-8"),
@@ -43,6 +44,8 @@ object OAuthPage:
           main
         ),
         script(src := "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"),
-        script(src := "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js")
+        script(src := "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"),
+        scriptSrc.map(uri => script(src := uri.toString)).getOrElse("")
       )
     )
+

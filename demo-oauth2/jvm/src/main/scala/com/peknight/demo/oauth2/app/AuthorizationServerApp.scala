@@ -1,18 +1,14 @@
-package com.peknight.demo.oauth2.authorizationserver
+package com.peknight.demo.oauth2.app
 
-import cats.data.{NonEmptyList, OptionT}
 import cats.effect.std.Random
 import cats.effect.{IO, IOApp, Ref}
-import cats.syntax.either.*
 import cats.syntax.option.*
-import cats.syntax.traverse.*
 import com.comcast.ip4s.*
-import com.peknight.demo.oauth2.*
+import com.peknight.demo.oauth2.constant.*
 import com.peknight.demo.oauth2.domain.*
-import fs2.io.file.Files
-import fs2.io.file.Flags.Append
-import fs2.{Stream, text}
-import io.circe.fs2.*
+import com.peknight.demo.oauth2.page.AuthorizationServerPage
+import com.peknight.demo.oauth2.random.*
+import com.peknight.demo.oauth2.repository.*
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.http4s.*
@@ -27,37 +23,8 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
 
 import scala.concurrent.duration.*
-import scala.util.Try
 
-object AuthorizationServerApp extends IOApp.Simple:
-
-  val clients: Seq[ClientInfo] = Seq(ClientInfo.client)
-
-  val userInfos: Map[String, UserInfo] = Map(
-    "alice" -> UserInfo(
-      "9XE3-JI34-00132A",
-      "alice",
-      "Alice",
-      "alice.wonderland@example.com",
-      true
-    ),
-    "bob" -> UserInfo(
-      "1ZT5-OE63-57383B",
-      "bob",
-      "Bob",
-      "bob.loblob@example.net",
-      false
-    ),
-    "carol" -> UserInfo(
-      "F5Q1-L6LGG-959FS",
-      "carol",
-      "Carol",
-      "carol.lewis@example.net",
-      true,
-      "clewis".some,
-      "user password!".some
-    )
-  )
+object AuthorizationServerApp extends IOApp.Simple :
 
   //noinspection HttpUrlsUsage
   val run: IO[Unit] =
@@ -78,15 +45,18 @@ object AuthorizationServerApp extends IOApp.Simple:
 
 
   given CanEqual[Path, Path] = CanEqual.derived
+
   given CanEqual[Method, Method] = CanEqual.derived
+
   given CanEqual[CIString, AuthScheme] = CanEqual.derived
+
   given CanEqual[Uri, Uri] = CanEqual.derived
 
   def service(random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
               codesR: Ref[IO, Map[String, AuthorizeCodeCache]])(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root => Ok(AuthorizationServerPage.index(AuthServerInfo.authServer, clients))
+    case GET -> Root => Ok(AuthorizationServerPage.Text.index(authServer, clients))
     case GET -> Root / "authorize" :? AuthorizeParam(authorizeParamValid) => authorizeParamValid.fold(
-      msg => Ok(AuthorizationServerPage.error(msg)), param => authorize(param, random, requestsR)
+      msg => Ok(AuthorizationServerPage.Text.error(msg)), param => authorize(param, random, requestsR)
     )
     case req @ POST -> Root / "approve" => req.as[UrlForm].flatMap(body => approve(body, random, requestsR, codesR))
     case req @ POST -> Root / "token" => req.as[UrlForm].flatMap(body => token(req, body, random, codesR))
@@ -95,11 +65,11 @@ object AuthorizationServerApp extends IOApp.Simple:
   def authorize(param: AuthorizeParam, random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]])
                (using Logger[IO]): IO[Response[IO]] =
     getClient(param.clientId) match
-      case None => info"Unknown client ${param.clientId}" *> Ok(AuthorizationServerPage.error("Unknown client"))
+      case None => info"Unknown client ${param.clientId}" *> Ok(AuthorizationServerPage.Text.error("Unknown client"))
       case Some(client) => client.redirectUris.find(_ == param.redirectUri) match
         case None =>
           info"Mismatched redirect URI, expected ${client.redirectUris.toList.mkString(" ")} got ${param.redirectUri}" *>
-            Ok(AuthorizationServerPage.error("Invalid redirect URI"))
+            Ok(AuthorizationServerPage.Text.error("Invalid redirect URI"))
         case Some(redirectUri) =>
           if param.scope.diff(client.scope).nonEmpty then
             Found(Location(redirectUri.withQueryParam("error", "invalid_scope")))
@@ -107,16 +77,16 @@ object AuthorizationServerApp extends IOApp.Simple:
             for
               reqId <- randomString[IO](random, 8)
               _ <- requestsR.update(_ + (reqId -> param))
-              resp <- Ok(AuthorizationServerPage.approve(client, reqId, param.scope.toList))
+              resp <- Ok(AuthorizationServerPage.Text.approve(client, reqId, param.scope.toList))
             yield resp
   end authorize
 
   def approve(body: UrlForm, random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
               codesR: Ref[IO, Map[String, AuthorizeCodeCache]])(using Logger[IO]): IO[Response[IO]] =
     body.get("reqid").find(_.nonEmpty) match
-      case None => Ok(AuthorizationServerPage.error("No matching authorization request"))
+      case None => Ok(AuthorizationServerPage.Text.error("No matching authorization request"))
       case Some(reqId) => requestsR.modify(requests => (requests.removed(reqId), requests.get(reqId))).flatMap {
-        case None => Ok(AuthorizationServerPage.error("No matching authorization request"))
+        case None => Ok(AuthorizationServerPage.Text.error("No matching authorization request"))
         case Some(query) => body.get("approve").find(_ == "Approve") match
           case Some(_) => query.responseType match
             case ResponseType.Code => checkScope(body, query) { scope =>
@@ -137,7 +107,7 @@ object AuthorizationServerApp extends IOApp.Simple:
                 case None =>
                   val username = user.getOrElse("None")
                   info"Unknown user $username" *>
-                    InternalServerError(AuthorizationServerPage.error(s"Unknown user $username"))
+                    InternalServerError(AuthorizationServerPage.Text.error(s"Unknown user $username"))
                 case Some(userInfo) =>
                   for
                     _ <- info"User $userInfo"
@@ -204,7 +174,7 @@ object AuthorizationServerApp extends IOApp.Simple:
             case None =>
               val preferredUsername = cache.user.getOrElse("None")
               info"Unknown user $preferredUsername" *>
-                InternalServerError(AuthorizationServerPage.error(s"Unknown user $preferredUsername"))
+                InternalServerError(AuthorizationServerPage.Text.error(s"Unknown user $preferredUsername"))
         case (_, Some(cache)) =>
           info"Client mismatch, expected ${cache.authorizationEndpointRequest.clientId} got $clientId" *> invalidGrantResp
         case (code, _) => info"Unknown code, ${code.getOrElse("None")}" *>
@@ -226,7 +196,7 @@ object AuthorizationServerApp extends IOApp.Simple:
   def refreshToken(clientId: String, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
     for
       refreshTokenRecord <- body.get("refresh_token").find(_.nonEmpty) match
-        case r @ Some(refreshToken) => getRecordByRefreshToken(refreshToken).map(r -> _)
+        case r@Some(refreshToken) => getRecordByRefreshToken(refreshToken).map(r -> _)
         case None => IO((none[String], none[OAuthTokenRecord]))
       resp <- refreshTokenRecord match
         case (Some(refreshToken), Some(record)) if record.clientId != clientId =>

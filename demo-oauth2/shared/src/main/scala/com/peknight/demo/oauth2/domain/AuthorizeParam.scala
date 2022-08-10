@@ -5,19 +5,13 @@ import cats.syntax.apply.*
 import cats.syntax.either.*
 import cats.syntax.option.*
 import cats.syntax.validated.*
-import com.peknight.demo.oauth2.domain.AuthorizeParam.{clientIdKey, redirectUriKey, responseTypeKey, scopeKey, stateKey}
+import com.peknight.demo.oauth2.constant.*
 import org.http4s.Uri
 
 case class AuthorizeParam(clientId: String, redirectUri: Uri, scope: Set[String], responseType: ResponseType,
                           state: Option[String])
 
 object AuthorizeParam:
-
-  val clientIdKey = "client_id"
-  val redirectUriKey = "redirect_uri"
-  val scopeKey = "scope"
-  val responseTypeKey = "response_type"
-  val stateKey = "state"
 
   def unapply(params: Map[String, collection.Seq[String]]): Some[Validated[String, AuthorizeParam]] =
     Some {

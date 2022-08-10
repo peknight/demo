@@ -1,38 +1,16 @@
-package com.peknight.demo
+package com.peknight.demo.oauth2
 
-import cats.{Applicative, Functor}
-import cats.data.OptionT
-import cats.effect.std.Random
-import cats.effect.{Async, IO, Resource}
-import cats.syntax.functor.*
-import cats.syntax.option.*
-import cats.syntax.traverse.*
-import com.comcast.ip4s.*
+import cats.effect.IO
 import com.peknight.demo.oauth2.domain.OAuthTokenRecord
 import fs2.io.file.Flags.Append
 import fs2.io.file.{Files, Path}
 import fs2.{Stream, text}
 import io.circe.fs2.{byteStreamParser, decoder}
-import org.http4s.HttpApp
-import org.http4s.ember.server.EmberServerBuilder
-import org.http4s.server.Server
-import org.http4s.server.middleware.Logger
 import io.circe.syntax.*
+
 import scala.concurrent.duration.*
 
-package object oauth2:
-
-  val serverHost = host"localhost"
-
-  def start[F[_]: Async](port: Port)(httpApp: HttpApp[F]): F[(Server, F[Unit])] =
-    EmberServerBuilder.default[F]
-      .withHost(serverHost)
-      .withPort(port)
-      .withHttpApp(Logger.httpApp(true, true)(httpApp))
-      .build.allocated
-
-  def randomString[F[_]: Applicative](random: Random[F], length: Int): F[String] =
-    List.fill(length)(random.nextAlphaNumeric).sequence.map(_.mkString)
+package object repository:
 
   private[this] val databaseNoSqlPath: Path = Path("demo-oauth2/database.nosql")
 
@@ -68,13 +46,8 @@ package object oauth2:
         case OAuthTokenRecord(_, _, Some(refresh), _, _) if refresh == refreshToken => false
         case _ => true
       }.compile.toList
-      _ <- Stream(records.map(record => s"${record.asJson.deepDropNullValues.noSpaces}\n")*).covary[IO]
+      _ <- Stream(records.map(record => s"${record.asJson.deepDropNullValues.noSpaces}\n") *).covary[IO]
         .through(text.utf8.encode)
         .through(Files[IO].writeAll(databaseNoSqlPath))
         .compile.drain
     yield ()
-
-  extension [F[_]: Functor, A](fa: F[A])
-    def optionT = OptionT(fa.map(_.some))
-
-

@@ -335,6 +335,9 @@ lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth
     ),
   )
   .jsSettings(
+    scalaJSUseMainModuleInitializer := true,
+    Compile / mainClass := Some("com.peknight.demo.oauth2.webclient.WebClient"),
+    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
     libraryDependencies ++= Seq(
       "org.http4s" %%% "http4s-dom" % http4sVersion,
     ),

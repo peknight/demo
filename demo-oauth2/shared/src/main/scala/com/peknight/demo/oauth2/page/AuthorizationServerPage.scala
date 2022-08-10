@@ -1,17 +1,15 @@
-package com.peknight.demo.oauth2.authorizationserver
+package com.peknight.demo.oauth2.page
 
-import com.peknight.demo.oauth2.domain.{AuthServerInfo, ClientInfo}
-import com.peknight.demo.oauth2.page.{OAuthPage, OAuthStyles}
-import scalacss.ProdDefaults.{cssEnv, cssStringRenderer}
+import com.peknight.demo.oauth2.domain.*
 import scalacss.internal.Dsl.c
-import scalatags.Text.all.{style as _, title as _, *}
-import scalatags.Text.tags2.{nav, style, title}
-import scalatags.generic.Frag
+import scalatags.generic.Bundle
 import scalatags.text.Builder
 
-object AuthorizationServerPage:
+class AuthorizationServerPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Builder, Output, FragT])
+  extends OAuthPage(bundle):
+  import bundle.all.*
 
-  def index(authServer: AuthServerInfo, clients: Seq[ClientInfo]): Frag[Builder, String] =
+  def index(authServer: AuthServerInfo, clients: Seq[ClientInfo]): Frag =
     val clientElements = for client <- clients yield
       ul(
         li(b("client_id: "), code(client.id)),
@@ -31,9 +29,9 @@ object AuthorizationServerPage:
     )
   end index
 
-  def error(error: String): Frag[Builder, String] = skeleton(h2(cls := "text-danger")("Error"), error)
+  def error(error: String): Frag = skeleton(h2(cls := "text-danger")("Error"), error)
 
-  def approve(client: ClientInfo, reqId: String, scopes: List[String]): Frag[Builder, String] =
+  def approve(client: ClientInfo, reqId: String, scopes: List[String]): Frag =
     skeleton(
       h2("Approve this client?"),
       client.name.fold[Modifier]("")(name => p(b("Name: "), code(name))),
@@ -66,5 +64,11 @@ object AuthorizationServerPage:
     )
   end approve
 
-  private[this] def skeleton(jumbotron: Modifier*): Frag[Builder, String] =
-    OAuthPage.jumbotron("Authorization Server", "danger", c"#322")(jumbotron)
+  private[this] def skeleton(jumbotron: Modifier*): Frag =
+    super.jumbotron("Authorization Server", "danger", c"#322")(jumbotron)
+
+end AuthorizationServerPage
+
+object AuthorizationServerPage:
+  object Text extends AuthorizationServerPage(scalatags.Text)
+end AuthorizationServerPage

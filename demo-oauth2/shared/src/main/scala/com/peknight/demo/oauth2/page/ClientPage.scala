@@ -1,20 +1,20 @@
-package com.peknight.demo.oauth2.client
+package com.peknight.demo.oauth2.page
 
+import com.peknight.demo.oauth2.constant.*
 import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.domain.WordsResult.*
-import com.peknight.demo.oauth2.page.{OAuthPage, OAuthStyles}
 import io.circe.Json
 import org.http4s.Method.GET
-import scalacss.ProdDefaults.{cssEnv, cssStringRenderer}
+import org.http4s.Uri
+import org.http4s.syntax.literals.uri
 import scalacss.internal.Dsl.c
-import scalatags.Text.all.{style as _, title as _, *}
-import scalatags.Text.tags2.{nav, style, title}
-import scalatags.generic.Frag
+import scalatags.generic.Bundle
 import scalatags.text.Builder
 
-object ClientPage:
+class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Builder, Output, FragT]) extends OAuthPage(bundle):
+  import bundle.all.*
 
-  def index(oauthTokenCache: OAuthTokenCache): Frag[Builder, String] = jumbotron(
+  def index(oauthTokenCache: OAuthTokenCache): Frag = jumbotron(
     p("Access token value: ", span(cls := "label label-danger")(oauthTokenCache.accessToken.getOrElse("NONE"))),
     p("Scope value: ", span(cls := "label label-danger")(oauthTokenCache.scope.map(_.mkString(" ")).getOrElse("NONE"))),
     p("Refresh token value: ", span(cls := "label label-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
@@ -26,11 +26,24 @@ object ClientPage:
     a(cls := "btn btn-default", href := "/favorites")("Access the Favorites API")
   )
 
-  def error(error: String): Frag[Builder, String] = jumbotron(h2(cls := "text-danger")("Error"), error)
+  val webIndex: Frag = skeleton(
+    div(cls := "jumbotron")(
+      p("Scope value: ", span(cls := s"label label-danger $oauthScopeValueCls")),
+      p("Access token value: ", span(cls := s"label label-danger $oauthAccessTokenCls")),
+      button(cls := s"btn btn-default $oauthAuthorizeCls", `type` := "button")("Get OAuth Token"),
+      button(cls := s"btn btn-default $oauthFetchResourceCls", `type` := "button")("Get Protected Resource")
+    ),
+    div(cls := "jumbotron")(
+      h2("Data from protected resource:"),
+      pre(span(cls := oauthProtectedResourceCls))
+    )
+  )(Some(uri"/webclient.js"))
 
-  def data(resource: Json): Frag[Builder, String] = jumbotron(h2("Data from protected resource:"), pre(resource.spaces4))
+  def error(error: String): Frag = jumbotron(h2(cls := "text-danger")("Error"), error)
 
-  def words(words: Seq[String], timestamp: Long, result: WordsResult): Frag[Builder, String] = skeleton(
+  def data(resource: Json): Frag = jumbotron(h2("Data from protected resource:"), pre(resource.spaces4))
+
+  def words(words: Seq[String], timestamp: Long, result: WordsResult): Frag = skeleton(
     div(cls := "row")(
       div(cls := "col-md-4")(
         div(cls := "well")(
@@ -71,9 +84,9 @@ object ClientPage:
         )
       )
     )
-  )
+  )(None)
 
-  def produce(scope: Set[String], data: ProduceData): Frag[Builder, String] = jumbotron(
+  def produce(scope: Set[String], data: ProduceData): Frag = jumbotron(
     h2("Produce API"),
     p("Current scope:", span(cls := "label label-info")(scope.mkString(" "))),
     p("Fruits:"),
@@ -85,7 +98,7 @@ object ClientPage:
     a(href := "/produce", cls := "btn btn-default")("Get Produce")
   )
 
-  def favorites(data: UserFavoritesData): Frag[Builder, String] = jumbotron(
+  def favorites(data: UserFavoritesData): Frag = jumbotron(
     h2("Favorites API"),
     p(s"Resource owner's name: ${data.user}"),
     p("Movies:"),
@@ -97,10 +110,14 @@ object ClientPage:
     a(href := "/favorites", cls := "btn btn-default")("Get Favorites")
   )
 
-  private[this] def jumbotron(jumbotron: Modifier*): Frag[Builder, String] =
-    OAuthPage.jumbotron("Client", "primary", c"#223")(jumbotron)
+  private[this] def jumbotron(jumbotron: Modifier*): Frag =
+    super.jumbotron("Client", "primary", c"#223")(jumbotron)
 
-  private[this] def skeleton(main: Modifier*): Frag[Builder, String] =
-    OAuthPage.skeleton("Client", "primary", c"#223")(main)
+  private[this] def skeleton(main: Modifier*)(scriptSrc: Option[Uri]): Frag =
+    super.skeleton("Client", "primary", c"#223")(main)(scriptSrc)
 
+end ClientPage
 
+object ClientPage:
+  object Text extends ClientPage(scalatags.Text)
+end ClientPage
