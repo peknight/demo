@@ -7,6 +7,7 @@ import cats.syntax.functor.*
 import cats.syntax.option.*
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.constant.*
+import com.peknight.demo.oauth2.data.*
 import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.page.ProtectedResourcePage
 import com.peknight.demo.oauth2.random.*
@@ -121,6 +122,3 @@ object ProtectedResourceApp extends IOApp.Simple :
       case _ => info"No matching token was found." *>
         Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "localhost:8002")))
     }
-
-  extension[F[_] : Functor, A] (fa: F[A])
-    def optionT = OptionT(fa.map(_.some))

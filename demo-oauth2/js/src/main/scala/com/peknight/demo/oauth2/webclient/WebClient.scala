@@ -1,10 +1,12 @@
 package com.peknight.demo.oauth2.webclient
 
+import cats.data.OptionT
 import cats.effect.std.Random
 import cats.effect.{IO, Ref}
 import cats.syntax.option.*
 import cats.syntax.traverse.*
 import com.peknight.demo.oauth2.constant.*
+import com.peknight.demo.oauth2.data.*
 import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.random.*
 import com.peknight.demo.oauth2.request.*
@@ -23,20 +25,18 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 
 object WebClient:
 
-  def main(args: Array[String]): Unit =
-    val io: IO[Unit] = for
+  def main(args: Array[String]): Unit = init.run()
+
+  val init: IO[Unit] =
+    for
       _ <- textContent(oauthScopeValueCls)(webClient.scope.mkString(" "))
-      _ <- onClick(oauthAuthorizeCls)(_ => handleAuthorizationRequestClick().run())
+      _ <- onClick(oauthAuthorizeCls)(_ => handleAuthorizationRequestClick)
       callbackDataR <- Ref.of[IO, Option[OAuthToken]](None)
-      _ <- onClick(oauthFetchResourceCls)(_ => handleFetchResourceClick(callbackDataR).run())
-      hashOption <- IO(Option(dom.window.location.hash))
-      _ <- hashOption.fold(IO.unit)(_ => processCallback(callbackDataR))
+      _ <- onClick(oauthFetchResourceCls)(_ => handleFetchResourceClick(callbackDataR))
+      _ <- processCallback(callbackDataR)
     yield ()
-    io.run()
-  end main
 
-
-  def handleAuthorizationRequestClick(): IO[Unit] =
+  val handleAuthorizationRequestClick: IO[Unit] =
     for
       random <- Random.scalaUtilRandom[IO]
       state <- randomString(random, 32)
@@ -48,36 +48,56 @@ object WebClient:
     yield ()
 
   def handleFetchResourceClick(callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
+    OptionT(callbackDataR.get).flatMap(oauthToken => fetchResource(oauthToken).optionT).value.void
+
+  def fetchResource(callbackData: OAuthToken): IO[Unit] =
     for
-      callbackDataOption <- callbackDataR.get
-      _ <- callbackDataOption.fold(IO.unit) { callbackData =>
-        for
-          respEither <- FetchClientBuilder[IO].create.expect[Json](resourceRequest(callbackData.accessToken)).attempt
-          text = respEither.fold(_ => "Error while fetching the protected resource", _.spaces4)
-          _ <- textContent(oauthProtectedResourceCls)(text)
-        yield ()
-      }
+      respEither <- FetchClientBuilder[IO].create.expect[Json](resourceRequest(callbackData.accessToken)).attempt
+      text = respEither.fold(_ => "Error while fetching the protected resource", _.spaces4)
+      _ <- textContent(oauthProtectedResourceCls)(text)
     yield ()
 
   def processCallback(callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
-    IO(Option(dom.window.location.hash))
-      .flatMap(_.filter(_.nonEmpty).flatMap(hash => OAuthToken.from(hash.substring(1)).toOption).fold(IO.unit) {
-        oauthToken => IO(Option(dom.window.localStorage.getItem(oauthStateKey))).flatMap { stateOption =>
-          stateOption match
-            case Some(state) if oauthToken.state.contains(state) =>
-              callbackDataR.set(Some(oauthToken)) *>
-                textContent(oauthAccessTokenCls)(oauthToken.accessToken) *>
-                IO.println(s"access_token: ${oauthToken.accessToken}")
-            case _ =>
-              IO.println(s"State DOES NOT MATCH: expected ${stateOption.getOrElse("None")} got ${oauthToken.state.getOrElse("None")}") *>
-                callbackDataR.set(None) *>
-                textContent(oauthProtectedResourceCls)("Error state value did not match")
-        }
-      })
+    val processOptionT: OptionT[IO, Unit] = for
+      hash <- IO(dom.window.location.hash).optionT if hash.nonEmpty
+      oauthToken <- OptionT(OAuthToken.from(Uri.decode(hash.substring(1)))
+        .fold[IO[Option[OAuthToken]]](msg => IO.println(msg) *> IO.pure(None), oauthToken => IO.pure(oauthToken.some)))
+      _ <- checkStateAndUpdateCallbackData(oauthToken, callbackDataR).optionT
+    yield ()
+    processOptionT.value.void
   end processCallback
 
-  private[this] def onClick[T <: Event](cls: String)(listener: js.Function1[T, _]): IO[Unit] =
-    traverseElements(cls)(element => IO(element.addEventListener("click", listener))).void
+  def checkStateAndUpdateCallbackData(oauthToken: OAuthToken, callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
+    for
+      localStateOption <- IO(Option(dom.window.localStorage.getItem(oauthStateKey)))
+      _ <- localStateOption.filter(oauthToken.state.contains)
+        .fold[IO[Unit]](stateNotMatch(localStateOption, oauthToken.state, callbackDataR)) { _ =>
+          updateCallbackData(oauthToken, callbackDataR)
+        }
+    yield ()
+
+  def stateNotMatch(localStateOption: Option[String], callbackStateOption: Option[String],
+                    callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
+    val localState = localStateOption.getOrElse("None")
+    val callbackState = callbackStateOption.getOrElse("None")
+    for
+      _ <- IO.println(s"State DOES NOT MATCH: expected $localState got $callbackState")
+      _ <- callbackDataR.set(None)
+      _ <- textContent(oauthProtectedResourceCls)("Error state value did not match")
+    yield ()
+
+  def updateCallbackData(oauthToken: OAuthToken, callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
+    for
+      _ <- callbackDataR.set(Some(oauthToken))
+      _ <- textContent(oauthAccessTokenCls)(oauthToken.accessToken)
+      _ <- IO.println(s"access_token: ${oauthToken.accessToken}")
+    yield ()
+
+  private[this] def onClick[T <: Event](cls: String)(f: T => IO[Unit]): IO[Unit] =
+    traverseElements(cls)(element => addEventListener(element)("click")(f)).void
+
+  private[this] def addEventListener[T <: Event, A](target: dom.EventTarget)(`type`: String)(f: T => IO[A]): IO[Unit] =
+    IO(target.addEventListener(`type`, (event: T) => f(event).run()))
 
   private[this] def textContent(cls: String)(text: String): IO[Unit] =
     traverseElements(cls)(element => IO(element.textContent = text)).void

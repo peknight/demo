@@ -35,15 +35,31 @@ package object constant:
   val client: ClientInfo = ClientInfo(
     "oauth-client-1",
     "oauth-client-secret-1",
-    Set("foo", "bar", "read", "write", "delete", "fruit", "veggies", "meats", "movies", "foods", "music"),
+    Set("foo", "bar", "read", "write", "delete", "fruit", "veggies", "meats", "movies", "foods", "music", "openid",
+      "profile", "email", "phone", "address"),
     NonEmptyList.one(uri"http://localhost:8000/callback")
   )
 
   val webClient: ClientInfo = ClientInfo(
     "oauth-web-client-1",
     "oauth-web-client-secret-1",
-    Set("foo", "bar"),
+    Set("foo", "bar", "openid", "profile", "email", "address", "phone"),
     NonEmptyList.one(uri"http://localhost:8010/callback")
+  )
+
+  val clients: Seq[ClientInfo] = Seq(client, webClient,
+    ClientInfo(
+      "oauth-client-2",
+      "oauth-client-secret-1",
+      Set("bar"),
+      NonEmptyList.one(uri"http://localhost:8000/callback")
+    ),
+    ClientInfo(
+      "native-client-1",
+      "oauth-native-secret-1",
+      Set("foo", "bar"),
+      NonEmptyList.one(uri"com.oauthinaction.mynativeapp://")
+    )
   )
 
   val protectedResource = uri"http://localhost:8002/resource"
@@ -54,9 +70,22 @@ package object constant:
 
   val favoritesApi = uri"http://localhost:8002/favorites"
 
-  val rsaKey: RsaKey = RsaKey("RS256", "AQAB", "p8eP5gL1H_H9UNzCuQS-vNRVz3NWxZTHYk1tG9VpkfFjWNKG3MFTNZJ1l5g_COMm2_2i_YhQNH8MJ_nQ4exKMXrWJB4tyVZohovUxfw-eLgu1XQ8oYcVYW8ym6Um-BkqwwWL6CXZ70X81YyIMrnsGTyTV6M8gBPun8g2L8KbDbXR1lDfOOWiZ2ss1CRLrmNM-GRp3Gj-ECG7_3Nx9n_s5to2ZtwJ1GS1maGjrSZ9GRAYLrHhndrL_8ie_9DS2T-ML7QNQtNkg2RvLv4f0dpjRYI23djxVtAylYK4oiT_uEMgSkc4dxwKwGuBxSO0g9JOobgfy0--FUHHYtRi0dOFZw", "RSA", "authserver")
+  val sharedTokenSecret = "shared token secret!"
+
+  val rsaKey: RsaKey = RsaKey(
+    "RS256",
+    "ZXFizvaQ0RzWRbMExStaS_-yVnjtSQ9YslYQF1kkuIoTwFuiEQ2OywBfuyXhTvVQxIiJqPNnUyZR6kXAhyj__wS_Px1EH8zv7BHVt1N5TjJGlubt1dhAFCZQmgz0D-PfmATdf6KLL4HIijGrE8iYOPYIPF_FL8ddaxx5rsziRRnkRMX_fIHxuSQVCe401hSS3QBZOgwVdWEb1JuODT7KUk7xPpMTw5RYCeUoCYTRQ_KO8_NQMURi3GLvbgQGQgk7fmDcug3MwutmWbpe58GoSCkmExUS0U-KEkHtFiC8L6fN2jXh1whPeRCa9eoIK8nsIY05gnLKxXTn5-aPQzSy6Q",
+    "AQAB",
+    "p8eP5gL1H_H9UNzCuQS-vNRVz3NWxZTHYk1tG9VpkfFjWNKG3MFTNZJ1l5g_COMm2_2i_YhQNH8MJ_nQ4exKMXrWJB4tyVZohovUxfw-eLgu1XQ8oYcVYW8ym6Um-BkqwwWL6CXZ70X81YyIMrnsGTyTV6M8gBPun8g2L8KbDbXR1lDfOOWiZ2ss1CRLrmNM-GRp3Gj-ECG7_3Nx9n_s5to2ZtwJ1GS1maGjrSZ9GRAYLrHhndrL_8ie_9DS2T-ML7QNQtNkg2RvLv4f0dpjRYI23djxVtAylYK4oiT_uEMgSkc4dxwKwGuBxSO0g9JOobgfy0--FUHHYtRi0dOFZw",
+    "RSA",
+    "authserver"
+  )
 
   val resource: Resource = Resource("Protected Resource", "This data has been protected by OAuth 2.0")
+
+  val protectedResource: ProtectedResource = ProtectedResource("protected-resource-1", "protected-resource-secret-1")
+
+  val protectedResources: Seq[ProtectedResource] = Seq(protectedResource)
 
   val aliceFavorites: FavoritesData = FavoritesData(
     Seq("The Multidimensional Vector", "Space Fights", "Jewelry Boss"),
@@ -70,22 +99,24 @@ package object constant:
     Seq("baroque", "ukulele", "baroque ukulele")
   )
 
-  val clients: Seq[ClientInfo] = Seq(client, webClient)
-
   val userInfos: Map[String, UserInfo] = Map(
     "alice" -> UserInfo(
       "9XE3-JI34-00132A",
       "alice",
       "Alice",
       "alice.wonderland@example.com",
-      true
+      true,
+      "alice".some,
+      "password".some
     ),
     "bob" -> UserInfo(
       "1ZT5-OE63-57383B",
       "bob",
       "Bob",
       "bob.loblob@example.net",
-      false
+      false,
+      "bob".some,
+      "this is my secret password".some
     ),
     "carol" -> UserInfo(
       "F5Q1-L6LGG-959FS",

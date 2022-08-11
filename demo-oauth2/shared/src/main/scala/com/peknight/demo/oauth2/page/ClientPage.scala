@@ -4,7 +4,7 @@ import com.peknight.demo.oauth2.constant.*
 import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.domain.WordsResult.*
 import io.circe.Json
-import org.http4s.Method.GET
+import org.http4s.Method.{GET, POST}
 import org.http4s.Uri
 import org.http4s.syntax.literals.uri
 import scalacss.internal.Dsl.c
@@ -19,6 +19,8 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     p("Scope value: ", span(cls := "label label-danger")(oauthTokenCache.scope.map(_.mkString(" ")).getOrElse("NONE"))),
     p("Refresh token value: ", span(cls := "label label-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
     a(cls := "btn btn-default", href := "/authorize")("Get OAuth Token"), " ",
+    a(cls := "btn btn-default", href := "/client_credentials")("Client Credentials"), " ",
+    a(cls := "btn btn-default", href := "/username_password")("Username Password"), " ",
     a(cls := "btn btn-default", href := "/refresh")("Refresh Access Token"), " ",
     a(cls := "btn btn-default", href := "/fetch_resource")("Get Protected Resource"), " ",
     a(cls := "btn btn-default", href := "/words")("Access the Words API"), " ",
@@ -30,14 +32,14 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     div(cls := "jumbotron")(
       p("Scope value: ", span(cls := s"label label-danger $oauthScopeValueCls")),
       p("Access token value: ", span(cls := s"label label-danger $oauthAccessTokenCls")),
-      button(cls := s"btn btn-default $oauthAuthorizeCls", `type` := "button")("Get OAuth Token"),
+      button(cls := s"btn btn-default $oauthAuthorizeCls", `type` := "button")("Get OAuth Token"), " ",
       button(cls := s"btn btn-default $oauthFetchResourceCls", `type` := "button")("Get Protected Resource")
     ),
     div(cls := "jumbotron")(
       h2("Data from protected resource:"),
       pre(span(cls := oauthProtectedResourceCls))
     )
-  )(Some(uri"/webclient.js"))
+  )(Some(uri"/main.js"))
 
   def error(error: String): Frag = jumbotron(h2(cls := "text-danger")("Error"), error)
 
@@ -108,6 +110,44 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     p("Music:"),
     ul(data.favorites.music.map(li(_))),
     a(href := "/favorites", cls := "btn btn-default")("Get Favorites")
+  )
+
+  def protectedResource(accessToken: String): Frag = jumbotron(
+    "Access token value: ", span(cls := "label label-danger")(accessToken),
+    a(cls := "btn btn-default", href := "/call_resource")("Get Protected Resource")
+  )
+
+  def revoke(oauthTokenCache: OAuthTokenCache): Frag = jumbotron(
+    p("Access token value: ", span(cls := "label label-danger")(oauthTokenCache.accessToken.getOrElse("NONE"))),
+    p("Scope value: ", span(cls := "label label-danger")(oauthTokenCache.scope.map(_.mkString(" ")).getOrElse("NONE"))),
+    p("Refresh token value: ", span(cls := "label label-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
+    form(action := "/revoke", cls := "form", method := POST.name)(
+      a(cls := "btn btn-default", href := "/authorize")("Get OAuth Token"), " ",
+      input(`type` := "submit", cls := "btn btn-default", value := "Revoke OAuthToken")
+    )
+  )
+
+  def userInfo(idToken: Option[IdToken], userInfo: Option[UserInfo]): Frag = jumbotron(
+    p("Logged in user subject ", span(cls := "label label-default")(idToken.map(_.sub).getOrElse("None")),
+      " from issuer ", span(cls := "label label-default")(idToken.map(_.iss.toString).getOrElse("None")), "."),
+    p("User information: ", userInfo.fold[Frag]("")(user => ul(
+      li(b("sub"), s": ${user.sub}"),
+      li(b("preferred_username"), s": ${user.preferredUsername}"),
+      li(b("name"), s": ${user.name}"),
+      li(b("email"), s": ${user.email}"),
+      li(b("email_verified"), s": ${user.emailVerified}"),
+      user.username.fold[Frag]("")(username => li(b("username"), s": $username")),
+      user.password.fold[Frag]("")(password => li(b("password"), s": $password"))
+    )))
+  )
+
+  val usernamePassword: Frag = jumbotron(
+    h3("Get an access token"),
+    form(cls := "form", action := "/username_password", method := POST.name)(
+      input(`type` := "text", name := "username", placeholder := "username"), " ",
+      input(`type` := "password", name := "password", placeholder := "password"), " ",
+      input(`type` := "submit", cls := "btn btn-warning", href := "/", value := "Get an access token")
+    )
   )
 
   private[this] def jumbotron(jumbotron: Modifier*): Frag =

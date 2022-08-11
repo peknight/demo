@@ -69,6 +69,11 @@ object ClientApp extends IOApp.Simple :
     HttpRoutes.of[IO] {
       case GET -> Root => oauthTokenCacheR.get.flatMap(oauthTokenCache => Ok(ClientPage.Text.index(oauthTokenCache)))
       case GET -> Root / "authorize" => authorize(stateR, random)
+      // 客户端凭据许可类型
+      case GET -> Root / "client_credentials" => clientCredentials(oauthTokenCacheR)
+      case GET -> Root / "username_password" => Ok(ClientPage.Text.usernamePassword)
+      case req @ POST -> Root / "username_password" =>
+        req.as[UrlForm].flatMap(body => usernamePassword(body, oauthTokenCacheR))
       case GET -> Root / "callback" :? CodeQueryParamMatcher(code) +& StateQueryParamMatcher(state) =>
         stateR.get.flatMap(originState =>
           if !originState.contains(state) then callbackStateNotMatch(originState, state)
@@ -97,6 +102,36 @@ object ClientApp extends IOApp.Simple :
       resp <- Found(Location(authorizeUrl))
     yield resp
 
+  def clientCredentials(oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
+    val req: Request[IO] = POST(
+      UrlForm(
+        "grant_type" -> GrantType.ClientCredentials.value,
+        "scope" -> client.scope.mkString(" ")
+      ),
+      authServer.tokenEndpoint,
+      basicHeaders
+    )
+    fetchOAuthToken(req, oauthTokenCacheR)
+
+  def usernamePassword(body: UrlForm, oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
+    val reqOption: Option[Request[IO]] =
+      for
+        username <- body.get("username").find(_.nonEmpty)
+        password <- body.get("password").find(_.nonEmpty)
+      yield POST(
+        UrlForm(
+          "grant_type" -> GrantType.Password.value,
+          "username" -> username,
+          "password" -> password,
+          "scope" -> client.scope.mkString(" ")
+        ),
+        authServer.tokenEndpoint,
+        basicHeaders
+      )
+    reqOption.fold[IO[Response[IO]]](Ok(ClientPage.Text.error("Param error")))(req =>
+      fetchOAuthToken(req, oauthTokenCacheR)
+    )
+
   def callbackStateNotMatch(originState: Option[String], state: String)(using Logger[IO]): IO[Response[IO]] =
     for
       _ <- warn"State DOES NOT MATCH: expected ${originState.getOrElse("None")} got $state"
@@ -104,21 +139,7 @@ object ClientApp extends IOApp.Simple :
     yield stateResp
 
   def callbackWithCode(oauthTokenCacheR: Ref[IO, OAuthTokenCache], code: String)(using Logger[IO]): IO[Response[IO]] =
-    for
-      _ <- info"Requesting access token for code $code"
-      resp <- runHttpRequest(tokenRequest(code)) { response =>
-        for
-          oauthToken <- response.as[OAuthToken]
-          oauthTokenCache <- updateOAuthTokenCache(oauthTokenCacheR, oauthToken)
-          resp <- Ok(ClientPage.Text.index(oauthTokenCache))
-        yield resp
-      } { statusCode =>
-        Ok(ClientPage.Text.error(s"Unable to fetch access token, server response: $statusCode"))
-      }
-    yield resp
-
-  def tokenRequest(code: String): Request[IO] =
-    POST(
+    val req: Request[IO] = POST(
       UrlForm(
         "grant_type" -> GrantType.AuthorizationCode.value,
         "code" -> code,
@@ -127,8 +148,23 @@ object ClientApp extends IOApp.Simple :
         "redirect_uri" -> client.redirectUris.head.toString
       ),
       authServer.tokenEndpoint,
-      Headers(Authorization(BasicCredentials(Uri.encode(client.id), Uri.encode(client.secret))))
+      basicHeaders
     )
+    for
+      _ <- info"Requesting access token for code $code"
+      resp <- fetchOAuthToken(req, oauthTokenCacheR)
+    yield resp
+
+  def fetchOAuthToken(req: Request[IO], oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
+    runHttpRequest(req) { response =>
+      for
+        oauthToken <- response.as[OAuthToken]
+        oauthTokenCache <- updateOAuthTokenCache(oauthTokenCacheR, oauthToken)
+        resp <- Ok(ClientPage.Text.index(oauthTokenCache))
+      yield resp
+    } { statusCode =>
+      Ok(ClientPage.Text.error(s"Unable to fetch access token, server response: $statusCode"))
+    }
 
   def refresh(oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
     for
@@ -237,7 +273,7 @@ object ClientApp extends IOApp.Simple :
         // "client_secret" -> client.secret
       ).updateFormFields("redirect_uri", Chain.fromSeq(client.redirectUris.toList)),
       authServer.tokenEndpoint,
-      Headers(Authorization(BasicCredentials(Uri.encode(client.id), Uri.encode(client.secret))))
+      basicHeaders
     )
 
   private[this] def getOrRefreshAccessToken(oauthTokenCacheR: Ref[IO, OAuthTokenCache])
@@ -248,6 +284,11 @@ object ClientApp extends IOApp.Simple :
 
   private[this] def bearerHeaders(accessToken: String): Headers = Headers(
     Authorization(Credentials.Token(AuthScheme.Bearer, accessToken)),
+    `Content-Type`(MediaType.application.`x-www-form-urlencoded`)
+  )
+
+  private[this] val basicHeaders: Headers = Headers(
+    Authorization(BasicCredentials(Uri.encode(client.id), Uri.encode(client.secret))),
     `Content-Type`(MediaType.application.`x-www-form-urlencoded`)
   )
 

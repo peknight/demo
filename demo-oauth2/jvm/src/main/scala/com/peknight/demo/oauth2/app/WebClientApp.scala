@@ -28,8 +28,8 @@ object WebClientApp extends IOApp.Simple:
   given CanEqual[Method, Method] = CanEqual.derived
 
   val service: HttpApp[IO] = HttpRoutes.of[IO] {
-      case req @ GET -> Root / "webclient.js" =>
-        StaticFile.fromPath(file.Path("./demo-oauth2/js/target/scala-3.1.3/demo-oauth2-opt/main.js"), Some(req))
+      case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
+        StaticFile.fromPath(file.Path(s"./demo-oauth2/js/target/scala-3.1.3/demo-oauth2-opt/$path"), Some(req))
           .getOrElseF(NotFound())
       case GET -> _ => Ok(ClientPage.Text.webIndex)
     }.orNotFound

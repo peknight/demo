@@ -102,19 +102,18 @@ object AuthorizationServerApp extends IOApp.Simple :
             }
             case ResponseType.Token => checkScope(body, query) { scope =>
               val user = body.get("user").find(_.nonEmpty)
-              val userInfoOption = user.flatMap(userInfos.get)
-              userInfoOption match
-                case None =>
-                  val username = user.getOrElse("None")
-                  info"Unknown user $username" *>
-                    InternalServerError(AuthorizationServerPage.Text.error(s"Unknown user $username"))
-                case Some(userInfo) =>
-                  for
-                    _ <- info"User $userInfo"
-                    tokenResponse <- generateTokens(random, query.clientId, userInfoOption, scope, query.state,
-                      false)
-                    resp <- Found(Location(query.redirectUri.withFragment(tokenResponse.toFragment)))
-                  yield resp
+              user.flatMap(userInfos.get).fold[IO[Response[IO]]] {
+                val username = user.getOrElse("None")
+                info"Unknown user $username" *>
+                  InternalServerError(AuthorizationServerPage.Text.error(s"Unknown user $username"))
+              } { userInfo =>
+                for
+                  _ <- info"User $userInfo"
+                  tokenResponse <- generateTokens(random, query.clientId, userInfoOption, scope, query.state,
+                    false)
+                  resp <- Found(Location(query.redirectUri.withFragment(tokenResponse.toFragment)))
+                yield resp
+              }
             }
             // 后续支持其它响应类型扩展
             case null => Found(Location(query.redirectUri
@@ -149,7 +148,7 @@ object AuthorizationServerApp extends IOApp.Simple :
             case Some(GrantType.AuthorizationCode) => authorizationCode(clientId, body, random, codesR)
             case Some(GrantType.ClientCredentials) => clientCredentials(client, body, random)
             case Some(GrantType.RefreshToken) => refreshToken(clientId, body, random)
-            case Some(GrantType.Password) => password(clientId, body, random)
+            case Some(GrantType.Password) => password(client, body, random)
             case grantType => info"Unknown grant type ${grantType.getOrElse("None")}" *>
               Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, "Grant Type")))
   end token
@@ -182,14 +181,12 @@ object AuthorizationServerApp extends IOApp.Simple :
     yield resp
 
   def clientCredentials(client: ClientInfo, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
-    val scope = getScope(body)
-    if scope.diff(client.scope).nonEmpty then
-      BadRequest(ErrorInfo("invalid_scope").asJson)
-    else
+    checkScope(body, client) { scope =>
       for
         tokenResponse <- generateTokens(random, client.id, None, scope, None, false)
         resp <- Ok(tokenResponse.asJson)
       yield resp
+    }
 
   val invalidGrantResp: IO[Response[IO]] = invalidResp("invalid_grant")
 
@@ -215,7 +212,7 @@ object AuthorizationServerApp extends IOApp.Simple :
         case _ => info"No matching token was found." *> invalidGrantResp
     yield resp
 
-  def password(clientId: String, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
+  def password(client: ClientInfo, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
     val usernameOption = body.get("username").find(_.nonEmpty)
     val userOption = usernameOption.flatMap(getUser)
     userOption match
@@ -224,14 +221,16 @@ object AuthorizationServerApp extends IOApp.Simple :
         for
           _ <- info"user is $user"
           password = body.get("password").find(_.nonEmpty)
-          resp <-
-            if password.exists(user.password.contains) then
-              for
-                tokenResponse <- generateTokens(random, clientId, userOption, getScope(body), None, false)
-                resp <- Ok(tokenResponse.asJson)
-              yield resp
-            else info"Mismatched resource owner password, expected ${user.password.getOrElse("None")} got ${password.getOrElse("None")}" *>
-              invalidGrantResp
+          resp <- password.filter(user.password.contains).fold[IO[Response[IO]]] {
+            val bodyPwd = password.getOrElse("None")
+            val userPwd = user.password.getOrElse("None")
+            info"Mismatched resource owner password, expected $userPwd got $bodyPwd" *> invalidGrantResp
+          } { _ => checkScope(body, client) { scope =>
+            for
+              tokenResponse <- generateTokens(random, client.id, userOption, scope, None, true)
+              resp <- Ok(tokenResponse.asJson)
+            yield resp
+          }}
         yield resp
 
   def generateTokens(random: Random[IO], clientId: String, user: Option[UserInfo], scope: Set[String],
@@ -259,7 +258,15 @@ object AuthorizationServerApp extends IOApp.Simple :
       Found(Location(query.redirectUri.withQueryParam("error", "invalid_scope")))
     else resp(scope)
 
+  def checkScope(body: UrlForm, client: ClientInfo)(resp: Set[String] => IO[Response[IO]]): IO[Response[IO]] =
+    val scope = getScope(body)
+    if scope.diff(client.scope).nonEmpty then BadRequest(ErrorInfo("invalid_scope").asJson)
+    else resp(scope)
+
   def getClient(clientId: String): Option[ClientInfo] = clients.find(_.id == clientId)
+
+  def getProtectedResource(resourceId: String): Option[ProtectedResource] =
+    protectedResources.find(_.resourceId == resourceId)
 
   def getUser(username: String): Option[UserInfo] = userInfos.values.find(_.username.contains(username))
 

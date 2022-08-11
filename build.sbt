@@ -212,8 +212,8 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
   .jvmSettings(
     libraryDependencies ++= Seq(
       http4sScalaTags,
-      http4sDropwizardMetrics,
       http4sPrometheusMetrics,
+      http4sDropwizardMetrics,
       http4sJdkHttpClient,
       jQuery,
       logbackClassic % Runtime,
@@ -221,7 +221,7 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
   )
   .jsSettings(
     libraryDependencies ++= Seq(
-      "org.http4s" %%% "http4s-dom" % http4sVersion,
+      "org.http4s" %%% "http4s-dom" % http4sDomVersion,
     ),
   )
 
@@ -307,7 +307,7 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     testFrameworks += new TestFramework("utest.runner.Framework"),
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
-      "org.http4s" %%% "http4s-dom" % http4sVersion,
+      "org.http4s" %%% "http4s-dom" % http4sDomVersion,
     ),
   )
 
@@ -339,7 +339,7 @@ lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth
     Compile / mainClass := Some("com.peknight.demo.oauth2.webclient.WebClient"),
     jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
     libraryDependencies ++= Seq(
-      "org.http4s" %%% "http4s-dom" % http4sVersion,
+      "org.http4s" %%% "http4s-dom" % http4sDomVersion,
     ),
   )
 
@@ -414,8 +414,8 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       circeGeneric,
       refinedCats,
       http4sScalaTags,
-      http4sDropwizardMetrics,
       http4sPrometheusMetrics,
+      http4sDropwizardMetrics,
       http4sJdkHttpClient,
       doobieCore,
       doobieH2,
@@ -440,7 +440,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
     testFrameworks += new TestFramework("utest.runner.Framework"),
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
-      "org.http4s" %%% "http4s-dom" % http4sVersion,
+      "org.http4s" %%% "http4s-dom" % http4sDomVersion,
     ),
   )
 
@@ -466,6 +466,8 @@ val cirisHoconVersion = "1.0.1"
 val refinedCatsVersion = "0.9.29"
 val spireVersion = "0.18.0-M3"
 val http4sVersion = "1.0.0-M32"
+val http4sDomVersion = "1.0.0-M32"
+val http4sDropwizardMetricsVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M1"
 val doobieVersion = "1.0.0-RC2"
 val redis4CatsVersion = "1.2.0"
@@ -498,8 +500,8 @@ val http4sEmberServer = "org.http4s" %% "http4s-ember-server" % http4sVersion
 val http4sEmberClient = "org.http4s" %% "http4s-ember-client" % http4sVersion
 val http4sCirce = "org.http4s" %% "http4s-circe" % http4sVersion
 val http4sScalaTags = "org.http4s" %% "http4s-scalatags" % http4sVersion
-val http4sDropwizardMetrics = "org.http4s" %% "http4s-dropwizard-metrics" % http4sVersion
 val http4sPrometheusMetrics = "org.http4s" %% "http4s-prometheus-metrics" % http4sVersion
+val http4sDropwizardMetrics = "org.http4s" %% "http4s-dropwizard-metrics" % http4sDropwizardMetricsVersion
 val http4sJdkHttpClient = "org.http4s" %% "http4s-jdk-http-client" % http4sJdkHttpClientVersion
 val doobieCore = "org.tpolecat" %% "doobie-core" % doobieVersion
 val doobieH2 = "org.tpolecat" %% "doobie-h2" % doobieVersion
