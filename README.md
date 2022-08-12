@@ -4,7 +4,7 @@
 
 ### Log
 
-* 2022.06.17: 当前主要在学习OAuth2。
+* 2022.08.12: 当前主要在学习OAuth2。
 
 ### Modules
 
@@ -108,7 +108,7 @@
 
 * OAuth2学习，OAuth2目前主要基于HTTPS实现。
 * 参考: 书[《OAuth2实战》](https://www.manning.com/books/oauth-2-in-action)、[代码](https://github.com/oauthinaction/oauth-in-action-code)
-* 进度: 完成第三章客户端实现，书中代码由node.js实现，我在练习中用Scala重新实现（大量使用http4s，页面使用ScalaTags及ScalaCss构建）。
+* 进度: 正在研究第六章原生客户端实现，书中代码由node.js实现，我在练习中用Scala重新实现（大量使用http4s，页面使用ScalaTags及ScalaCss构建）。
 
 #### demo-akka
 
@@ -127,6 +127,12 @@
 * Let's Encrypt证书管理
 * 参考: [Acme4j官方文档](https://shredzone.org/maven/acme4j/index.html)
 * 进度: 0%，刚提起兴趣，没正式开学。
+
+#### demo-shapeless
+
+* Shapeless泛型编程学习，仅scala2，据说scala3集成了shapeless，那就先学scala2的。
+* 参考：[火箭书](https://underscore.io/books/shapeless-guide/)
+* 进度：0%
 
 #### demo-playground
 
