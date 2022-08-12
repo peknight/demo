@@ -9,4 +9,4 @@ import org.http4s.headers.*
 
 package object request:
   def resourceRequest(accessToken: String): Request[IO] =
-    POST(protectedResource, Headers(Authorization(Credentials.Token(AuthScheme.Bearer, accessToken))))
+    POST(protectedResourceApi, Headers(Authorization(Credentials.Token(AuthScheme.Bearer, accessToken))))

@@ -43,7 +43,6 @@ object AuthorizationServerApp extends IOApp.Simple :
       _ <- IO.never
     yield ()
 
-
   given CanEqual[Path, Path] = CanEqual.derived
 
   given CanEqual[Method, Method] = CanEqual.derived
@@ -109,7 +108,7 @@ object AuthorizationServerApp extends IOApp.Simple :
               } { userInfo =>
                 for
                   _ <- info"User $userInfo"
-                  tokenResponse <- generateTokens(random, query.clientId, userInfoOption, scope, query.state,
+                  tokenResponse <- generateTokens(random, query.clientId, userInfo.some, scope, query.state,
                     false)
                   resp <- Found(Location(query.redirectUri.withFragment(tokenResponse.toFragment)))
                 yield resp

@@ -62,7 +62,7 @@ package object constant:
     )
   )
 
-  val protectedResource = uri"http://localhost:8002/resource"
+  val protectedResourceApi = uri"http://localhost:8002/resource"
 
   val wordApi = uri"http://localhost:8002/words"
 
