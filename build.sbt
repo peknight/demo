@@ -41,6 +41,7 @@ lazy val demo = (project in file("."))
     demoOAuth2.js,
     demoAcme4j,
     demoSecurity,
+    demoShapeless,
     demoPlayground.jvm,
     demoPlayground.js,
   )
@@ -364,6 +365,16 @@ lazy val demoSecurity = (project in file("demo-security"))
     ),
   )
 
+lazy val demoShapeless = (project in file("demo-shapeless"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-shapeless",
+    scalaVersion := "2.13.8",
+    libraryDependencies ++= Seq(
+      shapeless,
+    ),
+  )
+
 lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-playground"))
   .settings(commonSettings)
   .settings(
@@ -471,6 +482,7 @@ val http4sDropwizardMetricsVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M1"
 val doobieVersion = "1.0.0-RC2"
 val redis4CatsVersion = "1.2.0"
+val shapelessVersion = "2.3.9"
 
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
 val alleyCatsCore = "org.typelevel" %% "alleycats-core" % catsVersion
@@ -512,7 +524,7 @@ val doobieScalaTest = "org.tpolecat" %% "doobie-scalatest" % doobieVersion
 val redis4CatsEffects = "dev.profunktor" %% "redis4cats-effects" % redis4CatsVersion
 val redis4CatsStreams = "dev.profunktor" %% "redis4cats-streams" % redis4CatsVersion
 val redis4CatsLog4Cats = "dev.profunktor" %% "redis4cats-log4cats" % redis4CatsVersion
-
+val shapeless = "com.chuusai" %% "shapeless" % shapelessVersion
 
 // Library
 
