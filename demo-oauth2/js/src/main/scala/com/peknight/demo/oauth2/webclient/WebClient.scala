@@ -2,7 +2,7 @@ package com.peknight.demo.oauth2.webclient
 
 import cats.data.OptionT
 import cats.effect.std.Random
-import cats.effect.{IO, Ref}
+import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.option.*
 import cats.syntax.traverse.*
 import com.peknight.demo.oauth2.constant.*
@@ -23,11 +23,9 @@ import org.scalajs.dom.{Event, document}
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSExportTopLevel
 
-object WebClient:
+object WebClient extends IOApp.Simple:
 
-  def main(args: Array[String]): Unit = init.run()
-
-  val init: IO[Unit] =
+  val run: IO[Unit] =
     for
       _ <- textContent(oauthScopeValueCls)(webClient.scope.mkString(" "))
       _ <- onClick(oauthAuthorizeCls)(_ => handleAuthorizationRequestClick)
