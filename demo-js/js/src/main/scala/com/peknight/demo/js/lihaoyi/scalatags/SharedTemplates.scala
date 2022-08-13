@@ -3,7 +3,7 @@ package com.peknight.demo.js.lihaoyi.scalatags
 /**
  * Cross-backend Code
  */
-class SharedTemplates[Builder, Output<: FragT, FragT](val bundle: scalatags.generic.Bundle[Builder, Output, FragT]):
+class SharedTemplates[Builder, Output <: FragT, FragT](val bundle: scalatags.generic.Bundle[Builder, Output, FragT]):
   import bundle.all.*
   val widget: Tag = div("hello")
 end SharedTemplates
