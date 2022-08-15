@@ -362,6 +362,7 @@ lazy val demoSecurity = (project in file("demo-security"))
       fs2Core,
       bouncyCastle,
       apacheCommonsCodec,
+      jwtCirce,
     ),
   )
 
@@ -437,6 +438,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       redis4CatsStreams,
       redis4CatsLog4Cats,
       bouncyCastle,
+      jwtCirce,
       acme4jClient,
       acme4jUtils,
       apacheCommonsCodec,
@@ -536,6 +538,7 @@ val jQueryVersion = "3.6.0"
 val postgisJdbcVersion = "2021.1.0"
 val acme4jVersion = "2.13"
 val bouncyCastleVersion = "1.70"
+val jwtCirceVersion = "9.0.6"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
 val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
@@ -547,6 +550,7 @@ val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version
 val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jVersion
 val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jVersion
 val bouncyCastle = "org.bouncycastle" % "bcprov-jdk15on" % bouncyCastleVersion
+val jwtCirce = "com.github.jwt-scala" %% "jwt-circe" % jwtCirceVersion
 
 // Test
 
