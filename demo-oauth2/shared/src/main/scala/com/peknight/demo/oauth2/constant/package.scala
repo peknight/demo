@@ -9,6 +9,7 @@ package object constant:
 
   val accessTokenKey = "access_token"
   val clientIdKey = "client_id"
+  val idTokenKey = "id_token"
   val oauthStateKey = "oauth-state"
   val oauthAccessTokenCls = "oauth-access-token"
   val oauthAuthorizeCls = "oauth-authorize"
