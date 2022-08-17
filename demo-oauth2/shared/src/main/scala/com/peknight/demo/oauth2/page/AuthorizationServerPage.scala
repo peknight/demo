@@ -13,7 +13,7 @@ class AuthorizationServerPage[Builder, Output <: FragT, FragT](override val bund
     val clientElements = for client <- clients yield
       ul(
         li(b("client_id: "), code(client.id)),
-        li(b("client_secret: "), code(client.secret)),
+        li(b("client_secret: "), code(client.secret.getOrElse("None"))),
         li(b("scope: "), code(client.scope.mkString(" "))),
         li(b("redirect_uris: "), code(client.redirectUris.toList.map(_.toString)))
       )
@@ -36,8 +36,8 @@ class AuthorizationServerPage[Builder, Output <: FragT, FragT](override val bund
       h2("Approve this client?"),
       client.name.fold[Modifier]("")(name => p(b("Name: "), code(name))),
       p(b("ID: "), code(client.id)),
-      client.uri.fold[Modifier]("")(uri => p(b("URI: "), code(uri))),
-      client.logoUri.fold[Modifier]("")(logoUri => p(b("logo: "), img(src := logoUri))),
+      client.uri.fold[Modifier]("")(uri => p(b("URI: "), code(uri.toString))),
+      client.logoUri.fold[Modifier]("")(logoUri => p(b("logo: "), img(src := logoUri.toString))),
       form(cls := "form", action := "/approve", method := "POST")(
         label("Select user:"),
         select(name := "user")(

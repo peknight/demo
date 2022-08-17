@@ -288,7 +288,7 @@ object ClientApp extends IOApp.Simple :
   )
 
   private[this] val basicHeaders: Headers = Headers(
-    Authorization(BasicCredentials(Uri.encode(client.id), Uri.encode(client.secret))),
+    Authorization(BasicCredentials(Uri.encode(client.id), Uri.encode(client.secret.getOrElse("")))),
     `Content-Type`(MediaType.application.`x-www-form-urlencoded`)
   )
 

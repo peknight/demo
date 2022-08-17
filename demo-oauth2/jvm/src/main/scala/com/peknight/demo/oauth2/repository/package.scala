@@ -46,8 +46,22 @@ package object repository:
         case OAuthTokenRecord(_, _, Some(refresh), _, _) if refresh == refreshToken => false
         case _ => true
       }.compile.toList
-      _ <- Stream(records.map(record => s"${record.asJson.deepDropNullValues.noSpaces}\n") *).covary[IO]
-        .through(text.utf8.encode)
-        .through(Files[IO].writeAll(databaseNoSqlPath))
-        .compile.drain
+      _ <- overwriteRecords(records)
     yield ()
+
+  def removeRecordByAccessTokenAndClientId(inToken: String, clientId: String): IO[Int] =
+    for
+      originRecords <- tokenRecordStream.compile.toList
+      records = originRecords.filter {
+        case OAuthTokenRecord(cid, Some(accessToken), _, _, _) if cid == clientId && accessToken == inToken => false
+        case _ => true
+      }
+      _ <- overwriteRecords(records)
+    yield originRecords.size - records.size
+
+  def overwriteRecords(records: List[OAuthTokenRecord]): IO[Unit] =
+    Stream(records.map(record => s"${record.asJson.deepDropNullValues.noSpaces}\n") *)
+      .covary[IO]
+      .through(text.utf8.encode)
+      .through(Files[IO].writeAll(databaseNoSqlPath))
+      .compile.drain

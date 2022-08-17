@@ -9,7 +9,11 @@ package object constant:
 
   val accessTokenKey = "access_token"
   val clientIdKey = "client_id"
+  val clientNameKey = "client_name"
+  val clientUriKey = "client_uri"
+  val grantTypesKey = "grant_types"
   val idTokenKey = "id_token"
+  val logoUriKey = "logo_uri"
   val oauthStateKey = "oauth-state"
   val oauthAccessTokenCls = "oauth-access-token"
   val oauthAuthorizeCls = "oauth-authorize"
@@ -17,10 +21,13 @@ package object constant:
   val oauthProtectedResourceCls = "oauth-protected-resource"
   val oauthScopeValueCls = "oauth-scope-value"
   val redirectUriKey = "redirect_uri"
+  val redirectUrisKey = "redirect_uris"
   val refreshTokenKey = "refresh_token"
   val responseTypeKey = "response_type"
+  val responseTypesKey = "response_types"
   val scopeKey = "scope"
   val stateKey = "state"
+  val tokenEndpointAuthMethodKey = "token_endpoint_auth_method"
   val tokenTypeKey = "token_type"
   val userKey = "user"
 
@@ -35,7 +42,7 @@ package object constant:
 
   val client: ClientInfo = ClientInfo(
     "oauth-client-1",
-    "oauth-client-secret-1",
+    "oauth-client-secret-1".some,
     Set("foo", "bar", "read", "write", "delete", "fruit", "veggies", "meats", "movies", "foods", "music", "openid",
       "profile", "email", "phone", "address"),
     NonEmptyList.one(uri"http://localhost:8000/callback")
@@ -43,7 +50,7 @@ package object constant:
 
   val webClient: ClientInfo = ClientInfo(
     "oauth-web-client-1",
-    "oauth-web-client-secret-1",
+    "oauth-web-client-secret-1".some,
     Set("foo", "bar", "openid", "profile", "email", "address", "phone"),
     NonEmptyList.one(uri"http://localhost:8010/callback")
   )
@@ -51,13 +58,13 @@ package object constant:
   val clients: Seq[ClientInfo] = Seq(client, webClient,
     ClientInfo(
       "oauth-client-2",
-      "oauth-client-secret-1",
+      "oauth-client-secret-1".some,
       Set("bar"),
       NonEmptyList.one(uri"http://localhost:8000/callback")
     ),
     ClientInfo(
       "native-client-1",
-      "oauth-native-secret-1",
+      "oauth-native-secret-1".some,
       Set("foo", "bar"),
       NonEmptyList.one(uri"com.oauthinaction.mynativeapp://")
     )
