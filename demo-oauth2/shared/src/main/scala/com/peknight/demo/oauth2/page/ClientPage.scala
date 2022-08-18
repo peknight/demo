@@ -131,13 +131,29 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     p("Logged in user subject ", span(cls := "label label-default")(idToken.map(_.sub).getOrElse("None")),
       " from issuer ", span(cls := "label label-default")(idToken.map(_.iss.toString).getOrElse("None")), "."),
     p("User information: ", userInfo.fold[Frag]("")(user => ul(
-      li(b("sub"), s": ${user.sub}"),
-      li(b("preferred_username"), s": ${user.preferredUsername}"),
-      li(b("name"), s": ${user.name}"),
-      li(b("email"), s": ${user.email}"),
-      li(b("email_verified"), s": ${user.emailVerified}"),
+      user.sub.fold[Frag]("")(sub => li(b("sub"), s": $sub")),
+      user.preferredUsername.fold[Frag]("")(preferredUsername => li(b("preferred_username"), s": $preferredUsername")),
+      user.name.fold[Frag]("")(name => li(b("name"), s": $name")),
+      user.email.fold[Frag]("")(email => li(b("email"), s": $email")),
+      user.emailVerified.fold[Frag]("")(emailVerified => li(b("email_verified"), s": $emailVerified")),
       user.username.fold[Frag]("")(username => li(b("username"), s": $username")),
-      user.password.fold[Frag]("")(password => li(b("password"), s": $password"))
+      user.password.fold[Frag]("")(password => li(b("password"), s": $password")),
+      user.familyName.fold[Frag]("")(familyName => li(b("family_name"), s": $familyName")),
+      user.givenName.fold[Frag]("")(givenName => li(b("given_name"), s": $givenName")),
+      user.middleName.fold[Frag]("")(middleName => li(b("middle_name"), s": $middleName")),
+      user.nickname.fold[Frag]("")(nickname => li(b("nickname"), s": $nickname")),
+      user.profile.fold[Frag]("")(profile => li(b("profile"), s": $profile")),
+      user.picture.fold[Frag]("")(picture => li(b("picture"), s": $picture")),
+      user.website.fold[Frag]("")(website => li(b("website"), s": $website")),
+      user.gender.fold[Frag]("")(gender => li(b("gender"), s": $gender")),
+      user.birthdate.fold[Frag]("")(birthdate => li(b("birthdate"), s": $birthdate")),
+      user.zoneInfo.fold[Frag]("")(zoneInfo => li(b("zoneinfo"), s": $zoneInfo")),
+      user.locale.fold[Frag]("")(locale => li(b("locale"), s": $locale")),
+      user.updatedAt.fold[Frag]("")(updatedAt => li(b("updated_at"), s": $updatedAt")),
+      user.address.fold[Frag]("")(address => li(b("address"), s": $address")),
+      user.phoneNumber.fold[Frag]("")(phoneNumber => li(b("phone_number"), s": $phoneNumber")),
+      user.phoneNumberVerified.fold[Frag]("")(phoneNumberVerified => li(b("phone_number_verified"),
+        s": $phoneNumberVerified"))
     )))
   )
 

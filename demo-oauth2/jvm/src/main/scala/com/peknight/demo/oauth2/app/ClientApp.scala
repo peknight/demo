@@ -44,10 +44,6 @@ object ClientApp extends IOApp.Simple :
       _ <- IO.never
     yield ()
 
-  given CanEqual[Path, Path] = CanEqual.derived
-
-  given CanEqual[Method, Method] = CanEqual.derived
-
   given EntityDecoder[IO, WordsData] = jsonOf[IO, WordsData]
 
   given EntityDecoder[IO, ProduceData] = jsonOf[IO, ProduceData]

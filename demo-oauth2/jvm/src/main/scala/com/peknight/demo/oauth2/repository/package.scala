@@ -50,12 +50,15 @@ package object repository:
     yield ()
 
   def removeRecordByAccessTokenAndClientId(inToken: String, clientId: String): IO[Int] =
+    removeRecord(record => record.clientId == clientId && record.accessToken.contains(inToken))
+
+  def removeRecordByClientId(clientId: String): IO[Int] =
+    removeRecord(_.clientId == clientId)
+
+  def removeRecord(f: OAuthTokenRecord => Boolean): IO[Int] =
     for
       originRecords <- tokenRecordStream.compile.toList
-      records = originRecords.filter {
-        case OAuthTokenRecord(cid, Some(accessToken), _, _, _) if cid == clientId && accessToken == inToken => false
-        case _ => true
-      }
+      records = originRecords.filterNot(f)
       _ <- overwriteRecords(records)
     yield originRecords.size - records.size
 

@@ -10,6 +10,7 @@ package object constant:
   val accessTokenKey = "access_token"
   val clientIdKey = "client_id"
   val clientNameKey = "client_name"
+  val clientSecretKey ="client_secret"
   val clientUriKey = "client_uri"
   val grantTypesKey = "grant_types"
   val idTokenKey = "id_token"
@@ -70,6 +71,10 @@ package object constant:
     )
   )
 
+  val authorizationServerAddr = "localhost:8001"
+
+  val protectedResourceAddr = "localhost:8002"
+
   val protectedResourceApi = uri"http://localhost:8002/resource"
 
   val wordApi = uri"http://localhost:8002/words"
@@ -109,29 +114,29 @@ package object constant:
 
   val userInfos: Map[String, UserInfo] = Map(
     "alice" -> UserInfo(
-      "9XE3-JI34-00132A",
-      "alice",
-      "Alice",
-      "alice.wonderland@example.com",
-      true,
+      "9XE3-JI34-00132A".some,
+      "alice".some,
+      "Alice".some,
+      "alice.wonderland@example.com".some,
+      true.some,
       "alice".some,
       "password".some
     ),
     "bob" -> UserInfo(
-      "1ZT5-OE63-57383B",
-      "bob",
-      "Bob",
-      "bob.loblob@example.net",
-      false,
+      "1ZT5-OE63-57383B".some,
+      "bob".some,
+      "Bob".some,
+      "bob.loblob@example.net".some,
+      false.some,
       "bob".some,
       "this is my secret password".some
     ),
     "carol" -> UserInfo(
-      "F5Q1-L6LGG-959FS",
-      "carol",
-      "Carol",
-      "carol.lewis@example.net",
-      true,
+      "F5Q1-L6LGG-959FS".some,
+      "carol".some,
+      "Carol".some,
+      "carol.lewis@example.net".some,
+      true.some,
       "clewis".some,
       "user password!".some
     )

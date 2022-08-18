@@ -23,10 +23,6 @@ object WebClientApp extends IOApp.Simple:
       _ <- IO.never
     yield ()
 
-  given CanEqual[Path, Path] = CanEqual.derived
-
-  given CanEqual[Method, Method] = CanEqual.derived
-
   val service: HttpApp[IO] = HttpRoutes.of[IO] {
       case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
         StaticFile.fromPath(file.Path(s"./demo-oauth2/js/target/scala-3.1.3/demo-oauth2-opt/$path"), Some(req))

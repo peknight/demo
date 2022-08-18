@@ -17,3 +17,9 @@ case class ClientMetadata(tokenEndpointAuthMethod: AuthMethod,
     ClientInfo(clientId, clientSecret, scope.getOrElse(Set.empty[String]), redirectUris, clientName, clientUri, logoUri,
       Some(tokenEndpointAuthMethod), Some(grantTypes), Some(responseTypes), Some(clientIdCreatedAt),
       Some(clientSecretExpiresAt), Some(registrationAccessToken), Some(registrationClientUri))
+
+  def updateClientInfo(client: ClientInfo): ClientInfo =
+    ClientInfo(client.id, client.secret, scope.getOrElse(client.scope), redirectUris, clientName.orElse(client.name),
+      clientUri.orElse(client.uri), logoUri.orElse(client.logoUri), Some(tokenEndpointAuthMethod), Some(grantTypes),
+      Some(responseTypes), client.clientIdCreatedAt, client.clientSecretExpiresAt, client.registrationAccessToken,
+      client.registrationClientUri)
