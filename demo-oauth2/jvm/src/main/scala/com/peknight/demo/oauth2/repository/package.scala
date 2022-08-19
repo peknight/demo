@@ -50,10 +50,10 @@ package object repository:
     yield ()
 
   def removeRecordByAccessTokenAndClientId(inToken: String, clientId: String): IO[Int] =
-    removeRecord(record => record.clientId == clientId && record.accessToken.contains(inToken))
+    removeRecord(record => record.clientId.contains(clientId) && record.accessToken.contains(inToken))
 
   def removeRecordByClientId(clientId: String): IO[Int] =
-    removeRecord(_.clientId == clientId)
+    removeRecord(_.clientId.contains(clientId))
 
   def removeRecord(f: OAuthTokenRecord => Boolean): IO[Int] =
     for

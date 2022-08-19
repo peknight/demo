@@ -16,7 +16,6 @@ import io.circe.syntax.*
 import org.http4s.circe.*
 import org.http4s.client.dsl.io.*
 import org.http4s.dsl.io.*
-import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.headers.*
 import org.http4s.scalatags.scalatagsEncoder
 import org.http4s.syntax.literals.uri
@@ -287,14 +286,3 @@ object ClientApp extends IOApp.Simple :
     Authorization(BasicCredentials(Uri.encode(client.id), Uri.encode(client.secret.getOrElse("")))),
     `Content-Type`(MediaType.application.`x-www-form-urlencoded`)
   )
-
-  private[this] def runHttpRequest(req: Request[IO])
-                                  (onSuccess: Response[IO] => IO[Response[IO]])
-                                  (onFailure: Int => IO[Response[IO]]): IO[Response[IO]] =
-    EmberClientBuilder.default[IO].build.use { httpClient =>
-      httpClient.run(req).use { response =>
-        val statusCode = response.status.code
-        if statusCode >= 200 && statusCode < 300 then onSuccess(response)
-        else onFailure(statusCode)
-      }
-    }

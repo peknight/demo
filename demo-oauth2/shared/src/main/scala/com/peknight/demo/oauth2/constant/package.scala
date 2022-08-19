@@ -73,7 +73,11 @@ package object constant:
 
   val authorizationServerAddr = "localhost:8001"
 
+  val authorizationServerIndex = uri"http://localhost:8001/"
+
   val protectedResourceAddr = "localhost:8002"
+
+  val protectedResourceIndex = uri"http://localhost:8002/"
 
   val protectedResourceApi = uri"http://localhost:8002/resource"
 

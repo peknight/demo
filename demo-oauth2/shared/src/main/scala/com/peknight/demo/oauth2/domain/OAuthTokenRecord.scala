@@ -3,7 +3,7 @@ package com.peknight.demo.oauth2.domain
 import io.circe.Codec
 import com.peknight.demo.oauth2.constant.*
 
-case class OAuthTokenRecord(clientId: String, accessToken: Option[String], refreshToken: Option[String],
+case class OAuthTokenRecord(clientId: Option[String], accessToken: Option[String], refreshToken: Option[String],
                             scope: Option[Set[String]], user: Option[String])
 
 object OAuthTokenRecord:
@@ -15,7 +15,7 @@ object OAuthTokenRecord:
     userKey
   )(
     (
-      clientId: String,
+      clientId: Option[String],
       accessToken: Option[String],
       refreshToken: Option[String],
       scopeStr: Option[String],

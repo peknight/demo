@@ -12,8 +12,6 @@ import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.page.AuthorizationServerPage
 import com.peknight.demo.oauth2.random.*
 import com.peknight.demo.oauth2.repository.*
-import fs2.Stream
-import fs2.text.*
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.http4s.*
@@ -21,7 +19,6 @@ import org.http4s.circe.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.*
 import org.http4s.scalatags.*
-import org.http4s.syntax.literals.uri
 import org.typelevel.ci.CIString
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
@@ -46,7 +43,7 @@ object AuthorizationServerApp extends IOApp.Simple :
       given Logger[IO] = logger
       serverPort = port"8001"
       _ <- clearRecord
-      _ <- insertRecord(OAuthTokenRecord("oauth-client-1", None, "j2r3oj32r23rmasd98uhjrk2o3i".some,
+      _ <- insertRecord(OAuthTokenRecord("oauth-client-1".some, None, "j2r3oj32r23rmasd98uhjrk2o3i".some,
         Set("foo", "bar").some, None)).timeout(5.seconds)
       _ <- start[IO](serverPort)(service(random, requestsR, codesR, clientsR).orNotFound)
       _ <- info"OAuth Authorization Server is listening at http://$serverHost:$serverPort"
@@ -68,6 +65,7 @@ object AuthorizationServerApp extends IOApp.Simple :
     case req @ GET -> Root / "register" / clientId => getRegister(clientId, req, clientsR)
     case req @ PUT -> Root / "register" / clientId => putRegister(clientId, req, clientsR)
     case req @ DELETE -> Root / "register" / clientId => deleteRegister(clientId, req, clientsR)
+    case req @ (GET | POST) -> Root / "userinfo" => userInfoEndpoint(req)
   }
 
   def authorize(param: AuthorizeParam, random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
@@ -188,15 +186,15 @@ object AuthorizationServerApp extends IOApp.Simple :
         case r@Some(refreshToken) => getRecordByRefreshToken(refreshToken).map(r -> _)
         case None => IO((none[String], none[OAuthTokenRecord]))
       resp <- refreshTokenRecord match
-        case (Some(refreshToken), Some(record)) if record.clientId != clientId =>
-          info"Invalid client using a refresh token, expected ${record.clientId} got $clientId" *>
+        case (Some(refreshToken), Some(record)) if !record.clientId.contains(clientId) =>
+          info"Invalid client using a refresh token, expected ${record.clientId.getOrElse("None")} got $clientId" *>
             removeRecordByRefreshToken(refreshToken) *>
             BadRequest(ErrorInfo("invalid_grant").asJson)
         case (Some(refreshToken), Some(record)) =>
           for
             _ <- info"We found a matching refresh token $refreshToken"
             accessToken <- randomString[IO](random, 32)
-            _ <- insertRecord(OAuthTokenRecord(clientId, accessToken.some, None, record.scope, record.user))
+            _ <- insertRecord(OAuthTokenRecord(clientId.some, accessToken.some, None, record.scope, record.user))
             _ <- info"Issuing access token $accessToken for refresh token $refreshToken"
             resp <- Ok(OAuthToken(accessToken, AuthScheme.Bearer, body.getParam("refresh_token"),
               None, None, None).asJson)
@@ -253,14 +251,15 @@ object AuthorizationServerApp extends IOApp.Simple :
             recordOption <- recordOptionT.value
             resp <- recordOption match
               case Some(record) => info"We found a matching token: ${record.accessToken.getOrElse("None")}" *>
-                Ok(IntrospectionResponse(true, uri"http://localhost:8001/".some, record.user, record.scope,
-                  record.clientId.some).asJson)
+                Ok(IntrospectionResponse(true, authorizationServerIndex.some, record.user, record.scope,
+                  record.clientId).asJson)
               case _ => info"No matching token was found" *>
                 Ok(IntrospectionResponse(false, None, None, None, None).asJson)
           yield resp
       case _ => info"Unknown resource None" *> unauthorizedBasicResp
 
-  def postRegister(req: Request[IO], random: Random[IO], clientsR: Ref[IO, Seq[ClientInfo]]): IO[Response[IO]] =
+  def postRegister(req: Request[IO], random: Random[IO], clientsR: Ref[IO, Seq[ClientInfo]])
+                  (using Logger[IO]): IO[Response[IO]] =
     req.as[UrlForm].flatMap { body => checkClientMetadata(body) match
       case Left(error) => BadRequest(ErrorInfo(error).asJson)
       case Right(clientMetadata) =>
@@ -278,6 +277,7 @@ object AuthorizationServerApp extends IOApp.Simple :
           client = clientMetadata.toClientInfo(clientId, clientSecretOption, clientIdCreatedAt,
             clientSecretExpiresAt, registrationAccessToken, registrationClientUri)
           _ <- clientsR.update(_ :+ client)
+          _ <- info"Registered new client: $client"
           resp <- Created(client.asJson)
         yield resp
     }
@@ -310,10 +310,37 @@ object AuthorizationServerApp extends IOApp.Simple :
     }
 
   def userInfoEndpoint(req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
-    requireAccessToken(req, authorizationServerAddr) { record =>
-      if !record.scope.exists(_.contains("openid")) then Forbidden() else
+    requireAccessToken(req, authorizationServerAddr)(getRecordByAccessToken) { record =>
+      val scope = record.scope.getOrElse(Set.empty[String])
+      if !scope.contains("openid") then Forbidden() else
         record.user.flatMap(userInfos.get).fold(NotFound()) { user =>
-          ???
+          val containsProfile: Boolean = scope.contains("profile")
+          val containsEmail: Boolean = scope.contains("email")
+          val containsPhone: Boolean = scope.contains("phone")
+          Ok(UserInfo(
+            user.sub.filter(_ => scope.contains("openid")),
+            user.preferredUsername.filter(_ => containsProfile),
+            user.name.filter(_ => containsProfile),
+            user.email.filter(_ => containsEmail),
+            user.emailVerified.filter(_ => containsEmail),
+            None,
+            None,
+            user.familyName.filter(_ => containsProfile),
+            user.givenName.filter(_ => containsProfile),
+            user.middleName.filter(_ => containsProfile),
+            user.nickname.filter(_ => containsProfile),
+            user.profile.filter(_ => containsProfile),
+            user.picture.filter(_ => containsProfile),
+            user.website.filter(_ => containsProfile),
+            user.gender.filter(_ => containsProfile),
+            user.birthdate.filter(_ => containsProfile),
+            user.zoneInfo.filter(_ => containsProfile),
+            user.locale.filter(_ => containsProfile),
+            user.updatedAt.filter(_ => containsProfile),
+            user.address.filter(_ => scope.contains("address")),
+            user.phoneNumber.filter(_ => containsPhone),
+            user.phoneNumberVerified.filter(_ => containsPhone)
+          ).asJson)
         }
     }
 
@@ -345,14 +372,16 @@ object AuthorizationServerApp extends IOApp.Simple :
                     (using Logger[IO]): IO[OAuthToken] =
     for
       accessToken <- randomString(random, 32)
-      _ <- insertRecord(OAuthTokenRecord(clientId, accessToken.some, None, scope.some, user.flatMap(_.preferredUsername)))
+      _ <- insertRecord(OAuthTokenRecord(clientId.some, accessToken.some, None, scope.some,
+        user.flatMap(_.preferredUsername)))
       _ <- info"Issuing accessToken $accessToken"
       refreshTokenOption <-
         if generateRefreshToken then
           for
             refresh <- randomString(random, 32)
             refreshOption = refresh.some
-            _ <- insertRecord(OAuthTokenRecord(clientId, None, refreshOption, scope.some, user.flatMap(_.preferredUsername)))
+            _ <- insertRecord(OAuthTokenRecord(clientId.some, None, refreshOption, scope.some,
+              user.flatMap(_.preferredUsername)))
             _ <- info"and refresh token $refresh"
           yield refreshOption
         else IO.pure(None)
@@ -371,7 +400,7 @@ object AuthorizationServerApp extends IOApp.Simple :
     val issueAtSec: Long = issueAt.toSeconds
     val header = JwtHeader(JwtAlgorithm.RS256.some, JwtHeader.DEFAULT_TYPE.some, none, "authserver".some)
     val payload = JwtClaim(
-      issuer = uri"http://localhost:8001/".toString.some,
+      issuer = authorizationServerIndex.toString.some,
       subject = user.flatMap(_.sub),
       audience = Set(clientId).some,
       expiration = (issueAtSec + (5 * 60)).some,
@@ -445,13 +474,6 @@ object AuthorizationServerApp extends IOApp.Simple :
     val scope = getScope(body).getOrElse(Set.empty[String])
     if scope.diff(client.scope).nonEmpty then BadRequest(ErrorInfo("invalid_scope").asJson)
     else resp(scope)
-
-  def decodeToBigInt(base64UrlEncoded: String): IO[BigInt] =
-    Stream(base64UrlEncoded)
-      .covary[IO]
-      .through(base64.decodeWithAlphabet(Base64Url))
-      .compile.toList
-      .map(bytes => BigInt(1, bytes.toArray))
 
   val rsaPrivateKey: IO[PrivateKey] =
     for

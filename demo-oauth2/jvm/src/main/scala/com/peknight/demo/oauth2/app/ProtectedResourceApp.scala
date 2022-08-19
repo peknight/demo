@@ -12,10 +12,13 @@ import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.page.ProtectedResourcePage
 import com.peknight.demo.oauth2.random.*
 import com.peknight.demo.oauth2.repository.getRecordByAccessToken
+import fs2.Stream
+import fs2.text.{hex, utf8}
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.http4s.*
 import org.http4s.circe.*
+import org.http4s.client.dsl.io.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.*
 import org.http4s.scalatags.*
@@ -24,7 +27,10 @@ import org.typelevel.ci.CIString
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
+import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim}
 
+import java.security.spec.RSAPublicKeySpec
+import java.security.{KeyFactory, PublicKey}
 import scala.collection.immutable.Queue
 
 object ProtectedResourceApp extends IOApp.Simple :
@@ -45,6 +51,8 @@ object ProtectedResourceApp extends IOApp.Simple :
 
   given EntityDecoder[IO, ResourceScope] = jsonOf[IO, ResourceScope]
 
+  given EntityDecoder[IO, IntrospectionResponse] = jsonOf[IO, IntrospectionResponse]
+
   val corsPolicy = CORS.policy
     .withAllowOriginHost(Set(Origin.Host(Uri.Scheme.http, Uri.RegName("localhost"), Some(8010))))
     .withAllowMethodsIn(Set(Method.GET, Method.POST))
@@ -52,7 +60,7 @@ object ProtectedResourceApp extends IOApp.Simple :
   def service(savedWordsR: Ref[IO, Queue[String]])(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(ProtectedResourcePage.Text.index)
     case OPTIONS -> Root / "resource" => NoContent()
-    case req @ POST -> Root / "resource" => requireAccessToken(req, protectedResourceAddr) { record =>
+    case req @ POST -> Root / "resource" => requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
       Ok(ResourceScope(resource, record.scope).asJson)
     }
     case req @ GET -> Root / "words" => requireAccessTokenScope(req, "read") {
@@ -72,14 +80,14 @@ object ProtectedResourceApp extends IOApp.Simple :
     case req @ DELETE -> Root / "words" => requireAccessTokenScope(req, "delete") {
       savedWordsR.update(_.init) *> NoContent()
     }
-    case req @ GET -> Root / "produce" => requireAccessToken(req, protectedResourceAddr) { record =>
+    case req @ GET -> Root / "produce" => requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
       val fruit = if record.scope.exists(_.contains("fruit")) then Seq("apple", "banana", "kiwi") else Seq.empty[String]
       val veggies = if record.scope.exists(_.contains("veggies")) then Seq("lettuce", "onion", "potato") else Seq.empty[String]
       val meats = if record.scope.exists(_.contains("meats")) then Seq("becon", "steak", "chicken breast") else Seq.empty[String]
       val produce = ProduceData(fruit, veggies, meats)
       info"Sending produce: $produce" *> Ok(produce.asJson)
     }
-    case req @ GET -> Root / "favorites" => requireAccessToken(req, protectedResourceAddr) { record =>
+    case req @ GET -> Root / "favorites" => requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
       record.user match
         case Some("alice") => Ok(UserFavoritesData("Alice", aliceFavorites).asJson)
         case Some("bob") => Ok(UserFavoritesData("Bob", bobFavorites).asJson)
@@ -89,7 +97,7 @@ object ProtectedResourceApp extends IOApp.Simple :
 
   private[this] def requireAccessTokenScope(req: Request[IO], scope: String)(pass: => IO[Response[IO]])
                                            (using Logger[IO]): IO[Response[IO]] =
-    requireAccessToken(req, protectedResourceAddr) { record =>
+    requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
       if record.scope.exists(_.contains(scope)) then pass
       else
         Forbidden.headers(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, protectedResourceAddr, Map(
@@ -97,3 +105,59 @@ object ProtectedResourceApp extends IOApp.Simple :
           "scope" -> scope
         ))))
     }
+
+  private[this] def introspect(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
+    val req: Request[IO] = POST(
+      UrlForm(
+        "token" -> accessToken
+      ),
+      authServer.introspectionEndpoint,
+      Headers(
+        Authorization(BasicCredentials(Uri.encode(protectedResource.resourceId),
+          Uri.encode(protectedResource.resourceSecret))),
+        `Content-Type`(MediaType.application.`x-www-form-urlencoded`)
+      )
+    )
+    runHttpRequest(req) { response =>
+      for
+        introspectionResponse <- response.as[IntrospectionResponse]
+        _ <- info"Got introspection response $introspectionResponse"
+      yield introspectionResponse.toOAuthTokenRecord
+    }{ _ => IO.pure(None) }
+
+  private[this] def jws(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
+    val oauthTokenRecordOptionT =
+      for
+        // signatureValid <- IO(JwtCirce.isValid(accessToken, toHex(sharedTokenSecret), Seq(JwtAlgorithm.HS256))).optionT
+        pubKey <- rsaPublicKey.optionT
+        payload <- OptionT(IO(JwtCirce.decode(accessToken, pubKey, Seq(JwtAlgorithm.RS256)).toOption))
+        _ <- info"Signature validated.".optionT
+        _ <- info"Payload $payload".optionT
+        _ <- OptionT.fromOption(payload.issuer.filter(_ == authorizationServerIndex.toString))
+        _ <- info"issuer OK".optionT
+        _ <- OptionT.fromOption(payload.audience.find(_.contains(protectedResourceIndex.toString)))
+        _ <- info"Audience OK".optionT
+        realTime <- IO.realTime.optionT
+        _ <- OptionT.fromOption(payload.issuedAt.filter(_ <= realTime.toSeconds))
+        _ <- info"issued-at OK".optionT
+        _ <- OptionT.fromOption(payload.expiration.filter(_ >= realTime.toSeconds))
+        _ <- info"expiration OK".optionT
+        _ <- info"Token valid!".optionT
+      yield toOAuthTokenRecord(payload)
+    oauthTokenRecordOptionT.value
+
+  private[this] def toHex(value: String): String =
+    Stream(sharedTokenSecret).through(utf8.encode).through(hex.encode).toList.mkString("")
+
+  val rsaPublicKey: IO[PublicKey] =
+    for
+      modulus <- decodeToBigInt(rsaKey.n)
+      exponent <- decodeToBigInt(rsaKey.e)
+      key <- IO(KeyFactory.getInstance("RSA").generatePublic(RSAPublicKeySpec(
+        modulus.bigInteger, exponent.bigInteger
+      )))
+    yield key
+
+  private[this] def toOAuthTokenRecord(payload: JwtClaim): OAuthTokenRecord =
+    OAuthTokenRecord(payload.audience.fold(none[String])(_.find(_.nonEmpty)), None, None, None, payload.subject)
+
