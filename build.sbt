@@ -375,6 +375,9 @@ lazy val demoShapeless = (project in file("demo-shapeless"))
     libraryDependencies ++= Seq(
       shapeless,
     ),
+    scalacOptions --= Seq(
+      "-language:strictEquality",
+    ),
   )
 
 lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-playground"))
