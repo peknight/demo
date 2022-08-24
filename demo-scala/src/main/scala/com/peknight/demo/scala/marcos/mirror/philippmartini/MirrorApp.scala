@@ -24,3 +24,5 @@ object MirrorApp extends App :
   val visitorPrettyString = derived[Visitor]
   val visitors = List(Visitor.User("Bob", 25), Visitor.AnonymousVisitor)
   visitors.foreach(visitor => println(visitorPrettyString.prettyString(visitor)))
+
+  // prettyPrintln(Tree.leaf(1))
