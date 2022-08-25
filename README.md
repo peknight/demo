@@ -11,7 +11,7 @@
 #### demo-scala
 
 * Scala3学习。
-* 参考: 书[《Scala编程第五版》](https://www.artima.com/shop/programming_in_scala_5ed)、元组[Tuples bring generic programming to Scala 3](https://www.scala-lang.org/2021/02/26/tuples-bring-generic-programming-to-scala-3.html)
+* 参考: 书[《Scala编程第五版》](https://www.artima.com/shop/programming_in_scala_5ed)、元组[Tuples bring generic programming to Scala 3](https://www.scala-lang.org/2021/02/26/tuples-bring-generic-programming-to-scala-3.html)、[Type Class Derivation](https://dotty.epfl.ch/docs/reference/contextual/derivation.html)、[Magic Mirror Scala3](https://blog.philipp-martini.de/blog/magic-mirror-scala3/)
 * 进度: 100%，一些特别基础的代码没跟着写。
 
 #### demo-fp

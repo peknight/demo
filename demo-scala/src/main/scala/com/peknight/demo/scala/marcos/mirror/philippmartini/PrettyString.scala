@@ -1,8 +1,5 @@
 package com.peknight.demo.scala.marcos.mirror.philippmartini
 
-import scala.compiletime.{constValue, erasedValue, summonInline}
-import scala.deriving.Mirror
-
 trait PrettyString[A]:
   def prettyString(a: A): String
 

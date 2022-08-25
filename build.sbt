@@ -21,6 +21,7 @@ lazy val commonSettings = Seq(
 lazy val demo = (project in file("."))
   .aggregate(
     demoScala,
+    demoShapeless,
     demoFpInScala,
     demoCats,
     demoCatsEffect,
@@ -41,7 +42,7 @@ lazy val demo = (project in file("."))
     demoOAuth2.js,
     demoAcme4j,
     demoSecurity,
-    demoShapeless,
+    demoShapeless2,
     demoPlayground.jvm,
     demoPlayground.js,
   )
@@ -371,6 +372,15 @@ lazy val demoShapeless = (project in file("demo-shapeless"))
   .settings(commonSettings)
   .settings(
     name := "demo-shapeless",
+    libraryDependencies ++= Seq(
+
+    ),
+  )
+
+lazy val demoShapeless2 = (project in file("demo-shapeless2"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-shapeless2",
     scalaVersion := "2.13.8",
     libraryDependencies ++= Seq(
       shapeless,

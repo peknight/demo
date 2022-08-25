@@ -2,9 +2,6 @@ package com.peknight.demo.scala.marcos.mirror.philippmartini
 
 import com.peknight.demo.scala.marcos.mirror.philippmartini.PrettyString.{*, given}
 
-import scala.compiletime.{constValue, erasedValue, summonInline}
-import scala.deriving.Mirror
-
 /**
  * 参考：https://blog.philipp-martini.de/blog/magic-mirror-scala3/
  */
@@ -24,5 +21,3 @@ object MirrorApp extends App :
   val visitorPrettyString = derived[Visitor]
   val visitors = List(Visitor.User("Bob", 25), Visitor.AnonymousVisitor)
   visitors.foreach(visitor => println(visitorPrettyString.prettyString(visitor)))
-
-  // prettyPrintln(Tree.leaf(1))

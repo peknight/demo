@@ -1,12 +1,10 @@
 package com.peknight.demo.shapeless
 
-package object adtandgeneric {
+package object adtandgeneric:
   type Rectangle2 = (Double, Double)
   type Circle2 = Double
-  type Shape2 = Either[Rectangle2, Circle2]
-  def area2(shape: Shape2): Double =
-    shape match {
-      case Left((w, h)) => w * h
-      case Right(r) => math.Pi * r * r
-    }
-}
+  type Shape2 = Rectangle2 | Circle2
+  def area2(shape: Shape2): Double = shape match
+    case (w, h): Rectangle2 => w * h
+    case r: Circle2 => math.Pi * r * r
+
