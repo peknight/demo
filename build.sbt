@@ -61,6 +61,15 @@ lazy val demoScala = (project in file("demo-scala"))
     ),
   )
 
+lazy val demoShapeless = (project in file("demo-shapeless"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-shapeless",
+    libraryDependencies ++= Seq(
+      shapeless
+    ),
+  )
+
 lazy val demoFpInScala = (project in file("demo-fp"))
   .settings(commonSettings)
   .settings(
@@ -368,22 +377,13 @@ lazy val demoSecurity = (project in file("demo-security"))
     ),
   )
 
-lazy val demoShapeless = (project in file("demo-shapeless"))
-  .settings(commonSettings)
-  .settings(
-    name := "demo-shapeless",
-    libraryDependencies ++= Seq(
-
-    ),
-  )
-
 lazy val demoShapeless2 = (project in file("demo-shapeless2"))
   .settings(commonSettings)
   .settings(
     name := "demo-shapeless2",
     scalaVersion := "2.13.8",
     libraryDependencies ++= Seq(
-      shapeless,
+      shapeless2,
     ),
     scalacOptions --= Seq(
       "-language:strictEquality",
@@ -395,6 +395,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
   .settings(
     name := "demo-playground",
     libraryDependencies ++= Seq(
+      "org.typelevel" %%% "shapeless3-deriving" % shapelessVersion,
       "org.typelevel" %%% "cats-core" % catsVersion,
       "org.typelevel" %%% "alleycats-core" % catsVersion,
       "org.typelevel" %%% "cats-effect" % catsEffectVersion,
@@ -481,6 +482,8 @@ val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
 
 // Functional
 
+val shapelessVersion = "3.1.0"
+val shapeless2Version = "2.3.9"
 val catsVersion = "2.7.0"
 val catsEffectVersion = "3.3.11"
 val fs2Version = "3.2.7"
@@ -498,8 +501,9 @@ val http4sDropwizardMetricsVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M1"
 val doobieVersion = "1.0.0-RC2"
 val redis4CatsVersion = "1.2.0"
-val shapelessVersion = "2.3.9"
 
+val shapeless = "org.typelevel" %% "shapeless3-deriving" % shapelessVersion
+val shapeless2 = "com.chuusai" %% "shapeless" % shapeless2Version
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
 val alleyCatsCore = "org.typelevel" %% "alleycats-core" % catsVersion
 val catsEffect = "org.typelevel" %% "cats-effect" % catsEffectVersion withSources() withJavadoc()
@@ -540,7 +544,6 @@ val doobieScalaTest = "org.tpolecat" %% "doobie-scalatest" % doobieVersion
 val redis4CatsEffects = "dev.profunktor" %% "redis4cats-effects" % redis4CatsVersion
 val redis4CatsStreams = "dev.profunktor" %% "redis4cats-streams" % redis4CatsVersion
 val redis4CatsLog4Cats = "dev.profunktor" %% "redis4cats-log4cats" % redis4CatsVersion
-val shapeless = "com.chuusai" %% "shapeless" % shapelessVersion
 
 // Library
 

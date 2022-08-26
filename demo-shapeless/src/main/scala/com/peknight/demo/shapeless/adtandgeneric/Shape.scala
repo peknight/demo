@@ -1,6 +1,8 @@
 package com.peknight.demo.shapeless.adtandgeneric
 
-enum Shape:
+import com.peknight.demo.shapeless.autoderiving.CsvEncoder
+
+enum Shape derives CsvEncoder:
   case Rectangle(width: Double, height: Double)
   case Circle(radius: Double)
 

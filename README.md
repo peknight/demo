@@ -11,8 +11,14 @@
 #### demo-scala
 
 * Scala3学习。
-* 参考: 书[《Scala编程第五版》](https://www.artima.com/shop/programming_in_scala_5ed)、元组[Tuples bring generic programming to Scala 3](https://www.scala-lang.org/2021/02/26/tuples-bring-generic-programming-to-scala-3.html)、[Type Class Derivation](https://dotty.epfl.ch/docs/reference/contextual/derivation.html)、[Magic Mirror Scala3](https://blog.philipp-martini.de/blog/magic-mirror-scala3/)
+* 参考: 书[《Scala编程第五版》](https://www.artima.com/shop/programming_in_scala_5ed)、元组[Tuples bring generic programming to Scala 3](https://www.scala-lang.org/2021/02/26/tuples-bring-generic-programming-to-scala-3.html)、[Magic Mirror Scala3](https://blog.philipp-martini.de/blog/magic-mirror-scala3/)
 * 进度: 100%，一些特别基础的代码没跟着写。
+
+#### demo-shapeless
+
+* shapless3泛化编程，涉及一些元编程内容。原版shapeless支持到Scala2，而在Scala3中shapeless被直接集成到了标准库。
+* 参考：火箭书[The Type Astronaut's Guide to Shapeless Book](https://underscore.io/books/shapeless-guide/)、[Type Class Derivation](https://dotty.epfl.ch/docs/reference/contextual/derivation.html)
+* 进度: 0%
 
 #### demo-fp
 
@@ -116,22 +122,22 @@
 * 参考: [Akka官方文档](https://doc.akka.io/docs/akka/current/typed/actors.html)
 * 进度: 由于近期沉迷函数式编辑，akka学习被无限延后，进度1%。
 
-#### demo-security
-
-* 研究一下编解码、摘要、加解密相关的知识
-* 参考: [廖雪峰 Java教程 加密与安全](https://www.liaoxuefeng.com/wiki/1252599548343744/1255943717668160)
-* 进度: 100%，用fs2支持了AES的ECB模式与CBC模式的流式加解密。
-
 #### demo-acme4j
 
 * Let's Encrypt证书管理
 * 参考: [Acme4j官方文档](https://shredzone.org/maven/acme4j/index.html)
 * 进度: 0%，刚提起兴趣，没正式开学。
 
-#### demo-shapeless
+#### demo-security
+
+* 研究一下编解码、摘要、加解密相关的知识
+* 参考: [廖雪峰 Java教程 加密与安全](https://www.liaoxuefeng.com/wiki/1252599548343744/1255943717668160)
+* 进度: 100%，用fs2支持了AES的ECB模式与CBC模式的流式加解密。
+
+#### demo-shapeless2
 
 * Shapeless泛型编程学习，仅scala2，据说scala3集成了shapeless，那就先学scala2的。
-* 参考：[火箭书](https://underscore.io/books/shapeless-guide/)
+* 参考：火箭书[The Type Astronaut's Guide to Shapeless Book](https://underscore.io/books/shapeless-guide/)
 * 进度：0%
 
 #### demo-playground
@@ -149,4 +155,3 @@
 * 单位换算相关库，有点感兴趣，但是学习优先级不高，先占个坑。
 * 参考: [Squants官方文档](https://www.squants.com/)
 * 进度: 0%
-

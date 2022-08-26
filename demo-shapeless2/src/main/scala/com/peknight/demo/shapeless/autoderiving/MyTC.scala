@@ -7,7 +7,7 @@ trait MyTC[A]
 object MyTC {
   implicit def intInstance: MyTC[Int] = ???
   implicit def stringInstance: MyTC[String] = ???
-  implicit def booleanInstance: MyTC[String] = ???
+  implicit def booleanInstance: MyTC[Boolean] = ???
 
   implicit def hnilInstance: MyTC[HNil] = ???
 
