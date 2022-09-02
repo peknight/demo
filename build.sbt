@@ -66,7 +66,8 @@ lazy val demoShapeless = (project in file("demo-shapeless"))
   .settings(
     name := "demo-shapeless",
     libraryDependencies ++= Seq(
-      shapeless
+      shapeless,
+      catsCore,
     ),
   )
 
@@ -384,6 +385,7 @@ lazy val demoShapeless2 = (project in file("demo-shapeless2"))
     scalaVersion := "2.13.8",
     libraryDependencies ++= Seq(
       shapeless2,
+      catsCore,
     ),
     scalacOptions --= Seq(
       "-language:strictEquality",
