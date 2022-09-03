@@ -8,7 +8,7 @@ import cats.{Applicative, Traverse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, Awaitable, Future}
 
 object TraverseApp extends App:
   val hostnames = List(
@@ -84,8 +84,10 @@ object TraverseApp extends App:
 
   println(Await.result(numbers2, 1.second))
 
-  println(Await.result(hostnames.traverse(getUptime), 1.second))
+  // Scala 3.2.0编译器有BUG吧
+  val hostnameUptimes: Future[List[Int]] = hostnames.traverse(getUptime)
+  println(Await.result(hostnameUptimes, 1.second))
 
   // 这里要把泛型带上，否则编译不通过
   println(Await.result(numbers.sequence[Future, Int], 1.second))
-//  println(Await.result(numbers.sequence, 1.second)) // 编译失败
+  // println(Await.result(numbers.sequence, 1.second)) // 编译失败

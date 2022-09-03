@@ -14,10 +14,10 @@ object EncodingApp extends IOApp.Simple:
   val run: IO[Unit] =
     for
       claimJsonEither <- IO(jawnParse(s"""{"expires":${Instant.now.getEpochSecond}}"""))
-      Right(claimJson) = claimJsonEither
+      Right(claimJson) = claimJsonEither: @unchecked
       _ <- IO.println(s"claimJson: $claimJson")
       headerEither <- IO(jawnParse("""{"typ":"JWT","alg":"HS256"}"""))
-      Right(header) = headerEither
+      Right(header) = headerEither: @unchecked
       _ <- IO.println(s"header: $header")
       noKeyEncode <- IO(JwtCirce.encode(claimJson))
       _ <- IO.println(s"noKeyEncode: $noKeyEncode")

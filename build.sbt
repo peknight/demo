@@ -1,6 +1,6 @@
 ThisBuild / version := "0.1-SNAPSHOT"
 
-ThisBuild / scalaVersion := "3.1.3"
+ThisBuild / scalaVersion := "3.2.0"
 
 ThisBuild / organization := "com.peknight"
 
@@ -386,6 +386,7 @@ lazy val demoShapeless2 = (project in file("demo-shapeless2"))
     libraryDependencies ++= Seq(
       shapeless2,
       catsCore,
+      scalaCheck,
     ),
     scalacOptions --= Seq(
       "-language:strictEquality",

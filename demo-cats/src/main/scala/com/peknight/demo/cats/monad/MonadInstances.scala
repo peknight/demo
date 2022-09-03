@@ -57,7 +57,7 @@ object MonadInstances:
         case Nil => closed.foldLeft(Nil: List[Tree[B]]) { (acc: List[Tree[B]], maybeTree: Option[Tree[B]]) =>
           maybeTree.map(_ :: acc) // Option[List[Tree[B]]]
             .getOrElse {
-              val left :: right :: tail = acc
+              val left :: right :: tail = acc: @unchecked
               Tree.branch(left, right) :: tail
             }
         }

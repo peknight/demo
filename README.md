@@ -18,7 +18,7 @@
 
 * shapless3泛化编程，涉及一些元编程内容。原版shapeless支持到Scala2，而在Scala3中shapeless被直接集成到了标准库。
 * 参考：火箭书[The Type Astronaut's Guide to Shapeless Book](https://underscore.io/books/shapeless-guide/)、[Type Class Derivation](https://dotty.epfl.ch/docs/reference/contextual/derivation.html)
-* 进度: 0%
+* 进度: shapeless2学习完成，前5章完成Scala3升级，6-8章尚未完成
 
 #### demo-fp
 
@@ -138,7 +138,7 @@
 
 * Shapeless泛型编程学习，仅scala2，据说scala3集成了shapeless，那就先学scala2的。
 * 参考：火箭书[The Type Astronaut's Guide to Shapeless Book](https://underscore.io/books/shapeless-guide/)
-* 进度：0%
+* 进度：100%
 
 #### demo-playground
 
