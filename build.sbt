@@ -68,6 +68,7 @@ lazy val demoShapeless = (project in file("demo-shapeless"))
     libraryDependencies ++= Seq(
       shapeless,
       catsCore,
+      scalaCheck,
     ),
   )
 

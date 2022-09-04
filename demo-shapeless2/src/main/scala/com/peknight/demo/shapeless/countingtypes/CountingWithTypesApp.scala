@@ -1,11 +1,11 @@
 package com.peknight.demo.shapeless.countingtypes
 
 import com.peknight.demo.shapeless.introduction.IceCream
+import org.scalacheck._
 import shapeless._
-import shapeless.ops.{coproduct, nat}
+import shapeless.ops.coproduct
 import shapeless.ops.hlist.Length
 import shapeless.ops.nat.ToInt
-import org.scalacheck._
 
 object CountingWithTypesApp extends App {
   type Zero = Nat._0
