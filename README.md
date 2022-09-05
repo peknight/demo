@@ -4,6 +4,7 @@
 
 ### Log
 
+* 2022.09.05: 学习OAuth2的过程中有些样板代码需要Shapeless相关能力解决，刚学习完一波Shapeless，继续搞OAuth2
 * 2022.08.12: 当前主要在学习OAuth2。
 
 ### Modules
@@ -18,7 +19,7 @@
 
 * shapless3泛化编程，涉及一些元编程内容。原版shapeless支持到Scala2，而在Scala3中shapeless被直接集成到了标准库。
 * 参考：火箭书[The Type Astronaut's Guide to Shapeless Book](https://underscore.io/books/shapeless-guide/)、[Type Class Derivation](https://dotty.epfl.ch/docs/reference/contextual/derivation.html)
-* 进度: shapeless2学习完成，前5章完成Scala3升级，6-8章尚未完成
+* 进度: 100%，但第6章`Migration`暂未找到Scala3实现方案
 
 #### demo-fp
 
@@ -114,7 +115,7 @@
 
 * OAuth2学习，OAuth2目前主要基于HTTPS实现。
 * 参考: 书[《OAuth2实战》](https://www.manning.com/books/oauth-2-in-action)、[代码](https://github.com/oauthinaction/oauth-in-action-code)
-* 进度: 正在研究第六章原生客户端实现，书中代码由node.js实现，我在练习中用Scala重新实现（大量使用http4s，页面使用ScalaTags及ScalaCss构建）。
+* 进度: 完成前六章学习，原生客户端实现部分跳过，书中代码由node.js实现，我在练习中用Scala重新实现（大量使用http4s，页面使用ScalaTags及ScalaCss构建）。
 
 #### demo-akka
 
