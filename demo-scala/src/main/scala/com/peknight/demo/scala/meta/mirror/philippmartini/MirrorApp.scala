@@ -1,6 +1,6 @@
-package com.peknight.demo.scala.marcos.mirror.philippmartini
+package com.peknight.demo.scala.meta.mirror.philippmartini
 
-import com.peknight.demo.scala.marcos.mirror.philippmartini.PrettyString.{*, given}
+import com.peknight.demo.scala.meta.mirror.philippmartini.PrettyString.{*, given}
 
 /**
  * 参考：https://blog.philipp-martini.de/blog/magic-mirror-scala3/

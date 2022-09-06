@@ -1,4 +1,4 @@
-package com.peknight.demo.scala.marcos.mirror.philippmartini
+package com.peknight.demo.scala.meta.mirror.philippmartini
 
 enum Visitor derives PrettyString :
   // User like before, but extending Visitor

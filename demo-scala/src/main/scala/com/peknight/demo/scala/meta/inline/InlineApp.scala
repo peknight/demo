@@ -1,4 +1,4 @@
-package com.peknight.demo.scala.marcos.inline
+package com.peknight.demo.scala.meta.inline
 
 object InlineApp extends App:
 

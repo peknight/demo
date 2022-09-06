@@ -1,4 +1,4 @@
-package com.peknight.demo.scala.marcos.mirror.philippmartini
+package com.peknight.demo.scala.meta.mirror.philippmartini
 
 trait PrettyString[A]:
   def prettyString(a: A): String

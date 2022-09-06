@@ -1,4 +1,4 @@
-package com.peknight.demo.scala.marcos.mirror.philippmartini
+package com.peknight.demo.scala.meta.mirror.philippmartini
 
 import scala.compiletime.{constValue, erasedValue, summonInline}
 import scala.deriving.Mirror
