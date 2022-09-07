@@ -6,6 +6,9 @@ import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.either.*
 import cats.syntax.option.*
 import com.comcast.ip4s.*
+import com.peknight.demo.oauth2.common.StringCaseStyle.camelToSnake
+import com.peknight.demo.oauth2.common.UrlFragment.UrlFragmentValue
+import com.peknight.demo.oauth2.common.UrlFragmentEncoder.*
 import com.peknight.demo.oauth2.constant.*
 import com.peknight.demo.oauth2.data.*
 import com.peknight.demo.oauth2.domain.*
@@ -115,11 +118,13 @@ object AuthorizationServerApp extends IOApp.Simple :
                 info"Unknown user $username" *>
                   InternalServerError(AuthorizationServerPage.Text.error(s"Unknown user $username"))
               } { userInfo =>
+                given UrlFragmentValueEncoder[Set[String]] with
+                  def encode(value: Set[String]): UrlFragmentValue = UrlFragmentValue(value.mkString(" "))
                 for
                   _ <- info"User $userInfo"
                   tokenResponse <- generateTokens(random, query.clientId, userInfo.some, scope, query.state,
                     false, true)
-                  resp <- Found(Location(query.redirectUri.withFragment(tokenResponse.toFragment)))
+                  resp <- Found(Location(query.redirectUri.withFragment(tokenResponse.toFragment(camelToSnake))))
                 yield resp
               }
             }

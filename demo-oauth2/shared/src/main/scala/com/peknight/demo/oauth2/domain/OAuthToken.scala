@@ -12,13 +12,7 @@ import org.http4s.{AuthScheme, EntityDecoder}
 import org.typelevel.ci.*
 
 case class OAuthToken(accessToken: String, tokenType: AuthScheme, refreshToken: Option[String],
-                      scope: Option[Set[String]], state: Option[String], idToken: Option[String]):
-
-  def toFragment: String = s"$accessTokenKey=$accessToken&$tokenTypeKey=${tokenType.toString}" +
-    s"${refreshToken.map(refresh => s"&$refreshTokenKey=$refresh").getOrElse("")}" +
-    s"${scope.map(s => s"&$scopeKey=${s.mkString(" ")}").getOrElse("")}" +
-    s"${state.map(s => s"&$stateKey=$s").getOrElse("")}" +
-    s"${idToken.map(s => s"&$idTokenKey=$s").getOrElse("")}"
+                      scope: Option[Set[String]], state: Option[String], idToken: Option[String])
 
 object OAuthToken:
 

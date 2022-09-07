@@ -1,5 +1,6 @@
 package com.peknight.demo.oauth2.page
 
+import com.peknight.demo.oauth2.common.StringCaseStyle.camelToSnake
 import com.peknight.demo.oauth2.constant.*
 import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.domain.WordsResult.*
@@ -10,6 +11,7 @@ import org.http4s.syntax.literals.uri
 import scalacss.internal.Dsl.c
 import scalatags.generic.Bundle
 import scalatags.text.Builder
+import shapeless3.deriving.Labelling
 
 class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Builder, Output, FragT]) extends OAuthPage(bundle):
   import bundle.all.*
@@ -127,33 +129,14 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     )
   )
 
-  def userInfo(idToken: Option[IdToken], userInfo: Option[UserInfo]): Frag = jumbotron(
+  def userInfo(idToken: Option[IdToken], userInfo: Option[UserInfo])(using labelling: Labelling[UserInfo]): Frag = jumbotron(
     p("Logged in user subject ", span(cls := "label label-default")(idToken.map(_.sub).getOrElse("None")),
       " from issuer ", span(cls := "label label-default")(idToken.map(_.iss.toString).getOrElse("None")), "."),
     p("User information: ", userInfo.fold[Frag]("")(user => ul(
-      user.sub.fold[Frag]("")(sub => li(b("sub"), s": $sub")),
-      user.preferredUsername.fold[Frag]("")(preferredUsername => li(b("preferred_username"), s": $preferredUsername")),
-      user.name.fold[Frag]("")(name => li(b("name"), s": $name")),
-      user.email.fold[Frag]("")(email => li(b("email"), s": $email")),
-      user.emailVerified.fold[Frag]("")(emailVerified => li(b("email_verified"), s": $emailVerified")),
-      user.username.fold[Frag]("")(username => li(b("username"), s": $username")),
-      user.password.fold[Frag]("")(password => li(b("password"), s": $password")),
-      user.familyName.fold[Frag]("")(familyName => li(b("family_name"), s": $familyName")),
-      user.givenName.fold[Frag]("")(givenName => li(b("given_name"), s": $givenName")),
-      user.middleName.fold[Frag]("")(middleName => li(b("middle_name"), s": $middleName")),
-      user.nickname.fold[Frag]("")(nickname => li(b("nickname"), s": $nickname")),
-      user.profile.fold[Frag]("")(profile => li(b("profile"), s": $profile")),
-      user.picture.fold[Frag]("")(picture => li(b("picture"), s": $picture")),
-      user.website.fold[Frag]("")(website => li(b("website"), s": $website")),
-      user.gender.fold[Frag]("")(gender => li(b("gender"), s": $gender")),
-      user.birthdate.fold[Frag]("")(birthdate => li(b("birthdate"), s": $birthdate")),
-      user.zoneInfo.fold[Frag]("")(zoneInfo => li(b("zoneinfo"), s": $zoneInfo")),
-      user.locale.fold[Frag]("")(locale => li(b("locale"), s": $locale")),
-      user.updatedAt.fold[Frag]("")(updatedAt => li(b("updated_at"), s": $updatedAt")),
-      user.address.fold[Frag]("")(address => li(b("address"), s": $address")),
-      user.phoneNumber.fold[Frag]("")(phoneNumber => li(b("phone_number"), s": $phoneNumber")),
-      user.phoneNumberVerified.fold[Frag]("")(phoneNumberVerified => li(b("phone_number_verified"),
-        s": $phoneNumberVerified"))
+      labelling.elemLabels.zip(Tuple.fromProductTyped(user).productIterator).map[Frag] {
+        case (label, Some(value)) => li(b(camelToSnake(label)), s": $value")
+        case _ => ""
+      }
     )))
   )
 
