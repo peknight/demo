@@ -39,6 +39,12 @@
 * 参考: [Cats Effect官方文档](https://typelevel.org/cats-effect/docs/getting-started)
 * 进度: 100%（仅学习了3.x版本），代码已迁移Scala3。
 
+#### demo-cats-parse
+
+* Cats函数式解析库，可对照《Functional Programming in Scala》第9章进行学习
+* 参考: [Cats Parse GitHub](https://github.com/typelevel/cats-parse)
+* 进度: 0%
+
 #### demo-fs2
 
 * Cats函数式流库，可对照《Functional Programming in Scala》第15章进行学习
@@ -48,7 +54,7 @@
 #### demo-fs2-grpc
 
 * 基于Fs2的函数式grpc库
-* 参考: [Github fs2-grpc](https://github.com/typelevel/fs2-grpc)与[Github fs2-grpc-example](https://github.com/fiadliel/fs2-grpc-example)
+* 参考: [GitHub fs2-grpc](https://github.com/typelevel/fs2-grpc)与[GitHub fs2-grpc-example](https://github.com/fiadliel/fs2-grpc-example)
 * 进度: 100%，参考的代码只有一个Demo，后续实践中再深入学习。
 
 #### demo-doobie

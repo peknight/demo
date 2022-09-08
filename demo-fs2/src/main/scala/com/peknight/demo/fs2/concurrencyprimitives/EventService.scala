@@ -19,7 +19,7 @@ class EventService[F[_]](eventsTopic: Topic[F, Event], interrupter: SignallingRe
     (textEvents.take(15) ++ quitEvent ++ textEvents).through(eventsTopic.publish).interruptWhen(interrupter)
 
   def startSubscribers: Stream[F, Unit] =
-    def processEvent(subscriberNumber: Int): Pipe[F, Event, INothing] = _.foreach {
+    def processEvent(subscriberNumber: Int): Pipe[F, Event, Nothing] = _.foreach {
       case e @ Text(_) => console.println(s"Subscriber #$subscriberNumber processing event: $e")
       case Quit => interrupter.set(true)
     }

@@ -25,6 +25,7 @@ lazy val demo = (project in file("."))
     demoFpInScala,
     demoCats,
     demoCatsEffect,
+    demoCatsParse,
     demoFs2,
     demoCirce,
     demoMonocle,
@@ -100,6 +101,15 @@ lazy val demoCatsEffect = (project in file("demo-cats-effect"))
       catsEffectTestingSpecs % Test,
       mUnitCatsEffect % Test,
       weaverCats % Test,
+    ),
+  )
+
+lazy val demoCatsParse = (project in file("demo-cats-parse"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-cats-parse",
+    libraryDependencies ++= Seq(
+      catsParse,
     ),
   )
 
@@ -404,6 +414,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.typelevel" %%% "cats-core" % catsVersion,
       "org.typelevel" %%% "alleycats-core" % catsVersion,
       "org.typelevel" %%% "cats-effect" % catsEffectVersion,
+      "org.typelevel" %%% "cats-parse" % catsParseVersion,
       "co.fs2" %%% "fs2-core" % fs2Version,
       "co.fs2" %%% "fs2-io" % fs2Version,
       "co.fs2" %%% "fs2-scodec" % fs2Version,
@@ -480,7 +491,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
 // Scala
 
 val scalaCheckVersion = "1.16.0"
-val scalaTestVersion = "3.2.11"
+val scalaTestVersion = "3.2.12"
 
 val scalaCheck = "org.scalacheck" %% "scalacheck" % scalaCheckVersion
 val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
@@ -489,16 +500,17 @@ val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
 
 val shapelessVersion = "3.1.0"
 val shapeless2Version = "2.3.9"
-val catsVersion = "2.7.0"
-val catsEffectVersion = "3.3.11"
-val fs2Version = "3.2.7"
-val circeVersion = "0.14.1"
+val catsVersion = "2.8.0"
+val catsEffectVersion = "3.3.14"
+val catsParseVersion = "0.3.8"
+val fs2Version = "3.2.12"
+val circeVersion = "0.14.2"
 val circeFs2Version = "0.14.0"
 val monocleVersion = "3.1.0"
-val log4CatsVersion = "2.3.1"
-val cirisVersion = "2.3.2"
+val log4CatsVersion = "2.4.0"
+val cirisVersion = "2.3.3"
 val cirisHoconVersion = "1.0.1"
-val refinedCatsVersion = "0.9.29"
+val refinedCatsVersion = "0.10.1"
 val spireVersion = "0.18.0-M3"
 val http4sVersion = "1.0.0-M32"
 val http4sDomVersion = "1.0.0-M32"
@@ -512,6 +524,7 @@ val shapeless2 = "com.chuusai" %% "shapeless" % shapeless2Version
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
 val alleyCatsCore = "org.typelevel" %% "alleycats-core" % catsVersion
 val catsEffect = "org.typelevel" %% "cats-effect" % catsEffectVersion withSources() withJavadoc()
+val catsParse = "org.typelevel" %% "cats-parse" % catsParseVersion
 val fs2Core = "co.fs2" %% "fs2-core" % fs2Version
 val fs2IO = "co.fs2" %% "fs2-io" % fs2Version
 val fs2ReactiveStreams = "co.fs2" %% "fs2-reactive-streams" % fs2Version

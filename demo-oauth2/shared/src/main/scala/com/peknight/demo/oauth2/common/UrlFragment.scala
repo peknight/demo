@@ -1,9 +1,11 @@
 package com.peknight.demo.oauth2.common
 
 import cats.data.NonEmptyList
+import cats.syntax.either.*
+import cats.syntax.option.*
+import com.peknight.demo.oauth2.common.UrlFragment.*
 
 import scala.collection.immutable.ListMap
-import com.peknight.demo.oauth2.common.UrlFragment.*
 
 sealed trait UrlFragment derives CanEqual:
   def toFragment: String
@@ -31,4 +33,12 @@ object UrlFragment:
     def toFragment(keyMapper: String => String): String = ""
 
   def toUrlFragmentObject(listMap: ListMap[NonEmptyList[String], String]): UrlFragmentObject =
-    ???
+    UrlFragmentObject(ListMap.from(listMap.groupBy { case (keys, _) => keys.head } map { case (key, groupedListMap) =>
+      val (valueOption, subListMap) = groupedListMap.foldLeft((none[String], ListMap.empty[NonEmptyList[String], String])) {
+        case ((option, map), (NonEmptyList(_, head :: tail), value)) =>
+          (option, map + (NonEmptyList(head, tail) -> value))
+        case ((_, map), (NonEmptyList(_, Nil), value)) => (Some(value), map)
+      }
+      if subListMap.nonEmpty then (key, toUrlFragmentObject(subListMap))
+      else (key, valueOption.fold[UrlFragment](UrlFragmentNone)(UrlFragmentValue.apply))
+    }))

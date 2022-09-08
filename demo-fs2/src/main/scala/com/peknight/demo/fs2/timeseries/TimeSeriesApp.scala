@@ -16,7 +16,7 @@ object TimeSeriesApp extends IOApp.Simple:
     TimeStamped.withPerSecondRate[ByteVector, Long](_.size * 8).toPipe(input)
 
   def withReceivedBitrateV1[F[_]: Functor: Clock](input: Stream[F, Byte]): Stream[F, TimeStamped[Either[Long, ByteVector]]] =
-    input.chunks.evalMap(c => TimeStamped.now(c.toByteVector)).through(withBitrateV1)
+    input.chunks.evalMap(c => TimeStamped.realTime(c.toByteVector)).through(withBitrateV1)
 
   def withAverageBitrate[F[_]: Functor: Clock](input: Stream[F, Byte]): Stream[F, TimeStamped[Either[Long, ByteVector]]] =
     withReceivedBitrateV1(input).mapAccumulate(Queue.empty[Long]) {
