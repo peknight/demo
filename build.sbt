@@ -110,6 +110,7 @@ lazy val demoCatsParse = (project in file("demo-cats-parse"))
     name := "demo-cats-parse",
     libraryDependencies ++= Seq(
       catsParse,
+      jawnAst,
     ),
   )
 
@@ -430,6 +431,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.http4s" %%% "http4s-server" % http4sVersion,
       "org.http4s" %%% "http4s-client" % http4sVersion,
       "org.http4s" %%% "http4s-circe" % http4sVersion,
+      "org.typelevel" %%% "jawn-ast" % jawnAstVersion,
       "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.lihaoyi" %%% "upickle" % uPickleVersion,
       "com.github.japgolly.scalacss" %% "core" % scalaCssVersion,
@@ -518,6 +520,7 @@ val http4sDropwizardMetricsVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M1"
 val doobieVersion = "1.0.0-RC2"
 val redis4CatsVersion = "1.2.0"
+val jawnAstVersion = "1.4.0"
 
 val shapeless = "org.typelevel" %% "shapeless3-deriving" % shapelessVersion
 val shapeless2 = "com.chuusai" %% "shapeless" % shapeless2Version
@@ -562,6 +565,7 @@ val doobieScalaTest = "org.tpolecat" %% "doobie-scalatest" % doobieVersion
 val redis4CatsEffects = "dev.profunktor" %% "redis4cats-effects" % redis4CatsVersion
 val redis4CatsStreams = "dev.profunktor" %% "redis4cats-streams" % redis4CatsVersion
 val redis4CatsLog4Cats = "dev.profunktor" %% "redis4cats-log4cats" % redis4CatsVersion
+val jawnAst = "org.typelevel" %% "jawn-ast" % jawnAstVersion
 
 // Library
 
