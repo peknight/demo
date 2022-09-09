@@ -1,16 +1,17 @@
 package com.peknight.demo.catsparse.tutorial
 
-import cats.parse.{Parser0, Parser => P, Numbers}
+import cats.parse.{Numbers, Parser0, Parser as P}
 import org.typelevel.jawn.ast.*
 
 object Json:
   private[this] val whitespace: P[Unit] = P.charIn(" \t\r\n").void
   private[this] val whitespaces0: Parser0[Unit] = whitespace.rep0.void
 
+
   val parser: P[JValue] = P.recursive[JValue] { recurse =>
     val pnull = P.string("null").as(JNull)
     val bool = P.string("true").as(JBool.True).orElse(P.string("false").as(JBool.False))
-    val justStr: P[String] = ??? // JsonStringUtil.escapedString('"')
+    val justStr: P[String] = JsonStringUtil.escapedString('"')
     val str = justStr.map(JString(_))
     val num = Numbers.jsonNumber.map(JNum(_))
 
