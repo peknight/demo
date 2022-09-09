@@ -346,6 +346,7 @@ lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth
       "org.http4s" %%% "http4s-circe" % http4sVersion,
       "io.circe" %%% "circe-generic" % circeVersion,
       "io.circe" %%% "circe-parser" % circeVersion,
+      "org.typelevel" %%% "cats-parse" % catsParseVersion,
       "org.typelevel" %%% "shapeless3-deriving" % shapelessVersion,
       "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.github.japgolly.scalacss" %% "core" % scalaCssVersion,

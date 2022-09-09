@@ -43,7 +43,7 @@
 
 * Cats函数式解析库，可对照《Functional Programming in Scala》第9章进行学习
 * 参考: [Cats Parse GitHub](https://github.com/typelevel/cats-parse)
-* 进度: 0%
+* 进度: 100%，这个库居然没提供一个regex方法搞正则解析，还把类搞成了sealed没法自行扩展，不爽。
 
 #### demo-fs2
 

@@ -1,6 +1,7 @@
 package com.peknight.demo.oauth2.common
 
 import cats.data.NonEmptyList
+import cats.parse.Parser
 import cats.syntax.either.*
 import cats.syntax.option.*
 import com.peknight.demo.oauth2.common.UrlFragment.*
@@ -42,3 +43,20 @@ object UrlFragment:
       if subListMap.nonEmpty then (key, toUrlFragmentObject(subListMap))
       else (key, valueOption.fold[UrlFragment](UrlFragmentNone)(UrlFragmentValue.apply))
     }))
+
+  val letters: Parser[String] = Parser.charsWhile(c => !"[]&=".contains(c))
+  val keyParser: Parser[NonEmptyList[String]] =
+    (letters ~ letters.between(Parser.char('['), Parser.char(']')).rep0).map {
+      case (head, tail) => NonEmptyList(head, tail)
+    }
+  val keyValuePairParser: Parser[(NonEmptyList[String], String)] = (keyParser <* Parser.char('=')) ~ letters
+  val objectParser: Parser[UrlFragmentObject] =
+    keyValuePairParser.repSep(Parser.char('&')).map(list => toUrlFragmentObject(ListMap.from(list.toList)))
+  val valueParser: Parser[UrlFragmentValue] = letters.map(UrlFragmentValue.apply)
+  val urlFragmentParser: Parser[UrlFragment] = (objectParser.backtrack | valueParser) <* Parser.end
+
+  def parse(fragment: String): Either[Parser.Error, UrlFragment] = urlFragmentParser.parse(fragment).map(_._2)
+
+
+
+

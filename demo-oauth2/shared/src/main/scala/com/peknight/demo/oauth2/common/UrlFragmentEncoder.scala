@@ -9,15 +9,15 @@ import scala.collection.immutable.*
 import scala.concurrent.duration.Duration
 import scala.util.{Success, Try}
 
-trait UrlFragmentEncoder[T]:
-  def encode(value: T): UrlFragment
+trait UrlFragmentEncoder[A]:
+  def encode(value: A): UrlFragment
 
 object UrlFragmentEncoder:
 
   def apply[A](using encoder: UrlFragmentEncoder[A]): UrlFragmentEncoder[A] = encoder
 
-  trait UrlFragmentValueEncoder[T] extends UrlFragmentEncoder[T]:
-    def encode(value: T): UrlFragmentValue
+  trait UrlFragmentValueEncoder[A] extends UrlFragmentEncoder[A]:
+    def encode(value: A): UrlFragmentValue
 
   def fromToString[A]: UrlFragmentValueEncoder[A] = (value: A) => UrlFragmentValue(value.toString)
 

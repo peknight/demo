@@ -1,10 +1,13 @@
 package com.peknight.demo.oauth2.webclient
 
-import cats.data.OptionT
+import cats.data.{OptionT, Validated}
 import cats.effect.std.Random
 import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.option.*
 import cats.syntax.traverse.*
+import cats.syntax.validated.*
+import com.peknight.demo.oauth2.common.UrlFragment
+import com.peknight.demo.oauth2.common.UrlFragmentDecoder.*
 import com.peknight.demo.oauth2.constant.*
 import com.peknight.demo.oauth2.data.*
 import com.peknight.demo.oauth2.domain.*
@@ -58,12 +61,20 @@ object WebClient extends IOApp.Simple:
   def processCallback(callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
     val processOptionT: OptionT[IO, Unit] = for
       hash <- IO(dom.window.location.hash).optionT if hash.nonEmpty
-      oauthToken <- OptionT(OAuthToken.from(Uri.decode(hash.substring(1)))
+      oauthToken <- OptionT(parseOAuthToken(Uri.decode(hash.substring(1)))
         .fold[IO[Option[OAuthToken]]](msg => IO.println(msg) *> IO.pure(None), oauthToken => IO.pure(oauthToken.some)))
       _ <- checkStateAndUpdateCallbackData(oauthToken, callbackDataR).optionT
     yield ()
     processOptionT.value.void
   end processCallback
+
+  def parseOAuthToken(fragment: String): Validated[String, OAuthToken] =
+    UrlFragment.parse(fragment).fold(
+      error => s"$error".invalid[OAuthToken],
+      frag => frag.decode[OAuthToken].leftMap(es =>
+        es.toList.mkString(s"Invalid param${if es.tail.nonEmpty then "s" else ""}: ", ", ", "")
+      )
+    )
 
   def checkStateAndUpdateCallbackData(oauthToken: OAuthToken, callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
     for
