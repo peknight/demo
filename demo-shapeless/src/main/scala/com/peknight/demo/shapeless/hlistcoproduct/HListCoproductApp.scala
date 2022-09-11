@@ -1,7 +1,9 @@
 package com.peknight.demo.shapeless.hlistcoproduct
 
+import com.peknight.demo.shapeless.hlistcoproduct.Migration.{*, given}
 import com.peknight.demo.shapeless.hlistcoproduct.Penultimate.*
 import com.peknight.demo.shapeless.introduction.IceCream
+import com.peknight.demo.shapeless.{*, given}
 
 object HListCoproductApp extends App:
   // println(("Hello" *: 123 *: true *: EmptyTuple).last)
@@ -18,3 +20,8 @@ object HListCoproductApp extends App:
   println(bigList.penultimate)
 
   println(IceCream("Sundae", 1, false).penultimate)
+
+  // OHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH 2022-09-11 22:56 成功迁移Scala3
+  println(IceCreamV1("Sundae", 1, true).migrateTo[IceCreamV2a])
+  println(IceCreamV1("Sundae", 1, true).migrateTo[IceCreamV2b])
+  println(IceCreamV1("Sundae", 1, true).migrateTo[IceCreamV2c])
