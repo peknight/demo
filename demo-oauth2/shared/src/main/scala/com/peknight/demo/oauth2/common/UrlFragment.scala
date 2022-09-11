@@ -56,7 +56,3 @@ object UrlFragment:
   val urlFragmentParser: Parser[UrlFragment] = (objectParser.backtrack | valueParser) <* Parser.end
 
   def parse(fragment: String): Either[Parser.Error, UrlFragment] = urlFragmentParser.parse(fragment).map(_._2)
-
-
-
-
