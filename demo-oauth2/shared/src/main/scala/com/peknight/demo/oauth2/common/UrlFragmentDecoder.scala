@@ -1,7 +1,9 @@
 package com.peknight.demo.oauth2.common
 
-import cats.data.ValidatedNel
+import cats.data.{NonEmptyList, ValidatedNel}
+import cats.syntax.either.*
 import cats.syntax.option.*
+import cats.syntax.traverse.*
 import cats.syntax.validated.*
 import com.peknight.demo.oauth2.common.UrlFragment.*
 
@@ -80,5 +82,27 @@ object UrlFragmentDecoder:
     def decode(fragment: UrlFragment): ValidatedNel[String, Option[A]] = fragment match
       case UrlFragmentNone => none[A].validNel[String]
       case fragment => decoder.decode(fragment).map(_.some)
+
+  given [A] (using decoder: UrlFragmentDecoder[A]): UrlFragmentDecoder[List[A]] with
+    def decode(fragment: UrlFragment): ValidatedNel[String, List[A]] = fragment match
+      case UrlFragmentObject(listMap) =>
+        listMap.foldRight(List.empty[(Int, UrlFragment)].asRight[NonEmptyList[String]]) { case ((key, value), either) =>
+          for
+            list <- either
+            index <- Try(key.toInt).toEither.leftMap(e => NonEmptyList.one(e.toString))
+          yield (index, value) :: list
+        }.flatMap(list => list.sortBy(_._1).foldLeft((Vector.empty[A], 0).asRight[NonEmptyList[String]]) {
+          case (either, (index, fragment)) =>
+            lazy val decodeNone = decoder.decode(UrlFragmentNone).toEither
+            for
+              tuple <- either
+              (vector, i) = tuple
+              prepend <-
+                if i < index then decodeNone.map(a => Vector.fill(index - i)(a))
+                else Vector.empty[A].asRight[NonEmptyList[String]]
+              a <- decoder.decode(fragment).toEither
+            yield (vector :++ prepend :+ a, index + 1)
+        }.map(_._1.to(List))).toValidated
+      case fragment => s"Can not parse $fragment".invalidNel[List[A]]
 
 end UrlFragmentDecoder
