@@ -8,14 +8,15 @@ import cats.syntax.validated.*
 import com.peknight.demo.oauth2.common.UrlFragment.*
 
 import java.util.UUID
-import scala.collection.immutable.BitSet
+import scala.collection.IterableFactory
+import scala.collection.immutable.{BitSet, ListMap, Queue}
 import scala.concurrent.duration.Duration
 import scala.util.Try
 
 trait UrlFragmentDecoder[A]:
   def decode(fragment: UrlFragment): ValidatedNel[String, A]
 
-object UrlFragmentDecoder:
+object UrlFragmentDecoder extends App:
 
   def apply[A](using decoder: UrlFragmentDecoder[A]): UrlFragmentDecoder[A] = decoder
 
@@ -29,6 +30,28 @@ object UrlFragmentDecoder:
   def parseValue[A](fragment: UrlFragment)(f: String => A): ValidatedNel[String, A] = fragment match
     case UrlFragmentValue(value) => Try(f(value)).fold(_.toString.invalidNel[A], _.validNel[String])
     case fragment => s"Can not parse $fragment".invalidNel[A]
+
+  def parseIterable[A, C[_]](fragment: UrlFragment, factory: IterableFactory[C])(using decoder: UrlFragmentDecoder[A])
+  : ValidatedNel[String, C[A]] = fragment match
+    case UrlFragmentObject(listMap) =>
+      listMap.foldRight(List.empty[(Int, UrlFragment)].asRight[NonEmptyList[String]]) { case ((key, value), either) =>
+        for
+          list <- either
+          index <- Try(key.toInt).toEither.leftMap(e => NonEmptyList.one(e.toString))
+        yield (index, value) :: list
+      }.flatMap(list => list.sortBy(_._1).foldLeft((Vector.empty[A], 0).asRight[NonEmptyList[String]]) {
+        case (either, (index, fragment)) =>
+          lazy val decodeNone = decoder.decode(UrlFragmentNone).toEither
+          for
+            tuple <- either
+            (vector, i) = tuple
+            prepend <-
+              if i < index then decodeNone.map(a => Vector.fill(index - i)(a))
+              else Vector.empty[A].asRight[NonEmptyList[String]]
+            a <- decoder.decode(fragment).toEither
+          yield (vector :++ prepend :+ a, index + 1)
+      }.map(_._1.to(factory))).toValidated
+    case fragment => s"Can not parse $fragment".invalidNel[C[A]]
 
   given UrlFragmentDecoder[Boolean] with
     def decode(fragment: UrlFragment): ValidatedNel[String, Boolean] = parseValue(fragment)(_.toBoolean)
@@ -83,26 +106,15 @@ object UrlFragmentDecoder:
       case UrlFragmentNone => none[A].validNel[String]
       case fragment => decoder.decode(fragment).map(_.some)
 
-  given [A] (using decoder: UrlFragmentDecoder[A]): UrlFragmentDecoder[List[A]] with
-    def decode(fragment: UrlFragment): ValidatedNel[String, List[A]] = fragment match
-      case UrlFragmentObject(listMap) =>
-        listMap.foldRight(List.empty[(Int, UrlFragment)].asRight[NonEmptyList[String]]) { case ((key, value), either) =>
-          for
-            list <- either
-            index <- Try(key.toInt).toEither.leftMap(e => NonEmptyList.one(e.toString))
-          yield (index, value) :: list
-        }.flatMap(list => list.sortBy(_._1).foldLeft((Vector.empty[A], 0).asRight[NonEmptyList[String]]) {
-          case (either, (index, fragment)) =>
-            lazy val decodeNone = decoder.decode(UrlFragmentNone).toEither
-            for
-              tuple <- either
-              (vector, i) = tuple
-              prepend <-
-                if i < index then decodeNone.map(a => Vector.fill(index - i)(a))
-                else Vector.empty[A].asRight[NonEmptyList[String]]
-              a <- decoder.decode(fragment).toEither
-            yield (vector :++ prepend :+ a, index + 1)
-        }.map(_._1.to(List))).toValidated
-      case fragment => s"Can not parse $fragment".invalidNel[List[A]]
+  given [A: UrlFragmentDecoder]: UrlFragmentDecoder[List[A]] with
+    def decode(fragment: UrlFragment): ValidatedNel[String, List[A]] = parseIterable(fragment, List)
+
+  given [A: UrlFragmentDecoder]: UrlFragmentDecoder[Vector[A]] with
+    def decode(fragment: UrlFragment): ValidatedNel[String, Vector[A]] = parseIterable(fragment, Vector)
+
+  given [A: UrlFragmentDecoder]: UrlFragmentDecoder[Queue[A]] with
+    def decode(fragment: UrlFragment): ValidatedNel[String, Queue[A]] = parseIterable(fragment, Queue)
+
+  println(UrlFragmentDecoder[List[Option[Int]]].decode(UrlFragmentObject(ListMap("0" -> UrlFragmentValue("0"), "1" -> UrlFragmentValue("1"), "3" -> UrlFragmentValue("3")))))
 
 end UrlFragmentDecoder
