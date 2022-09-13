@@ -1,11 +1,17 @@
 package com.peknight.demo
 
 import scala.annotation.targetName
+import scala.compiletime.{constValue, erasedValue, summonInline}
 import scala.reflect.ClassTag
-import scala.compiletime.{constValue, erasedValue}
 
 package object shapeless:
 
+  //noinspection DuplicatedCode
+  inline def summonAsTuple[A <: Tuple]: A = inline erasedValue[A] match
+    case _: EmptyTuple => EmptyTuple.asInstanceOf[A]
+    case _: (h *: t) => (summonInline[h] *: summonAsTuple[t]).asInstanceOf[A]
+
+  //noinspection DuplicatedCode
   inline def summonValuesAsTuple[A <: Tuple]: A = inline erasedValue[A] match
     case _: EmptyTuple => EmptyTuple.asInstanceOf[A]
     case _: (h *: t) => (constValue[h] *: summonValuesAsTuple[t]).asInstanceOf[A]

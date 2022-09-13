@@ -1,6 +1,6 @@
 # Pek Demo
 
-学习Scala与Cats全家桶过程中的练习代码。  
+主要为学习Scala与Cats全家桶过程中的练习代码。  
 
 ### Log
 
@@ -19,7 +19,7 @@
 
 * shapless3泛化编程，涉及一些元编程内容。原版shapeless支持到Scala2，而在Scala3中shapeless被直接集成到了标准库。
 * 参考：火箭书[The Type Astronaut's Guide to Shapeless Book](https://underscore.io/books/shapeless-guide/)、[Type Class Derivation](https://dotty.epfl.ch/docs/reference/contextual/derivation.html)
-* 进度: 100%，但第6章`Migration`暂未找到Scala3实现方案
+* 进度: 100%
 
 #### demo-fp
 

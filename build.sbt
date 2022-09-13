@@ -502,7 +502,7 @@ val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
 // Functional
 
 val shapelessVersion = "3.1.0"
-val shapeless2Version = "2.3.9"
+val shapeless2Version = "2.3.10"
 val catsVersion = "2.8.0"
 val catsEffectVersion = "3.3.14"
 val catsParseVersion = "0.3.8"

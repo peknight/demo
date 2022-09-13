@@ -45,14 +45,17 @@ object UrlFragment:
     }))
 
   val letters: Parser[String] = Parser.charsWhile(c => !"[]&=".contains(c))
-  val keyParser: Parser[NonEmptyList[String]] =
+  def keyParser(keyMapper: String => String): Parser[NonEmptyList[String]] =
     (letters ~ letters.between(Parser.char('['), Parser.char(']')).rep0).map {
-      case (head, tail) => NonEmptyList(head, tail)
+      case (head, tail) => NonEmptyList(head, tail).map(keyMapper)
     }
-  val keyValuePairParser: Parser[(NonEmptyList[String], String)] = (keyParser <* Parser.char('=')) ~ letters
-  val objectParser: Parser[UrlFragmentObject] =
-    keyValuePairParser.repSep(Parser.char('&')).map(list => toUrlFragmentObject(ListMap.from(list.toList)))
+  def keyValuePairParser(keyMapper: String => String): Parser[(NonEmptyList[String], String)] =
+    (keyParser(keyMapper) <* Parser.char('=')) ~ letters
+  def objectParser(keyMapper: String => String): Parser[UrlFragmentObject] =
+    keyValuePairParser(keyMapper).repSep(Parser.char('&')).map(list => toUrlFragmentObject(ListMap.from(list.toList)))
   val valueParser: Parser[UrlFragmentValue] = letters.map(UrlFragmentValue.apply)
-  val urlFragmentParser: Parser[UrlFragment] = (objectParser.backtrack | valueParser) <* Parser.end
+  def urlFragmentParser(keyMapper: String => String): Parser[UrlFragment] =
+    (objectParser(keyMapper).backtrack | valueParser) <* Parser.end
 
-  def parse(fragment: String): Either[Parser.Error, UrlFragment] = urlFragmentParser.parse(fragment).map(_._2)
+  def fromFragment(fragment: String, keyMapper: String => String = identity): Either[Parser.Error, UrlFragment] =
+    urlFragmentParser(keyMapper).parse(fragment).map(_._2)

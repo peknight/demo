@@ -1,13 +1,14 @@
 package com.peknight.demo.oauth2.webclient
 
-import cats.data.{OptionT, Validated}
+import cats.data.{OptionT, Validated, ValidatedNel}
 import cats.effect.std.Random
 import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.option.*
 import cats.syntax.traverse.*
 import cats.syntax.validated.*
-import com.peknight.demo.oauth2.common.UrlFragment
+import com.peknight.demo.oauth2.common.UrlFragment.*
 import com.peknight.demo.oauth2.common.UrlFragmentDecoder.*
+import com.peknight.demo.oauth2.common.{StringCaseStyle, UrlFragment, UrlFragmentDecoder}
 import com.peknight.demo.oauth2.constant.*
 import com.peknight.demo.oauth2.data.*
 import com.peknight.demo.oauth2.domain.*
@@ -69,12 +70,13 @@ object WebClient extends IOApp.Simple:
   end processCallback
 
   def parseOAuthToken(fragment: String): Validated[String, OAuthToken] =
-    UrlFragment.parse(fragment).fold(
-      error => s"$error".invalid[OAuthToken],
-      frag => frag.decode[OAuthToken].leftMap(es =>
-        es.toList.mkString(s"Invalid param${if es.tail.nonEmpty then "s" else ""}: ", ", ", "")
-      )
-    )
+    given UrlFragmentDecoder[Set[String]] with
+      def decode(fragment: UrlFragment): ValidatedNel[String, Set[String]] = fragment match
+        case UrlFragmentValue(value) => value.split("\\s++").toSet.validNel[String]
+        case fragment => s"Can not parse $fragment".invalidNel[Set[String]]
+    end given
+    fragment.parseFragment[OAuthToken](StringCaseStyle.snakeToCamel).leftMap(es => es.toList.mkString(" >> "))
+  end parseOAuthToken
 
   def checkStateAndUpdateCallbackData(oauthToken: OAuthToken, callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
     for

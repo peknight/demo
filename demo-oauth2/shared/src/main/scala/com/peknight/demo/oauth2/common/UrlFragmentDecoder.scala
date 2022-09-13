@@ -1,27 +1,35 @@
 package com.peknight.demo.oauth2.common
 
-import cats.data.{NonEmptyList, ValidatedNel}
+import cats.data.Validated.{Invalid, Valid}
+import cats.data.{NonEmptyList, Validated, ValidatedNel}
 import cats.syntax.either.*
 import cats.syntax.option.*
-import cats.syntax.traverse.*
 import cats.syntax.validated.*
 import com.peknight.demo.oauth2.common.UrlFragment.*
+import org.http4s.AuthScheme
+import org.typelevel.ci.CIString
+import shapeless3.deriving.*
 
 import java.util.UUID
 import scala.collection.IterableFactory
-import scala.collection.immutable.{BitSet, ListMap, Queue}
+import scala.collection.immutable.*
 import scala.concurrent.duration.Duration
+import scala.deriving.Mirror
 import scala.util.Try
 
 trait UrlFragmentDecoder[A]:
   def decode(fragment: UrlFragment): ValidatedNel[String, A]
 
-object UrlFragmentDecoder extends App:
+object UrlFragmentDecoder:
 
   def apply[A](using decoder: UrlFragmentDecoder[A]): UrlFragmentDecoder[A] = decoder
 
-  extension (fragment: UrlFragment)
-    def decode[A](using decoder: UrlFragmentDecoder[A]): ValidatedNel[String, A] = decoder.decode(fragment)
+  extension (fragment: String)
+    def parseFragment[A](keyMapper: String => String)(using decoder: UrlFragmentDecoder[A]): ValidatedNel[String, A] =
+      UrlFragment.fromFragment(fragment, keyMapper).fold(
+        error => error.toString().invalidNel[A],
+        frag => decoder.decode(frag)
+      )
   end extension
 
   given UrlFragmentDecoder[Unit] with
@@ -115,6 +123,55 @@ object UrlFragmentDecoder extends App:
   given [A: UrlFragmentDecoder]: UrlFragmentDecoder[Queue[A]] with
     def decode(fragment: UrlFragment): ValidatedNel[String, Queue[A]] = parseIterable(fragment, Queue)
 
-  println(UrlFragmentDecoder[List[Option[Int]]].decode(UrlFragmentObject(ListMap("0" -> UrlFragmentValue("0"), "1" -> UrlFragmentValue("1"), "3" -> UrlFragmentValue("3")))))
+  given [L, R] (using lDecoder: UrlFragmentDecoder[L], rDecoder: UrlFragmentDecoder[R]): UrlFragmentDecoder[Either[L, R]] with
+    def decode(fragment: UrlFragment): ValidatedNel[String, Either[L, R]] =
+      rDecoder.decode(fragment).map(_.asRight[L]).orElse(lDecoder.decode(fragment).map(_.asLeft[R]))
+
+
+  given [A: UrlFragmentDecoder]: UrlFragmentDecoder[Set[A]] with
+    def decode(fragment: UrlFragment): ValidatedNel[String, Set[A]] = parseIterable(fragment, Set)
+
+  given [K, V](using kDecoder: UrlFragmentDecoder[K], vDecoder: UrlFragmentDecoder[V]): UrlFragmentDecoder[Map[K, V]] with
+    def decode(fragment: UrlFragment): ValidatedNel[String, Map[K, V]] = fragment match
+      case UrlFragmentObject(listMap) => listMap.foldLeft(Map.empty[K, V].asRight[NonEmptyList[String]]) {
+        case (either, (k, v)) =>
+          for
+            map <- either
+            key <- kDecoder.decode(UrlFragmentValue(k)).toEither
+            value <- vDecoder.decode(v).toEither
+          yield map + (key -> value)
+      }.toValidated
+      case fragment => s"Can not parse $fragment".invalidNel[Map[K, V]]
+
+  given UrlFragmentDecoder[AuthScheme] with
+    def decode(fragment: UrlFragment): ValidatedNel[String, AuthScheme] = parseValue(fragment)(CIString.apply)
+
+  def urlFragmentDecoderSum[A](using inst: => K0.CoproductInstances[UrlFragmentDecoder, A]): UrlFragmentDecoder[A] =
+    (fragment: UrlFragment) =>
+      val failure = NonEmptyList.one(s"Can not parse $fragment").asLeft[A]
+      inst.is.foldLeft(failure) { (either, decoder) =>
+        either.orElse(decoder.asInstanceOf[UrlFragmentDecoder[A]].decode(fragment).toEither)
+      }.toValidated
+
+  inline def urlFragmentDecoderProduct[A](
+    using
+    inst: => K0.ProductInstances[UrlFragmentDecoder, A],
+    mirror: Mirror.ProductOf[A]
+  ): UrlFragmentDecoder[A] = (fragment: UrlFragment) => fragment match
+      case UrlFragmentObject(listMap) =>
+        val ((_, es), option) = inst.unfold(
+          (summonValuesAsArray[mirror.MirroredElemLabels, String].toList, List(s"Can not parse $fragment"))
+        ){ [T] => (acc: (List[String], List[String]), decoder: UrlFragmentDecoder[T]) =>
+          val (labels, errors) = acc
+          decoder.decode(listMap.getOrElse(labels.head, UrlFragmentNone)) match
+            case Valid(a) => ((labels.tail, errors), Some(a))
+            case Invalid(e) =>
+              ((labels.tail, s"Can not parse field ${labels.head}" :: e.toList ::: errors), None)
+        }
+        option.toValid(NonEmptyList.fromListUnsafe(es))
+      case fragment => s"Can not parse $fragment".invalidNel[A]
+
+  inline given derived[A](using gen: K0.Generic[A]): UrlFragmentDecoder[A] =
+    gen.derive(urlFragmentDecoderProduct, urlFragmentDecoderSum)
 
 end UrlFragmentDecoder

@@ -7,5 +7,6 @@ object StringCaseStyle:
   def snakeToCamel(value: String): String =
     value.split("_").filter(_.nonEmpty).toList match
       case Nil => ""
-      case head :: tail => s"${head.toLowerCase}${tail.map(word => s"${word.head.toUpper}${word.tail.toLowerCase.mkString}")}"
-
+      case head :: tail =>
+        s"${head.toLowerCase}${tail.map(word => s"${word.head.toUpper}${word.tail.toLowerCase.mkString}").mkString}"
+  end snakeToCamel
