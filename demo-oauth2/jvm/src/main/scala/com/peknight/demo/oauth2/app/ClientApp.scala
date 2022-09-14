@@ -3,6 +3,7 @@ package com.peknight.demo.oauth2.app
 import cats.data.Chain
 import cats.effect.std.Random
 import cats.effect.{IO, IOApp, Ref}
+import cats.syntax.option.*
 import com.comcast.ip4s.port
 import com.peknight.demo.oauth2.constant.*
 import com.peknight.demo.oauth2.domain.*
@@ -96,6 +97,18 @@ object ClientApp extends IOApp.Simple :
       _ <- info"redirect: $authorizeUrl"
       resp <- Found(Location(authorizeUrl))
     yield resp
+
+  def registerClient =
+    val template = ClientMetadata(
+      AuthMethod.SecretBasic,
+      List(GrantType.AuthorizationCode),
+      List(ResponseType.Code),
+      client.redirectUris,
+      "OAuth in Action Dynamic Test Client".some,
+      clientIndex.some,
+      none[Uri],
+      Set("openid", "profile", "email", "address", "phone").some
+    )
 
   def clientCredentials(oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
     val req: Request[IO] = POST(

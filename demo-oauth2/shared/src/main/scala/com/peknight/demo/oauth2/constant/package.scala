@@ -45,7 +45,7 @@ package object constant:
     "oauth-client-1",
     "oauth-client-secret-1".some,
     Set("foo", "bar", "read", "write", "delete", "fruit", "veggies", "meats", "movies", "foods", "music", "openid",
-      "profile", "email", "phone", "address"),
+      "profile", "email", "phone", "address", "greeting"),
     NonEmptyList.one(uri"http://localhost:8000/callback")
   )
 
@@ -70,6 +70,8 @@ package object constant:
       NonEmptyList.one(uri"com.oauthinaction.mynativeapp://")
     )
   )
+
+  val clientIndex = uri"http://localhost:8000/"
 
   val authorizationServerAddr = "localhost:8001"
 

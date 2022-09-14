@@ -27,7 +27,15 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     a(cls := "btn btn-default", href := "/fetch_resource")("Get Protected Resource"), " ",
     a(cls := "btn btn-default", href := "/words")("Access the Words API"), " ",
     a(cls := "btn btn-default", href := "/produce")("Access the Produce API"), " ",
-    a(cls := "btn btn-default", href := "/favorites")("Access the Favorites API")
+    a(cls := "btn btn-default", href := "/favorites")("Access the Favorites API"), " ",
+    form(action := "/greeting")(
+      input(cls := "btn btn-default", `type` := "submit", value := "Greet in"),
+      input(`type` := "radio", name := "language", value := "en", checked := "checked"), "English", " ",
+      input(`type` := "radio", name := "language", value := "de"), "German", " ",
+      input(`type` := "radio", name := "language", value := "it"), "Italian", " ",
+      input(`type` := "radio", name := "language", value := "fr"), "French", " ",
+      input(`type` := "radio", name := "language", value := "es"), "Spanish", " ",
+    )
   )
 
   val webIndex: Frag = skeleton(

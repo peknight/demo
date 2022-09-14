@@ -96,16 +96,19 @@ object ProtectedResourceApp extends IOApp.Simple :
         case _ => Ok(UserFavoritesData("Unknown", FavoritesData.empty).asJson)
     }
     case req @ GET -> Root / "helloWorld" :? LanguageQueryParamMatcher(language) =>
-      requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
+      requireAccessToken(req, protectedResourceAddr)(introspect) { _ =>
         val greeting = language match
           case Some("en") => "Hello World"
           case Some("de") => "Hallo Welt"
           case Some("it") => "Ciao Mondo"
           case Some("fr") => "Bonjour monde"
           case Some("es") => "Hola mundo"
-          case _ => "Error, invalid language"
-        val resource = GreetingResource(greeting)
-        Ok(resource.asJson)
+          case _ => s"Error, invalid language: ${language.getOrElse("None")}"
+        Ok(
+          GreetingResource(greeting).asJson,
+          Header.Raw(CIString("X-Content-Type-Options"), "nosniff"),
+          Header.Raw(CIString("X-XSS-Protection"), "1; mode=block")
+        )
       }
   }
 
