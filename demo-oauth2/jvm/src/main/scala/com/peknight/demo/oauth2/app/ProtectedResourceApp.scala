@@ -57,6 +57,8 @@ object ProtectedResourceApp extends IOApp.Simple :
     .withAllowOriginHost(Set(Origin.Host(Uri.Scheme.http, Uri.RegName("localhost"), Some(8010))))
     .withAllowMethodsIn(Set(Method.GET, Method.POST))
 
+  object LanguageQueryParamMatcher extends OptionalQueryParamDecoderMatcher[String]("language")
+
   def service(savedWordsR: Ref[IO, Queue[String]])(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(ProtectedResourcePage.Text.index)
     case OPTIONS -> Root / "resource" => NoContent()
@@ -93,6 +95,18 @@ object ProtectedResourceApp extends IOApp.Simple :
         case Some("bob") => Ok(UserFavoritesData("Bob", bobFavorites).asJson)
         case _ => Ok(UserFavoritesData("Unknown", FavoritesData.empty).asJson)
     }
+    case req @ GET -> Root / "helloWorld" :? LanguageQueryParamMatcher(language) =>
+      requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
+        val greeting = language match
+          case Some("en") => "Hello World"
+          case Some("de") => "Hallo Welt"
+          case Some("it") => "Ciao Mondo"
+          case Some("fr") => "Bonjour monde"
+          case Some("es") => "Hola mundo"
+          case _ => "Error, invalid language"
+        val resource = GreetingResource(greeting)
+        Ok(resource.asJson)
+      }
   }
 
   private[this] def requireAccessTokenScope(req: Request[IO], scope: String)(pass: => IO[Response[IO]])
