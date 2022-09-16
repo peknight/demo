@@ -44,6 +44,7 @@ object UrlFragment:
       else (key, valueOption.fold[UrlFragment](UrlFragmentNone)(UrlFragmentValue.apply))
     }))
 
+  // 这里没有进一步处理key或value中含有"[]&="字符的情况，仅做了最简单的实现。完整处理可能需要搞UrlEncode与UrlDecode
   val letters: Parser[String] = Parser.charsWhile(c => !"[]&=".contains(c))
   def keyParser(keyMapper: String => String): Parser[NonEmptyList[String]] =
     (letters ~ letters.between(Parser.char('['), Parser.char(']')).rep0).map {

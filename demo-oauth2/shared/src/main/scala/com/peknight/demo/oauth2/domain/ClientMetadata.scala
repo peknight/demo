@@ -1,7 +1,12 @@
 package com.peknight.demo.oauth2.domain
 
 import cats.data.NonEmptyList
-import org.http4s.Uri
+import cats.effect.Concurrent
+import com.peknight.demo.oauth2.constant.*
+import com.peknight.demo.oauth2.domain
+import io.circe.Codec
+import org.http4s.circe.*
+import org.http4s.{EntityDecoder, Uri}
 
 case class ClientMetadata(tokenEndpointAuthMethod: AuthMethod,
                           grantTypes: List[GrantType],
@@ -23,3 +28,29 @@ case class ClientMetadata(tokenEndpointAuthMethod: AuthMethod,
       clientUri.orElse(client.uri), logoUri.orElse(client.logoUri), Some(tokenEndpointAuthMethod), Some(grantTypes),
       Some(responseTypes), client.clientIdCreatedAt, client.clientSecretExpiresAt, client.registrationAccessToken,
       client.registrationClientUri)
+
+end ClientMetadata
+
+object ClientMetadata:
+  given Codec[ClientMetadata] =
+    Codec.forProduct8(
+      tokenEndpointAuthMethodKey,
+      grantTypesKey,
+      responseTypesKey,
+      redirectUrisKey,
+      clientNameKey,
+      clientUriKey,
+      logoUriKey,
+      scopeKey
+    )((tokenEndpointAuthMethod: AuthMethod,
+       grantTypes: List[GrantType],
+       responseTypes: List[ResponseType],
+       redirectUris: NonEmptyList[Uri],
+       clientName: Option[String],
+       clientUri: Option[Uri], logoUri: Option[Uri], scope: Option[String]) =>
+      ClientMetadata(tokenEndpointAuthMethod, grantTypes, responseTypes, redirectUris, clientName, clientUri, logoUri,
+        scope.map(_.split("\\s++").toSet[String]))
+    )(t => (t.tokenEndpointAuthMethod, t.grantTypes, t.responseTypes, t.redirectUris, t.clientName, t.clientUri,
+      t.logoUri, t.scope.map(_.mkString(" "))))
+  given [F[_]: Concurrent]: EntityDecoder[F, ClientMetadata] = jsonOf[F, ClientMetadata]
+end ClientMetadata

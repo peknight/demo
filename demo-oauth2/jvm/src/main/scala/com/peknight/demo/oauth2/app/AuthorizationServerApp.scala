@@ -15,6 +15,7 @@ import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.page.AuthorizationServerPage
 import com.peknight.demo.oauth2.random.*
 import com.peknight.demo.oauth2.repository.*
+import io.circe.Json
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.http4s.*
@@ -265,7 +266,13 @@ object AuthorizationServerApp extends IOApp.Simple :
 
   def postRegister(req: Request[IO], random: Random[IO], clientsR: Ref[IO, Seq[ClientInfo]])
                   (using Logger[IO]): IO[Response[IO]] =
-    req.as[UrlForm].flatMap { body => checkClientMetadata(body) match
+    val parseBody = req.headers.get[`Content-Type`] match
+      case Some(`Content-Type`(mediaType, _)) if mediaType.subType == "json" =>
+        // TODO
+        req.as[ClientMetadata].attempt.map(_.leftMap(_ => "Can not parse param"))
+      case _ =>
+        req.as[UrlForm].map(checkClientMetadata)
+    parseBody.flatMap {
       case Left(error) => BadRequest(ErrorInfo(error).asJson)
       case Right(clientMetadata) =>
         for
@@ -412,6 +419,9 @@ object AuthorizationServerApp extends IOApp.Simple :
       issuedAt = issueAtSec.some
     )
     rsaPrivateKey.flatMap(key => IO(JwtCirce.encode(header, payload, key)))
+
+  def checkClientMetadata(json: Json): Either[String, ClientMetadata] =
+    ???
 
   def checkClientMetadata(body: UrlForm): Either[String, ClientMetadata] =
     val tokenEndpointAuthMethod = body.getValue(tokenEndpointAuthMethodKey)(AuthMethod.fromString)
