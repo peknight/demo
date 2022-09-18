@@ -15,7 +15,7 @@ import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.page.AuthorizationServerPage
 import com.peknight.demo.oauth2.random.*
 import com.peknight.demo.oauth2.repository.*
-import io.circe.Json
+import io.circe.{Json, JsonObject}
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.http4s.*
@@ -141,7 +141,7 @@ object AuthorizationServerApp extends IOApp.Simple :
   def token(req: Request[IO], random: Random[IO], codesR: Ref[IO, Map[String, AuthorizeCodeCache]],
             clientsR: Ref[IO, Seq[ClientInfo]])(using Logger[IO]): IO[Response[IO]] =
     req.as[UrlForm].flatMap { body => checkAuthorization(req, body, clientsR) { client =>
-      body.getValue("grant_type")(GrantType.fromString) match
+      body.get("grant_type").mapOption(GrantType.fromString) match
         case Some(GrantType.AuthorizationCode) => authorizationCode(client.id, body, random, codesR)
         case Some(GrantType.ClientCredentials) => clientCredentials(client, body, random)
         case Some(GrantType.RefreshToken) => refreshToken(client.id, body, random)
@@ -268,8 +268,9 @@ object AuthorizationServerApp extends IOApp.Simple :
                   (using Logger[IO]): IO[Response[IO]] =
     val parseBody = req.headers.get[`Content-Type`] match
       case Some(`Content-Type`(mediaType, _)) if mediaType.subType == "json" =>
-        // TODO
-        req.as[ClientMetadata].attempt.map(_.leftMap(_ => "Can not parse param"))
+        req.as[Json].attempt.map(
+          _.toOption.flatMap(_.asObject).toRight("Can not parse param").flatMap(checkClientMetadata)
+        )
       case _ =>
         req.as[UrlForm].map(checkClientMetadata)
     parseBody.flatMap {
@@ -420,11 +421,11 @@ object AuthorizationServerApp extends IOApp.Simple :
     )
     rsaPrivateKey.flatMap(key => IO(JwtCirce.encode(header, payload, key)))
 
-  def checkClientMetadata(json: Json): Either[String, ClientMetadata] =
+  def checkClientMetadata(json: JsonObject): Either[String, ClientMetadata] =
     ???
 
   def checkClientMetadata(body: UrlForm): Either[String, ClientMetadata] =
-    val tokenEndpointAuthMethod = body.getValue(tokenEndpointAuthMethodKey)(AuthMethod.fromString)
+    val tokenEndpointAuthMethod = body.get(tokenEndpointAuthMethodKey).mapOption(AuthMethod.fromString)
       .getOrElse(AuthMethod.SecretBasic)
     if !Seq(AuthMethod.SecretBasic, AuthMethod.SecretPost, AuthMethod.None).contains(tokenEndpointAuthMethod) then
       "invalid_client_metadata".asLeft

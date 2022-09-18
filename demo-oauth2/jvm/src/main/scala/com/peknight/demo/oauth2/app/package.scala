@@ -35,7 +35,8 @@ package object app:
 
   def start[F[_] : Async](port: Port)(httpApp: HttpApp[F]): F[(Server, F[Unit])] =
     EmberServerBuilder.default[F]
-      .withHost(serverHost)
+      // .withHost(serverHost)
+      .withHostOption(None)
       .withPort(port)
       .withHttpApp(MiddlewareLogger.httpApp(true, true)(httpApp))
       .build.allocated
