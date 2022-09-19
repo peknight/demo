@@ -6,6 +6,7 @@ import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.either.*
 import cats.syntax.option.*
 import com.comcast.ip4s.*
+import com.peknight.demo.oauth2.common.Getter
 import com.peknight.demo.oauth2.common.StringCaseStyle.camelToSnake
 import com.peknight.demo.oauth2.common.UrlFragment.UrlFragmentValue
 import com.peknight.demo.oauth2.common.UrlFragmentEncoder.*
@@ -15,9 +16,9 @@ import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.page.AuthorizationServerPage
 import com.peknight.demo.oauth2.random.*
 import com.peknight.demo.oauth2.repository.*
-import io.circe.{Json, JsonObject}
 import io.circe.generic.auto.*
 import io.circe.syntax.*
+import io.circe.{Json, JsonObject}
 import org.http4s.*
 import org.http4s.circe.*
 import org.http4s.dsl.io.*
@@ -422,6 +423,9 @@ object AuthorizationServerApp extends IOApp.Simple :
     rsaPrivateKey.flatMap(key => IO(JwtCirce.encode(header, payload, key)))
 
   def checkClientMetadata(json: JsonObject): Either[String, ClientMetadata] =
+    ???
+
+  def check[T](t: T): Either[String, ClientMetadata] =
     ???
 
   def checkClientMetadata(body: UrlForm): Either[String, ClientMetadata] =
