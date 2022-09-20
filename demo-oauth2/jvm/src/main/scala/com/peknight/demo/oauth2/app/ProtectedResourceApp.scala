@@ -4,7 +4,6 @@ import cats.Functor
 import cats.data.OptionT
 import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.functor.*
-import cats.syntax.option.*
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.constant.*
 import com.peknight.demo.oauth2.data.*
@@ -27,10 +26,7 @@ import org.typelevel.ci.CIString
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
-import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim}
 
-import java.security.spec.RSAPublicKeySpec
-import java.security.{KeyFactory, PublicKey}
 import scala.collection.immutable.Queue
 
 object ProtectedResourceApp extends IOApp.Simple :
@@ -142,39 +138,10 @@ object ProtectedResourceApp extends IOApp.Simple :
       yield introspectionResponse.toOAuthTokenRecord
     }{ _ => IO.pure(None) }
 
-  private[this] def jws(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
-    val oauthTokenRecordOptionT =
-      for
-        // signatureValid <- IO(JwtCirce.isValid(accessToken, toHex(sharedTokenSecret), Seq(JwtAlgorithm.HS256))).optionT
-        pubKey <- rsaPublicKey.optionT
-        payload <- OptionT(IO(JwtCirce.decode(accessToken, pubKey, Seq(JwtAlgorithm.RS256)).toOption))
-        _ <- info"Signature validated.".optionT
-        _ <- info"Payload $payload".optionT
-        _ <- OptionT.fromOption(payload.issuer.filter(_ == authorizationServerIndex.toString))
-        _ <- info"issuer OK".optionT
-        _ <- OptionT.fromOption(payload.audience.find(_.contains(protectedResourceIndex.toString)))
-        _ <- info"Audience OK".optionT
-        realTime <- IO.realTime.optionT
-        _ <- OptionT.fromOption(payload.issuedAt.filter(_ <= realTime.toSeconds))
-        _ <- info"issued-at OK".optionT
-        _ <- OptionT.fromOption(payload.expiration.filter(_ >= realTime.toSeconds))
-        _ <- info"expiration OK".optionT
-        _ <- info"Token valid!".optionT
-      yield toOAuthTokenRecord(payload)
-    oauthTokenRecordOptionT.value
+  private[this] def protectedResourceJws(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
+    jws(accessToken, protectedResourceIndex.toString).map(_.map(toOAuthTokenRecord))
 
   private[this] def toHex(value: String): String =
     Stream(sharedTokenSecret).through(utf8.encode).through(hex.encode).toList.mkString("")
 
-  val rsaPublicKey: IO[PublicKey] =
-    for
-      modulus <- decodeToBigInt(rsaKey.n)
-      exponent <- decodeToBigInt(rsaKey.e)
-      key <- IO(KeyFactory.getInstance("RSA").generatePublic(RSAPublicKeySpec(
-        modulus.bigInteger, exponent.bigInteger
-      )))
-    yield key
-
-  private[this] def toOAuthTokenRecord(payload: JwtClaim): OAuthTokenRecord =
-    OAuthTokenRecord(payload.audience.fold(none[String])(_.find(_.nonEmpty)), None, None, None, payload.subject)
 

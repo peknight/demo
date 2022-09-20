@@ -7,6 +7,7 @@ import cats.syntax.either.*
 import cats.syntax.option.*
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.common.Getter
+import com.peknight.demo.oauth2.common.Getter.*
 import com.peknight.demo.oauth2.common.StringCaseStyle.camelToSnake
 import com.peknight.demo.oauth2.common.UrlFragment.UrlFragmentValue
 import com.peknight.demo.oauth2.common.UrlFragmentEncoder.*
@@ -292,7 +293,7 @@ object AuthorizationServerApp extends IOApp.Simple :
             clientSecretExpiresAt, registrationAccessToken, registrationClientUri)
           _ <- clientsR.update(_ :+ client)
           _ <- info"Registered new client: $client"
-          resp <- Created(client.asJson)
+          resp <- Created(client.asJson.deepDropNullValues)
         yield resp
     }
 
@@ -422,21 +423,25 @@ object AuthorizationServerApp extends IOApp.Simple :
     )
     rsaPrivateKey.flatMap(key => IO(JwtCirce.encode(header, payload, key)))
 
-  def checkClientMetadata(json: JsonObject): Either[String, ClientMetadata] =
-    ???
-
-  def check[T](t: T): Either[String, ClientMetadata] =
-    ???
-
-  def checkClientMetadata(body: UrlForm): Either[String, ClientMetadata] =
-    val tokenEndpointAuthMethod = body.get(tokenEndpointAuthMethodKey).mapOption(AuthMethod.fromString)
+  def checkClientMetadata[T](params: T)(
+    using
+    getter: Getter[Option, T, String, String],
+    listGetter: Getter[Option, T, String, List[String]]
+  ): Either[String, ClientMetadata] =
+    given Getter[Option, T, String, AuthMethod] = getter.to[AuthMethod]
+    given Getter[Option, T, String, Uri] = getter.to[Uri]
+    given grantTypesGetter: Getter[Option, T, String, List[GrantType]] = listGetter.to[List[GrantType]]
+    given responseTypesGetter: Getter[Option, T, String, List[ResponseType]] = listGetter.to[List[ResponseType]]
+    given nonEmptyUrisGetter: Getter[Option, T, String, NonEmptyList[Uri]] = listGetter.to[List[Uri]].to[NonEmptyList[Uri]]
+    val tokenEndpointAuthMethod = params.fGet[Option, String, AuthMethod](tokenEndpointAuthMethodKey)
       .getOrElse(AuthMethod.SecretBasic)
     if !Seq(AuthMethod.SecretBasic, AuthMethod.SecretPost, AuthMethod.None).contains(tokenEndpointAuthMethod) then
       "invalid_client_metadata".asLeft
     else
-      val bodyGrantTypes: List[GrantType] = body.getListParam(grantTypesKey).mapOption(GrantType.fromString)
-      val bodyResponseTypes: List[ResponseType] = body.getListParam(responseTypesKey).mapOption(ResponseType.fromString)
-      val (grantTypes, responseTypes) = (bodyGrantTypes, bodyResponseTypes) match
+      val paramGrantTypes: List[GrantType] = params.fGet[Option, String, List[GrantType]](grantTypesKey).getOrElse(Nil)
+      val paramResponseTypes: List[ResponseType] = params.fGet[Option, String, List[ResponseType]](responseTypesKey)
+        .getOrElse(Nil)
+      val (grantTypes, responseTypes) = (paramGrantTypes, paramResponseTypes) match
         case (Nil, Nil) => (List(GrantType.AuthorizationCode), List(ResponseType.Code))
         case (Nil, responseTypes) =>
           val grantTypes = if responseTypes.contains(ResponseType.Code) then List(GrantType.AuthorizationCode) else Nil
@@ -457,14 +462,13 @@ object AuthorizationServerApp extends IOApp.Simple :
       if grantTypes.diff(Seq(GrantType.AuthorizationCode, GrantType.RefreshToken)).nonEmpty ||
         !responseTypes.forall(_ == ResponseType.Code) then "invalid_client_metadata".asLeft
       else
-        NonEmptyList.fromList(body.getListParam(redirectUrisKey)
-          .foldRight(List.empty[Uri])((uri, list) => Uri.fromString(uri).fold(_ => list, _ :: list))) match
+        params.fGet[Option, String, NonEmptyList[Uri]](redirectUrisKey) match
           case None => "invalid_redirect_uri".asLeft
           case Some(redirectUris) =>
-            val clientName: Option[String] = body.getParam(clientNameKey)
-            val clientUri: Option[Uri] = body.getUri(clientUriKey)
-            val logoUri: Option[Uri] = body.getUri(logoUriKey)
-            val scope: Option[Set[String]] = getScope(body)
+            val clientName: Option[String] = params.fGet[Option, String, String](clientNameKey)
+            val clientUri: Option[Uri] = params.fGet[Option, String, Uri](clientUriKey)
+            val logoUri: Option[Uri] = params.fGet[Option, String, Uri](logoUriKey)
+            val scope: Option[Set[String]] = getScope(params)
             ClientMetadata(tokenEndpointAuthMethod, grantTypes, responseTypes, redirectUris, clientName, clientUri,
               logoUri, scope).asRight
   end checkClientMetadata
@@ -512,8 +516,9 @@ object AuthorizationServerApp extends IOApp.Simple :
 
   def getUser(username: String): Option[UserInfo] = userInfos.values.find(_.username.contains(username))
 
-  def getScope(body: UrlForm): Option[Set[String]] =
-    body.getParam("scope").map(_.split("\\s++").toSet[String])
+  def getScope[T](params: T)(using getter: Getter[Option, T, String, String]): Option[Set[String]] =
+    given Getter[Option, T, String, Set[String]] = getter.andThen(_.split("\\s++").toSet[String].some)
+    params.fGet[Option, String, Set[String]](scopeKey)
 
   def invalidResp(error: String): IO[Response[IO]] = Ok(ErrorInfo(error).asJson).map(_.copy(status = Status.Unauthorized))
 

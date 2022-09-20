@@ -2,11 +2,14 @@ package com.peknight.demo.oauth2
 
 import cats.data.OptionT
 import cats.effect.{Async, IO}
+import cats.syntax.option.*
 import com.comcast.ip4s.*
-import com.peknight.demo.oauth2.constant.accessTokenKey
+import com.peknight.demo.oauth2.constant.{accessTokenKey, authorizationServerIndex, rsaKey}
 import com.peknight.demo.oauth2.data.*
 import com.peknight.demo.oauth2.domain.OAuthTokenRecord
 import com.peknight.demo.oauth2.repository.getRecordByAccessToken
+import fs2.Stream
+import fs2.text.base64
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.ember.client.EmberClientBuilder
@@ -16,10 +19,12 @@ import org.http4s.server.Server
 import org.http4s.server.middleware.Logger as MiddlewareLogger
 import org.typelevel.ci.CIString
 import org.typelevel.log4cats.Logger
-import fs2.Stream
-import fs2.text.base64
 import org.typelevel.log4cats.syntax.*
+import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim}
 import scodec.bits.Bases.Alphabets.Base64Url
+
+import java.security.spec.RSAPublicKeySpec
+import java.security.{KeyFactory, PublicKey}
 
 package object app:
 
@@ -70,10 +75,42 @@ package object app:
       }
     }
 
+  def jws(idToken: String, audience: String)(using Logger[IO]): IO[Option[JwtClaim]] =
+    val payloadOptionT =
+      for
+      // signatureValid <- IO(JwtCirce.isValid(idToken, toHex(sharedTokenSecret), Seq(JwtAlgorithm.HS256))).optionT
+        pubKey <- rsaPublicKey.optionT
+        payload <- OptionT(IO(JwtCirce.decode(idToken, pubKey, Seq(JwtAlgorithm.RS256)).toOption))
+        _ <- info"Signature validated.".optionT
+        _ <- info"Payload $payload".optionT
+        _ <- OptionT.fromOption(payload.issuer.filter(_ == authorizationServerIndex.toString))
+        _ <- info"issuer OK".optionT
+        _ <- OptionT.fromOption(payload.audience.find(_.contains(audience)))
+        _ <- info"Audience OK".optionT
+        realTime <- IO.realTime.optionT
+        _ <- OptionT.fromOption(payload.issuedAt.filter(_ <= realTime.toSeconds))
+        _ <- info"issued-at OK".optionT
+        _ <- OptionT.fromOption(payload.expiration.filter(_ >= realTime.toSeconds))
+        _ <- info"expiration OK".optionT
+        _ <- info"Token valid!".optionT
+      yield payload
+    payloadOptionT.value
+
+  def toOAuthTokenRecord(payload: JwtClaim): OAuthTokenRecord =
+    OAuthTokenRecord(payload.audience.fold(none[String])(_.find(_.nonEmpty)), None, None, None, payload.subject)
+
+  val rsaPublicKey: IO[PublicKey] =
+    for
+      modulus <- decodeToBigInt(rsaKey.n)
+      exponent <- decodeToBigInt(rsaKey.e)
+      key <- IO(KeyFactory.getInstance("RSA").generatePublic(RSAPublicKeySpec(
+        modulus.bigInteger, exponent.bigInteger
+      )))
+    yield key
+
   def decodeToBigInt(base64UrlEncoded: String): IO[BigInt] =
     Stream(base64UrlEncoded)
       .covary[IO]
       .through(base64.decodeWithAlphabet(Base64Url))
       .compile.toList
       .map(bytes => BigInt(1, bytes.toArray))
-

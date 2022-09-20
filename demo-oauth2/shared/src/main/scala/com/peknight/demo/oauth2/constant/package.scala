@@ -9,7 +9,9 @@ package object constant:
 
   val accessTokenKey = "access_token"
   val clientIdKey = "client_id"
+  val clientIdCreatedAtKey = "client_id_created_at"
   val clientNameKey = "client_name"
+  val clientSecretExpiresAtKey = "client_secret_expires_at"
   val clientSecretKey ="client_secret"
   val clientUriKey = "client_uri"
   val grantTypesKey = "grant_types"
@@ -23,6 +25,8 @@ package object constant:
   val oauthScopeValueCls = "oauth-scope-value"
   val redirectUriKey = "redirect_uri"
   val redirectUrisKey = "redirect_uris"
+  val registrationAccessTokenKey = "registration_access_token"
+  val registrationClientUriKey = "registration_client_uri"
   val refreshTokenKey = "refresh_token"
   val responseTypeKey = "response_type"
   val responseTypesKey = "response_types"
