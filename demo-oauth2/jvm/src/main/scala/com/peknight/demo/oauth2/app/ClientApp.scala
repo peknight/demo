@@ -24,6 +24,7 @@ import org.http4s.{client as _, *}
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
+import pdi.jwt.JwtClaim
 
 object ClientApp extends IOApp.Simple :
 
@@ -60,6 +61,8 @@ object ClientApp extends IOApp.Simple :
 
   object ErrorQueryParamMatcher extends QueryParamDecoderMatcher[String]("error")
 
+  object LanguageQueryParamMatcher extends QueryParamDecoderMatcher[String]("language")
+
   object WordQueryParamMatcher extends QueryParamDecoderMatcher[String]("word")
 
   def service(clientR: Ref[IO, ClientInfo], oauthTokenCacheR: Ref[IO, OAuthTokenCache], stateR: Ref[IO, Option[String]],
@@ -81,6 +84,8 @@ object ClientApp extends IOApp.Simple :
       case GET -> Root / "refresh" => refresh(clientR, oauthTokenCacheR)
       case GET -> Root / "fetch_resource" =>
         getOrRefreshAccessToken(clientR, oauthTokenCacheR)(token => fetchResource(clientR, oauthTokenCacheR, token))
+      case GET -> Root / "greeting" :? LanguageQueryParamMatcher(language) =>
+        getOrRefreshAccessToken(clientR, oauthTokenCacheR)(token => greeting(clientR, oauthTokenCacheR, token, language))
       case GET -> Root / "words" => Ok(ClientPage.Text.words(Seq.empty[String], 0L, NoGet))
       case GET -> Root / "get_words" => getOrRefreshAccessToken(clientR, oauthTokenCacheR)(getWords)
       case GET -> Root / "add_word" :? WordQueryParamMatcher(word) =>
@@ -212,33 +217,49 @@ object ClientApp extends IOApp.Simple :
   def updateOAuthTokenCache(oauthTokenCacheR: Ref[IO, OAuthTokenCache], oauthToken: OAuthToken, clientId: String)
                            (using Logger[IO]): IO[OAuthTokenCache] =
     for
+      _ <- info"Got access token: ${oauthToken.accessToken}"
+      _ <- oauthToken.refreshToken.fold(IO.unit)(refresh => info"Got refresh_token: $refresh")
+      payloadOption <- oauthToken.idToken.fold(IO.pure(none[JwtClaim])) { idToken =>
+        for
+          _ <- info"Got ID token: $idToken"
+          payload <- jws(idToken, clientId)
+        yield payload
+      }
+      _ <- info"Got scope: ${oauthToken.scope}"
       oauthTokenCache <- oauthTokenCacheR.updateAndGet(origin => OAuthTokenCache(
         accessToken = Some(oauthToken.accessToken),
         refreshToken = oauthToken.refreshToken.orElse(origin.refreshToken),
         scope = oauthToken.scope.orElse(origin.scope),
-        idToken = None
+        idToken = payloadOption.orElse(origin.idToken)
       ))
-      _ <- info"Got access token: ${oauthToken.accessToken}"
-      _ <- oauthToken.refreshToken.fold(IO.unit)(refresh => info"Got refresh_token: $refresh")
-      _ <- oauthToken.idToken.fold(IO.unit) { idToken =>
-        for
-          _ <- info"Got ID token: $idToken"
-        yield ()
-      }
-      _ <- info"Got scope: ${oauthToken.scope}"
     yield oauthTokenCache
 
   def fetchResource(clientR: Ref[IO, ClientInfo], oauthTokenCacheR: Ref[IO, OAuthTokenCache], accessToken: String)
                    (using Logger[IO]): IO[Response[IO]] =
-    info"Making request with access token $accessToken" *>
-      runHttpRequest(resourceRequest(accessToken)) { response =>
-        response.as[Json].flatMap(data => Ok(ClientPage.Text.data(data)))
+    fetchResource(clientR, oauthTokenCacheR, accessToken, resourceRequest(accessToken))
+
+  def fetchResource(clientR: Ref[IO, ClientInfo], oauthTokenCacheR: Ref[IO, OAuthTokenCache], accessToken: String,
+                    req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
+    for
+      _ <- info"Making request with access token $accessToken"
+      _ <- info"protectedResourceEndpoint ${req.uri}"
+      response <- runHttpRequest(req) { resp =>
+        resp.as[Json].flatMap(data => Ok(ClientPage.Text.data(data)))
       } { statusCode =>
         for
           oauthTokenCache <- oauthTokenCacheR.updateAndGet(_.copy(accessToken = None))
           resp <- refreshAccessToken(clientR, oauthTokenCacheR, oauthTokenCache, s"$statusCode")
         yield resp
       }
+    yield response
+
+  def greeting(clientR: Ref[IO, ClientInfo], oauthTokenCacheR: Ref[IO, OAuthTokenCache], accessToken: String,
+               language: String)(using Logger[IO]): IO[Response[IO]] =
+    val req = GET(
+      helloWorldApi.withQueryParam("language", language),
+      Headers(Authorization(Credentials.Token(AuthScheme.Bearer, accessToken)))
+    )
+    fetchResource(clientR, oauthTokenCacheR, accessToken, req)
 
   def getWords(accessToken: String): IO[Response[IO]] =
     runHttpRequest(GET(wordApi, bearerHeaders(accessToken))) { response =>

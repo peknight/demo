@@ -87,6 +87,8 @@ package object constant:
 
   val protectedResourceApi = uri"http://localhost:8002/resource"
 
+  val helloWorldApi = uri"http://localhost:8002/helloWorld"
+
   val wordApi = uri"http://localhost:8002/words"
 
   val produceApi = uri"http://localhost:8002/produce"
