@@ -56,6 +56,7 @@ object AuthorizationServerApp extends IOApp.Simple :
     yield ()
 
   given Getter[Option, UrlForm, String, GrantType] = Getter[Option, UrlForm, String, String].to[GrantType]
+  given Getter[Option, UrlForm, String, Uri] = Getter[Option, UrlForm, String, String].to[Uri]
 
   def service(random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
               codesR: Ref[IO, Map[String, AuthorizeCodeCache]], clientsR: Ref[IO, Seq[ClientInfo]])
@@ -85,7 +86,9 @@ object AuthorizationServerApp extends IOApp.Simple :
             Ok(AuthorizationServerPage.Text.error("Invalid redirect URI"))
         case Some(redirectUri) =>
           if param.scope.diff(client.scope).nonEmpty then
-            Found(Location(redirectUri.withQueryParam("error", "invalid_scope")))
+            info"Invalid scope requested ${param.scope.mkString(" ")}" *> BadRequest(ErrorInfo("invalid_scope").asJson)
+            // 第九章漏洞防范，使用BadRequest而不是重定向
+            // Found(Location(redirectUri.withQueryParam("error", "invalid_scope")))
           else
             for
               reqId <- randomString[IO](random, 8)
@@ -161,7 +164,13 @@ object AuthorizationServerApp extends IOApp.Simple :
         case Some(code) => codesR.modify(codes => (codes.removed(code), code.some -> codes.get(code)))
         case None => IO((none[String], none[AuthorizeCodeCache]))
       resp <- codeCache match
-        case (Some(code), Some(cache)) if cache.authorizationEndpointRequest.clientId == clientId =>
+        case (_, Some(cache)) if !body.fGet[Option, String, Uri](redirectUriKey)
+          .contains(cache.authorizationEndpointRequest.redirectUri) =>
+          BadRequest(ErrorInfo("invalid_grant").asJson)
+        case (_, Some(cache)) if cache.authorizationEndpointRequest.clientId != clientId =>
+          info"Client mismatch, expected ${cache.authorizationEndpointRequest.clientId} got $clientId" *>
+            invalidGrantResp
+        case (Some(code), Some(cache)) =>
           cache.user.flatMap(userInfos.get) match
             case Some(user) =>
               for
@@ -175,10 +184,7 @@ object AuthorizationServerApp extends IOApp.Simple :
               val preferredUsername = cache.user.getOrElse("None")
               info"Unknown user $preferredUsername" *>
                 InternalServerError(AuthorizationServerPage.Text.error(s"Unknown user $preferredUsername"))
-        case (_, Some(cache)) =>
-          info"Client mismatch, expected ${cache.authorizationEndpointRequest.clientId} got $clientId" *> invalidGrantResp
-        case (code, _) => info"Unknown code, ${code.getOrElse("None")}" *>
-          BadRequest(ErrorInfo("invalid_grant").asJson)
+        case (code, _) => info"Unknown code, ${code.getOrElse("None")}" *> BadRequest(ErrorInfo("invalid_grant").asJson)
     yield resp
 
   def clientCredentials(client: ClientInfo, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =

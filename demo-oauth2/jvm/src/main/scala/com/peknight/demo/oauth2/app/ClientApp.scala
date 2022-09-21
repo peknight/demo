@@ -143,7 +143,7 @@ object ClientApp extends IOApp.Simple :
       val req: Request[IO] = POST(
         UrlForm(
           "grant_type" -> GrantType.ClientCredentials.value,
-          "scope" -> client.scope.mkString(" ")
+          scopeKey -> client.scope.mkString(" ")
         ),
         authServer.tokenEndpoint,
         basicHeaders(client.id, client.secret)
@@ -163,7 +163,7 @@ object ClientApp extends IOApp.Simple :
             "grant_type" -> GrantType.Password.value,
             "username" -> username,
             "password" -> password,
-            "scope" -> client.scope.mkString(" ")
+            scopeKey -> client.scope.mkString(" ")
           ),
           authServer.tokenEndpoint,
           basicHeaders(client.id, client.secret)
@@ -188,7 +188,7 @@ object ClientApp extends IOApp.Simple :
           "code" -> code,
           // "client_id" -> client.id,
           // "client_secret" -> client.secret,
-          "redirect_uri" -> client.redirectUris.head.toString
+          redirectUriKey -> client.redirectUris.head.toString
         ),
         authServer.tokenEndpoint,
         basicHeaders(client.id, client.secret)
@@ -375,7 +375,7 @@ object ClientApp extends IOApp.Simple :
         "refresh_token" -> refreshToken
         // "client_id" -> client.id,
         // "client_secret" -> client.secret
-      ).updateFormFields("redirect_uri", Chain.fromSeq(client.redirectUris.toList)),
+      ).updateFormFields(redirectUriKey, Chain.fromSeq(client.redirectUris.toList)),
       authServer.tokenEndpoint,
       basicHeaders(client.id, client.secret)
     )

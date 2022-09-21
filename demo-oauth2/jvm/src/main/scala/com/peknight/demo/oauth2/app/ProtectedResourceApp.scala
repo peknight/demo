@@ -125,7 +125,7 @@ object ProtectedResourceApp extends IOApp.Simple :
       else
         Forbidden.headers(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, protectedResourceAddr, Map(
           "error" -> "insufficient_scope",
-          "scope" -> scope
+          scopeKey -> scope
         ))))
     }
 
