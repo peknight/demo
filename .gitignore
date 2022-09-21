@@ -44,4 +44,7 @@ origin.txt
 destination.txt
 celsius.txt
 database.nosql
-my.keystore
+*.keystore
+*.crt
+*.key
+*.p12

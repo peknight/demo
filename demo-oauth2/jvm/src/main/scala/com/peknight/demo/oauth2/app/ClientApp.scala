@@ -24,11 +24,9 @@ import org.http4s.{client as _, *}
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
-import pdi.jwt.JwtClaim
 
 object ClientApp extends IOApp.Simple :
 
-  //noinspection HttpUrlsUsage
   val run: IO[Unit] =
     for
       clientR <- Ref.of[IO, ClientInfo](client)
@@ -43,7 +41,7 @@ object ClientApp extends IOApp.Simple :
       given Logger[IO] = logger
       serverPort = port"8000"
       _ <- start[IO](serverPort)(service(clientR, oauthTokenCacheR, stateR, random))
-      _ <- info"OAuth Client is listening at http://$serverHost:$serverPort"
+      _ <- info"OAuth Client is listening at https://$serverHost:$serverPort"
       _ <- IO.never
     yield ()
 
@@ -98,6 +96,7 @@ object ClientApp extends IOApp.Simple :
       case GET -> Root / "revoke" =>
         oauthTokenCacheR.get.flatMap(oauthTokenCache => Ok(ClientPage.Text.revoke(oauthTokenCache)))
       case POST -> Root / "revoke" => revoke(oauthTokenCacheR)
+      case GET -> Root / "userinfo" => userInfo(oauthTokenCacheR)
     }.orNotFound
 
   def authorize(clientR: Ref[IO, ClientInfo], stateR: Ref[IO, Option[String]], random: Random[IO])
@@ -224,7 +223,7 @@ object ClientApp extends IOApp.Simple :
     for
       _ <- info"Got access token: ${oauthToken.accessToken}"
       _ <- oauthToken.refreshToken.fold(IO.unit)(refresh => info"Got refresh_token: $refresh")
-      payloadOption <- oauthToken.idToken.fold(IO.pure(none[JwtClaim])) { idToken =>
+      payloadOption <- oauthToken.idToken.fold(IO.pure(none[IdToken])) { idToken =>
         for
           _ <- info"Got ID token: $idToken"
           payload <- jws(idToken, clientId)
@@ -316,22 +315,37 @@ object ClientApp extends IOApp.Simple :
     }
 
   def revoke(oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
-    oauthTokenCacheR.get.flatMap { oauthTokenCache =>
-      oauthTokenCache.accessToken.fold(Ok(ClientPage.Text.revoke(oauthTokenCache))) { accessToken =>
-        val req = POST(
-          UrlForm("token" -> accessToken),
-          authServer.revocationEndpoint,
-          basicHeaders(client.id, client.secret)
-        )
-        for
-          _ <- info"Revoking token $accessToken"
-          _ <- oauthTokenCacheR.set(OAuthTokenCache(None, None, None, None))
-          response <- runHttpRequest(req){ _ =>
-            oauthTokenCacheR.get.flatMap(cache => Ok(ClientPage.Text.revoke(cache)))
-          } { statusCode => Ok(ClientPage.Text.error(s"$statusCode")) }
-        yield response
-      }
+    handleOAuthToken(oauthTokenCacheR)(cache => Ok(ClientPage.Text.revoke(cache))) { (_, accessToken) =>
+      val req = POST(
+        UrlForm("token" -> accessToken),
+        authServer.revocationEndpoint,
+        basicHeaders(client.id, client.secret)
+      )
+      for
+        _ <- info"Revoking token $accessToken"
+        _ <- oauthTokenCacheR.set(OAuthTokenCache(None, None, None, None))
+        response <- runHttpRequest(req){ _ =>
+          oauthTokenCacheR.get.flatMap(cache => Ok(ClientPage.Text.revoke(cache)))
+        } { statusCode => Ok(ClientPage.Text.error(s"$statusCode")) }
+      yield response
     }
+
+  def userInfo(oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
+    handleOAuthToken(oauthTokenCacheR)(_ => Ok(ClientPage.Text.error("Missing access token."))) {
+      (cache, accessToken) => runHttpRequest(GET(authServer.userInfoEndpoint, bearerHeaders(accessToken))) { response =>
+        for
+          userInfo <- response.as[UserInfo]
+          _ <- info"Got data: $userInfo"
+          resp <- Ok(ClientPage.Text.userInfo(userInfo.some, cache.idToken))
+        yield resp
+      } { _ => Ok(ClientPage.Text.error("Unable to fetch user information")) }
+    }
+
+  def handleOAuthToken[T](oauthTokenCacheR: Ref[IO, OAuthTokenCache])(ifEmpty: OAuthTokenCache => IO[T])
+                         (f: (OAuthTokenCache, String) => IO[T]): IO[T] =
+    oauthTokenCacheR.get.flatMap(oauthTokenCache =>
+      oauthTokenCache.accessToken.fold(ifEmpty(oauthTokenCache))(accessToken => f(oauthTokenCache, accessToken))
+    )
 
   def refreshAccessToken(clientR: Ref[IO, ClientInfo], oauthTokenCacheR: Ref[IO, OAuthTokenCache],
                          oauthTokenCache: OAuthTokenCache, error: String)(using Logger[IO]): IO[Response[IO]] =

@@ -28,10 +28,10 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
 
 import scala.collection.immutable.Queue
+import scala.concurrent.duration.*
 
 object ProtectedResourceApp extends IOApp.Simple :
 
-  //noinspection HttpUrlsUsage
   val run: IO[Unit] =
     for
       savedWordsR <- Ref.of[IO, Queue[String]](Queue.empty)
@@ -39,7 +39,7 @@ object ProtectedResourceApp extends IOApp.Simple :
       given Logger[IO] = logger
       serverPort = port"8002"
       _ <- start[IO](serverPort)(corsPolicy(service(savedWordsR)).orNotFound)
-      _ <- info"OAuth Resource Server is listening at http://$serverHost:$serverPort"
+      _ <- info"OAuth Resource Server is listening at https://$serverHost:$serverPort"
       _ <- IO.never
     yield ()
 
@@ -50,14 +50,18 @@ object ProtectedResourceApp extends IOApp.Simple :
   given EntityDecoder[IO, IntrospectionResponse] = jsonOf[IO, IntrospectionResponse]
 
   val corsPolicy = CORS.policy
-    .withAllowOriginHost(Set(Origin.Host(Uri.Scheme.http, Uri.RegName("localhost"), Some(8010))))
+    .withAllowOriginHost(Set(Origin.Host(
+      Uri.Scheme.https,
+      Uri.RegName.fromHostname(host"local.peknight.com"),
+      Some(8010))
+    ))
     .withAllowMethodsIn(Set(Method.GET, Method.POST))
 
   object LanguageQueryParamMatcher extends OptionalQueryParamDecoderMatcher[String]("language")
 
   def service(savedWordsR: Ref[IO, Queue[String]])(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(ProtectedResourcePage.Text.index)
-    case OPTIONS -> Root / "resource" => NoContent()
+    // case OPTIONS -> Root / "resource" => NoContent()
     case req @ POST -> Root / "resource" => requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
       Ok(ResourceScope(resource, record.scope).asJson)
     }
@@ -91,6 +95,7 @@ object ProtectedResourceApp extends IOApp.Simple :
         case Some("bob") => Ok(UserFavoritesData("Bob", bobFavorites).asJson)
         case _ => Ok(UserFavoritesData("Unknown", FavoritesData.empty).asJson)
     }
+    // case OPTIONS -> Root / "helloWorld" => NoContent()
     case req @ GET -> Root / "helloWorld" :? LanguageQueryParamMatcher(language) =>
       requireAccessToken(req, protectedResourceAddr)(introspect) { _ =>
         val greeting = language match
@@ -99,11 +104,16 @@ object ProtectedResourceApp extends IOApp.Simple :
           case Some("it") => "Ciao Mondo"
           case Some("fr") => "Bonjour monde"
           case Some("es") => "Hola mundo"
-          case _ => s"Error, invalid language: ${language.getOrElse("None")}"
+          case _ => s"Error, invalid language: ${language.map(Uri.encode(_)).getOrElse("None")}"
         Ok(
           GreetingResource(greeting).asJson,
+          // 可以研究下`Content-Security-Policy`这个头
+          // 下面两个头Mozilla Firefox不支持
+          // 防止在没有声明Content-Type的情况下（以防万一）执行MIME嗅探
           Header.Raw(CIString("X-Content-Type-Options"), "nosniff"),
-          Header.Raw(CIString("X-XSS-Protection"), "1; mode=block")
+          // 启用当前大多数浏览器内置的XSS过滤器
+          Header.Raw(CIString("X-XSS-Protection"), "1; mode=block"),
+          `Strict-Transport-Security`.unsafeFromDuration(365.days, includeSubDomains = false)
         )
       }
   }

@@ -1,0 +1,2 @@
+openssl pkcs12 -export -in letsencrypt.crt -inkey letsencrypt.key -out letsencrypt.p12
+keytool -importkeystore -v -srckeystore letsencrypt.p12 -srcstoretype pkcs12 -destkeystore letsencrypt.keystore -deststoretype jks

@@ -11,7 +11,7 @@ class ProtectedResourcePage[Builder, Output <: FragT, FragT](override val bundle
   val index: Frag =
     super.jumbotron("Protected Resource", "success", c"#232")(
       "To access the resource, send a ", code("POST"), " request to ",
-      code("http://localhost:8002/resource"), " and include a valid OAuth token."
+      code("https://local.peknight.com:8002/resource"), " and include a valid OAuth token."
     )
 
 end ProtectedResourcePage

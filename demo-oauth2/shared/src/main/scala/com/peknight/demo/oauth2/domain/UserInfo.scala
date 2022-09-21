@@ -1,6 +1,9 @@
 package com.peknight.demo.oauth2.domain
 
+import cats.effect.Concurrent
 import io.circe.Codec
+import org.http4s.EntityDecoder
+import org.http4s.circe.*
 
 case class UserInfo(sub: Option[String], preferredUsername: Option[String], name: Option[String], email: Option[String],
                     emailVerified: Option[Boolean], username: Option[String] = None, password: Option[String] = None,
@@ -68,3 +71,5 @@ object UserInfo:
     t.givenName, t.middleName, t.nickname, t.profile, t.picture, t.website, t.gender, t.birthdate, t.zoneInfo, t.locale,
     t.updatedAt, t.address, t.phoneNumber, t.phoneNumberVerified
   ))
+
+  given [F[_]: Concurrent]: EntityDecoder[F, UserInfo] = jsonOf[F, UserInfo]

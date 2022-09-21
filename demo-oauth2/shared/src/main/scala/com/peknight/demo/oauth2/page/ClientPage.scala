@@ -28,8 +28,10 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     a(cls := "btn btn-default", href := "/words")("Access the Words API"), " ",
     a(cls := "btn btn-default", href := "/produce")("Access the Produce API"), " ",
     a(cls := "btn btn-default", href := "/favorites")("Access the Favorites API"), " ",
+    a(cls := "btn btn-default", href := "/revoke")("Revoke Access Token"), " ",
+    a(cls := "btn btn-default", href := "/userinfo")("Access User Info"), " ",
     form(action := "/greeting")(
-      input(cls := "btn btn-default", `type` := "submit", value := "Greet in"),
+      input(cls := "btn btn-default", `type` := "submit", value := "Greet in"), " ",
       input(`type` := "radio", name := "language", value := "en", checked := "checked"), "English", " ",
       input(`type` := "radio", name := "language", value := "de"), "German", " ",
       input(`type` := "radio", name := "language", value := "it"), "Italian", " ",
@@ -43,7 +45,8 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
       p("Scope value: ", span(cls := s"label label-danger $oauthScopeValueCls")),
       p("Access token value: ", span(cls := s"label label-danger $oauthAccessTokenCls")),
       button(cls := s"btn btn-default $oauthAuthorizeCls", `type` := "button")("Get OAuth Token"), " ",
-      button(cls := s"btn btn-default $oauthFetchResourceCls", `type` := "button")("Get Protected Resource")
+      button(cls := s"btn btn-default $oauthFetchResourceCls", `type` := "button")("Get Protected Resource"), " ",
+      button(cls := s"btn btn-default $oauthGreetingCls", `type` := "button")("Greeting")
     ),
     div(cls := "jumbotron")(
       h2("Data from protected resource:"),
@@ -137,16 +140,17 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     )
   )
 
-  def userInfo(idToken: Option[IdToken], userInfo: Option[UserInfo])(using labelling: Labelling[UserInfo]): Frag = jumbotron(
-    p("Logged in user subject ", span(cls := "label label-default")(idToken.map(_.sub).getOrElse("None")),
-      " from issuer ", span(cls := "label label-default")(idToken.map(_.iss.toString).getOrElse("None")), "."),
-    p("User information: ", userInfo.fold[Frag]("")(user => ul(
-      labelling.elemLabels.zip(Tuple.fromProductTyped(user).productIterator).map[Frag] {
-        case (label, Some(value)) => li(b(camelToSnake(label)), s": $value")
-        case _ => ""
-      }
-    )))
-  )
+  def userInfo(userInfo: Option[UserInfo], idToken: Option[IdToken])(using labelling: Labelling[UserInfo]): Frag =
+    jumbotron(
+      p("Logged in user subject ", span(cls := "label label-default")(idToken.flatMap(_.subject).getOrElse("None")),
+        " from issuer ", span(cls := "label label-default")(idToken.flatMap(_.issuer).getOrElse("None")), "."),
+      p("User information: ", userInfo.fold[Frag]("")(user => ul(
+        labelling.elemLabels.zip(Tuple.fromProductTyped(user).productIterator).map[Frag] {
+          case (label, Some(value)) => li(b(camelToSnake(label)), s": $value")
+          case _ => ""
+        }
+      )))
+    )
 
   val usernamePassword: Frag = jumbotron(
     h3("Get an access token"),

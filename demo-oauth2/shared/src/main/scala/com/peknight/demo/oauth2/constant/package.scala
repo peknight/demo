@@ -21,6 +21,7 @@ package object constant:
   val oauthAccessTokenCls = "oauth-access-token"
   val oauthAuthorizeCls = "oauth-authorize"
   val oauthFetchResourceCls = "oauth-fetch-resource"
+  val oauthGreetingCls = "oauth-greeting"
   val oauthProtectedResourceCls = "oauth-protected-resource"
   val oauthScopeValueCls = "oauth-scope-value"
   val redirectUriKey = "redirect_uri"
@@ -37,12 +38,12 @@ package object constant:
   val userKey = "user"
 
   val authServer: AuthServerInfo = AuthServerInfo(
-    uri"http://localhost:8001/authorize",
-    uri"http://localhost:8001/token",
-    uri"http://localhost:8001/revoke",
-    uri"http://localhost:8001/register",
-    uri"http://localhost:8001/userinfo",
-    uri"http://localhost:8001/introspect"
+    uri"https://local.peknight.com:8001/authorize",
+    uri"https://local.peknight.com:8001/token",
+    uri"https://local.peknight.com:8001/revoke",
+    uri"https://local.peknight.com:8001/register",
+    uri"https://local.peknight.com:8001/userinfo",
+    uri"https://local.peknight.com:8001/introspect"
   )
 
   val client: ClientInfo = ClientInfo(
@@ -50,14 +51,14 @@ package object constant:
     "oauth-client-secret-1".some,
     Set("foo", "bar", "read", "write", "delete", "fruit", "veggies", "meats", "movies", "foods", "music", "openid",
       "profile", "email", "phone", "address", "greeting"),
-    NonEmptyList.one(uri"http://localhost:8000/callback")
+    NonEmptyList.one(uri"https://local.peknight.com:8000/callback")
   )
 
   val webClient: ClientInfo = ClientInfo(
     "oauth-web-client-1",
     "oauth-web-client-secret-1".some,
-    Set("foo", "bar", "openid", "profile", "email", "address", "phone"),
-    NonEmptyList.one(uri"http://localhost:8010/callback")
+    Set("foo", "bar", "openid", "profile", "email", "address", "phone", "greeting"),
+    NonEmptyList.one(uri"https://local.peknight.com:8010/callback")
   )
 
   val clients: Seq[ClientInfo] = Seq(client, webClient,
@@ -65,7 +66,7 @@ package object constant:
       "oauth-client-2",
       "oauth-client-secret-1".some,
       Set("bar"),
-      NonEmptyList.one(uri"http://localhost:8000/callback")
+      NonEmptyList.one(uri"https://local.peknight.com:8000/callback")
     ),
     ClientInfo(
       "native-client-1",
@@ -75,25 +76,25 @@ package object constant:
     )
   )
 
-  val clientIndex = uri"http://localhost:8000/"
+  val clientIndex = uri"https://local.peknight.com:8000/"
 
-  val authorizationServerAddr = "localhost:8001"
+  val authorizationServerAddr = "local.peknight.com:8001"
 
-  val authorizationServerIndex = uri"http://localhost:8001/"
+  val authorizationServerIndex = uri"https://local.peknight.com:8001/"
 
-  val protectedResourceAddr = "localhost:8002"
+  val protectedResourceAddr = "local.peknight.com:8002"
 
-  val protectedResourceIndex = uri"http://localhost:8002/"
+  val protectedResourceIndex = uri"https://local.peknight.com:8002/"
 
-  val protectedResourceApi = uri"http://localhost:8002/resource"
+  val protectedResourceApi = uri"https://local.peknight.com:8002/resource"
 
-  val helloWorldApi = uri"http://localhost:8002/helloWorld"
+  val helloWorldApi = uri"https://local.peknight.com:8002/helloWorld"
 
-  val wordApi = uri"http://localhost:8002/words"
+  val wordApi = uri"https://local.peknight.com:8002/words"
 
-  val produceApi = uri"http://localhost:8002/produce"
+  val produceApi = uri"https://local.peknight.com:8002/produce"
 
-  val favoritesApi = uri"http://localhost:8002/favorites"
+  val favoritesApi = uri"https://local.peknight.com:8002/favorites"
 
   val sharedTokenSecret = "shared token secret!"
 

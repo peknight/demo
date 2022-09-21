@@ -1,5 +1,4 @@
 package com.peknight.demo.oauth2.domain
 
-import org.http4s.Uri
-
-case class IdToken(iss: Uri, sub: String, scope: Set[String], aud: Uri, iat: Long, exp: Long, jti: String)
+case class IdToken(issuer: Option[String], subject: Option[String], audience: Option[Set[String]],
+                   expiration: Option[Long], issuedAt: Option[Long], jwtId: Option[String])

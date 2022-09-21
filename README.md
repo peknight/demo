@@ -4,7 +4,8 @@
 
 ### Log
 
-* 2022.09.05: 学习OAuth2的过程中有些样板代码需要Shapeless相关能力解决，刚学习完一波Shapeless，继续搞OAuth2
+* 2022.09.21: 边学边练完前8章，搞定了https访问的问题。
+* 2022.09.05: 学习OAuth2的过程中有些样板代码需要Shapeless相关能力解决，刚学习完一波Shapeless，继续搞OAuth2。
 * 2022.08.12: 当前主要在学习OAuth2。
 
 ### Modules
@@ -121,7 +122,7 @@
 
 * OAuth2学习，OAuth2目前主要基于HTTPS实现。
 * 参考: 书[《OAuth2实战》](https://www.manning.com/books/oauth-2-in-action)、[代码](https://github.com/oauthinaction/oauth-in-action-code)
-* 进度: 完成前六章学习，原生客户端实现部分跳过，书中代码由node.js实现，我在练习中用Scala重新实现（大量使用http4s，页面使用ScalaTags及ScalaCss构建）。
+* 进度: 完成前八章学习，原生客户端实现部分跳过，书中代码由node.js实现，我在练习中用Scala重新实现（大量使用http4s，页面使用ScalaTags及ScalaCss构建）。
 
 #### demo-akka
 

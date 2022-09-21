@@ -2,13 +2,18 @@ package com.peknight.demo.oauth2
 
 import cats.data.OptionT
 import cats.effect.{Async, IO}
+import cats.syntax.flatMap.*
+import cats.syntax.functor.*
 import cats.syntax.option.*
+import ciris.*
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.constant.{accessTokenKey, authorizationServerIndex, rsaKey}
 import com.peknight.demo.oauth2.data.*
-import com.peknight.demo.oauth2.domain.OAuthTokenRecord
+import com.peknight.demo.oauth2.domain.{IdToken, OAuthTokenRecord}
 import com.peknight.demo.oauth2.repository.getRecordByAccessToken
 import fs2.Stream
+import fs2.io.file
+import fs2.io.net.Network
 import fs2.text.base64
 import org.http4s.*
 import org.http4s.dsl.io.*
@@ -36,15 +41,26 @@ package object app:
   
   given CanEqual[CIString, AuthScheme] = CanEqual.derived
 
-  val serverHost = host"localhost"
+  val serverHost = host"local.peknight.com"
 
-  def start[F[_] : Async](port: Port)(httpApp: HttpApp[F]): F[(Server, F[Unit])] =
-    EmberServerBuilder.default[F]
-      // .withHost(serverHost)
-      .withHostOption(None)
-      .withPort(port)
-      .withHttpApp(MiddlewareLogger.httpApp(true, true)(httpApp))
-      .build.allocated
+  val storePasswordConfig: ConfigValue[Effect, Secret[String]] = env("STORE_PASSWORD").secret
+  val keyPasswordConfig: ConfigValue[Effect, Secret[String]] = env("KEY_PASSWORD").secret
+
+  def start[F[_]: Async](port: Port)(httpApp: HttpApp[F]): F[(Server, F[Unit])] =
+    for
+      storePassword <- storePasswordConfig.load[F]
+      keyPassword <- keyPasswordConfig.load[F]
+      tlsContext <- Network[F].tlsContext.fromKeyStoreFile(
+        file.Path("demo-oauth2/keystore/letsencrypt.keystore").toNioPath,
+        storePassword.value.toCharArray, keyPassword.value.toCharArray)
+      res <- EmberServerBuilder.default[F]
+        // .withHost(serverHost)
+        .withHostOption(None)
+        .withPort(port)
+        .withTLS(tlsContext)
+        .withHttpApp(MiddlewareLogger.httpApp(true, true)(httpApp))
+        .build.allocated
+    yield res
 
   def requireAccessToken(req: Request[IO], realm: String)(queryOAuthTokenRecord: String => IO[Option[OAuthTokenRecord]])
                         (handleOAuthTokenRecord: OAuthTokenRecord => IO[Response[IO]])
@@ -75,7 +91,7 @@ package object app:
       }
     }
 
-  def jws(idToken: String, audience: String)(using Logger[IO]): IO[Option[JwtClaim]] =
+  def jws(idToken: String, audience: String)(using Logger[IO]): IO[Option[IdToken]] =
     val payloadOptionT =
       for
       // signatureValid <- IO(JwtCirce.isValid(idToken, toHex(sharedTokenSecret), Seq(JwtAlgorithm.HS256))).optionT
@@ -93,11 +109,14 @@ package object app:
         _ <- OptionT.fromOption(payload.expiration.filter(_ >= realTime.toSeconds))
         _ <- info"expiration OK".optionT
         _ <- info"Token valid!".optionT
-      yield payload
+      yield toIdToken(payload)
     payloadOptionT.value
 
-  def toOAuthTokenRecord(payload: JwtClaim): OAuthTokenRecord =
+  def toOAuthTokenRecord(payload: IdToken): OAuthTokenRecord =
     OAuthTokenRecord(payload.audience.fold(none[String])(_.find(_.nonEmpty)), None, None, None, payload.subject)
+
+  private[this] def toIdToken(payload: JwtClaim): IdToken =
+    IdToken(payload.issuer, payload.subject, payload.audience, payload.expiration, payload.issuedAt, payload.jwtId)
 
   val rsaPublicKey: IO[PublicKey] =
     for

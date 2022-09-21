@@ -35,6 +35,7 @@ object WebClient extends IOApp.Simple:
       _ <- onClick(oauthAuthorizeCls)(_ => handleAuthorizationRequestClick)
       callbackDataR <- Ref.of[IO, Option[OAuthToken]](None)
       _ <- onClick(oauthFetchResourceCls)(_ => handleFetchResourceClick(callbackDataR))
+      _ <- onClick(oauthGreetingCls)(_ => handleGreetingClick(callbackDataR))
       _ <- processCallback(callbackDataR)
     yield ()
 
@@ -50,14 +51,25 @@ object WebClient extends IOApp.Simple:
     yield ()
 
   def handleFetchResourceClick(callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
-    OptionT(callbackDataR.get).flatMap(oauthToken => fetchResource(oauthToken).optionT).value.void
+    fetchResource(callbackDataR, "Error while fetching the protected resource")(
+      oauthToken => resourceRequest(oauthToken.accessToken)
+    )
 
-  def fetchResource(callbackData: OAuthToken): IO[Unit] =
-    for
-      respEither <- FetchClientBuilder[IO].create.expect[Json](resourceRequest(callbackData.accessToken)).attempt
-      text = respEither.fold(_ => "Error while fetching the protected resource", _.spaces4)
-      _ <- textContent(oauthProtectedResourceCls)(text)
-    yield ()
+  def handleGreetingClick(callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
+    fetchResource(callbackDataR, "Error while greeting")(oauthToken => GET(
+      helloWorldApi.withQueryParam("language", "en"),
+      Headers(Authorization(Credentials.Token(AuthScheme.Bearer, oauthToken.accessToken)))
+    ))
+
+  def fetchResource(callbackDataR: Ref[IO, Option[OAuthToken]], onError: String)
+                   (req: OAuthToken => Request[IO]): IO[Unit] =
+    OptionT(callbackDataR.get).flatMap { oauthToken => (
+      for
+        respEither <- FetchClientBuilder[IO].create.expect[Json](req(oauthToken)).attempt
+        text = respEither.fold(_ => onError, _.spaces4)
+        _ <- textContent(oauthProtectedResourceCls)(text)
+      yield ()
+    ).optionT }.value.void
 
   def processCallback(callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
     val processOptionT: OptionT[IO, Unit] = for

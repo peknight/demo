@@ -19,7 +19,7 @@ object WebClientApp extends IOApp.Simple:
       given Logger[IO] = logger
       serverPort = port"8010"
       _ <- start[IO](serverPort)(service)
-      _ <- info"OAuth Client is listening at http://$serverHost:$serverPort"
+      _ <- info"OAuth Client is listening at https://$serverHost:$serverPort"
       _ <- IO.never
     yield ()
 
