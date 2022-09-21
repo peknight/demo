@@ -24,6 +24,7 @@ import org.http4s.{client as _, *}
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
+import scodec.bits.Bases.Alphabets.Base64Url
 
 object ClientApp extends IOApp.Simple :
 
@@ -33,6 +34,7 @@ object ClientApp extends IOApp.Simple :
       oauthTokenCacheR <- Ref.of[IO, OAuthTokenCache](OAuthTokenCache(
         None,
         None, // "j2r3oj32r23rmasd98uhjrk2o3i".some,
+        None,
         None,
         None))
       stateR <- Ref.of[IO, Option[String]](None)
@@ -109,9 +111,13 @@ object ClientApp extends IOApp.Simple :
         case Some(client) =>
           for
             state <- randomString[IO](random, 32)
+            codeVerifier <- randomString[IO](random, 80)
+            codeChallenge = getCodeChallenge(codeVerifier)
+            _ <- info"Generated code verifier $codeVerifier and challenge $codeChallenge"
             _ <- stateR.set(Some(state))
             authorizeUrl = authServer.authorizationEndpoint.withQueryParams(AuthorizeParam(client.id,
-              client.redirectUris.head, client.scope, ResponseType.Code, Some(state)))
+              client.redirectUris.head, client.scope, ResponseType.Code, Some(state), Some(codeChallenge),
+              Some(CodeChallengeMethod.S256)))
             _ <- info"redirect: $authorizeUrl"
             resp <- Found(Location(authorizeUrl))
           yield resp
@@ -181,6 +187,21 @@ object ClientApp extends IOApp.Simple :
 
   def callbackWithCode(clientR: Ref[IO, ClientInfo], oauthTokenCacheR: Ref[IO, OAuthTokenCache], code: String)
                       (using Logger[IO]): IO[Response[IO]] =
+    for
+      oauthTokenCache <- oauthTokenCacheR.get
+      client <- clientR.get
+      req = POST(
+        UrlForm(
+          "grant_type" -> GrantType.AuthorizationCode.value,
+          "code" -> code,
+          // "client_id" -> client.id,
+          // "client_secret" -> client.secret,
+          redirectUriKey -> client.redirectUris.head.toString
+        ).updateFormField(codeVerifierKey, oauthTokenCache.codeVerifier),
+        authServer.tokenEndpoint,
+        basicHeaders(client.id, client.secret)
+      )
+    yield ()
     clientR.get.flatMap { client =>
       val req: Request[IO] = POST(
         UrlForm(
@@ -188,7 +209,8 @@ object ClientApp extends IOApp.Simple :
           "code" -> code,
           // "client_id" -> client.id,
           // "client_secret" -> client.secret,
-          redirectUriKey -> client.redirectUris.head.toString
+          redirectUriKey -> client.redirectUris.head.toString,
+          codeVerifierKey -> ???
         ),
         authServer.tokenEndpoint,
         basicHeaders(client.id, client.secret)
@@ -234,7 +256,9 @@ object ClientApp extends IOApp.Simple :
         accessToken = Some(oauthToken.accessToken),
         refreshToken = oauthToken.refreshToken.orElse(origin.refreshToken),
         scope = oauthToken.scope.orElse(origin.scope),
-        idToken = payloadOption.orElse(origin.idToken)
+        idToken = payloadOption.orElse(origin.idToken),
+        // TODO
+        codeVerifier = origin.codeVerifier
       ))
     yield oauthTokenCache
 
@@ -323,7 +347,7 @@ object ClientApp extends IOApp.Simple :
       )
       for
         _ <- info"Revoking token $accessToken"
-        _ <- oauthTokenCacheR.set(OAuthTokenCache(None, None, None, None))
+        _ <- oauthTokenCacheR.set(OAuthTokenCache(None, None, None, None, None))
         response <- runHttpRequest(req){ _ =>
           oauthTokenCacheR.get.flatMap(cache => Ok(ClientPage.Text.revoke(cache)))
         } { statusCode => Ok(ClientPage.Text.error(s"$statusCode")) }

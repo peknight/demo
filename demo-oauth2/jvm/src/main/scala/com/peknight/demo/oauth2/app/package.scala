@@ -12,9 +12,10 @@ import com.peknight.demo.oauth2.data.*
 import com.peknight.demo.oauth2.domain.{IdToken, OAuthTokenRecord}
 import com.peknight.demo.oauth2.repository.getRecordByAccessToken
 import fs2.Stream
+import fs2.hash.sha256
 import fs2.io.file
 import fs2.io.net.Network
-import fs2.text.base64
+import fs2.text.{base64, utf8}
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.ember.client.EmberClientBuilder
@@ -133,3 +134,9 @@ package object app:
       .through(base64.decodeWithAlphabet(Base64Url))
       .compile.toList
       .map(bytes => BigInt(1, bytes.toArray))
+  def getCodeChallenge(codeVerifier: String): String =
+    Stream(codeVerifier)
+      .through(utf8.encode)
+      .through(sha256)
+      .through(base64.encodeWithAlphabet(Base64Url))
+      .toList.mkString

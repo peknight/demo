@@ -46,7 +46,7 @@ object WebClient extends IOApp.Simple:
       _ <- IO(dom.window.localStorage.setItem(oauthStateKey, state))
       _ <- IO(dom.window.location.href = authServer.authorizationEndpoint.withQueryParams(AuthorizeParam(
         webClient.id, webClient.redirectUris.head, webClient.scope, ResponseType.Token,
-        Some(state)
+        Some(state), None, None
       )).toString)
     yield ()
 

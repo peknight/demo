@@ -1,7 +1,7 @@
 package com.peknight.demo.oauth2.common
 
 import cats.data.NonEmptyList
-import com.peknight.demo.oauth2.domain.{AuthMethod, GrantType, ResponseType}
+import com.peknight.demo.oauth2.domain.{AuthMethod, CodeChallengeMethod, GrantType, ResponseType}
 import io.circe.{Decoder, Json}
 import org.http4s.Uri
 
@@ -28,4 +28,7 @@ object Mapper extends App:
     def fMap(a: String): Option[GrantType] = GrantType.fromString(a)
   given Mapper[Option, String, ResponseType] with
     def fMap(a: String): Option[ResponseType] = ResponseType.fromString(a)
+
+  given Mapper[Option, String, CodeChallengeMethod] with
+    def fMap(a: String): Option[CodeChallengeMethod] = CodeChallengeMethod.fromString(a)
 end Mapper

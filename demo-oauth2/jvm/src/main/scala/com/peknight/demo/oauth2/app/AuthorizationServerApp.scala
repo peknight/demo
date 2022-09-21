@@ -187,6 +187,25 @@ object AuthorizationServerApp extends IOApp.Simple :
         case (code, _) => info"Unknown code, ${code.getOrElse("None")}" *> BadRequest(ErrorInfo("invalid_grant").asJson)
     yield resp
 
+  def checkCodeChallenge(cache: AuthorizeCodeCache, body: UrlForm)(pass: => IO[Response[IO]])
+                        (using Logger[IO]): IO[Response[IO]] =
+    cache.authorizationEndpointRequest.codeChallenge.fold(pass) { codeChallenge =>
+      val codeVerifier = body.fGet[Option, String, String](codeVerifierKey)
+      info"Testing challenge $codeChallenge against verifier ${codeVerifier.getOrElse("None")}" *> {
+        cache.authorizationEndpointRequest.codeChallengeMethod.fold {
+          info"Unknown code challenge method None" *> BadRequest(ErrorInfo("invalid_request").asJson)
+        }{ codeChallengeMethod =>
+          val challenge = codeChallengeMethod match
+            case CodeChallengeMethod.Plain => codeVerifier
+            case CodeChallengeMethod.S256 => codeVerifier.map(getCodeChallenge)
+          challenge.filter(_ == codeChallenge).fold {
+            info"Code challenge did not match, expected $codeChallenge got ${challenge.getOrElse("None")}" *>
+              BadRequest(ErrorInfo("invalid_request").asJson)
+          }(_ => pass)
+        }
+      }
+    }
+
   def clientCredentials(client: ClientInfo, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
     checkScope(body, client) { scope =>
       for
