@@ -151,6 +151,10 @@ object ProtectedResourceApp extends IOApp.Simple :
   private[this] def protectedResourceJws(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
     jws(accessToken, protectedResourceIndex.toString).map(_.map(toOAuthTokenRecord))
 
+  private[this] def noSignToken(accessToken: String): IO[Option[IdToken]] =
+    
+    ???
+
   private[this] def toHex(value: String): String =
     Stream(sharedTokenSecret).through(utf8.encode).through(hex.encode).toList.mkString("")
 

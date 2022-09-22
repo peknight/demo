@@ -35,14 +35,14 @@ object ClientApp extends IOApp.Simple :
         None,
         None, // "j2r3oj32r23rmasd98uhjrk2o3i".some,
         None,
-        None,
         None))
       stateR <- Ref.of[IO, Option[String]](None)
+      codeVerifierR <- Ref.of[IO, Option[String]](None)
       random <- Random.scalaUtilRandom[IO]
       logger <- Slf4jLogger.create[IO]
       given Logger[IO] = logger
       serverPort = port"8000"
-      _ <- start[IO](serverPort)(service(clientR, oauthTokenCacheR, stateR, random))
+      _ <- start[IO](serverPort)(service(clientR, oauthTokenCacheR, stateR, codeVerifierR, random))
       _ <- info"OAuth Client is listening at https://$serverHost:$serverPort"
       _ <- IO.never
     yield ()
@@ -66,10 +66,10 @@ object ClientApp extends IOApp.Simple :
   object WordQueryParamMatcher extends QueryParamDecoderMatcher[String]("word")
 
   def service(clientR: Ref[IO, ClientInfo], oauthTokenCacheR: Ref[IO, OAuthTokenCache], stateR: Ref[IO, Option[String]],
-              random: Random[IO])(using Logger[IO]): HttpApp[IO] =
+              codeVerifierR: Ref[IO, Option[String]], random: Random[IO])(using Logger[IO]): HttpApp[IO] =
     HttpRoutes.of[IO] {
       case GET -> Root => oauthTokenCacheR.get.flatMap(oauthTokenCache => Ok(ClientPage.Text.index(oauthTokenCache)))
-      case GET -> Root / "authorize" => authorize(clientR, stateR, random)
+      case GET -> Root / "authorize" => authorize(clientR, stateR, codeVerifierR, random)
       // 客户端凭据许可类型
       case GET -> Root / "client_credentials" => clientCredentials(clientR, oauthTokenCacheR)
       case GET -> Root / "username_password" => Ok(ClientPage.Text.usernamePassword)
@@ -78,7 +78,8 @@ object ClientApp extends IOApp.Simple :
       case GET -> Root / "callback" :? CodeQueryParamMatcher(code) +& StateQueryParamMatcher(state) =>
         stateR.get.flatMap(originState =>
           if !originState.contains(state) then callbackStateNotMatch(originState, state)
-          else info"State value matches: expected $state got $state" *> callbackWithCode(clientR, oauthTokenCacheR, code)
+          else info"State value matches: expected $state got $state" *>
+            callbackWithCode(clientR, oauthTokenCacheR, codeVerifierR, code)
         )
       case GET -> Root / "callback" :? ErrorQueryParamMatcher(error) => Ok(ClientPage.Text.error(error))
       case GET -> Root / "refresh" => refresh(clientR, oauthTokenCacheR)
@@ -101,7 +102,8 @@ object ClientApp extends IOApp.Simple :
       case GET -> Root / "userinfo" => userInfo(oauthTokenCacheR)
     }.orNotFound
 
-  def authorize(clientR: Ref[IO, ClientInfo], stateR: Ref[IO, Option[String]], random: Random[IO])
+  def authorize(clientR: Ref[IO, ClientInfo], stateR: Ref[IO, Option[String]], codeVerifierR: Ref[IO, Option[String]],
+                random: Random[IO])
                (using Logger[IO]): IO[Response[IO]] =
     for
       currentCli <- clientR.get
@@ -112,6 +114,7 @@ object ClientApp extends IOApp.Simple :
           for
             state <- randomString[IO](random, 32)
             codeVerifier <- randomString[IO](random, 80)
+            _ <- codeVerifierR.set(codeVerifier.some)
             codeChallenge = getCodeChallenge(codeVerifier)
             _ <- info"Generated code verifier $codeVerifier and challenge $codeChallenge"
             _ <- stateR.set(Some(state))
@@ -185,41 +188,26 @@ object ClientApp extends IOApp.Simple :
       stateResp <- Ok(ClientPage.Text.error("State value did not match"))
     yield stateResp
 
-  def callbackWithCode(clientR: Ref[IO, ClientInfo], oauthTokenCacheR: Ref[IO, OAuthTokenCache], code: String)
+  def callbackWithCode(clientR: Ref[IO, ClientInfo], oauthTokenCacheR: Ref[IO, OAuthTokenCache],
+                       codeVerifierR: Ref[IO, Option[String]], code: String)
                       (using Logger[IO]): IO[Response[IO]] =
     for
-      oauthTokenCache <- oauthTokenCacheR.get
       client <- clientR.get
+      codeVerifier <- codeVerifierR.get
       req = POST(
         UrlForm(
           "grant_type" -> GrantType.AuthorizationCode.value,
           "code" -> code,
           // "client_id" -> client.id,
           // "client_secret" -> client.secret,
-          redirectUriKey -> client.redirectUris.head.toString
-        ).updateFormField(codeVerifierKey, oauthTokenCache.codeVerifier),
-        authServer.tokenEndpoint,
-        basicHeaders(client.id, client.secret)
-      )
-    yield ()
-    clientR.get.flatMap { client =>
-      val req: Request[IO] = POST(
-        UrlForm(
-          "grant_type" -> GrantType.AuthorizationCode.value,
-          "code" -> code,
-          // "client_id" -> client.id,
-          // "client_secret" -> client.secret,
           redirectUriKey -> client.redirectUris.head.toString,
-          codeVerifierKey -> ???
-        ),
+        ).updateFormField(codeVerifierKey, codeVerifier),
         authServer.tokenEndpoint,
         basicHeaders(client.id, client.secret)
       )
-      for
-        _ <- info"Requesting access token for code $code"
-        resp <- fetchOAuthToken(req, client.id, oauthTokenCacheR)
-      yield resp
-    }
+      _ <- info"Requesting access token for code $code"
+      resp <- fetchOAuthToken(req, client.id, oauthTokenCacheR)
+    yield resp
 
   def fetchOAuthToken(req: Request[IO], clientId: String, oauthTokenCacheR: Ref[IO, OAuthTokenCache])
                      (using Logger[IO]): IO[Response[IO]] =
@@ -256,9 +244,7 @@ object ClientApp extends IOApp.Simple :
         accessToken = Some(oauthToken.accessToken),
         refreshToken = oauthToken.refreshToken.orElse(origin.refreshToken),
         scope = oauthToken.scope.orElse(origin.scope),
-        idToken = payloadOption.orElse(origin.idToken),
-        // TODO
-        codeVerifier = origin.codeVerifier
+        idToken = payloadOption.orElse(origin.idToken)
       ))
     yield oauthTokenCache
 
@@ -276,7 +262,8 @@ object ClientApp extends IOApp.Simple :
       } { statusCode =>
         for
           oauthTokenCache <- oauthTokenCacheR.updateAndGet(_.copy(accessToken = None))
-          resp <- refreshAccessToken(clientR, oauthTokenCacheR, oauthTokenCache, s"$statusCode")
+          resp <- refreshAccessToken(clientR, oauthTokenCacheR, oauthTokenCache,
+            s"Server returned response code: $statusCode")
         yield resp
       }
     yield response
@@ -347,7 +334,7 @@ object ClientApp extends IOApp.Simple :
       )
       for
         _ <- info"Revoking token $accessToken"
-        _ <- oauthTokenCacheR.set(OAuthTokenCache(None, None, None, None, None))
+        _ <- oauthTokenCacheR.set(OAuthTokenCache(None, None, None, None))
         response <- runHttpRequest(req){ _ =>
           oauthTokenCacheR.get.flatMap(cache => Ok(ClientPage.Text.revoke(cache)))
         } { statusCode => Ok(ClientPage.Text.error(s"$statusCode")) }

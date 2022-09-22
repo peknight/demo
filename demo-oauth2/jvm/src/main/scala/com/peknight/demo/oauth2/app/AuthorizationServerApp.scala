@@ -175,10 +175,14 @@ object AuthorizationServerApp extends IOApp.Simple :
             case Some(user) =>
               for
                 _ <- info"User $user"
-                tokenResponse <- generateTokens(random, clientId, cache.user.flatMap(userInfos.get), cache.scope, None,
-                  true, true)
-                _ <- info"Issued tokens for code $code"
-                resp <- Ok(tokenResponse.asJson)
+                resp <- checkCodeChallenge(cache, body) {
+                  for
+                    tokenResponse <- generateTokens(random, clientId, cache.user.flatMap(userInfos.get), cache.scope,
+                      None, true, true)
+                    _ <- info"Issued tokens for code $code"
+                    resp <- Ok(tokenResponse.asJson)
+                  yield resp
+                }
               yield resp
             case None =>
               val preferredUsername = cache.user.getOrElse("None")
@@ -412,7 +416,8 @@ object AuthorizationServerApp extends IOApp.Simple :
                      state: Option[String], generateRefreshToken: Boolean, generateIdToken: Boolean)
                     (using Logger[IO]): IO[OAuthToken] =
     for
-      accessToken <- randomString(random, 32)
+      // accessToken <- randomString(random, 32)
+      accessToken <- noSign(clientId, user, random)
       _ <- insertRecord(OAuthTokenRecord(clientId.some, accessToken.some, None, scope.some,
         user.flatMap(_.preferredUsername)))
       _ <- info"Issuing accessToken $accessToken"
@@ -427,27 +432,42 @@ object AuthorizationServerApp extends IOApp.Simple :
           yield refreshOption
         else IO.pure(None)
       _ <- info"with scope ${scope.mkString(" ")}"
-      idTokenOption <-
-        if generateIdToken then
-          for
-            realTime <- IO.realTime
-            idToken <- sign(clientId, user, realTime)
-            _ <- info"Issuing ID token $idToken"
-          yield idToken.some
-        else IO.pure(None)
+      idTokenOption <- if generateIdToken then sign(clientId, user).map(_.some) else IO.pure(None)
     yield OAuthToken(accessToken, AuthScheme.Bearer, refreshTokenOption, scope.some, state, idTokenOption)
 
-  def sign(clientId: String, user: Option[UserInfo], issueAt: Duration): IO[String] =
-    val issueAtSec: Long = issueAt.toSeconds
-    val header = JwtHeader(JwtAlgorithm.RS256.some, JwtHeader.DEFAULT_TYPE.some, none, "authserver".some)
-    val payload = JwtClaim(
-      issuer = authorizationServerIndex.toString.some,
-      subject = user.flatMap(_.sub),
-      audience = Set(clientId).some,
-      expiration = (issueAtSec + (5 * 60)).some,
-      issuedAt = issueAtSec.some
-    )
-    rsaPrivateKey.flatMap(key => IO(JwtCirce.encode(header, payload, key)))
+  def noSign(clientId: String, user: Option[UserInfo], random: Random[IO]): IO[String] =
+    for
+      realTime <- IO.realTime
+      issueAtSec = realTime.toSeconds
+      jwtId <- randomString(random, 8)
+      header = JwtHeader(typ = JwtHeader.DEFAULT_TYPE.some)
+      payload = JwtClaim(
+        issuer = authorizationServerIndex.toString.some,
+        subject = user.flatMap(_.sub),
+        audience = Set(protectedResourceIndex.toString).some,
+        issuedAt = issueAtSec.some,
+        expiration = (issueAtSec + (5 * 60)).some,
+        jwtId = jwtId.some
+      )
+      accessToken <- IO(JwtCirce.encode(header, payload))
+    yield accessToken
+
+  def sign(clientId: String, user: Option[UserInfo])(using Logger[IO]): IO[String] =
+    for
+      realTime <- IO.realTime
+      issueAtSec = realTime.toSeconds
+      header = JwtHeader(JwtAlgorithm.RS256.some, JwtHeader.DEFAULT_TYPE.some, none, "authserver".some)
+      payload = JwtClaim(
+        issuer = authorizationServerIndex.toString.some,
+        subject = user.flatMap(_.sub),
+        audience = Set(clientId).some,
+        expiration = (issueAtSec + (5 * 60)).some,
+        issuedAt = issueAtSec.some
+      )
+      key <- rsaPrivateKey
+      idToken <- IO(JwtCirce.encode(header, payload, key))
+      _ <- info"Issuing ID token $idToken"
+    yield idToken
 
   def checkClientMetadata[T](params: T)(
     using

@@ -117,7 +117,8 @@ package object app:
     OAuthTokenRecord(payload.audience.fold(none[String])(_.find(_.nonEmpty)), None, None, None, payload.subject)
 
   private[this] def toIdToken(payload: JwtClaim): IdToken =
-    IdToken(payload.issuer, payload.subject, payload.audience, payload.expiration, payload.issuedAt, payload.jwtId)
+    IdToken(payload.content, payload.issuer, payload.subject, payload.audience, payload.expiration, payload.notBefore,
+      payload.issuedAt, payload.jwtId)
 
   val rsaPublicKey: IO[PublicKey] =
     for
@@ -139,4 +140,4 @@ package object app:
       .through(utf8.encode)
       .through(sha256)
       .through(base64.encodeWithAlphabet(Base64Url))
-      .toList.mkString
+      .toList.mkString.replaceAll("=", "")
