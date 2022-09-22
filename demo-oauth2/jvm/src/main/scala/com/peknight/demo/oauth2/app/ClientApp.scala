@@ -236,7 +236,7 @@ object ClientApp extends IOApp.Simple :
       payloadOption <- oauthToken.idToken.fold(IO.pure(none[IdToken])) { idToken =>
         for
           _ <- info"Got ID token: $idToken"
-          payload <- jws(idToken, clientId)
+          payload <- checkJws(idToken, clientId)
         yield payload
       }
       _ <- info"Got scope: ${oauthToken.scope}"

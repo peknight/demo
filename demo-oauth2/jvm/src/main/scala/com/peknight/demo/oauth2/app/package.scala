@@ -92,7 +92,7 @@ package object app:
       }
     }
 
-  def jws(idToken: String, audience: String)(using Logger[IO]): IO[Option[IdToken]] =
+  def checkJws(idToken: String, audience: String)(using Logger[IO]): IO[Option[IdToken]] =
     val payloadOptionT =
       for
       // signatureValid <- IO(JwtCirce.isValid(idToken, toHex(sharedTokenSecret), Seq(JwtAlgorithm.HS256))).optionT
@@ -116,7 +116,7 @@ package object app:
   def toOAuthTokenRecord(payload: IdToken): OAuthTokenRecord =
     OAuthTokenRecord(payload.audience.fold(none[String])(_.find(_.nonEmpty)), None, None, None, payload.subject)
 
-  private[this] def toIdToken(payload: JwtClaim): IdToken =
+  def toIdToken(payload: JwtClaim): IdToken =
     IdToken(payload.content, payload.issuer, payload.subject, payload.audience, payload.expiration, payload.notBefore,
       payload.issuedAt, payload.jwtId)
 

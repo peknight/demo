@@ -417,7 +417,7 @@ object AuthorizationServerApp extends IOApp.Simple :
                     (using Logger[IO]): IO[OAuthToken] =
     for
       // accessToken <- randomString(random, 32)
-      accessToken <- noSign(clientId, user, random)
+      accessToken <- jwtAccessToken(clientId, user, random)
       _ <- insertRecord(OAuthTokenRecord(clientId.some, accessToken.some, None, scope.some,
         user.flatMap(_.preferredUsername)))
       _ <- info"Issuing accessToken $accessToken"
@@ -435,7 +435,7 @@ object AuthorizationServerApp extends IOApp.Simple :
       idTokenOption <- if generateIdToken then sign(clientId, user).map(_.some) else IO.pure(None)
     yield OAuthToken(accessToken, AuthScheme.Bearer, refreshTokenOption, scope.some, state, idTokenOption)
 
-  def noSign(clientId: String, user: Option[UserInfo], random: Random[IO]): IO[String] =
+  def jwtAccessToken(clientId: String, user: Option[UserInfo], random: Random[IO]): IO[String] =
     for
       realTime <- IO.realTime
       issueAtSec = realTime.toSeconds

@@ -26,6 +26,7 @@ import org.typelevel.ci.CIString
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
+import pdi.jwt.JwtCirce
 
 import scala.collection.immutable.Queue
 import scala.concurrent.duration.*
@@ -62,7 +63,7 @@ object ProtectedResourceApp extends IOApp.Simple :
   def service(savedWordsR: Ref[IO, Queue[String]])(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(ProtectedResourcePage.Text.index)
     // case OPTIONS -> Root / "resource" => NoContent()
-    case req @ POST -> Root / "resource" => requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
+    case req @ POST -> Root / "resource" => requireAccessToken(req, protectedResourceAddr)(introspectJwt) { record =>
       Ok(ResourceScope(resource, record.scope).asJson)
     }
     case req @ GET -> Root / "words" => requireAccessTokenScope(req, "read") {
@@ -82,14 +83,14 @@ object ProtectedResourceApp extends IOApp.Simple :
     case req @ DELETE -> Root / "words" => requireAccessTokenScope(req, "delete") {
       savedWordsR.update(_.init) *> NoContent()
     }
-    case req @ GET -> Root / "produce" => requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
+    case req @ GET -> Root / "produce" => requireAccessToken(req, protectedResourceAddr)(introspectJwt) { record =>
       val fruit = if record.scope.exists(_.contains("fruit")) then Seq("apple", "banana", "kiwi") else Seq.empty[String]
       val veggies = if record.scope.exists(_.contains("veggies")) then Seq("lettuce", "onion", "potato") else Seq.empty[String]
       val meats = if record.scope.exists(_.contains("meats")) then Seq("becon", "steak", "chicken breast") else Seq.empty[String]
       val produce = ProduceData(fruit, veggies, meats)
       info"Sending produce: $produce" *> Ok(produce.asJson)
     }
-    case req @ GET -> Root / "favorites" => requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
+    case req @ GET -> Root / "favorites" => requireAccessToken(req, protectedResourceAddr)(introspectJwt) { record =>
       record.user match
         case Some("alice") => Ok(UserFavoritesData("Alice", aliceFavorites).asJson)
         case Some("bob") => Ok(UserFavoritesData("Bob", bobFavorites).asJson)
@@ -97,7 +98,7 @@ object ProtectedResourceApp extends IOApp.Simple :
     }
     // case OPTIONS -> Root / "helloWorld" => NoContent()
     case req @ GET -> Root / "helloWorld" :? LanguageQueryParamMatcher(language) =>
-      requireAccessToken(req, protectedResourceAddr)(introspect) { _ =>
+      requireAccessToken(req, protectedResourceAddr)(introspectJwt) { _ =>
         val greeting = language match
           case Some("en") => "Hello World"
           case Some("de") => "Hallo Welt"
@@ -120,7 +121,7 @@ object ProtectedResourceApp extends IOApp.Simple :
 
   private[this] def requireAccessTokenScope(req: Request[IO], scope: String)(pass: => IO[Response[IO]])
                                            (using Logger[IO]): IO[Response[IO]] =
-    requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
+    requireAccessToken(req, protectedResourceAddr)(introspectJwt) { record =>
       if record.scope.exists(_.contains(scope)) then pass
       else
         Forbidden.headers(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, protectedResourceAddr, Map(
@@ -148,12 +149,26 @@ object ProtectedResourceApp extends IOApp.Simple :
       yield introspectionResponse.toOAuthTokenRecord
     }{ _ => IO.pure(None) }
 
-  private[this] def protectedResourceJws(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
-    jws(accessToken, protectedResourceIndex.toString).map(_.map(toOAuthTokenRecord))
+  private[this] def checkProtectedResourceJws(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
+    checkJws(accessToken, protectedResourceIndex.toString).map(_.map(toOAuthTokenRecord))
 
-  private[this] def noSignToken(accessToken: String): IO[Option[IdToken]] =
-    
-    ???
+  private[this] def introspectJwt(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
+    val payloadOptionT =
+      for
+        payload <- OptionT(IO(JwtCirce.decode(accessToken).toOption))
+        _ <- info"Payload $payload".optionT
+        _ <- OptionT.fromOption(payload.issuer.filter(_ == authorizationServerIndex.toString))
+        _ <- info"issuer OK".optionT
+        _ <- OptionT.fromOption(payload.audience.find(_.contains(protectedResourceIndex.toString)))
+        _ <- info"Audience OK".optionT
+        realTime <- IO.realTime.optionT
+        _ <- OptionT.fromOption(payload.issuedAt.filter(_ <= realTime.toSeconds))
+        _ <- info"issue-at OK".optionT
+        _ <- OptionT.fromOption(payload.expiration.filter(_ >= realTime.toSeconds))
+        _ <- info"expiration OK".optionT
+        _ <- info"Token valid!".optionT
+      yield toOAuthTokenRecord(toIdToken(payload))
+    payloadOptionT.value
 
   private[this] def toHex(value: String): String =
     Stream(sharedTokenSecret).through(utf8.encode).through(hex.encode).toList.mkString("")
