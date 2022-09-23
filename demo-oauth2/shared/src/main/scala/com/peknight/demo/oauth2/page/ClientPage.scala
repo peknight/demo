@@ -28,8 +28,11 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     a(cls := "btn btn-default", href := "/words")("Access the Words API"), " ",
     a(cls := "btn btn-default", href := "/produce")("Access the Produce API"), " ",
     a(cls := "btn btn-default", href := "/favorites")("Access the Favorites API"), " ",
-    a(cls := "btn btn-default", href := "/revoke")("Revoke Access Token"), " ",
+    a(cls := "btn btn-default", href := "/revoke")("Revoke Access Token Page"), " ",
     a(cls := "btn btn-default", href := "/userinfo")("Access User Info"), " ",
+    form(action := "/revoke", cls := "form", method := POST.name)(
+      input(`type` := "submit", cls := "btn btn-default", value := "Revoke Access Token")
+    ),
     form(action := "/greeting")(
       input(cls := "btn btn-default", `type` := "submit", value := "Greet in"), " ",
       input(`type` := "radio", name := "language", value := "en", checked := "checked"), "English", " ",

@@ -1,6 +1,7 @@
 package com.peknight.demo.oauth2.page
 
 import com.peknight.demo.oauth2.domain.*
+import org.http4s.Method.POST
 import scalacss.internal.Dsl.c
 import scalatags.generic.Bundle
 import scalatags.text.Builder
@@ -38,7 +39,7 @@ class AuthorizationServerPage[Builder, Output <: FragT, FragT](override val bund
       p(b("ID: "), code(client.id)),
       client.uri.fold[Modifier]("")(uri => p(b("URI: "), code(uri.toString))),
       client.logoUri.fold[Modifier]("")(logoUri => p(b("logo: "), img(src := logoUri.toString))),
-      form(cls := "form", action := "/approve", method := "POST")(
+      form(cls := "form", action := "/approve", method := POST.name)(
         label("Select user:"),
         select(name := "user")(
           option(value := "alice")("Alice"),

@@ -165,12 +165,12 @@ object ClientApp extends IOApp.Simple :
     clientR.get.flatMap { client =>
       val reqOption: Option[Request[IO]] =
         for
-          username <- body.get("username").find(_.nonEmpty)
+          username <- body.get(usernameKey).find(_.nonEmpty)
           password <- body.get("password").find(_.nonEmpty)
         yield POST(
           UrlForm(
             "grant_type" -> GrantType.Password.value,
-            "username" -> username,
+            usernameKey -> username,
             "password" -> password,
             scopeKey -> client.scope.mkString(" ")
           ),
@@ -236,7 +236,7 @@ object ClientApp extends IOApp.Simple :
       payloadOption <- oauthToken.idToken.fold(IO.pure(none[IdToken])) { idToken =>
         for
           _ <- info"Got ID token: $idToken"
-          payload <- checkJws(idToken, clientId)
+          payload <- checkJwt[IdToken](jwtRS256Decode(idToken), clientId)
         yield payload
       }
       _ <- info"Got scope: ${oauthToken.scope}"
@@ -326,8 +326,9 @@ object ClientApp extends IOApp.Simple :
     }
 
   def revoke(oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
-    handleOAuthToken(oauthTokenCacheR)(cache => Ok(ClientPage.Text.revoke(cache))) { (_, accessToken) =>
+    handleOAuthToken(oauthTokenCacheR)(cache => Ok(ClientPage.Text.index(cache))) { (_, accessToken) =>
       val req = POST(
+        // 可选：可以增加token_type_hint参数来提示授权服务器先查询哪种令牌（访问/刷新），但授权服务器可以忽略该参数两种都检查
         UrlForm("token" -> accessToken),
         authServer.revocationEndpoint,
         basicHeaders(client.id, client.secret)
@@ -336,7 +337,7 @@ object ClientApp extends IOApp.Simple :
         _ <- info"Revoking token $accessToken"
         _ <- oauthTokenCacheR.set(OAuthTokenCache(None, None, None, None))
         response <- runHttpRequest(req){ _ =>
-          oauthTokenCacheR.get.flatMap(cache => Ok(ClientPage.Text.revoke(cache)))
+          oauthTokenCacheR.get.flatMap(cache => Ok(ClientPage.Text.index(cache)))
         } { statusCode => Ok(ClientPage.Text.error(s"$statusCode")) }
       yield response
     }

@@ -1,5 +1,6 @@
 package com.peknight.demo.oauth2.common
 
+import cats.Id
 import cats.data.NonEmptyList
 import com.peknight.demo.oauth2.domain.{AuthMethod, CodeChallengeMethod, GrantType, ResponseType}
 import io.circe.{Decoder, Json}
@@ -10,6 +11,16 @@ trait Mapper[F[_], A, B]:
 end Mapper
 
 object Mapper extends App:
+
+  def apply[F[_], A, B](using mapper: Mapper[F, A, B]): Mapper[F, A, B] = mapper
+
+  extension [A] (a: A)
+    def to[F[_], B](using mapper: Mapper[F, A, B]): F[B] = mapper.fMap(a)
+  end extension
+
+  given [A]: Mapper[Id, A, A] with
+    def fMap(a: A): Id[A] = a
+
   given [A] (using decoder: Decoder[A]): Mapper[Option, Json, A] with
     def fMap(a: Json): Option[A] = decoder.decodeJson(a).toOption
 

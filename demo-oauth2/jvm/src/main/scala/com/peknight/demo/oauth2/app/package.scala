@@ -1,5 +1,6 @@
 package com.peknight.demo.oauth2
 
+import cats.Id
 import cats.data.OptionT
 import cats.effect.{Async, IO}
 import cats.syntax.flatMap.*
@@ -7,15 +8,19 @@ import cats.syntax.functor.*
 import cats.syntax.option.*
 import ciris.*
 import com.comcast.ip4s.*
-import com.peknight.demo.oauth2.constant.{accessTokenKey, authorizationServerIndex, rsaKey}
+import com.peknight.demo.oauth2.common.Mapper
+import com.peknight.demo.oauth2.common.Mapper.*
+import com.peknight.demo.oauth2.constant.*
 import com.peknight.demo.oauth2.data.*
-import com.peknight.demo.oauth2.domain.{IdToken, OAuthTokenRecord}
+import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.repository.getRecordByAccessToken
 import fs2.Stream
 import fs2.hash.sha256
 import fs2.io.file
 import fs2.io.net.Network
-import fs2.text.{base64, utf8}
+import fs2.text.{base64, hex, utf8}
+import io.circe.generic.auto.*
+import io.circe.parser.*
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.ember.client.EmberClientBuilder
@@ -31,6 +36,7 @@ import scodec.bits.Bases.Alphabets.Base64Url
 
 import java.security.spec.RSAPublicKeySpec
 import java.security.{KeyFactory, PublicKey}
+import scala.util.{Failure, Success, Try}
 
 package object app:
 
@@ -41,6 +47,22 @@ package object app:
   given CanEqual[Uri, Uri] = CanEqual.derived
   
   given CanEqual[CIString, AuthScheme] = CanEqual.derived
+
+  given Mapper[Id, JwtClaim, IdToken] with
+    def fMap(a: JwtClaim): Id[IdToken] =
+      IdToken(a.content, a.issuer, a.subject, a.audience, a.expiration, a.notBefore, a.issuedAt, a.jwtId)
+  end given
+
+  given Mapper[Id, JwtClaim, OAuthTokenRecord] with
+    def fMap(a: JwtClaim): Id[OAuthTokenRecord] =
+      OAuthTokenRecord(a.audience.fold(none[String])(_.find(_.nonEmpty)), None, None,
+        decode[TokenScope](a.content).map(_.scope).toOption, a.subject)
+  end given
+
+  given Mapper[Option, IntrospectionResponse, OAuthTokenRecord] with
+    def fMap(a: IntrospectionResponse): Option[OAuthTokenRecord] =
+      if a.active then Some(OAuthTokenRecord(a.clientId, None, None, a.scope, a.subject)) else None
+  end given
 
   val serverHost = host"local.peknight.com"
 
@@ -92,12 +114,14 @@ package object app:
       }
     }
 
-  def checkJws(idToken: String, audience: String)(using Logger[IO]): IO[Option[IdToken]] =
+  def checkJwt[A](payloadIO: IO[Try[JwtClaim]], audience: String)
+                 (using Mapper[Id, JwtClaim, A], Logger[IO]): IO[Option[A]] =
     val payloadOptionT =
       for
-      // signatureValid <- IO(JwtCirce.isValid(idToken, toHex(sharedTokenSecret), Seq(JwtAlgorithm.HS256))).optionT
-        pubKey <- rsaPublicKey.optionT
-        payload <- OptionT(IO(JwtCirce.decode(idToken, pubKey, Seq(JwtAlgorithm.RS256)).toOption))
+        payload <- OptionT(payloadIO.flatMap {
+          case Success(value) => IO.pure(value.some)
+          case Failure(exception) => info"Token invalid: $exception" *> IO.pure(none[JwtClaim])
+        })
         _ <- info"Signature validated.".optionT
         _ <- info"Payload $payload".optionT
         _ <- OptionT.fromOption(payload.issuer.filter(_ == authorizationServerIndex.toString))
@@ -110,15 +134,11 @@ package object app:
         _ <- OptionT.fromOption(payload.expiration.filter(_ >= realTime.toSeconds))
         _ <- info"expiration OK".optionT
         _ <- info"Token valid!".optionT
-      yield toIdToken(payload)
+      yield payload.to[Id, A]
     payloadOptionT.value
 
-  def toOAuthTokenRecord(payload: IdToken): OAuthTokenRecord =
-    OAuthTokenRecord(payload.audience.fold(none[String])(_.find(_.nonEmpty)), None, None, None, payload.subject)
-
-  def toIdToken(payload: JwtClaim): IdToken =
-    IdToken(payload.content, payload.issuer, payload.subject, payload.audience, payload.expiration, payload.notBefore,
-      payload.issuedAt, payload.jwtId)
+  def jwtRS256Decode(accessToken: String): IO[Try[JwtClaim]] =
+    rsaPublicKey.flatMap(pubKey => IO(JwtCirce.decode(accessToken, pubKey, Seq(JwtAlgorithm.RS256))))
 
   val rsaPublicKey: IO[PublicKey] =
     for
@@ -141,3 +161,7 @@ package object app:
       .through(sha256)
       .through(base64.encodeWithAlphabet(Base64Url))
       .toList.mkString.replaceAll("=", "")
+
+  def toHex(value: String): String =
+    Stream(value).through(utf8.encode).through(hex.encode).toList.mkString("")
+
