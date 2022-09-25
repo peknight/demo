@@ -21,7 +21,9 @@ import fs2.io.net.Network
 import fs2.text.{base64, hex, utf8}
 import io.circe.generic.auto.*
 import io.circe.parser.*
+import io.circe.{Json, JsonObject}
 import org.http4s.*
+import org.http4s.circe.*
 import org.http4s.dsl.io.*
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder
@@ -114,6 +116,11 @@ package object app:
       }
     }
 
+  def parseRequest[A](req: Request[IO])(jsonF: Json => A)(formF: UrlForm => A): IO[A] =
+    req.headers.get[`Content-Type`] match
+      case Some(`Content-Type`(mediaType, _)) if mediaType.subType == "json" => req.as[Json].map(jsonF)
+      case _ => req.as[UrlForm].map(formF)
+
   def checkJwt[A](payloadIO: IO[Try[JwtClaim]], audience: String)
                  (using Mapper[Id, JwtClaim, A], Logger[IO]): IO[Option[A]] =
     val payloadOptionT =
@@ -161,6 +168,8 @@ package object app:
       .through(sha256)
       .through(base64.encodeWithAlphabet(Base64Url))
       .toList.mkString.replaceAll("=", "")
+  def getRegistrationClientUri(clientId: String): Uri =
+    Uri.unsafeFromString(s"https://local.peknight.com:8001/register/$clientId")
 
   def toHex(value: String): String =
     Stream(value).through(utf8.encode).through(hex.encode).toList.mkString("")

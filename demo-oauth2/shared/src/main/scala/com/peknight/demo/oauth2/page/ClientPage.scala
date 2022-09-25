@@ -16,10 +16,16 @@ import shapeless3.deriving.Labelling
 class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Builder, Output, FragT]) extends OAuthPage(bundle):
   import bundle.all.*
 
-  def index(oauthTokenCache: OAuthTokenCache): Frag = jumbotron(
+  def index(client: Option[ClientInfo], oauthTokenCache: OAuthTokenCache): Frag = jumbotron(
     p("Access token value: ", span(cls := "label label-danger")(oauthTokenCache.accessToken.getOrElse("NONE"))),
     p("Scope value: ", span(cls := "label label-danger")(oauthTokenCache.scope.map(_.mkString(" ")).getOrElse("NONE"))),
     p("Refresh token value: ", span(cls := "label label-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
+    p("Client ID: ", span(cls := "label label-danger")(client.map(_.id))),
+    p("Client Secret: ", span(cls := "label label-danger")(client.flatMap(_.secret).getOrElse("None"))),
+    p("Registration access token: ", span(cls := "label label-danger")(client.flatMap(_.registrationAccessToken).getOrElse("None"))),
+    p("Client configuration management endpoint: ", span(cls := "label label-danger")(
+      client.flatMap(_.registrationClientUri).map(_.toString).getOrElse("None"))
+    ),
     a(cls := "btn btn-default", href := "/authorize")("Get OAuth Token"), " ",
     a(cls := "btn btn-default", href := "/client_credentials")("Client Credentials"), " ",
     a(cls := "btn btn-default", href := "/username_password")("Username Password"), " ",
@@ -39,8 +45,18 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
       input(`type` := "radio", name := "language", value := "de"), "German", " ",
       input(`type` := "radio", name := "language", value := "it"), "Italian", " ",
       input(`type` := "radio", name := "language", value := "fr"), "French", " ",
-      input(`type` := "radio", name := "language", value := "es"), "Spanish", " ",
-    )
+      input(`type` := "radio", name := "language", value := "es"), "Spanish"
+    ),
+    client.flatMap(_.registrationAccessToken).fold[Frag]("") { registrationAccessToken => frag(
+      hr,
+      a(cls := "btn btn-default", href := "/read_client")("Read Client Information"),
+      form(method := POST.name, action := "/update_client")(
+        label(`for` := "client_name")("New Client Name"), " ",
+        input(`type` := "text", name := "client_name", value := client.flatMap(_.name).getOrElse("")),
+        button(`type` := "submit", cls := "btn btn-default")("Update Client Registration")
+      ),
+      a(cls := "btn btn-default", href := "/unregister_client")("Unregister Client")
+    )}
   )
 
   val webIndex: Frag = skeleton(

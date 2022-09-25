@@ -304,27 +304,22 @@ object AuthorizationServerApp extends IOApp.Simple :
 
   def postRegister(req: Request[IO], random: Random[IO], clientsR: Ref[IO, Seq[ClientInfo]])
                   (using Logger[IO]): IO[Response[IO]] =
-    val parseBody = req.headers.get[`Content-Type`] match
-      case Some(`Content-Type`(mediaType, _)) if mediaType.subType == "json" =>
-        req.as[Json].attempt.map(
-          _.toOption.flatMap(_.asObject).toRight("Can not parse param").flatMap(checkClientMetadata)
-        )
-      case _ =>
-        req.as[UrlForm].map(checkClientMetadata)
+    val parseBody = parseRequest(req)(checkClientMetadata)(checkClientMetadata)
     parseBody.flatMap {
       case Left(error) => BadRequest(ErrorInfo(error).asJson)
       case Right(clientMetadata) =>
         for
           clientId <- randomString(random, 32)
           clientSecretOption <-
-            if Seq(AuthMethod.ClientSecretBasic, AuthMethod.ClientSecretPost).contains(clientMetadata.tokenEndpointAuthMethod) then
+            if Seq(AuthMethod.ClientSecretBasic, AuthMethod.ClientSecretPost, AuthMethod.SecretBasic,
+              AuthMethod.SecretPost).contains(clientMetadata.tokenEndpointAuthMethod) then
               randomString(random, 32).map(_.some)
             else IO.pure(none[String])
           realTime <- IO.realTime
           clientIdCreatedAt = realTime.toSeconds
           clientSecretExpiresAt = 0L
           registrationAccessToken <- randomString(random, 32)
-          registrationClientUri = Uri.unsafeFromString(s"https://local.peknight.com:8001/register/$clientId")
+          registrationClientUri = getRegistrationClientUri(clientId)
           client = clientMetadata.toClientInfo(clientId, clientSecretOption, clientIdCreatedAt,
             clientSecretExpiresAt, registrationAccessToken, registrationClientUri)
           _ <- clientsR.update(_ :+ client)
@@ -334,26 +329,34 @@ object AuthorizationServerApp extends IOApp.Simple :
     }
 
   def getRegister(clientId: String, req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]]): IO[Response[IO]] =
-    validateConfigurationEndpointRequest(clientId, req, clientsR)(client => Ok(client.asJson))
+    authorizeConfigurationEndpointRequest(clientId, req, clientsR)(client => Ok(client.asJson))
 
   def putRegister(clientId: String, req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]]): IO[Response[IO]] =
-    validateConfigurationEndpointRequest(clientId, req, clientsR) { client => req.as[UrlForm].flatMap { body =>
-      if !body.fGet[Option, String, String](clientIdKey).contains(client.id) then
-        BadRequest(ErrorInfo("invalid_client_metadata").asJson)
-      else if body.fGet[Option, String, String](clientSecretKey).exists(!client.secret.contains(_)) then
-        BadRequest(ErrorInfo("invalid_client_metadata").asJson)
-      else checkClientMetadata(body) match
+    authorizeConfigurationEndpointRequest(clientId, req, clientsR) { client =>
+      parseRequest(req)(json => checkClientSecret(client)(json))(form => checkClientSecret(client)(form)).flatMap {
         case Left(error) => BadRequest(ErrorInfo(error).asJson)
-        case Right(clientMetadata) =>
-          val updatedClient = clientMetadata.updateClientInfo(client)
-          clientsR.update(clients => clients.filter(_.id == client.id) :+ updatedClient) *> Ok(updatedClient.asJson)
-    }}
+        case Right(updatedClient) =>
+          clientsR.update(clients => clients.filter(_.id != client.id) :+ updatedClient) *> Ok(updatedClient.asJson)
+      }
+    }
+  def checkClientSecret[T](client: ClientInfo)(params: T)(
+    using
+    getter: Getter[Option, T, String, String],
+    listGetter: Getter[Option, T, String, List[String]]
+  ): Either[String, ClientInfo] =
+    if !params.fGet[Option, String, String](clientIdKey).contains(client.id) then
+      "invalid_client_metadata".asLeft[ClientInfo]
+    else if params.fGet[Option, String, String](clientSecretKey).exists(!client.secret.contains(_)) then
+      "invalid_client_metadata".asLeft[ClientInfo]
+    else checkClientMetadata(params) match
+      case Left(error) => error.asLeft[ClientInfo]
+      case Right(clientMetadata) => clientMetadata.updateClientInfo(client).asRight[String]
 
   def deleteRegister(clientId: String, req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]])
                     (using Logger[IO]): IO[Response[IO]] =
-    validateConfigurationEndpointRequest(clientId, req, clientsR) { client =>
+    authorizeConfigurationEndpointRequest(clientId, req, clientsR) { client =>
       for
-        _ <- clientsR.update(_.filter(_.id == client.id))
+        _ <- clientsR.update(_.filter(_.id != client.id))
         count <- removeRecordByClientId(client.id)
         _ <- if count > 0 then info"Removed $count tokens" else IO.unit
         resp <- NoContent()
@@ -549,8 +552,8 @@ object AuthorizationServerApp extends IOApp.Simple :
               logoUri, scope).asRight
   end checkClientMetadata
 
-  def validateConfigurationEndpointRequest(clientId: String, req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]])
-                                          (f: ClientInfo => IO[Response[IO]]): IO[Response[IO]] =
+  def authorizeConfigurationEndpointRequest(clientId: String, req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]])
+                                           (f: ClientInfo => IO[Response[IO]]): IO[Response[IO]] =
     getClient(clientId, clientsR).flatMap {
       case None => NotFound()
       case Some(client) => req.headers.get[Authorization] match

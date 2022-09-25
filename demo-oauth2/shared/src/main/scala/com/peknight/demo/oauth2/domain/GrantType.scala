@@ -1,5 +1,6 @@
 package com.peknight.demo.oauth2.domain
 
+import cats.Show
 import io.circe.{Decoder, Encoder}
 
 enum GrantType(val value: String) derives CanEqual:
@@ -15,3 +16,6 @@ object GrantType:
 
   given Decoder[GrantType] =
     Decoder.decodeString.emap[GrantType](str => fromString(str).toRight(s"No such GrantType: $str"))
+
+  given Show[GrantType] with
+    def show(t: GrantType): String = t.value

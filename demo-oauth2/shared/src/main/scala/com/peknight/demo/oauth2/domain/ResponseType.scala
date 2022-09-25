@@ -1,5 +1,6 @@
 package com.peknight.demo.oauth2.domain
 
+import cats.Show
 import io.circe.{Decoder, Encoder}
 
 enum ResponseType(val value: String) derives CanEqual:
@@ -13,3 +14,6 @@ object ResponseType:
 
   given Decoder[ResponseType] =
     Decoder.decodeString.emap[ResponseType](str => fromString(str).toRight(s"No such ResponseType: $str"))
+
+  given Show[ResponseType] with
+    def show(t: ResponseType): String = t.value

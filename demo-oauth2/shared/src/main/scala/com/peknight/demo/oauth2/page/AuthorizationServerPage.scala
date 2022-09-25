@@ -13,6 +13,7 @@ class AuthorizationServerPage[Builder, Output <: FragT, FragT](override val bund
   def index(authServer: AuthServerInfo, clients: Seq[ClientInfo]): Frag =
     val clientElements = for client <- clients yield
       ul(
+        client.name.fold[Frag]("")(name => li(b("client_name: "), code(name))),
         li(b("client_id: "), code(client.id)),
         li(b("client_secret: "), code(client.secret.getOrElse("None"))),
         li(b("scope: "), code(client.scope.mkString(" "))),

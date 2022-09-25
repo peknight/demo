@@ -1,5 +1,6 @@
 package com.peknight.demo.oauth2.domain
 
+import cats.Show
 import io.circe.{Decoder, Encoder}
 
 enum AuthMethod(val value: String) derives CanEqual:
@@ -16,3 +17,6 @@ object AuthMethod:
 
   given Decoder[AuthMethod] =
     Decoder.decodeString.emap[AuthMethod](str => fromString(str).toRight(s"No such AuthMethod: $str"))
+
+  given Show[AuthMethod] with
+    def show(t: AuthMethod): String = t.value
