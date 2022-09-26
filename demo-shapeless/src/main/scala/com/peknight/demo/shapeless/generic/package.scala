@@ -1,10 +1,10 @@
-package com.peknight.demo
+package com.peknight.demo.shapeless
 
 import scala.annotation.targetName
 import scala.compiletime.{constValue, erasedValue, summonInline}
-import scala.reflect.ClassTag
+import scala.deriving.Mirror
 
-package object shapeless:
+package object generic:
 
   //noinspection DuplicatedCode
   inline def summonAsTuple[A <: Tuple]: A = inline erasedValue[A] match
@@ -18,21 +18,17 @@ package object shapeless:
 
   def unexpected: Nothing = sys.error("Unexpected invocation")
 
-  type Head[T] = T match { case h *: t => h }
-  type Tail[T] = T match { case h *: t => t }
-
-  type LiftP[F[_], T] <: Tuple =
-    T match {
-      case _ *: _ => F[Head[T]] *: LiftP[F, Tail[T]]
-      case _ => EmptyTuple
-    }
-
-  @targetName("Type inequalities")
+  @targetName("TypeInequalities")
   trait =:!=[A, B] extends Serializable
-  given [A, B]: =:!=[A, B] = new =:!=[A, B] {}
-  // 妙啊
-  given neqAmbiguous1[A]: =:!=[A, A] = unexpected
-  given neqAmbiguous2[A]: =:!=[A, A] = unexpected
+  @targetName("TypeInequalitiesObject")
+  object =:!= {
+    given[A, B]: =:!=[A, B] = new =:!=[A, B] {}
+
+    // 妙啊
+    given neqAmbiguous1[A]: =:!=[A, A] = unexpected
+
+    given neqAmbiguous2[A]: =:!=[A, A] = unexpected
+  }
 
   /**
    * Type class witnessing that L doesn't contain elements of type U
@@ -258,3 +254,30 @@ package object shapeless:
       type Out = S
       def apply(prefix: P, suffix: S): S = suffix
   end Prepend
+
+  type Head[T] = T match { case h *: t => h }
+  type Tail[T] = T match { case h *: t => t }
+
+  type LiftP[F[_], T] <: Tuple =
+    T match {
+      case _ *: _ => F[Head[T]] *: LiftP[F, Tail[T]]
+      case _ => EmptyTuple
+    }
+
+  type MirrorAux[A, Repr <: Tuple] = Mirror.Of[A] { type MirroredElemTypes = Repr }
+  type MirrorLabelledAux[A, Labels <: Tuple, Repr <: Tuple] = Mirror.Of[A] {
+    type MirroredElemLabels = Labels
+    type MirroredElemTypes = Repr
+  }
+
+  type MirrorProductAux[A, Repr <: Tuple] = Mirror.ProductOf[A] { type MirroredElemTypes = Repr }
+  type MirrorProductLabelledAux[A, Labels <: Tuple, Repr <: Tuple] = Mirror.ProductOf[A] {
+    type MirroredElemLabels = Labels
+    type MirroredElemTypes = Repr
+  }
+
+  type MirrorSumAux[A, Repr <: Tuple] = Mirror.SumOf[A] { type MirroredElemTypes = Repr }
+  type MirrorSumLabelledAux[A, Labels <: Tuple, Repr <: Tuple] = Mirror.SumOf[A] {
+    type MirroredElemLabels = Labels
+    type MirroredElemTypes = Repr
+  }
