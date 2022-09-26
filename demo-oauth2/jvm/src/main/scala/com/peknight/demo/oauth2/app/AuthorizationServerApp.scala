@@ -34,6 +34,7 @@ import scodec.bits.Bases.Alphabets.Base64Url
 
 import java.security.spec.RSAPrivateKeySpec
 import java.security.{KeyFactory, PrivateKey}
+import scala.annotation.unused
 import scala.concurrent.duration.*
 
 object AuthorizationServerApp extends IOApp.Simple :
@@ -58,9 +59,9 @@ object AuthorizationServerApp extends IOApp.Simple :
   given Getter[Option, UrlForm, String, GrantType] = Getter[Option, UrlForm, String, String].to[GrantType]
   given Getter[Option, UrlForm, String, Uri] = Getter[Option, UrlForm, String, String].to[Uri]
 
-  def service(random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
-              codesR: Ref[IO, Map[String, AuthorizeCodeCache]], clientsR: Ref[IO, Seq[ClientInfo]])
-             (using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private[this] def service(random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
+                            codesR: Ref[IO, Map[String, AuthorizeCodeCache]], clientsR: Ref[IO, Seq[ClientInfo]])
+                           (using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => clientsR.get.flatMap(clients => Ok(AuthorizationServerPage.Text.index(authServer, clients)))
     case GET -> Root / "authorize" :? AuthorizeParam(authorizeParamValid) => authorizeParamValid.fold(
       msg => Ok(AuthorizationServerPage.Text.error(msg)), param => authorize(param, random, requestsR, clientsR)
@@ -76,15 +77,16 @@ object AuthorizationServerApp extends IOApp.Simple :
     case req @ (GET | POST) -> Root / "userinfo" => userInfoEndpoint(req)
   }
 
-  def authorize(param: AuthorizeParam, random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
-                clientsR: Ref[IO, Seq[ClientInfo]])(using Logger[IO]): IO[Response[IO]] =
+  private[this] def authorize(param: AuthorizeParam, random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
+                              clientsR: Ref[IO, Seq[ClientInfo]])(using Logger[IO]): IO[Response[IO]] =
     getClient(param.clientId, clientsR).flatMap {
       case None => info"Unknown client ${param.clientId}" *> Ok(AuthorizationServerPage.Text.error("Unknown client"))
       case Some(client) => client.redirectUris.find(_ == param.redirectUri) match
         case None =>
           info"Mismatched redirect URI, expected ${client.redirectUris.toList.mkString(" ")} got ${param.redirectUri}" *>
             Ok(AuthorizationServerPage.Text.error("Invalid redirect URI"))
-        case Some(redirectUri) =>
+        // Some(redirectUri)
+        case _ =>
           if param.scope.diff(client.scope).nonEmpty then
             info"Invalid scope requested ${param.scope.mkString(" ")}" *> BadRequest(ErrorInfo("invalid_scope").asJson)
             // 第九章漏洞防范，使用BadRequest而不是重定向
@@ -98,9 +100,9 @@ object AuthorizationServerApp extends IOApp.Simple :
     }
   end authorize
 
-  def approve(req: Request[IO], random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
-              codesR: Ref[IO, Map[String, AuthorizeCodeCache]], clientsR: Ref[IO, Seq[ClientInfo]])
-             (using Logger[IO]): IO[Response[IO]] =
+  private[this] def approve(req: Request[IO], random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
+                            codesR: Ref[IO, Map[String, AuthorizeCodeCache]], clientsR: Ref[IO, Seq[ClientInfo]])
+                           (using Logger[IO]): IO[Response[IO]] =
     req.as[UrlForm].flatMap { body => body.fGet[Option, String, String]("reqid") match
       case None => Ok(AuthorizationServerPage.Text.error("No matching authorization request"))
       case Some(reqId) => requestsR.modify(requests => (requests.removed(reqId), requests.get(reqId))).flatMap {
@@ -144,8 +146,8 @@ object AuthorizationServerApp extends IOApp.Simple :
     }
   end approve
 
-  def token(req: Request[IO], random: Random[IO], codesR: Ref[IO, Map[String, AuthorizeCodeCache]],
-            clientsR: Ref[IO, Seq[ClientInfo]])(using Logger[IO]): IO[Response[IO]] =
+  private[this] def token(req: Request[IO], random: Random[IO], codesR: Ref[IO, Map[String, AuthorizeCodeCache]],
+                          clientsR: Ref[IO, Seq[ClientInfo]])(using Logger[IO]): IO[Response[IO]] =
     req.as[UrlForm].flatMap { body => checkAuthorization(req, body, clientsR) { client =>
       body.fGet[Option, String, GrantType]("grant_type") match
         case Some(GrantType.AuthorizationCode) => authorizationCode(client.id, body, random, codesR)
@@ -157,8 +159,9 @@ object AuthorizationServerApp extends IOApp.Simple :
     }}
   end token
 
-  def authorizationCode(clientId: String, body: UrlForm, random: Random[IO],
-                        codesR: Ref[IO, Map[String, AuthorizeCodeCache]])(using Logger[IO]): IO[Response[IO]] =
+  private[this] def authorizationCode(clientId: String, body: UrlForm, random: Random[IO],
+                                      codesR: Ref[IO, Map[String, AuthorizeCodeCache]])
+                                     (using Logger[IO]): IO[Response[IO]] =
     for
       codeCache <- body.fGet[Option, String, String]("code") match
         case Some(code) => codesR.modify(codes => (codes.removed(code), code.some -> codes.get(code)))
@@ -191,26 +194,8 @@ object AuthorizationServerApp extends IOApp.Simple :
         case (code, _) => info"Unknown code, ${code.getOrElse("None")}" *> BadRequest(ErrorInfo("invalid_grant").asJson)
     yield resp
 
-  def checkCodeChallenge(cache: AuthorizeCodeCache, body: UrlForm)(pass: => IO[Response[IO]])
-                        (using Logger[IO]): IO[Response[IO]] =
-    cache.authorizationEndpointRequest.codeChallenge.fold(pass) { codeChallenge =>
-      val codeVerifier = body.fGet[Option, String, String](codeVerifierKey)
-      info"Testing challenge $codeChallenge against verifier ${codeVerifier.getOrElse("None")}" *> {
-        cache.authorizationEndpointRequest.codeChallengeMethod.fold {
-          info"Unknown code challenge method None" *> BadRequest(ErrorInfo("invalid_request").asJson)
-        }{ codeChallengeMethod =>
-          val challenge = codeChallengeMethod match
-            case CodeChallengeMethod.Plain => codeVerifier
-            case CodeChallengeMethod.S256 => codeVerifier.map(getCodeChallenge)
-          challenge.filter(_ == codeChallenge).fold {
-            info"Code challenge did not match, expected $codeChallenge got ${challenge.getOrElse("None")}" *>
-              BadRequest(ErrorInfo("invalid_request").asJson)
-          }(_ => pass)
-        }
-      }
-    }
-
-  def clientCredentials(client: ClientInfo, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
+  private[this] def clientCredentials(client: ClientInfo, body: UrlForm, random: Random[IO])
+                                     (using Logger[IO]): IO[Response[IO]] =
     checkScope(body, client) { scope =>
       for
         tokenResponse <- generateTokens(random, client.id, None, scope, None, false, false)
@@ -218,7 +203,8 @@ object AuthorizationServerApp extends IOApp.Simple :
       yield resp
     }
 
-  def refreshToken(clientId: String, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
+  private[this] def refreshToken(clientId: String, body: UrlForm, random: Random[IO])
+                                (using Logger[IO]): IO[Response[IO]] =
     for
       refreshTokenRecord <- body.fGet[Option, String, String]("refresh_token") match
         case r@Some(refreshToken) => getRecordByRefreshToken(refreshToken).map(r -> _)
@@ -242,7 +228,7 @@ object AuthorizationServerApp extends IOApp.Simple :
         case _ => info"No matching token was found." *> invalidGrantResp
     yield resp
 
-  def password(client: ClientInfo, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
+  private[this] def password(client: ClientInfo, body: UrlForm, random: Random[IO])(using Logger[IO]): IO[Response[IO]] =
     val usernameOption = body.fGet[Option, String, String](usernameKey)
     val userOption = usernameOption.flatMap(getUser)
     userOption match
@@ -264,7 +250,7 @@ object AuthorizationServerApp extends IOApp.Simple :
         yield resp
 
   // 可选：支持刷新信息撤回，刷新信息撤回时应将与其关联的访问令牌一并撤回
-  def revoke(req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]])(using Logger[IO]): IO[Response[IO]] =
+  private[this] def revoke(req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]])(using Logger[IO]): IO[Response[IO]] =
     req.as[UrlForm].flatMap { body => checkAuthorization(req, body, clientsR) { client =>
       // 这里返回NoContent是为了防止透露过多关于信息的信息（撤销成功与否都不透出，均认为成功）
       body.fGet[Option, String, String]("token").fold(NoContent()) { inToken =>
@@ -277,7 +263,7 @@ object AuthorizationServerApp extends IOApp.Simple :
     }}
 
   // 可选：增加刷新令牌内省支持
-  def introspect(req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
+  private[this] def introspect(req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
     req.headers.get[Authorization] match
       case Some(Authorization(BasicCredentials((resourceId, resourceSecret)))) => getProtectedResource(resourceId) match
         case None => info"Unknown resource $resourceId" *> unauthorizedBasicResp
@@ -302,8 +288,8 @@ object AuthorizationServerApp extends IOApp.Simple :
           yield resp
       case _ => info"Unknown resource None" *> unauthorizedBasicResp
 
-  def postRegister(req: Request[IO], random: Random[IO], clientsR: Ref[IO, Seq[ClientInfo]])
-                  (using Logger[IO]): IO[Response[IO]] =
+  private[this] def postRegister(req: Request[IO], random: Random[IO], clientsR: Ref[IO, Seq[ClientInfo]])
+                                (using Logger[IO]): IO[Response[IO]] =
     val parseBody = parseRequest(req)(checkClientMetadata)(checkClientMetadata)
     parseBody.flatMap {
       case Left(error) => BadRequest(ErrorInfo(error).asJson)
@@ -328,10 +314,10 @@ object AuthorizationServerApp extends IOApp.Simple :
         yield resp
     }
 
-  def getRegister(clientId: String, req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]]): IO[Response[IO]] =
+  private[this] def getRegister(clientId: String, req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]]): IO[Response[IO]] =
     authorizeConfigurationEndpointRequest(clientId, req, clientsR)(client => Ok(client.asJson))
 
-  def putRegister(clientId: String, req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]]): IO[Response[IO]] =
+  private[this] def putRegister(clientId: String, req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]]): IO[Response[IO]] =
     authorizeConfigurationEndpointRequest(clientId, req, clientsR) { client =>
       parseRequest(req)(json => checkClientSecret(client)(json))(form => checkClientSecret(client)(form)).flatMap {
         case Left(error) => BadRequest(ErrorInfo(error).asJson)
@@ -339,21 +325,9 @@ object AuthorizationServerApp extends IOApp.Simple :
           clientsR.update(clients => clients.filter(_.id != client.id) :+ updatedClient) *> Ok(updatedClient.asJson)
       }
     }
-  def checkClientSecret[T](client: ClientInfo)(params: T)(
-    using
-    getter: Getter[Option, T, String, String],
-    listGetter: Getter[Option, T, String, List[String]]
-  ): Either[String, ClientInfo] =
-    if !params.fGet[Option, String, String](clientIdKey).contains(client.id) then
-      "invalid_client_metadata".asLeft[ClientInfo]
-    else if params.fGet[Option, String, String](clientSecretKey).exists(!client.secret.contains(_)) then
-      "invalid_client_metadata".asLeft[ClientInfo]
-    else checkClientMetadata(params) match
-      case Left(error) => error.asLeft[ClientInfo]
-      case Right(clientMetadata) => clientMetadata.updateClientInfo(client).asRight[String]
 
-  def deleteRegister(clientId: String, req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]])
-                    (using Logger[IO]): IO[Response[IO]] =
+  private[this] def deleteRegister(clientId: String, req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]])
+                                  (using Logger[IO]): IO[Response[IO]] =
     authorizeConfigurationEndpointRequest(clientId, req, clientsR) { client =>
       for
         _ <- clientsR.update(_.filter(_.id != client.id))
@@ -363,7 +337,7 @@ object AuthorizationServerApp extends IOApp.Simple :
       yield resp
     }
 
-  def userInfoEndpoint(req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
+  private[this] def userInfoEndpoint(req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
     requireAccessToken(req, authorizationServerAddr)(getRecordByAccessToken) { record =>
       val scope = record.scope.getOrElse(Set.empty[String])
       if !scope.contains("openid") then Forbidden() else
@@ -398,8 +372,46 @@ object AuthorizationServerApp extends IOApp.Simple :
         }
     }
 
-  def checkAuthorization(req: Request[IO], body: UrlForm, clientsR: Ref[IO, Seq[ClientInfo]])
-                        (f: ClientInfo => IO[Response[IO]])(using Logger[IO]): IO[Response[IO]] =
+  private[this] def generateTokens(random: Random[IO], clientId: String, user: Option[UserInfo], scope: Set[String],
+                                   state: Option[String], generateRefreshToken: Boolean, generateIdToken: Boolean)
+                                  (using Logger[IO]): IO[OAuthToken] =
+    for
+      accessToken <- generateAccessToken(user, scope.some, random)
+      _ <- insertRecord(OAuthTokenRecord(clientId.some, accessToken.some, None, scope.some,
+        user.flatMap(_.preferredUsername)))
+      _ <- info"Issuing accessToken $accessToken"
+      refreshTokenOption <-
+        if generateRefreshToken then
+          for
+            refresh <- randomString(random, 32)
+            refreshOption = refresh.some
+            _ <- insertRecord(OAuthTokenRecord(clientId.some, None, refreshOption, scope.some,
+              user.flatMap(_.preferredUsername)))
+            _ <- info"and refresh token $refresh"
+          yield refreshOption
+        else IO.pure(None)
+      _ <- info"with scope ${scope.mkString(" ")}"
+      idTokenOption <- if generateIdToken then rs256JwtForClient(clientId, user).map(_.some) else IO.pure(None)
+    yield OAuthToken(accessToken, AuthScheme.Bearer, refreshTokenOption, scope.some, state, idTokenOption)
+
+  private[this] def checkScope(body: UrlForm, query: AuthorizeParam, clientsR: Ref[IO, Seq[ClientInfo]])
+                              (resp: Set[String] => IO[Response[IO]]): IO[Response[IO]] =
+    val scope = body.values.keys.filter(_.startsWith("scope_")).map(_.substring("scope_".length)).toSet[String]
+    getClient(query.clientId, clientsR).flatMap { clientOption =>
+      val cScope = clientOption.map(_.scope).getOrElse(Set.empty[String])
+      if scope.diff(cScope).nonEmpty then
+        Found(Location(query.redirectUri.withQueryParam("error", "invalid_scope")))
+      else resp(scope)
+    }
+
+  private[this] def checkScope(body: UrlForm, client: ClientInfo)(resp: Set[String] => IO[Response[IO]])
+  : IO[Response[IO]] =
+    val scope = getScope(body).getOrElse(Set.empty[String])
+    if scope.diff(client.scope).nonEmpty then BadRequest(ErrorInfo("invalid_scope").asJson)
+    else resp(scope)
+
+  private[this] def checkAuthorization(req: Request[IO], body: UrlForm, clientsR: Ref[IO, Seq[ClientInfo]])
+                                      (f: ClientInfo => IO[Response[IO]])(using Logger[IO]): IO[Response[IO]] =
     val (hClientId, hClientSecret) = req.headers.get[Authorization] match
       case Some(Authorization(BasicCredentials((clientId, clientSecret)))) =>
         (Uri.decode(clientId).some, Uri.decode(clientSecret).some)
@@ -421,88 +433,38 @@ object AuthorizationServerApp extends IOApp.Simple :
         }
   end checkAuthorization
 
-  def generateTokens(random: Random[IO], clientId: String, user: Option[UserInfo], scope: Set[String],
-                     state: Option[String], generateRefreshToken: Boolean, generateIdToken: Boolean)
-                    (using Logger[IO]): IO[OAuthToken] =
-    for
-      accessToken <- generateAccessToken(user, scope.some, random)
-      _ <- insertRecord(OAuthTokenRecord(clientId.some, accessToken.some, None, scope.some,
-        user.flatMap(_.preferredUsername)))
-      _ <- info"Issuing accessToken $accessToken"
-      refreshTokenOption <-
-        if generateRefreshToken then
-          for
-            refresh <- randomString(random, 32)
-            refreshOption = refresh.some
-            _ <- insertRecord(OAuthTokenRecord(clientId.some, None, refreshOption, scope.some,
-              user.flatMap(_.preferredUsername)))
-            _ <- info"and refresh token $refresh"
-          yield refreshOption
-        else IO.pure(None)
-      _ <- info"with scope ${scope.mkString(" ")}"
-      idTokenOption <- if generateIdToken then rs256JwtForClient(clientId, user).map(_.some) else IO.pure(None)
-    yield OAuthToken(accessToken, AuthScheme.Bearer, refreshTokenOption, scope.some, state, idTokenOption)
+  private[this] def checkCodeChallenge(cache: AuthorizeCodeCache, body: UrlForm)(pass: => IO[Response[IO]])
+                                      (using Logger[IO]): IO[Response[IO]] =
+    cache.authorizationEndpointRequest.codeChallenge.fold(pass) { codeChallenge =>
+      val codeVerifier = body.fGet[Option, String, String](codeVerifierKey)
+      info"Testing challenge $codeChallenge against verifier ${codeVerifier.getOrElse("None")}" *> {
+        cache.authorizationEndpointRequest.codeChallengeMethod.fold {
+          info"Unknown code challenge method None" *> BadRequest(ErrorInfo("invalid_request").asJson)
+        }{ codeChallengeMethod =>
+          val challenge = codeChallengeMethod match
+            case CodeChallengeMethod.Plain => codeVerifier
+            case CodeChallengeMethod.S256 => codeVerifier.map(getCodeChallenge)
+          challenge.filter(_ == codeChallenge).fold {
+            info"Code challenge did not match, expected $codeChallenge got ${challenge.getOrElse("None")}" *>
+              BadRequest(ErrorInfo("invalid_request").asJson)
+          }(_ => pass)
+        }
+      }
+    }
 
-  def generateAccessToken(user: Option[UserInfo], scope: Option[Set[String]], random: Random[IO]): IO[String] =
-    randomString(random, 32)
-    // unsafeJwt(user, scope, random)
-    // hs256Jwt(user, scope, random)
-    // rs256Jwt(user, scope, random)
+  private[this] def authorizeConfigurationEndpointRequest(clientId: String, req: Request[IO],
+                                                          clientsR: Ref[IO, Seq[ClientInfo]])
+                                                         (f: ClientInfo => IO[Response[IO]]): IO[Response[IO]] =
+    getClient(clientId, clientsR).flatMap {
+      case None => NotFound()
+      case Some(client) => req.headers.get[Authorization] match
+        case Some(Authorization(Credentials.Token(AuthScheme.Bearer, token))) if client.registrationAccessToken.contains(token) =>
+          f(client)
+        case Some(Authorization(Credentials.Token(AuthScheme.Bearer, _))) => Forbidden()
+        case _ => unauthorizedBearerResp
+    }
 
-  def unsafeJwt(user: Option[UserInfo], scope: Option[Set[String]], random: Random[IO]): IO[String] =
-    for
-      realTime <- IO.realTime
-      jwtId <- randomString(random, 8)
-      header = JwtHeader(typ = JwtHeader.DEFAULT_TYPE.some)
-      payload = createPayload(user, scope, protectedResourceIndex.toString, realTime, jwtId.some)
-      accessToken <- IO(JwtCirce.encode(header, payload))
-    yield accessToken
-
-  def hs256Jwt(user: Option[UserInfo], scope: Option[Set[String]], random: Random[IO]): IO[String] =
-    for
-      realTime <- IO.realTime
-      jwtId <- randomString(random, 8)
-      header = JwtHeader(JwtAlgorithm.HS256, JwtHeader.DEFAULT_TYPE)
-      payload = createPayload(user, scope, protectedResourceIndex.toString, realTime, jwtId.some)
-      accessToken <- IO(JwtCirce.encode(header, payload, toHex(sharedTokenSecret)))
-    yield accessToken
-
-  // P166 可以再提高下 变成jwe加密
-  def rs256Jwt(user: Option[UserInfo], scope: Option[Set[String]], random: Random[IO]): IO[String] =
-    for
-      realTime <- IO.realTime
-      jwtId <- randomString(random, 8)
-      header = JwtHeader(JwtAlgorithm.RS256.some, JwtHeader.DEFAULT_TYPE.some, none, rsaKey.kid.some)
-      payload = createPayload(user, scope, protectedResourceIndex.toString, realTime, jwtId.some)
-      privateKey <- rsaPrivateKey
-      accessToken <- IO(JwtCirce.encode(header, payload, privateKey))
-    yield accessToken
-
-
-  def rs256JwtForClient(clientId: String, user: Option[UserInfo])(using Logger[IO]): IO[String] =
-    for
-      realTime <- IO.realTime
-      header = JwtHeader(JwtAlgorithm.RS256.some, JwtHeader.DEFAULT_TYPE.some, none, "authserver".some)
-      payload = createPayload(user, none, clientId, realTime, none)
-      key <- rsaPrivateKey
-      idToken <- IO(JwtCirce.encode(header, payload, key))
-      _ <- info"Issuing ID token $idToken"
-    yield idToken
-
-  def createPayload(user: Option[UserInfo], scope: Option[Set[String]], audience: String, issuedAt: Duration,
-                    jwtId: Option[String]): JwtClaim =
-    val issuedAtSec: Long = issuedAt.toSeconds
-    JwtClaim(
-      content = scope.map(s => TokenScope(s).asJson.noSpaces).getOrElse("{}"),
-      issuer = authorizationServerIndex.toString.some,
-      subject = user.flatMap(_.sub),
-      audience = Set(audience).some,
-      expiration = (issuedAtSec + (5 * 60)).some,
-      issuedAt = issuedAtSec.some,
-      jwtId = jwtId
-    )
-
-  def checkClientMetadata[T](params: T)(
+  private[this] def checkClientMetadata[T](params: T)(
     using
     getter: Getter[Option, T, String, String],
     listGetter: Getter[Option, T, String, List[String]]
@@ -552,33 +514,47 @@ object AuthorizationServerApp extends IOApp.Simple :
               logoUri, scope).asRight
   end checkClientMetadata
 
-  def authorizeConfigurationEndpointRequest(clientId: String, req: Request[IO], clientsR: Ref[IO, Seq[ClientInfo]])
-                                           (f: ClientInfo => IO[Response[IO]]): IO[Response[IO]] =
-    getClient(clientId, clientsR).flatMap {
-      case None => NotFound()
-      case Some(client) => req.headers.get[Authorization] match
-        case Some(Authorization(Credentials.Token(AuthScheme.Bearer, token))) if client.registrationAccessToken.contains(token) =>
-          f(client)
-        case Some(Authorization(Credentials.Token(AuthScheme.Bearer, _))) => Forbidden()
-        case _ => unauthorizedBearerResp
-    }
+  private[this] def checkClientSecret[T](client: ClientInfo)(params: T)(
+    using
+    getter: Getter[Option, T, String, String],
+    listGetter: Getter[Option, T, String, List[String]]
+  ): Either[String, ClientInfo] =
+    if !params.fGet[Option, String, String](clientIdKey).contains(client.id) then
+      "invalid_client_metadata".asLeft[ClientInfo]
+    else if params.fGet[Option, String, String](clientSecretKey).exists(!client.secret.contains(_)) then
+      "invalid_client_metadata".asLeft[ClientInfo]
+    else checkClientMetadata(params) match
+      case Left(error) => error.asLeft[ClientInfo]
+      case Right(clientMetadata) => clientMetadata.updateClientInfo(client).asRight[String]
 
-  def checkScope(body: UrlForm, query: AuthorizeParam, clientsR: Ref[IO, Seq[ClientInfo]])
-                (resp: Set[String] => IO[Response[IO]]): IO[Response[IO]] =
-    val scope = body.values.keys.filter(_.startsWith("scope_")).map(_.substring("scope_".length)).toSet[String]
-    getClient(query.clientId, clientsR).flatMap { clientOption =>
-      val cScope = clientOption.map(_.scope).getOrElse(Set.empty[String])
-      if scope.diff(cScope).nonEmpty then
-        Found(Location(query.redirectUri.withQueryParam("error", "invalid_scope")))
-      else resp(scope)
-    }
+  private[this] def generateAccessToken(user: Option[UserInfo], scope: Option[Set[String]], random: Random[IO])
+  : IO[String] =
+    randomString(random, 32)
+    // unsafeJwt(user, scope, random)
+    // hs256Jwt(user, scope, random)
+    // rs256Jwt(user, scope, random)
 
-  def checkScope(body: UrlForm, client: ClientInfo)(resp: Set[String] => IO[Response[IO]]): IO[Response[IO]] =
-    val scope = getScope(body).getOrElse(Set.empty[String])
-    if scope.diff(client.scope).nonEmpty then BadRequest(ErrorInfo("invalid_scope").asJson)
-    else resp(scope)
+  //noinspection ScalaUnusedSymbol
+  private[this] def unsafeJwt(user: Option[UserInfo], scope: Option[Set[String]], random: Random[IO]): IO[String] =
+    for
+      realTime <- IO.realTime
+      jwtId <- randomString(random, 8)
+      header = JwtHeader(typ = JwtHeader.DEFAULT_TYPE.some)
+      payload = createPayload(user, scope, protectedResourceIndex.toString, realTime, jwtId.some)
+      accessToken <- IO(JwtCirce.encode(header, payload))
+    yield accessToken
 
-  val rsaPrivateKey: IO[PrivateKey] =
+  //noinspection ScalaUnusedSymbol
+  private[this] def hs256Jwt(user: Option[UserInfo], scope: Option[Set[String]], random: Random[IO]): IO[String] =
+    for
+      realTime <- IO.realTime
+      jwtId <- randomString(random, 8)
+      header = JwtHeader(JwtAlgorithm.HS256, JwtHeader.DEFAULT_TYPE)
+      payload = createPayload(user, scope, protectedResourceIndex.toString, realTime, jwtId.some)
+      accessToken <- IO(JwtCirce.encode(header, payload, toHex(sharedTokenSecret)))
+    yield accessToken
+
+  private[this] val rsaPrivateKey: IO[PrivateKey] =
     for
       modulus <- decodeToBigInt(rsaKey.n)
       privateExponent <- decodeToBigInt(rsaKey.d)
@@ -587,26 +563,62 @@ object AuthorizationServerApp extends IOApp.Simple :
       )))
     yield key
 
-  def getClient(clientId: String, clientsR: Ref[IO, Seq[ClientInfo]]): IO[Option[ClientInfo]] =
+  // P166 可以再提高下 变成jwe加密
+  //noinspection ScalaUnusedSymbol
+  private[this] def rs256Jwt(user: Option[UserInfo], scope: Option[Set[String]], random: Random[IO]): IO[String] =
+    for
+      realTime <- IO.realTime
+      jwtId <- randomString(random, 8)
+      header = JwtHeader(JwtAlgorithm.RS256.some, JwtHeader.DEFAULT_TYPE.some, none, rsaKey.kid.some)
+      payload = createPayload(user, scope, protectedResourceIndex.toString, realTime, jwtId.some)
+      privateKey <- rsaPrivateKey
+      accessToken <- IO(JwtCirce.encode(header, payload, privateKey))
+    yield accessToken
+
+  private[this] def rs256JwtForClient(clientId: String, user: Option[UserInfo])(using Logger[IO]): IO[String] =
+    for
+      realTime <- IO.realTime
+      header = JwtHeader(JwtAlgorithm.RS256.some, JwtHeader.DEFAULT_TYPE.some, none, "authserver".some)
+      payload = createPayload(user, none, clientId, realTime, none)
+      key <- rsaPrivateKey
+      idToken <- IO(JwtCirce.encode(header, payload, key))
+      _ <- info"Issuing ID token $idToken"
+    yield idToken
+
+  private[this] def createPayload(user: Option[UserInfo], scope: Option[Set[String]], audience: String,
+                                  issuedAt: Duration, jwtId: Option[String]): JwtClaim =
+    val issuedAtSec: Long = issuedAt.toSeconds
+    JwtClaim(
+      content = scope.map(s => TokenScope(s).asJson.noSpaces).getOrElse("{}"),
+      issuer = authorizationServerIndex.toString.some,
+      subject = user.flatMap(_.sub),
+      audience = Set(audience).some,
+      expiration = (issuedAtSec + (5 * 60)).some,
+      issuedAt = issuedAtSec.some,
+      jwtId = jwtId
+    )
+
+  private[this] def getClient(clientId: String, clientsR: Ref[IO, Seq[ClientInfo]]): IO[Option[ClientInfo]] =
     clientsR.get.map(clients => clients.find(_.id == clientId))
 
-  def getProtectedResource(resourceId: String): Option[ProtectedResource] =
+  private[this] def getProtectedResource(resourceId: String): Option[ProtectedResource] =
     protectedResources.find(_.resourceId == resourceId)
 
-  def getUser(username: String): Option[UserInfo] = userInfos.values.find(_.username.contains(username))
+  private[this] def getUser(username: String): Option[UserInfo] = userInfos.values.find(_.username.contains(username))
 
-  def getScope[T](params: T)(using getter: Getter[Option, T, String, String]): Option[Set[String]] =
+  private[this] def getScope[T](params: T)(using getter: Getter[Option, T, String, String]): Option[Set[String]] =
     given Getter[Option, T, String, Set[String]] = getter.andThen(_.split("\\s++").toSet[String].some)
     params.fGet[Option, String, Set[String]](scopeKey)
 
-  def invalidResp(error: String): IO[Response[IO]] = Ok(ErrorInfo(error).asJson).map(_.copy(status = Status.Unauthorized))
+  private[this] def invalidResp(error: String): IO[Response[IO]] =
+    Ok(ErrorInfo(error).asJson).map(_.copy(status = Status.Unauthorized))
 
-  val invalidClientResp: IO[Response[IO]] = invalidResp("invalid_client")
+  private[this] val invalidClientResp: IO[Response[IO]] = invalidResp("invalid_client")
 
-  val invalidGrantResp: IO[Response[IO]] = invalidResp("invalid_grant")
+  private[this] val invalidGrantResp: IO[Response[IO]] = invalidResp("invalid_grant")
 
-  val unauthorizedBasicResp: IO[Response[IO]] =
+  private[this] val unauthorizedBasicResp: IO[Response[IO]] =
     Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Basic.toString, authorizationServerAddr)))
 
-  val unauthorizedBearerResp: IO[Response[IO]] =
+  private[this] val unauthorizedBearerResp: IO[Response[IO]] =
     Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, authorizationServerAddr)))

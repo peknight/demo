@@ -43,11 +43,8 @@ import scala.util.{Failure, Success, Try}
 package object app:
 
   given CanEqual[Path, Path] = CanEqual.derived
-
   given CanEqual[Method, Method] = CanEqual.derived
-
   given CanEqual[Uri, Uri] = CanEqual.derived
-  
   given CanEqual[CIString, AuthScheme] = CanEqual.derived
 
   given Mapper[Id, JwtClaim, IdToken] with
@@ -67,9 +64,8 @@ package object app:
   end given
 
   val serverHost = host"local.peknight.com"
-
-  val storePasswordConfig: ConfigValue[Effect, Secret[String]] = env("STORE_PASSWORD").secret
-  val keyPasswordConfig: ConfigValue[Effect, Secret[String]] = env("KEY_PASSWORD").secret
+  private[this] val storePasswordConfig: ConfigValue[Effect, Secret[String]] = env("STORE_PASSWORD").secret
+  private[this] val keyPasswordConfig: ConfigValue[Effect, Secret[String]] = env("KEY_PASSWORD").secret
 
   def start[F[_]: Async](port: Port)(httpApp: HttpApp[F]): F[(Server, F[Unit])] =
     for
@@ -86,6 +82,15 @@ package object app:
         .withHttpApp(MiddlewareLogger.httpApp(true, true)(httpApp))
         .build.allocated
     yield res
+
+  def runHttpRequest[T](req: Request[IO])(onSuccess: Response[IO] => IO[T])(onFailure: Int => IO[T]): IO[T] =
+    EmberClientBuilder.default[IO].build.use { httpClient =>
+      httpClient.run(req).use { response =>
+        val statusCode = response.status.code
+        if statusCode >= 200 && statusCode < 300 then onSuccess(response)
+        else onFailure(statusCode)
+      }
+    }
 
   def requireAccessToken(req: Request[IO], realm: String)(queryOAuthTokenRecord: String => IO[Option[OAuthTokenRecord]])
                         (handleOAuthTokenRecord: OAuthTokenRecord => IO[Response[IO]])
@@ -107,20 +112,6 @@ package object app:
         Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, realm)))
     }
     
-  def runHttpRequest[T](req: Request[IO])(onSuccess: Response[IO] => IO[T])(onFailure: Int => IO[T]): IO[T] =
-    EmberClientBuilder.default[IO].build.use { httpClient =>
-      httpClient.run(req).use { response =>
-        val statusCode = response.status.code
-        if statusCode >= 200 && statusCode < 300 then onSuccess(response)
-        else onFailure(statusCode)
-      }
-    }
-
-  def parseRequest[A](req: Request[IO])(jsonF: Json => A)(formF: UrlForm => A): IO[A] =
-    req.headers.get[`Content-Type`] match
-      case Some(`Content-Type`(mediaType, _)) if mediaType.subType == "json" => req.as[Json].map(jsonF)
-      case _ => req.as[UrlForm].map(formF)
-
   def checkJwt[A](payloadIO: IO[Try[JwtClaim]], audience: String)
                  (using Mapper[Id, JwtClaim, A], Logger[IO]): IO[Option[A]] =
     val payloadOptionT =
@@ -144,10 +135,7 @@ package object app:
       yield payload.to[Id, A]
     payloadOptionT.value
 
-  def jwtRS256Decode(accessToken: String): IO[Try[JwtClaim]] =
-    rsaPublicKey.flatMap(pubKey => IO(JwtCirce.decode(accessToken, pubKey, Seq(JwtAlgorithm.RS256))))
-
-  val rsaPublicKey: IO[PublicKey] =
+  private[this] val rsaPublicKey: IO[PublicKey] =
     for
       modulus <- decodeToBigInt(rsaKey.n)
       exponent <- decodeToBigInt(rsaKey.e)
@@ -156,18 +144,28 @@ package object app:
       )))
     yield key
 
-  def decodeToBigInt(base64UrlEncoded: String): IO[BigInt] =
-    Stream(base64UrlEncoded)
-      .covary[IO]
-      .through(base64.decodeWithAlphabet(Base64Url))
-      .compile.toList
-      .map(bytes => BigInt(1, bytes.toArray))
+  def jwtRS256Decode(accessToken: String): IO[Try[JwtClaim]] =
+    rsaPublicKey.flatMap(pubKey => IO(JwtCirce.decode(accessToken, pubKey, Seq(JwtAlgorithm.RS256))))
+
+  def parseRequest[A](req: Request[IO])(jsonF: Json => A)(formF: UrlForm => A): IO[A] =
+    req.headers.get[`Content-Type`] match
+      case Some(`Content-Type`(mediaType, _)) if mediaType.subType == "json" => req.as[Json].map(jsonF)
+      case _ => req.as[UrlForm].map(formF)
+
   def getCodeChallenge(codeVerifier: String): String =
     Stream(codeVerifier)
       .through(utf8.encode)
       .through(sha256)
       .through(base64.encodeWithAlphabet(Base64Url))
       .toList.mkString.replaceAll("=", "")
+
+  def decodeToBigInt(base64UrlEncoded: String): IO[BigInt] =
+    Stream(base64UrlEncoded)
+      .covary[IO]
+      .through(base64.decodeWithAlphabet(Base64Url))
+      .compile.toList
+      .map(bytes => BigInt(1, bytes.toArray))
+
   def getRegistrationClientUri(clientId: String): Uri =
     Uri.unsafeFromString(s"https://local.peknight.com:8001/register/$clientId")
 

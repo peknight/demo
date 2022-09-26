@@ -20,7 +20,7 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     p("Access token value: ", span(cls := "label label-danger")(oauthTokenCache.accessToken.getOrElse("NONE"))),
     p("Scope value: ", span(cls := "label label-danger")(oauthTokenCache.scope.map(_.mkString(" ")).getOrElse("NONE"))),
     p("Refresh token value: ", span(cls := "label label-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
-    p("Client ID: ", span(cls := "label label-danger")(client.map(_.id))),
+    p("Client ID: ", span(cls := "label label-danger")(client.map(_.id).getOrElse("None"))),
     p("Client Secret: ", span(cls := "label label-danger")(client.flatMap(_.secret).getOrElse("None"))),
     p("Registration access token: ", span(cls := "label label-danger")(client.flatMap(_.registrationAccessToken).getOrElse("None"))),
     p("Client configuration management endpoint: ", span(cls := "label label-danger")(

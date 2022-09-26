@@ -49,72 +49,58 @@ object ClientApp extends IOApp.Simple :
     yield ()
 
   given EntityDecoder[IO, WordsData] = jsonOf[IO, WordsData]
-
   given EntityDecoder[IO, ProduceData] = jsonOf[IO, ProduceData]
-
   given EntityDecoder[IO, FavoritesData] = jsonOf[IO, FavoritesData]
-
   given EntityDecoder[IO, UserFavoritesData] = jsonOf[IO, UserFavoritesData]
 
   object CodeQueryParamMatcher extends QueryParamDecoderMatcher[String]("code")
-
   object StateQueryParamMatcher extends QueryParamDecoderMatcher[String]("state")
-
   object ErrorQueryParamMatcher extends QueryParamDecoderMatcher[String]("error")
-
   object LanguageQueryParamMatcher extends QueryParamDecoderMatcher[String]("language")
-
   object WordQueryParamMatcher extends QueryParamDecoderMatcher[String]("word")
 
   def service(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache], stateR: Ref[IO, Option[String]],
               codeVerifierR: Ref[IO, Option[String]], random: Random[IO])(using Logger[IO]): HttpApp[IO] =
     HttpRoutes.of[IO] {
-      case GET -> Root =>
-        for
-          client <- clientR.get
-          oauthTokenCache <- oauthTokenCacheR.get
-          resp <- Ok(ClientPage.Text.index(client, oauthTokenCache))
-        yield resp
+      case GET -> Root => index(clientR, oauthTokenCacheR)
       case GET -> Root / "authorize" => authorize(clientR, stateR, codeVerifierR, random)
       // 客户端凭据许可类型
       case GET -> Root / "client_credentials" => clientCredentials(clientR, oauthTokenCacheR)
       case GET -> Root / "username_password" => Ok(ClientPage.Text.usernamePassword)
-      case req @ POST -> Root / "username_password" =>
-        req.as[UrlForm].flatMap(body => usernamePassword(body, clientR, oauthTokenCacheR))
+      case req @ POST -> Root / "username_password" => usernamePassword(req, clientR, oauthTokenCacheR)
       case GET -> Root / "callback" :? CodeQueryParamMatcher(code) +& StateQueryParamMatcher(state) =>
-        stateR.get.flatMap(originState =>
-          if !originState.contains(state) then callbackStateNotMatch(originState, state)
-          else info"State value matches: expected $state got $state" *>
-            callbackWithCode(clientR, oauthTokenCacheR, codeVerifierR, code)
-        )
+        callback(code, state, clientR, oauthTokenCacheR, stateR, codeVerifierR)
       case GET -> Root / "callback" :? ErrorQueryParamMatcher(error) => Ok(ClientPage.Text.error(error))
       case GET -> Root / "refresh" => refresh(clientR, oauthTokenCacheR)
-      case GET -> Root / "fetch_resource" =>
-        getOrRefreshAccessToken(clientR, oauthTokenCacheR)(token => fetchResource(clientR, oauthTokenCacheR, token))
+      case GET -> Root / "fetch_resource" => fetchResource(clientR, oauthTokenCacheR)(resourceRequest)
       case GET -> Root / "greeting" :? LanguageQueryParamMatcher(language) =>
-        getOrRefreshAccessToken(clientR, oauthTokenCacheR)(token => greeting(clientR, oauthTokenCacheR, token, language))
+        greeting(language, clientR, oauthTokenCacheR)
       case GET -> Root / "words" => Ok(ClientPage.Text.words(Seq.empty[String], 0L, NoGet))
-      case GET -> Root / "get_words" => getOrRefreshAccessToken(clientR, oauthTokenCacheR)(getWords)
-      case GET -> Root / "add_word" :? WordQueryParamMatcher(word) =>
-        getOrRefreshAccessToken(clientR, oauthTokenCacheR)(token => addWords(token, word))
-      case GET -> Root / "delete_word" => getOrRefreshAccessToken(clientR, oauthTokenCacheR)(deleteWords)
-      case GET -> Root / "produce" => getOrRefreshAccessToken(clientR, oauthTokenCacheR)(
-        token => produce(token, oauthTokenCacheR)
-      )
-      case GET -> Root / "favorites" => getOrRefreshAccessToken(clientR, oauthTokenCacheR)(favorites)
+      case GET -> Root / "get_words" => getWords(clientR, oauthTokenCacheR)
+      case GET -> Root / "add_word" :? WordQueryParamMatcher(word) => addWord(word, clientR, oauthTokenCacheR)
+      case GET -> Root / "delete_word" => deleteWord(clientR, oauthTokenCacheR)
+      case GET -> Root / "produce" => produce(clientR, oauthTokenCacheR)
+      case GET -> Root / "favorites" => favorites(clientR, oauthTokenCacheR)
       case GET -> Root / "revoke" =>
         oauthTokenCacheR.get.flatMap(oauthTokenCache => Ok(ClientPage.Text.revoke(oauthTokenCache)))
       case POST -> Root / "revoke" => revoke(clientR, oauthTokenCacheR)
       case GET -> Root / "userinfo" => userInfo(oauthTokenCacheR)
       case GET -> Root / "read_client" => readClient(clientR)
-      case req @ POST -> Root / "update_client" =>
-        req.as[UrlForm].flatMap(body => updateClient(clientR, oauthTokenCacheR, body))
+      case req @ POST -> Root / "update_client" => updateClient(req, clientR, oauthTokenCacheR)
       case GET -> Root / "unregister_client" => unregisterClient(clientR, oauthTokenCacheR)
     }.orNotFound
 
-  def authorize(clientR: Ref[IO, Option[ClientInfo]], stateR: Ref[IO, Option[String]], codeVerifierR: Ref[IO, Option[String]],
-                random: Random[IO])
-               (using Logger[IO]): IO[Response[IO]] =
+  private[this] def index(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+  : IO[Response[IO]] =
+    for
+      client <- clientR.get
+      oauthTokenCache <- oauthTokenCacheR.get
+      resp <- Ok(ClientPage.Text.index(client, oauthTokenCache))
+    yield resp
+
+  private[this] def authorize(clientR: Ref[IO, Option[ClientInfo]], stateR: Ref[IO, Option[String]],
+                              codeVerifierR: Ref[IO, Option[String]], random: Random[IO])
+                             (using Logger[IO]): IO[Response[IO]] =
     getOrRegisterClient(clientR) { client =>
       for
         state <- randomString[IO](random, 32)
@@ -131,8 +117,271 @@ object ClientApp extends IOApp.Simple :
       yield resp
     }
 
-  def getOrRegisterClient(clientR: Ref[IO, Option[ClientInfo]])(f: ClientInfo => IO[Response[IO]])
+  private[this] def clientCredentials(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                                     (using Logger[IO]): IO[Response[IO]] =
+    getOrRegisterClient(clientR) { client =>
+      val req: Request[IO] = POST(
+        UrlForm(
+          "grant_type" -> GrantType.ClientCredentials.value,
+          scopeKey -> client.scope.mkString(" ")
+        ),
+        authServer.tokenEndpoint,
+        basicHeaders(client.id, client.secret)
+      )
+      fetchOAuthToken(req, client, oauthTokenCacheR)
+    }
+
+  private[this] def usernamePassword(req: Request[IO], clientR: Ref[IO, Option[ClientInfo]],
+                                     oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                                    (using Logger[IO]): IO[Response[IO]] =
+    req.as[UrlForm].flatMap { body =>
+      getOrRegisterClient(clientR) { client =>
+        val reqOption: Option[Request[IO]] =
+          for
+            username <- body.get(usernameKey).find(_.nonEmpty)
+            password <- body.get("password").find(_.nonEmpty)
+          yield POST(
+            UrlForm(
+              "grant_type" -> GrantType.Password.value,
+              usernameKey -> username,
+              "password" -> password,
+              scopeKey -> client.scope.mkString(" ")
+            ),
+            authServer.tokenEndpoint,
+            basicHeaders(client.id, client.secret)
+          )
+        reqOption.fold[IO[Response[IO]]](Ok(ClientPage.Text.error("Param error")))(req =>
+          fetchOAuthToken(req, client, oauthTokenCacheR)
+        )
+      }
+    }
+
+  private[this] def callback(code: String, state: String, clientR: Ref[IO, Option[ClientInfo]],
+                             oauthTokenCacheR: Ref[IO, OAuthTokenCache], stateR: Ref[IO, Option[String]],
+                             codeVerifierR: Ref[IO, Option[String]])
                             (using Logger[IO]): IO[Response[IO]] =
+    stateR.get.flatMap { originState =>
+      if !originState.contains(state) then
+        for
+          _ <- warn"State DOES NOT MATCH: expected ${originState.getOrElse("None")} got $state"
+          stateResp <- Ok(ClientPage.Text.error("State value did not match"))
+        yield stateResp
+      else info"State value matches: expected $state got $state" *> getClientOrError(clientR) { client =>
+        for
+          codeVerifier <- codeVerifierR.get
+          req = POST(
+            UrlForm(
+              "grant_type" -> GrantType.AuthorizationCode.value,
+              "code" -> code,
+              // "client_id" -> client.id,
+              // "client_secret" -> client.secret,
+              redirectUriKey -> client.redirectUris.head.toString,
+            ).updateFormField(codeVerifierKey, codeVerifier),
+            authServer.tokenEndpoint,
+            basicHeaders(client.id, client.secret)
+          )
+          _ <- info"Requesting access token for code $code"
+          resp <- fetchOAuthToken(req, client, oauthTokenCacheR)
+        yield resp
+      }
+    }
+
+  private[this] def refresh(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                           (using Logger[IO]): IO[Response[IO]] =
+    for
+      oauthTokenCache <- oauthTokenCacheR.get
+      resp <- refreshAccessToken(oauthTokenCache, clientR, oauthTokenCacheR, "Missing refresh token.")
+    yield resp
+
+  private[this] def fetchResource(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                                 (buildRequest: String => Request[IO])(using Logger[IO]): IO[Response[IO]] =
+    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { accessToken =>
+      val req = buildRequest(accessToken)
+      for
+        _ <- info"Making request with access token $accessToken"
+        _ <- info"protectedResourceEndpoint ${req.uri}"
+        response <- runHttpRequest(req) { resp =>
+          resp.as[Json].flatMap(data => Ok(ClientPage.Text.data(data)))
+        } { statusCode =>
+          for
+            oauthTokenCache <- oauthTokenCacheR.updateAndGet(_.copy(accessToken = None))
+            resp <- refreshAccessToken(oauthTokenCache, clientR, oauthTokenCacheR,
+              s"Server returned response code: $statusCode")
+          yield resp
+        }
+      yield response
+    }
+
+  private[this] def greeting(language: String, clientR: Ref[IO, Option[ClientInfo]],
+                             oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
+    fetchResource(clientR, oauthTokenCacheR)(accessToken => GET(
+      helloWorldApi.withQueryParam("language", language),
+      Headers(Authorization(Credentials.Token(AuthScheme.Bearer, accessToken)))
+    ))
+
+  private[this] def getWords(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                            (using Logger[IO]): IO[Response[IO]] =
+    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { accessToken =>
+      runHttpRequest(GET(wordApi, bearerHeaders(accessToken))) { response =>
+        for
+          data <- response.as[WordsData]
+          resp <- Ok(ClientPage.Text.words(data.words, data.timestamp, Get))
+        yield resp
+      } { _ =>
+        Ok(ClientPage.Text.words(Seq.empty[String], 0L, NoGet))
+      }
+    }
+
+  private[this] def addWord(word: String, clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                            (using Logger[IO]): IO[Response[IO]] =
+    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { accessToken =>
+      runHttpRequest(POST(UrlForm("word" -> word), wordApi, bearerHeaders(accessToken))) { _ =>
+        Ok(ClientPage.Text.words(Seq.empty[String], 0L, Add))
+      } { _ =>
+        Ok(ClientPage.Text.words(Seq.empty[String], 0L, NoAdd))
+      }
+    }
+
+  private[this] def deleteWord(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                               (using Logger[IO]): IO[Response[IO]] =
+    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { accessToken =>
+      runHttpRequest(DELETE(wordApi, bearerHeaders(accessToken))) { _ =>
+        Ok(ClientPage.Text.words(Seq.empty[String], 0L, Rm))
+      } { _ =>
+        Ok(ClientPage.Text.words(Seq.empty[String], 0L, NoRm))
+      }
+    }
+
+  private[this] def produce(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                           (using Logger[IO]): IO[Response[IO]] =
+    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { accessToken =>
+      runHttpRequest(GET(produceApi, bearerHeaders(accessToken))) { response =>
+        for
+          data <- response.as[ProduceData]
+          cache <- oauthTokenCacheR.get
+          resp <- Ok(ClientPage.Text.produce(cache.scope.getOrElse(Set.empty[String]), data))
+        yield resp
+      } { _ =>
+        for
+          cache <- oauthTokenCacheR.get
+          resp <- Ok(ClientPage.Text.produce(cache.scope.getOrElse(Set.empty[String]), ProduceData.empty))
+        yield resp
+      }
+    }
+
+  private[this] def favorites(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                             (using Logger[IO]): IO[Response[IO]] =
+    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { accessToken =>
+      runHttpRequest(GET(favoritesApi, bearerHeaders(accessToken))) { response =>
+        for
+          data <- response.as[UserFavoritesData]
+          _ <- info"Got data: $data"
+          resp <- Ok(ClientPage.Text.favorites(data))
+        yield resp
+      } { _ =>
+        Ok(ClientPage.Text.favorites(UserFavoritesData("", FavoritesData.empty)))
+      }
+    }
+
+  private[this] def revoke(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                          (using Logger[IO]): IO[Response[IO]] =
+    getClientOrError(clientR) { client =>
+      handleOAuthToken(oauthTokenCacheR)(cache => Ok(ClientPage.Text.index(client.some, cache))) { (_, accessToken) =>
+        val req = POST(
+          // 可选：可以增加token_type_hint参数来提示授权服务器先查询哪种令牌（访问/刷新），但授权服务器可以忽略该参数两种都检查
+          UrlForm("token" -> accessToken),
+          authServer.revocationEndpoint,
+          basicHeaders(client.id, client.secret)
+        )
+        for
+          _ <- info"Revoking token $accessToken"
+          _ <- oauthTokenCacheR.set(OAuthTokenCache(None, None, None, None))
+          response <- runHttpRequest(req){ _ =>
+            oauthTokenCacheR.get.flatMap(cache => Ok(ClientPage.Text.index(client.some, cache)))
+          } { statusCode => Ok(ClientPage.Text.error(s"$statusCode")) }
+        yield response
+      }
+    }
+
+  private[this] def userInfo(oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
+    handleOAuthToken(oauthTokenCacheR)(_ => Ok(ClientPage.Text.error("Missing access token."))) {
+      (cache, accessToken) => runHttpRequest(GET(authServer.userInfoEndpoint, bearerHeaders(accessToken))) { response =>
+        for
+          userInfo <- response.as[UserInfo]
+          _ <- info"Got data: $userInfo"
+          resp <- Ok(ClientPage.Text.userInfo(userInfo.some, cache.idToken))
+        yield resp
+      } { _ => Ok(ClientPage.Text.error("Unable to fetch user information")) }
+    }
+
+  private[this] def readClient(clientR: Ref[IO, Option[ClientInfo]])(using Logger[IO]): IO[Response[IO]] =
+    getOrRegisterClient(clientR) { client =>
+      val req = GET(
+        client.registrationClientUri.getOrElse(getRegistrationClientUri(client.id)),
+        bearerHeaders(client.registrationAccessToken.getOrElse(""))
+      )
+      runHttpRequest(req) { response =>
+        for
+          client <- response.as[ClientInfo]
+          resp <- Ok(ClientPage.Text.data(client.asJson))
+        yield resp
+      } { statusCode =>
+        Ok(ClientPage.Text.error(s"Unable to read client $statusCode"))
+      }
+    }
+
+  private[this] def updateClient(req: Request[IO], clientR: Ref[IO, Option[ClientInfo]],
+                                 oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                                (using Logger[IO]): IO[Response[IO]] =
+    req.as[UrlForm].flatMap { body =>
+      getOrRegisterClient(clientR) { client =>
+        val updated = client.copy(
+          name = body.fGet[Option, String, String](clientNameKey),
+          clientIdCreatedAt = None,
+          clientSecretExpiresAt = None,
+          registrationClientUri = None,
+          registrationAccessToken = None
+        )
+        val req = PUT(
+          updated.asJson,
+          client.registrationClientUri.getOrElse(getRegistrationClientUri(client.id)),
+          bearerHeaders(client.registrationAccessToken.getOrElse(""))
+        )
+        info"Sending updated client: $updated" *> runHttpRequest(req) { response =>
+          for
+            updatedClient <- response.as[ClientInfo]
+            oauthTokenCache <- oauthTokenCacheR.get
+            resp <- Ok(ClientPage.Text.index(updatedClient.some, oauthTokenCache))
+          yield resp
+        } { statusCode =>
+          Ok(ClientPage.Text.error(s"Unable to update client $statusCode"))
+        }
+      }
+    }
+
+  private[this] def unregisterClient(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+  : IO[Response[IO]] =
+    getClientOrError(clientR) { client =>
+      val req = DELETE(
+        client.registrationClientUri.getOrElse(getRegistrationClientUri(client.id)),
+        bearerHeaders(client.registrationAccessToken.getOrElse(""))
+      )
+      clientR.set(None) *> runHttpRequest(req) { _ =>
+        oauthTokenCacheR.get.flatMap(cache => Ok(ClientPage.Text.index(None, cache)))
+      } { statusCode =>
+        Ok(ClientPage.Text.error(s"Unable to delete client $statusCode"))
+      }
+    }
+
+  private[this] def getClientOrError(clientR: Ref[IO, Option[ClientInfo]])(f: ClientInfo => IO[Response[IO]])
+  : IO[Response[IO]] =
+    clientR.get.flatMap {
+      case None => Ok(ClientPage.Text.error("Client not registered yet!"))
+      case Some(client) => f(client)
+    }
+
+  private[this] def getOrRegisterClient(clientR: Ref[IO, Option[ClientInfo]])(f: ClientInfo => IO[Response[IO]])
+                                       (using Logger[IO]): IO[Response[IO]] =
     for
       currentCli <- clientR.get
       registeredClient <- currentCli.fold(registerClient(clientR))(_ => IO.pure(currentCli))
@@ -141,13 +390,7 @@ object ClientApp extends IOApp.Simple :
         case Some(client) => f(client)
     yield resp
 
-  def getClientOrError(clientR: Ref[IO, Option[ClientInfo]])(f: ClientInfo => IO[Response[IO]]): IO[Response[IO]] =
-    clientR.get.flatMap {
-      case None => Ok(ClientPage.Text.error("Client not registered yet!"))
-      case Some(client) => f(client)
-    }
-
-  def registerClient(clientR: Ref[IO, Option[ClientInfo]])(using Logger[IO]): IO[Option[ClientInfo]] =
+  private[this] def registerClient(clientR: Ref[IO, Option[ClientInfo]])(using Logger[IO]): IO[Option[ClientInfo]] =
     val template = ClientMetadata(
       AuthMethod.SecretBasic,
       List(GrantType.AuthorizationCode),
@@ -167,91 +410,55 @@ object ClientApp extends IOApp.Simple :
       yield res
     } { _ => IO.pure(none[ClientInfo]) }
 
-  def clientCredentials(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
-                       (using Logger[IO]): IO[Response[IO]] =
-    getOrRegisterClient(clientR) { client =>
-      val req: Request[IO] = POST(
-        UrlForm(
-          "grant_type" -> GrantType.ClientCredentials.value,
-          scopeKey -> client.scope.mkString(" ")
-        ),
-        authServer.tokenEndpoint,
-        basicHeaders(client.id, client.secret)
-      )
-      fetchOAuthToken(req, client, oauthTokenCacheR)
-    }
-
-  def usernamePassword(body: UrlForm, clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
-                      (using Logger[IO]): IO[Response[IO]] =
-    getOrRegisterClient(clientR) { client =>
-      val reqOption: Option[Request[IO]] =
-        for
-          username <- body.get(usernameKey).find(_.nonEmpty)
-          password <- body.get("password").find(_.nonEmpty)
-        yield POST(
-          UrlForm(
-            "grant_type" -> GrantType.Password.value,
-            usernameKey -> username,
-            "password" -> password,
-            scopeKey -> client.scope.mkString(" ")
-          ),
-          authServer.tokenEndpoint,
-          basicHeaders(client.id, client.secret)
-        )
-      reqOption.fold[IO[Response[IO]]](Ok(ClientPage.Text.error("Param error")))(req =>
-        fetchOAuthToken(req, client, oauthTokenCacheR)
-      )
-    }
-
-  def callbackStateNotMatch(originState: Option[String], state: String)(using Logger[IO]): IO[Response[IO]] =
-    for
-      _ <- warn"State DOES NOT MATCH: expected ${originState.getOrElse("None")} got $state"
-      stateResp <- Ok(ClientPage.Text.error("State value did not match"))
-    yield stateResp
-
-  def callbackWithCode(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache],
-                       codeVerifierR: Ref[IO, Option[String]], code: String)
-                      (using Logger[IO]): IO[Response[IO]] =
-    getClientOrError(clientR) { client =>
-      for
-        codeVerifier <- codeVerifierR.get
-        req = POST(
-          UrlForm(
-            "grant_type" -> GrantType.AuthorizationCode.value,
-            "code" -> code,
-            // "client_id" -> client.id,
-            // "client_secret" -> client.secret,
-            redirectUriKey -> client.redirectUris.head.toString,
-          ).updateFormField(codeVerifierKey, codeVerifier),
-          authServer.tokenEndpoint,
-          basicHeaders(client.id, client.secret)
-        )
-        _ <- info"Requesting access token for code $code"
-        resp <- fetchOAuthToken(req, client, oauthTokenCacheR)
-      yield resp
-    }
-
-  def fetchOAuthToken(req: Request[IO], client: ClientInfo, oauthTokenCacheR: Ref[IO, OAuthTokenCache])
-                     (using Logger[IO]): IO[Response[IO]] =
+  private[this] def fetchOAuthToken(req: Request[IO], client: ClientInfo, oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                                   (using Logger[IO]): IO[Response[IO]] =
     runHttpRequest(req) { response =>
       for
         oauthToken <- response.as[OAuthToken]
-        oauthTokenCache <- updateOAuthTokenCache(oauthTokenCacheR, oauthToken, client.id)
+        oauthTokenCache <- updateOAuthTokenCache(oauthToken, client.id, oauthTokenCacheR)
         resp <- Ok(ClientPage.Text.index(client.some, oauthTokenCache))
       yield resp
     } { statusCode =>
       Ok(ClientPage.Text.error(s"Unable to fetch access token, server response: $statusCode"))
     }
 
-  def refresh(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
-             (using Logger[IO]): IO[Response[IO]] =
-    for
-      oauthTokenCache <- oauthTokenCacheR.get
-      resp <- refreshAccessToken(clientR, oauthTokenCacheR, oauthTokenCache, "Missing refresh token.")
-    yield resp
+  private[this] def refreshAccessToken(oauthTokenCache: OAuthTokenCache, clientR: Ref[IO, Option[ClientInfo]],
+                                       oauthTokenCacheR: Ref[IO, OAuthTokenCache], error: String)
+                                      (using Logger[IO]): IO[Response[IO]] =
+    getClientOrError(clientR) { client =>
+      oauthTokenCache.refreshToken.fold(Ok(ClientPage.Text.error(error)))(refreshToken =>
+        runHttpRequest(refreshTokenRequest(client, refreshToken)) { response =>
+          for
+            oauthToken <- response.as[OAuthToken]
+            _ <- updateOAuthTokenCache(oauthToken, client.id, oauthTokenCacheR)
+            resp <- Found(Location(uri"/fetch_resource"))
+          yield resp
+        } { _ =>
+          for
+            _ <- info"No refresh token, asking the user to get a new access token"
+            _ <- oauthTokenCacheR.update(_.copy(refreshToken = None))
+            resp <- Ok(ClientPage.Text.error("Unable to refresh token."))
+          // resp <- Found(Location(uri"/authorize"))
+          yield resp
+        }
+      )
+    }
 
-  def updateOAuthTokenCache(oauthTokenCacheR: Ref[IO, OAuthTokenCache], oauthToken: OAuthToken, clientId: String)
-                           (using Logger[IO]): IO[OAuthTokenCache] =
+  private[this] def refreshTokenRequest(client: ClientInfo, refreshToken: String): Request[IO] =
+    POST(
+      UrlForm(
+        "grant_type" -> "refresh_token",
+        "refresh_token" -> refreshToken
+        // "client_id" -> client.id,
+        // "client_secret" -> client.secret
+      ).updateFormFields(redirectUriKey, Chain.fromSeq(client.redirectUris.toList)),
+      authServer.tokenEndpoint,
+      basicHeaders(client.id, client.secret)
+    )
+
+  private[this] def updateOAuthTokenCache(oauthToken: OAuthToken, clientId: String,
+                                          oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                                         (using Logger[IO]): IO[OAuthTokenCache] =
     for
       _ <- info"Got access token: ${oauthToken.accessToken}"
       _ <- oauthToken.refreshToken.fold(IO.unit)(refresh => info"Got refresh_token: $refresh")
@@ -270,212 +477,18 @@ object ClientApp extends IOApp.Simple :
       ))
     yield oauthTokenCache
 
-  def fetchResource(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache], accessToken: String)
-                   (using Logger[IO]): IO[Response[IO]] =
-    fetchResource(clientR, oauthTokenCacheR, accessToken, resourceRequest(accessToken))
-
-  def fetchResource(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache], accessToken: String,
-                    req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
-    for
-      _ <- info"Making request with access token $accessToken"
-      _ <- info"protectedResourceEndpoint ${req.uri}"
-      response <- runHttpRequest(req) { resp =>
-        resp.as[Json].flatMap(data => Ok(ClientPage.Text.data(data)))
-      } { statusCode =>
-        for
-          oauthTokenCache <- oauthTokenCacheR.updateAndGet(_.copy(accessToken = None))
-          resp <- refreshAccessToken(clientR, oauthTokenCacheR, oauthTokenCache,
-            s"Server returned response code: $statusCode")
-        yield resp
-      }
-    yield response
-
-  def greeting(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache], accessToken: String,
-               language: String)(using Logger[IO]): IO[Response[IO]] =
-    val req = GET(
-      helloWorldApi.withQueryParam("language", language),
-      Headers(Authorization(Credentials.Token(AuthScheme.Bearer, accessToken)))
+  private[this] def getOrRefreshAccessToken(clientR: Ref[IO, Option[ClientInfo]],
+                                            oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+                                           (handleToken: String => IO[Response[IO]])
+                                           (using Logger[IO]): IO[Response[IO]] =
+    oauthTokenCacheR.get.flatMap(oauthTokenCache => oauthTokenCache.accessToken
+      .fold(refreshAccessToken(oauthTokenCache, clientR, oauthTokenCacheR, "Missing access token."))(handleToken)
     )
-    fetchResource(clientR, oauthTokenCacheR, accessToken, req)
 
-  def getWords(accessToken: String): IO[Response[IO]] =
-    runHttpRequest(GET(wordApi, bearerHeaders(accessToken))) { response =>
-      for
-        data <- response.as[WordsData]
-        resp <- Ok(ClientPage.Text.words(data.words, data.timestamp, Get))
-      yield resp
-    } { _ =>
-      Ok(ClientPage.Text.words(Seq.empty[String], 0L, NoGet))
-    }
-
-  def addWords(accessToken: String, word: String): IO[Response[IO]] =
-    runHttpRequest(POST(UrlForm("word" -> word), wordApi, bearerHeaders(accessToken))) { _ =>
-      Ok(ClientPage.Text.words(Seq.empty[String], 0L, Add))
-    } { _ =>
-      Ok(ClientPage.Text.words(Seq.empty[String], 0L, NoAdd))
-    }
-
-  def deleteWords(accessToken: String): IO[Response[IO]] =
-    runHttpRequest(DELETE(wordApi, bearerHeaders(accessToken))) { _ =>
-      Ok(ClientPage.Text.words(Seq.empty[String], 0L, Rm))
-    } { _ =>
-      Ok(ClientPage.Text.words(Seq.empty[String], 0L, NoRm))
-    }
-
-  def produce(accessToken: String, oauthTokenCacheR: Ref[IO, OAuthTokenCache]): IO[Response[IO]] =
-    runHttpRequest(GET(produceApi, bearerHeaders(accessToken))) { response =>
-      for
-        data <- response.as[ProduceData]
-        cache <- oauthTokenCacheR.get
-        resp <- Ok(ClientPage.Text.produce(cache.scope.getOrElse(Set.empty[String]), data))
-      yield resp
-    } { _ =>
-      for
-        cache <- oauthTokenCacheR.get
-        resp <- Ok(ClientPage.Text.produce(cache.scope.getOrElse(Set.empty[String]), ProduceData.empty))
-      yield resp
-    }
-
-  def favorites(accessToken: String)(using Logger[IO]): IO[Response[IO]] =
-    runHttpRequest(GET(favoritesApi, bearerHeaders(accessToken))) { response =>
-      for
-        data <- response.as[UserFavoritesData]
-        _ <- info"Got data: $data"
-        resp <- Ok(ClientPage.Text.favorites(data))
-      yield resp
-    } { _ =>
-      Ok(ClientPage.Text.favorites(UserFavoritesData("", FavoritesData.empty)))
-    }
-
-  def revoke(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
-            (using Logger[IO]): IO[Response[IO]] =
-    getClientOrError(clientR) { client =>
-      handleOAuthToken(oauthTokenCacheR)(cache => Ok(ClientPage.Text.index(client.some, cache))) { (_, accessToken) =>
-        val req = POST(
-          // 可选：可以增加token_type_hint参数来提示授权服务器先查询哪种令牌（访问/刷新），但授权服务器可以忽略该参数两种都检查
-          UrlForm("token" -> accessToken),
-          authServer.revocationEndpoint,
-          basicHeaders(client.id, client.secret)
-        )
-        for
-          _ <- info"Revoking token $accessToken"
-          _ <- oauthTokenCacheR.set(OAuthTokenCache(None, None, None, None))
-          response <- runHttpRequest(req){ _ =>
-            oauthTokenCacheR.get.flatMap(cache => Ok(ClientPage.Text.index(client.some, cache)))
-          } { statusCode => Ok(ClientPage.Text.error(s"$statusCode")) }
-        yield response
-      }
-    }
-
-  def userInfo(oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
-    handleOAuthToken(oauthTokenCacheR)(_ => Ok(ClientPage.Text.error("Missing access token."))) {
-      (cache, accessToken) => runHttpRequest(GET(authServer.userInfoEndpoint, bearerHeaders(accessToken))) { response =>
-        for
-          userInfo <- response.as[UserInfo]
-          _ <- info"Got data: $userInfo"
-          resp <- Ok(ClientPage.Text.userInfo(userInfo.some, cache.idToken))
-        yield resp
-      } { _ => Ok(ClientPage.Text.error("Unable to fetch user information")) }
-    }
-
-  def readClient(clientR: Ref[IO, Option[ClientInfo]])(using Logger[IO]): IO[Response[IO]] =
-    getOrRegisterClient(clientR) { client =>
-      val req = GET(
-        client.registrationClientUri.getOrElse(getRegistrationClientUri(client.id)),
-        bearerHeaders(client.registrationAccessToken.getOrElse(""))
-      )
-      runHttpRequest(req) { response =>
-        for
-          client <- response.as[ClientInfo]
-          resp <- Ok(ClientPage.Text.data(client.asJson))
-        yield resp
-      } { statusCode =>
-        Ok(ClientPage.Text.error(s"Unable to read client $statusCode"))
-      }
-    }
-
-  def updateClient(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache], body: UrlForm)(using Logger[IO]): IO[Response[IO]] =
-    getOrRegisterClient(clientR) { client =>
-      val updated = client.copy(
-        name = body.fGet[Option, String, String](clientNameKey),
-        clientIdCreatedAt = None,
-        clientSecretExpiresAt = None,
-        registrationClientUri = None,
-        registrationAccessToken = None
-      )
-      val req = PUT(
-        updated.asJson,
-        client.registrationClientUri.getOrElse(getRegistrationClientUri(client.id)),
-        bearerHeaders(client.registrationAccessToken.getOrElse(""))
-      )
-      info"Sending updated client: $updated" *> runHttpRequest(req) { response =>
-        for
-          updatedClient <- response.as[ClientInfo]
-          oauthTokenCache <- oauthTokenCacheR.get
-          resp <- Ok(ClientPage.Text.index(updatedClient.some, oauthTokenCache))
-        yield resp
-      } { statusCode =>
-        Ok(ClientPage.Text.error(s"Unable to update client $statusCode"))
-      }
-    }
-
-  def unregisterClient(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
-  : IO[Response[IO]] =
-    getClientOrError(clientR) { client =>
-      val req = DELETE(
-        client.registrationClientUri.getOrElse(getRegistrationClientUri(client.id)),
-        bearerHeaders(client.registrationAccessToken.getOrElse(""))
-      )
-      clientR.set(None) *> runHttpRequest(req) { _ =>
-        oauthTokenCacheR.get.flatMap(cache => Ok(ClientPage.Text.index(None, cache)))
-      } { statusCode =>
-        Ok(ClientPage.Text.error(s"Unable to delete client $statusCode"))
-      }
-    }
-
-  def handleOAuthToken[T](oauthTokenCacheR: Ref[IO, OAuthTokenCache])(ifEmpty: OAuthTokenCache => IO[T])
-                         (f: (OAuthTokenCache, String) => IO[T]): IO[T] =
+  private[this] def handleOAuthToken[T](oauthTokenCacheR: Ref[IO, OAuthTokenCache])(ifEmpty: OAuthTokenCache => IO[T])
+                                       (f: (OAuthTokenCache, String) => IO[T]): IO[T] =
     oauthTokenCacheR.get.flatMap(oauthTokenCache =>
       oauthTokenCache.accessToken.fold(ifEmpty(oauthTokenCache))(accessToken => f(oauthTokenCache, accessToken))
-    )
-
-  def refreshAccessToken(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache],
-                         oauthTokenCache: OAuthTokenCache, error: String)(using Logger[IO]): IO[Response[IO]] =
-    getClientOrError(clientR) { client =>
-      oauthTokenCache.refreshToken.fold(Ok(ClientPage.Text.error(error)))(refreshToken =>
-        runHttpRequest(refreshTokenRequest(client, refreshToken)) { response =>
-          for
-            oauthToken <- response.as[OAuthToken]
-            _ <- updateOAuthTokenCache(oauthTokenCacheR, oauthToken, client.id)
-            resp <- Found(Location(uri"/fetch_resource"))
-          yield resp
-        } { _ =>
-          for
-            _ <- info"No refresh token, asking the user to get a new access token"
-            _ <- oauthTokenCacheR.update(_.copy(refreshToken = None))
-            resp <- Ok(ClientPage.Text.error("Unable to refresh token."))
-          // resp <- Found(Location(uri"/authorize"))
-          yield resp
-        }
-      )
-    }
-
-  def refreshTokenRequest(client: ClientInfo, refreshToken: String): Request[IO] =
-    POST(
-      UrlForm(
-        "grant_type" -> "refresh_token",
-        "refresh_token" -> refreshToken
-        // "client_id" -> client.id,
-        // "client_secret" -> client.secret
-      ).updateFormFields(redirectUriKey, Chain.fromSeq(client.redirectUris.toList)),
-      authServer.tokenEndpoint,
-      basicHeaders(client.id, client.secret)
-    )
-
-  private[this] def getOrRefreshAccessToken(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
-                                           (handleToken: String => IO[Response[IO]])(using Logger[IO]): IO[Response[IO]] =
-    oauthTokenCacheR.get.flatMap(oauthTokenCache => oauthTokenCache.accessToken
-      .fold(refreshAccessToken(clientR, oauthTokenCacheR, oauthTokenCache, "Missing access token."))(handleToken)
     )
 
   private[this] def bearerHeaders(accessToken: String): Headers = Headers(

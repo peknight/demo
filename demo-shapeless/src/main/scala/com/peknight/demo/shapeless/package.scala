@@ -18,6 +18,15 @@ package object shapeless:
 
   def unexpected: Nothing = sys.error("Unexpected invocation")
 
+  type Head[T] = T match { case h *: t => h }
+  type Tail[T] = T match { case h *: t => t }
+
+  type LiftP[F[_], T] <: Tuple =
+    T match {
+      case _ *: _ => F[Head[T]] *: LiftP[F, Tail[T]]
+      case _ => EmptyTuple
+    }
+
   @targetName("Type inequalities")
   trait =:!=[A, B] extends Serializable
   given [A, B]: =:!=[A, B] = new =:!=[A, B] {}

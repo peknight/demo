@@ -39,7 +39,7 @@ object WebClient extends IOApp.Simple:
       _ <- processCallback(callbackDataR)
     yield ()
 
-  val handleAuthorizationRequestClick: IO[Unit] =
+  private[this] val handleAuthorizationRequestClick: IO[Unit] =
     for
       random <- Random.scalaUtilRandom[IO]
       state <- randomString(random, 32)
@@ -50,18 +50,18 @@ object WebClient extends IOApp.Simple:
       )).toString)
     yield ()
 
-  def handleFetchResourceClick(callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
+  private[this] def handleFetchResourceClick(callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
     fetchResource(callbackDataR, "Error while fetching the protected resource")(
       oauthToken => resourceRequest(oauthToken.accessToken)
     )
 
-  def handleGreetingClick(callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
+  private[this] def handleGreetingClick(callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
     fetchResource(callbackDataR, "Error while greeting")(oauthToken => GET(
       helloWorldApi.withQueryParam("language", "en"),
       Headers(Authorization(Credentials.Token(AuthScheme.Bearer, oauthToken.accessToken)))
     ))
 
-  def fetchResource(callbackDataR: Ref[IO, Option[OAuthToken]], onError: String)
+  private[this] def fetchResource(callbackDataR: Ref[IO, Option[OAuthToken]], onError: String)
                    (req: OAuthToken => Request[IO]): IO[Unit] =
     OptionT(callbackDataR.get).flatMap { oauthToken => (
       for
@@ -71,7 +71,7 @@ object WebClient extends IOApp.Simple:
       yield ()
     ).optionT }.value.void
 
-  def processCallback(callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
+  private[this] def processCallback(callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
     val processOptionT: OptionT[IO, Unit] = for
       hash <- IO(dom.window.location.hash).optionT if hash.nonEmpty
       oauthToken <- OptionT(parseOAuthToken(Uri.decode(hash.substring(1)))
@@ -81,7 +81,7 @@ object WebClient extends IOApp.Simple:
     processOptionT.value.void
   end processCallback
 
-  def parseOAuthToken(fragment: String): Validated[String, OAuthToken] =
+  private[this] def parseOAuthToken(fragment: String): Validated[String, OAuthToken] =
     given UrlFragmentDecoder[Set[String]] with
       def decode(fragment: UrlFragment): ValidatedNel[String, Set[String]] = fragment match
         case UrlFragmentValue(value) => value.split("\\s++").toSet.validNel[String]
@@ -90,7 +90,7 @@ object WebClient extends IOApp.Simple:
     fragment.parseFragment[OAuthToken](StringCaseStyle.snakeToCamel).leftMap(es => es.toList.mkString(" >> "))
   end parseOAuthToken
 
-  def checkStateAndUpdateCallbackData(oauthToken: OAuthToken, callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
+  private[this] def checkStateAndUpdateCallbackData(oauthToken: OAuthToken, callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
     for
       localStateOption <- IO(Option(dom.window.localStorage.getItem(oauthStateKey)))
       _ <- localStateOption.filter(oauthToken.state.contains)
@@ -99,7 +99,7 @@ object WebClient extends IOApp.Simple:
         }
     yield ()
 
-  def stateNotMatch(localStateOption: Option[String], callbackStateOption: Option[String],
+  private[this] def stateNotMatch(localStateOption: Option[String], callbackStateOption: Option[String],
                     callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
     val localState = localStateOption.getOrElse("None")
     val callbackState = callbackStateOption.getOrElse("None")
@@ -109,7 +109,7 @@ object WebClient extends IOApp.Simple:
       _ <- textContent(oauthProtectedResourceCls)("Error state value did not match")
     yield ()
 
-  def updateCallbackData(oauthToken: OAuthToken, callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
+  private[this] def updateCallbackData(oauthToken: OAuthToken, callbackDataR: Ref[IO, Option[OAuthToken]]): IO[Unit] =
     for
       _ <- callbackDataR.set(Some(oauthToken))
       _ <- textContent(oauthAccessTokenCls)(oauthToken.accessToken)

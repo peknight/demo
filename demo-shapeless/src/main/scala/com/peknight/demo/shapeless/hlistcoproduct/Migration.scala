@@ -2,7 +2,6 @@ package com.peknight.demo.shapeless.hlistcoproduct
 
 import cats.Monoid
 import com.peknight.demo.shapeless.*
-import shapeless3.deriving.{K0, Labelling}
 
 import scala.compiletime.constValue
 import scala.deriving.Mirror

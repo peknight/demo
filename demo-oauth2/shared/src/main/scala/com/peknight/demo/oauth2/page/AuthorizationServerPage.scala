@@ -13,11 +13,34 @@ class AuthorizationServerPage[Builder, Output <: FragT, FragT](override val bund
   def index(authServer: AuthServerInfo, clients: Seq[ClientInfo]): Frag =
     val clientElements = for client <- clients yield
       ul(
-        client.name.fold[Frag]("")(name => li(b("client_name: "), code(name))),
         li(b("client_id: "), code(client.id)),
         li(b("client_secret: "), code(client.secret.getOrElse("None"))),
         li(b("scope: "), code(client.scope.mkString(" "))),
-        li(b("redirect_uris: "), code(client.redirectUris.toList.map(_.toString)))
+        li(b("redirect_uris: "), code(client.redirectUris.toList.map(_.toString))),
+        client.name.fold[Frag]("")(name => li(b("client_name: "), code(name))),
+        client.uri.fold[Frag]("")(uri => li(b("uri"), code(uri.toString))),
+        client.logoUri.fold[Frag]("")(logoUri => li(b("logo_uri"), code(logoUri.toString))),
+        client.tokenEndpointAuthMethod.fold[Frag]("")(authMethod =>
+          li(b("token_endpoint_auth_method"), code(authMethod.value))
+        ),
+        client.grantTypes.fold[Frag]("")(grantTypes =>
+          li(b("grant_types"), code(grantTypes.map(_.value).mkString("[", ", ", "]")))
+        ),
+        client.responseTypes.fold[Frag]("")(responseTypes =>
+          li(b("response_types"), code(responseTypes.map(_.value).mkString("[", ", ", "]")))
+        ),
+        client.clientIdCreatedAt.fold[Frag]("")(clientIdCreatedAt =>
+          li(b("client_id_created_at"), code(clientIdCreatedAt))
+        ),
+        client.clientSecretExpiresAt.fold[Frag]("")(clientSecretExpiresAt =>
+          li(b("client_secret_expires_at"), code(clientSecretExpiresAt))
+        ),
+        client.registrationAccessToken.fold[Frag]("")(registrationAccessToken =>
+          li(b("registration_access_token"), code(registrationAccessToken))
+        ),
+        client.registrationClientUri.fold[Frag]("")(registrationClientUri =>
+          li(b("registration_client_uri"), code(registrationClientUri.toString))
+        )
       )
 
     skeleton(
