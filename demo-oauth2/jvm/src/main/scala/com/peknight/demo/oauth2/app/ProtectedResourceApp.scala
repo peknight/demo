@@ -71,6 +71,7 @@ object ProtectedResourceApp extends IOApp.Simple :
     case req @ GET -> Root / "favorites" => favorites(req)
     // case OPTIONS -> Root / "helloWorld" => NoContent()
     case req @ GET -> Root / "helloWorld" :? LanguageQueryParamMatcher(language) => helloWorld(req, language)
+    case req @ (GET | POST) -> Root / "userinfo" => userInfoEndpoint(req, protectedResourceAddr)
   }
 
   private[this] def getResource(req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
@@ -166,16 +167,16 @@ object ProtectedResourceApp extends IOApp.Simple :
 
   //noinspection ScalaUnusedSymbol
   private[this] def checkUnsafeJwt(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
-    checkJwt[OAuthTokenRecord](IO(JwtCirce.decode(accessToken)), protectedResourceIndex.toString)
+    checkJwt[OAuthTokenRecord](IO(JwtCirce.decodeJson(accessToken)), protectedResourceIndex.toString, None)
 
   //noinspection ScalaUnusedSymbol
   private[this] def checkHS256Jwt(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
-    checkJwt[OAuthTokenRecord](IO(JwtCirce.decode(accessToken, toHex(sharedTokenSecret), Seq(JwtAlgorithm.HS256))),
-      protectedResourceIndex.toString)
+    checkJwt[OAuthTokenRecord](IO(JwtCirce.decodeJson(accessToken, toHex(sharedTokenSecret), Seq(JwtAlgorithm.HS256))),
+      protectedResourceIndex.toString, None)
 
   //noinspection ScalaUnusedSymbol
   private[this] def checkRS256Jwt(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
-    checkJwt[OAuthTokenRecord](jwtRS256Decode(accessToken), protectedResourceIndex.toString)
+    checkJwt[OAuthTokenRecord](jwtRS256Decode(accessToken), protectedResourceIndex.toString, None)
   private[this] def requireAccessTokenScope(req: Request[IO], scope: String)(pass: => IO[Response[IO]])
                                            (using Logger[IO]): IO[Response[IO]] =
     requireAccessToken(req, protectedResourceAddr)(introspect) { record =>

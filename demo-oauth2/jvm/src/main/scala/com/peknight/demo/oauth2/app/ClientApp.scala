@@ -31,7 +31,7 @@ object ClientApp extends IOApp.Simple :
 
   val run: IO[Unit] =
     for
-      clientR <- Ref.of[IO, Option[ClientInfo]](None)
+      clientR <- Ref.of[IO, Option[ClientInfo]](client.some)
       oauthTokenCacheR <- Ref.of[IO, OAuthTokenCache](OAuthTokenCache(
         None,
         None, // "j2r3oj32r23rmasd98uhjrk2o3i".some,
@@ -39,11 +39,12 @@ object ClientApp extends IOApp.Simple :
         None))
       stateR <- Ref.of[IO, Option[String]](None)
       codeVerifierR <- Ref.of[IO, Option[String]](None)
+      nonceR <- Ref.of[IO, Option[String]](None)
       random <- Random.scalaUtilRandom[IO]
       logger <- Slf4jLogger.create[IO]
       given Logger[IO] = logger
       serverPort = port"8000"
-      _ <- start[IO](serverPort)(service(clientR, oauthTokenCacheR, stateR, codeVerifierR, random))
+      _ <- start[IO](serverPort)(service(clientR, oauthTokenCacheR, stateR, codeVerifierR, nonceR, random))
       _ <- info"OAuth Client is listening at https://$serverHost:$serverPort"
       _ <- IO.never
     yield ()
@@ -59,17 +60,18 @@ object ClientApp extends IOApp.Simple :
   object LanguageQueryParamMatcher extends QueryParamDecoderMatcher[String]("language")
   object WordQueryParamMatcher extends QueryParamDecoderMatcher[String]("word")
 
-  def service(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache], stateR: Ref[IO, Option[String]],
-              codeVerifierR: Ref[IO, Option[String]], random: Random[IO])(using Logger[IO]): HttpApp[IO] =
+  def service(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache],
+              stateR: Ref[IO, Option[String]], codeVerifierR: Ref[IO, Option[String]], nonceR: Ref[IO, Option[String]],
+              random: Random[IO])(using Logger[IO]): HttpApp[IO] =
     HttpRoutes.of[IO] {
       case GET -> Root => index(clientR, oauthTokenCacheR)
-      case GET -> Root / "authorize" => authorize(clientR, stateR, codeVerifierR, random)
+      case GET -> Root / "authorize" => authorize(clientR, stateR, codeVerifierR, nonceR, random)
       // 客户端凭据许可类型
       case GET -> Root / "client_credentials" => clientCredentials(clientR, oauthTokenCacheR)
       case GET -> Root / "username_password" => Ok(ClientPage.Text.usernamePassword)
       case req @ POST -> Root / "username_password" => usernamePassword(req, clientR, oauthTokenCacheR)
       case GET -> Root / "callback" :? CodeQueryParamMatcher(code) +& StateQueryParamMatcher(state) =>
-        callback(code, state, clientR, oauthTokenCacheR, stateR, codeVerifierR)
+        callback(code, state, clientR, oauthTokenCacheR, stateR, codeVerifierR, nonceR)
       case GET -> Root / "callback" :? ErrorQueryParamMatcher(error) => Ok(ClientPage.Text.error(error))
       case GET -> Root / "refresh" => refresh(clientR, oauthTokenCacheR)
       case GET -> Root / "fetch_resource" => fetchResource(clientR, oauthTokenCacheR)(resourceRequest)
@@ -99,7 +101,7 @@ object ClientApp extends IOApp.Simple :
     yield resp
 
   private[this] def authorize(clientR: Ref[IO, Option[ClientInfo]], stateR: Ref[IO, Option[String]],
-                              codeVerifierR: Ref[IO, Option[String]], random: Random[IO])
+                              codeVerifierR: Ref[IO, Option[String]], nonceR: Ref[IO, Option[String]], random: Random[IO])
                              (using Logger[IO]): IO[Response[IO]] =
     getOrRegisterClient(clientR) { client =>
       for
@@ -109,9 +111,11 @@ object ClientApp extends IOApp.Simple :
         codeChallenge = getCodeChallenge(codeVerifier)
         _ <- info"Generated code verifier $codeVerifier and challenge $codeChallenge"
         _ <- stateR.set(Some(state))
+        nonce <- randomString[IO](random, 32)
+        _ <- nonceR.set(Some(nonce))
         authorizeUrl = authServer.authorizationEndpoint.withQueryParams(AuthorizeParam(client.id,
           client.redirectUris.head, client.scope, ResponseType.Code, Some(state), Some(codeChallenge),
-          Some(CodeChallengeMethod.S256)))
+          Some(CodeChallengeMethod.S256), Some(nonce)))
         _ <- info"redirect: $authorizeUrl"
         resp <- Found(Location(authorizeUrl))
       yield resp
@@ -128,7 +132,7 @@ object ClientApp extends IOApp.Simple :
         authServer.tokenEndpoint,
         basicHeaders(client.id, client.secret)
       )
-      fetchOAuthToken(req, client, oauthTokenCacheR)
+      fetchOAuthToken(req, client, None, oauthTokenCacheR)
     }
 
   private[this] def usernamePassword(req: Request[IO], clientR: Ref[IO, Option[ClientInfo]],
@@ -151,14 +155,14 @@ object ClientApp extends IOApp.Simple :
             basicHeaders(client.id, client.secret)
           )
         reqOption.fold[IO[Response[IO]]](Ok(ClientPage.Text.error("Param error")))(req =>
-          fetchOAuthToken(req, client, oauthTokenCacheR)
+          fetchOAuthToken(req, client, None, oauthTokenCacheR)
         )
       }
     }
 
   private[this] def callback(code: String, state: String, clientR: Ref[IO, Option[ClientInfo]],
                              oauthTokenCacheR: Ref[IO, OAuthTokenCache], stateR: Ref[IO, Option[String]],
-                             codeVerifierR: Ref[IO, Option[String]])
+                             codeVerifierR: Ref[IO, Option[String]], nonceR: Ref[IO, Option[String]])
                             (using Logger[IO]): IO[Response[IO]] =
     stateR.get.flatMap { originState =>
       if !originState.contains(state) then
@@ -181,7 +185,8 @@ object ClientApp extends IOApp.Simple :
             basicHeaders(client.id, client.secret)
           )
           _ <- info"Requesting access token for code $code"
-          resp <- fetchOAuthToken(req, client, oauthTokenCacheR)
+          nonce <- nonceR.get
+          resp <- fetchOAuthToken(req, client, nonce, oauthTokenCacheR)
         yield resp
       }
     }
@@ -410,13 +415,16 @@ object ClientApp extends IOApp.Simple :
       yield res
     } { _ => IO.pure(none[ClientInfo]) }
 
-  private[this] def fetchOAuthToken(req: Request[IO], client: ClientInfo, oauthTokenCacheR: Ref[IO, OAuthTokenCache])
+  private[this] def fetchOAuthToken(req: Request[IO], client: ClientInfo, nonce: Option[String],
+                                    oauthTokenCacheR: Ref[IO, OAuthTokenCache])
                                    (using Logger[IO]): IO[Response[IO]] =
     runHttpRequest(req) { response =>
       for
         oauthToken <- response.as[OAuthToken]
-        oauthTokenCache <- updateOAuthTokenCache(oauthToken, client.id, oauthTokenCacheR)
-        resp <- Ok(ClientPage.Text.index(client.some, oauthTokenCache))
+        oauthTokenCache <- updateOAuthTokenCache(oauthToken, client.id, nonce, oauthTokenCacheR)
+        resp <- oauthToken.idToken.fold(Ok(ClientPage.Text.index(client.some, oauthTokenCache)))(_ =>
+          Ok(ClientPage.Text.userInfo(None, oauthTokenCache.idToken))
+        )
       yield resp
     } { statusCode =>
       Ok(ClientPage.Text.error(s"Unable to fetch access token, server response: $statusCode"))
@@ -430,7 +438,7 @@ object ClientApp extends IOApp.Simple :
         runHttpRequest(refreshTokenRequest(client, refreshToken)) { response =>
           for
             oauthToken <- response.as[OAuthToken]
-            _ <- updateOAuthTokenCache(oauthToken, client.id, oauthTokenCacheR)
+            _ <- updateOAuthTokenCache(oauthToken, client.id, None, oauthTokenCacheR)
             resp <- Found(Location(uri"/fetch_resource"))
           yield resp
         } { _ =>
@@ -456,7 +464,7 @@ object ClientApp extends IOApp.Simple :
       basicHeaders(client.id, client.secret)
     )
 
-  private[this] def updateOAuthTokenCache(oauthToken: OAuthToken, clientId: String,
+  private[this] def updateOAuthTokenCache(oauthToken: OAuthToken, clientId: String, nonce: Option[String],
                                           oauthTokenCacheR: Ref[IO, OAuthTokenCache])
                                          (using Logger[IO]): IO[OAuthTokenCache] =
     for
@@ -465,7 +473,7 @@ object ClientApp extends IOApp.Simple :
       payloadOption <- oauthToken.idToken.fold(IO.pure(none[IdToken])) { idToken =>
         for
           _ <- info"Got ID token: $idToken"
-          payload <- checkJwt[IdToken](jwtRS256Decode(idToken), clientId)
+          payload <- checkJwt[IdToken](jwtRS256Decode(idToken), clientId, nonce)
         yield payload
       }
       _ <- info"Got scope: ${oauthToken.scope}"

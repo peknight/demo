@@ -19,6 +19,7 @@ package object constant:
   val codeChallengeKey = "code_challenge"
   val codeChallengeMethodKey = "code_challenge_method"
   val codeVerifierKey = "code_verifier"
+  val contentKey = "content"
   val expirationKey = "exp"
   val grantTypesKey = "grant_types"
   val idTokenKey = "id_token"
@@ -26,6 +27,7 @@ package object constant:
   val issuerKey = "iss"
   val jwtIdKey = "jti"
   val logoUriKey = "logo_uri"
+  val nonceKey = "nonce"
   val notBeforeKey = "nbf"
   val oauthStateKey = "oauth-state"
   val oauthAccessTokenCls = "oauth-access-token"
@@ -54,7 +56,7 @@ package object constant:
     uri"https://local.peknight.com:8001/token",
     uri"https://local.peknight.com:8001/revoke",
     uri"https://local.peknight.com:8001/register",
-    uri"https://local.peknight.com:8001/userinfo",
+    uri"https://local.peknight.com:8002/userinfo",
     uri"https://local.peknight.com:8001/introspect"
   )
 

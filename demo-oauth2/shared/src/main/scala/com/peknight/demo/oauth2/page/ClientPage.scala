@@ -47,7 +47,7 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
       input(`type` := "radio", name := "language", value := "fr"), "French", " ",
       input(`type` := "radio", name := "language", value := "es"), "Spanish"
     ),
-    client.flatMap(_.registrationAccessToken).fold[Frag]("") { registrationAccessToken => frag(
+    client.flatMap(_.registrationAccessToken).fold[Frag]("") { _ => frag(
       hr,
       a(cls := "btn btn-default", href := "/read_client")("Read Client Information"),
       form(method := POST.name, action := "/update_client")(
@@ -161,14 +161,16 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
 
   def userInfo(userInfo: Option[UserInfo], idToken: Option[IdToken])(using labelling: Labelling[UserInfo]): Frag =
     jumbotron(
-      p("Logged in user subject ", span(cls := "label label-default")(idToken.flatMap(_.subject).getOrElse("None")),
-        " from issuer ", span(cls := "label label-default")(idToken.flatMap(_.issuer).getOrElse("None")), "."),
-      p("User information: ", userInfo.fold[Frag]("")(user => ul(
+      p("Logged in user subject ", span(cls := "label label-info")(idToken.flatMap(_.subject).getOrElse("None")),
+        " from issuer ", span(cls := "label label-warning")(idToken.flatMap(_.issuer).getOrElse("None")), "."),
+      p("User information: ", userInfo.fold[Frag](span(cls := "label label-danger")("NOT FETCHED"))(user => ul(
         labelling.elemLabels.zip(Tuple.fromProductTyped(user).productIterator).map[Frag] {
           case (label, Some(value)) => li(b(camelToSnake(label)), s": $value")
           case _ => ""
         }
-      )))
+      ))),
+      a(cls := "btn btn-default", href := "/authorize")("Log In"),
+      a(cls := "btn btn-default", href := "/userinfo")("Get User Information")
     )
 
   val usernamePassword: Frag = jumbotron(

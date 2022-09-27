@@ -11,8 +11,10 @@ case class UserInfo(sub: Option[String], preferredUsername: Option[String], name
                     middleName: Option[String] = None, nickname: Option[String] = None, profile: Option[String] = None,
                     picture: Option[String] = None, website: Option[String] = None, gender: Option[String] = None,
                     birthdate: Option[String] = None, zoneInfo: Option[String] = None, locale: Option[String] = None,
-                    updatedAt: Option[String] = None, address: Option[String] = None, phoneNumber: Option[String] = None,
-                    phoneNumberVerified: Option[String] = None)
+                    updatedAt: Option[String] = None,
+                    // address是一个JSOn对象，包含 formatted street_address locality region postal_code country
+                    address: Option[String] = None,
+                    phoneNumber: Option[String] = None, phoneNumberVerified: Option[String] = None)
 
 object UserInfo:
   given Codec[UserInfo] = Codec.forProduct22(

@@ -21,6 +21,7 @@ import fs2.io.net.Network
 import fs2.text.{base64, hex, utf8}
 import io.circe.generic.auto.*
 import io.circe.parser.*
+import io.circe.syntax.*
 import io.circe.{Json, JsonObject}
 import org.http4s.*
 import org.http4s.circe.*
@@ -47,15 +48,10 @@ package object app:
   given CanEqual[Uri, Uri] = CanEqual.derived
   given CanEqual[CIString, AuthScheme] = CanEqual.derived
 
-  given Mapper[Id, JwtClaim, IdToken] with
-    def fMap(a: JwtClaim): Id[IdToken] =
-      IdToken(a.content, a.issuer, a.subject, a.audience, a.expiration, a.notBefore, a.issuedAt, a.jwtId)
-  end given
-
-  given Mapper[Id, JwtClaim, OAuthTokenRecord] with
-    def fMap(a: JwtClaim): Id[OAuthTokenRecord] =
+  given Mapper[Id, IdToken, OAuthTokenRecord] with
+    def fMap(a: IdToken): Id[OAuthTokenRecord] =
       OAuthTokenRecord(a.audience.fold(none[String])(_.find(_.nonEmpty)), None, None,
-        decode[TokenScope](a.content).map(_.scope).toOption, a.subject)
+        a.content.flatMap(content => decode[TokenScope](content).toOption).map(_.scope), a.subject)
   end given
 
   given Mapper[Option, IntrospectionResponse, OAuthTokenRecord] with
@@ -112,13 +108,15 @@ package object app:
         Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, realm)))
     }
     
-  def checkJwt[A](payloadIO: IO[Try[JwtClaim]], audience: String)
-                 (using Mapper[Id, JwtClaim, A], Logger[IO]): IO[Option[A]] =
+  def checkJwt[A](payloadIO: IO[Try[Json]], audience: String, nonce: Option[String])
+                 (using Mapper[Id, IdToken, A], Logger[IO]): IO[Option[A]] =
     val payloadOptionT =
       for
         payload <- OptionT(payloadIO.flatMap {
-          case Success(value) => IO.pure(value.some)
-          case Failure(exception) => info"Token invalid: $exception" *> IO.pure(none[JwtClaim])
+          case Success(value) => value.as[IdToken] match
+            case Left(e) => info"Payload invalid: $e".as(none[IdToken])
+            case Right(idToken) => IO.pure(idToken.some)
+          case Failure(exception) => info"Token invalid: $exception" *> IO.pure(none[IdToken])
         })
         _ <- info"Signature validated.".optionT
         _ <- info"Payload $payload".optionT
@@ -132,8 +130,46 @@ package object app:
         _ <- OptionT.fromOption(payload.expiration.filter(_ >= realTime.toSeconds))
         _ <- info"expiration OK".optionT
         _ <- info"Token valid!".optionT
+        _ <- nonce.fold(OptionT.pure[IO](()))(n => payload.nonce.filter(_ == n).fold(OptionT.none[IO, Unit])(
+          _ => info"nonce OK".optionT
+        ))
       yield payload.to[Id, A]
     payloadOptionT.value
+
+  def userInfoEndpoint(req: Request[IO], realm: String)(using Logger[IO]): IO[Response[IO]] =
+    requireAccessToken(req, realm)(getRecordByAccessToken) { record =>
+      val scope = record.scope.getOrElse(Set.empty[String])
+      if !scope.contains("openid") then Forbidden() else
+        record.user.flatMap(userInfos.get).fold(NotFound()) { user =>
+          val containsProfile: Boolean = scope.contains("profile")
+          val containsEmail: Boolean = scope.contains("email")
+          val containsPhone: Boolean = scope.contains("phone")
+          Ok(UserInfo(
+            user.sub.filter(_ => scope.contains("openid")),
+            user.preferredUsername.filter(_ => containsProfile),
+            user.name.filter(_ => containsProfile),
+            user.email.filter(_ => containsEmail),
+            user.emailVerified.filter(_ => containsEmail),
+            None,
+            None,
+            user.familyName.filter(_ => containsProfile),
+            user.givenName.filter(_ => containsProfile),
+            user.middleName.filter(_ => containsProfile),
+            user.nickname.filter(_ => containsProfile),
+            user.profile.filter(_ => containsProfile),
+            user.picture.filter(_ => containsProfile),
+            user.website.filter(_ => containsProfile),
+            user.gender.filter(_ => containsProfile),
+            user.birthdate.filter(_ => containsProfile),
+            user.zoneInfo.filter(_ => containsProfile),
+            user.locale.filter(_ => containsProfile),
+            user.updatedAt.filter(_ => containsProfile),
+            user.address.filter(_ => scope.contains("address")),
+            user.phoneNumber.filter(_ => containsPhone),
+            user.phoneNumberVerified.filter(_ => containsPhone)
+          ).asJson)
+        }
+    }
 
   private[this] val rsaPublicKey: IO[PublicKey] =
     for
@@ -144,8 +180,8 @@ package object app:
       )))
     yield key
 
-  def jwtRS256Decode(accessToken: String): IO[Try[JwtClaim]] =
-    rsaPublicKey.flatMap(pubKey => IO(JwtCirce.decode(accessToken, pubKey, Seq(JwtAlgorithm.RS256))))
+  def jwtRS256Decode(accessToken: String): IO[Try[Json]] =
+    rsaPublicKey.flatMap(pubKey => IO(JwtCirce.decodeJson(accessToken, pubKey, Seq(JwtAlgorithm.RS256))))
 
   def parseRequest[A](req: Request[IO])(jsonF: Json => A)(formF: UrlForm => A): IO[A] =
     req.headers.get[`Content-Type`] match

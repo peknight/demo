@@ -10,7 +10,7 @@ import org.http4s.Uri
 
 case class AuthorizeParam(clientId: String, redirectUri: Uri, scope: Set[String], responseType: ResponseType,
                           state: Option[String], codeChallenge: Option[String],
-                          codeChallengeMethod: Option[CodeChallengeMethod])
+                          codeChallengeMethod: Option[CodeChallengeMethod], nonce: Option[String])
 
 object AuthorizeParam:
 
@@ -28,7 +28,8 @@ object AuthorizeParam:
         params.get(stateKey).flatMap(_.find(_.nonEmpty)).validNel[String],
         params.get(codeChallengeKey).flatMap(_.find(_.nonEmpty)).validNel[String],
         params.get(codeChallengeMethodKey).flatMap(_.find(_.nonEmpty)).flatMap(CodeChallengeMethod.fromString)
-          .validNel[String]
+          .validNel[String],
+        params.get(nonceKey).flatMap(_.find(_.nonEmpty)).validNel[String]
       ).mapN(AuthorizeParam.apply).leftMap(es =>
         es.toList.mkString(s"Invalid param${if es.tail.nonEmpty then "s" else ""}: ", ", ", "")
       )
@@ -43,4 +44,5 @@ object AuthorizeParam:
       .withOptionQueryParam(stateKey, authorizeParam.state)
       .withOptionQueryParam(codeChallengeKey, authorizeParam.codeChallenge)
       .withOptionQueryParam(codeChallengeMethodKey, authorizeParam.codeChallengeMethod.map(_.value))
+      .withOptionQueryParam(nonceKey, authorizeParam.nonce)
       .withQueryParam(redirectUriKey, authorizeParam.redirectUri)
