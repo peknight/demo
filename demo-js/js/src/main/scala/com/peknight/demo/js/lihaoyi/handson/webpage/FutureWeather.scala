@@ -30,7 +30,9 @@ object FutureWeather:
           result <- decode[Result](text).toOption
           info <- result.list.headOption
         yield (name, info.main.temp - 272.15)
-    responses.sequence.map(_.filter(_.isDefined).map(_.get))
+    responses.sequence.map(_.collect {
+      case Some(resp) => resp
+    })
 
   def renderResults(output: html.Element, results: Seq[(String, Double)]) =
     output.innerHTML = ""
