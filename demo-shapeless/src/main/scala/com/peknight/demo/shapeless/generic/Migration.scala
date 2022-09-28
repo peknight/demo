@@ -1,28 +1,27 @@
-package com.peknight.demo.shapeless.generic.mapper.identity
+package com.peknight.demo.shapeless.generic
 
 import cats.{Id, Monoid}
 import com.peknight.demo.shapeless.generic.*
 
 import scala.compiletime.constValue
 
-trait Mapper[A, B] extends com.peknight.demo.shapeless.generic.mapper.Mapper[Id, A, B]
+trait Migration[A, B]:
+  def apply(a: A): B
+end Migration
 
-object Mapper:
+object Migration:
 
   extension [A] (a: A)
-    def to[B](using mapper: Mapper[A, B]): B = mapper.to(a)
+    def migrateTo[B](using mapper: Migration[A, B]): B = mapper.apply(a)
+
+  inline given [A <: Product, Repr <: Tuple] (using mirror: MirrorProductAux[A, Repr]): Migration[A, Repr] with
+    def apply(a: A): Repr = Tuple.fromProductTyped(a)
+
+  inline given [A <: Product, Repr <: Tuple] (using mirror: MirrorProductAux[A, Repr]): Migration[Repr, A] with
+    def apply(a: Repr): A = mirror.fromProduct(a)
 
   type GetValue[A] = A match
     case (h, t) => t
-
-  def getValue[A](t: A): GetValue[A] = t match
-    case (_, value) => value.asInstanceOf[GetValue[A]]
-
-  inline given [A <: Product, Repr <: Tuple] (using mirror: MirrorProductAux[A, Repr]): Mapper[A, Repr] with
-    def to(a: A): Repr = Tuple.fromProductTyped(a)
-
-  inline given [A <: Product, Repr <: Tuple] (using mirror: MirrorProductAux[A, Repr]): Mapper[Repr, A] with
-    def to(a: Repr): A = mirror.fromProduct(a)
 
   inline given [A <: Product, ALabels <: Tuple, ARepr <: Tuple, B, BLabels <: Tuple, BRepr <: Tuple,
     Common <: Tuple, Added <: Tuple, Unaligned <: Tuple] (
@@ -36,11 +35,12 @@ object Mapper:
     monoid: Monoid[Added],
     prepend: Prepend.Aux[Added, Common, Unaligned],
     align: Align[Unaligned, Tuple.Zip[BLabels, BRepr]]
-  ): Mapper[A, B] = (a: A) =>
-    bMirror.fromProduct(
-      align(prepend(monoid.empty, inter(summonValuesAsTuple[ALabels].zip(Tuple.fromProductTyped(a)))))
-        .map[GetValue]([T] => (t: T) => getValue(t))
-    )
+  ): Migration[A, B] = (a: A) => bMirror.fromProduct(
+    align(prepend(monoid.empty, inter(summonValuesAsTuple[ALabels].zip(Tuple.fromProductTyped(a))))).map[GetValue] {
+      [T] => (t: T) => t match
+        case (_, value) => value.asInstanceOf[GetValue[T]]
+    }
+  )
 
   given Monoid[EmptyTuple] = Monoid.instance(EmptyTuple, (_, _) => EmptyTuple)
 

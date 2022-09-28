@@ -1,6 +1,6 @@
 package com.peknight.demo.shapeless.hlistcoproduct
 
-import com.peknight.demo.shapeless.generic.mapper.identity.Mapper.{*, given}
+import com.peknight.demo.shapeless.generic.Migration.{*, given}
 import com.peknight.demo.shapeless.hlistcoproduct.Penultimate.*
 import com.peknight.demo.shapeless.introduction.IceCream
 
@@ -21,6 +21,6 @@ object HListCoproductApp extends App:
   println(IceCream("Sundae", 1, false).penultimate)
 
   // OHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH 2022-09-11 22:56 成功迁移Scala3
-  println(IceCreamV1("Sundae", 1, true).to[IceCreamV2a])
-  println(IceCreamV1("Sundae", 1, true).to[IceCreamV2b])
-  println(IceCreamV1("Sundae", 1, true).to[IceCreamV2c])
+  println(IceCreamV1("Sundae", 1, true).migrateTo[IceCreamV2a])
+  println(IceCreamV1("Sundae", 1, true).migrateTo[IceCreamV2b])
+  println(IceCreamV1("Sundae", 1, true).migrateTo[IceCreamV2c])
