@@ -173,8 +173,8 @@ package object app:
 
   private[this] val rsaPublicKey: IO[PublicKey] =
     for
-      modulus <- decodeToBigInt(rsaKey.n)
-      exponent <- decodeToBigInt(rsaKey.e)
+      modulus <- decodeToBigInt(rsaPubKey.n)
+      exponent <- decodeToBigInt(rsaPubKey.e)
       key <- IO(KeyFactory.getInstance("RSA").generatePublic(RSAPublicKeySpec(
         modulus.bigInteger, exponent.bigInteger
       )))

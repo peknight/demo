@@ -34,7 +34,7 @@ import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim, JwtHeader}
 import scodec.bits.Bases.Alphabets.Base64Url
 
 import java.security.spec.RSAPrivateKeySpec
-import java.security.{KeyFactory, PrivateKey}
+import java.security.{KeyFactory, KeyPair, KeyPairGenerator, PrivateKey, PublicKey}
 import scala.annotation.unused
 import scala.concurrent.duration.*
 
@@ -529,7 +529,7 @@ object AuthorizationServerApp extends IOApp.Simple :
   private[this] val rsaPrivateKey: IO[PrivateKey] =
     for
       modulus <- decodeToBigInt(rsaKey.n)
-      privateExponent <- decodeToBigInt(rsaKey.d)
+      privateExponent <- decodeToBigInt(rsaKey.d.getOrElse(""))
       key <- IO(KeyFactory.getInstance("RSA").generatePrivate(RSAPrivateKeySpec(
         modulus.bigInteger, privateExponent.bigInteger
       )))
@@ -542,7 +542,7 @@ object AuthorizationServerApp extends IOApp.Simple :
       realTime <- IO.realTime
       jwtId <- randomString(random, 8)
       algorithm = JwtAlgorithm.RS256
-      header = JwtHeader(algorithm.some, JwtHeader.DEFAULT_TYPE.some, none, rsaKey.kid.some)
+      header = JwtHeader(algorithm.some, JwtHeader.DEFAULT_TYPE.some, none, rsaKey.kid)
       payload = createPayload(user, scope, protectedResourceIndex.toString, realTime, jwtId.some, None)
       privateKey <- rsaPrivateKey
       accessToken <- IO(JwtCirce.encode(header.toJson, payload, privateKey, algorithm))
@@ -553,7 +553,7 @@ object AuthorizationServerApp extends IOApp.Simple :
     for
       realTime <- IO.realTime
       algorithm = JwtAlgorithm.RS256
-      header = JwtHeader(algorithm.some, JwtHeader.DEFAULT_TYPE.some, none, rsaKey.kid.some)
+      header = JwtHeader(algorithm.some, JwtHeader.DEFAULT_TYPE.some, none, rsaKey.kid)
       payload = createPayload(user, none, clientId, realTime, none, nonce)
       key <- rsaPrivateKey
       idToken <- IO(JwtCirce.encode(header.toJson, payload, key, algorithm))
@@ -573,6 +573,14 @@ object AuthorizationServerApp extends IOApp.Simple :
       jwtId = jwtId,
       nonce = nonce
     ).asJson.noSpaces
+
+  private[this] val rsaKeyPair = IO {
+    val kpGen: KeyPairGenerator = KeyPairGenerator.getInstance("RSA")
+    kpGen.initialize(2048)
+    val kp: KeyPair = kpGen.generateKeyPair()
+    val sk: PrivateKey = kp.getPrivate
+    val pk: PublicKey = kp.getPublic
+  }
 
   private[this] def getClient(clientId: String, clientsR: Ref[IO, Seq[ClientInfo]]): IO[Option[ClientInfo]] =
     clientsR.get.map(clients => clients.find(_.id == clientId))
