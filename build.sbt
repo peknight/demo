@@ -14,6 +14,7 @@ lazy val commonSettings = Seq(
     "-unchecked",
     "-Xfatal-warnings",
     "-language:strictEquality",
+    "-Xmax-inlines:64"
     // "-Ywarn-value-discard",
   ),
 )

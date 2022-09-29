@@ -31,19 +31,19 @@ package object repository:
     tokenRecordStream.filter(p).pull.take(1).void.stream.compile.toList.map(_.headOption)
 
   def getRecordByRefreshToken(refreshToken: String): IO[Option[OAuthTokenRecord]] = findTokenRecord {
-    case OAuthTokenRecord(_, _, Some(refresh), _, _) if refresh == refreshToken => true
+    case OAuthTokenRecord(_, _, Some(refresh), _, _, _) if refresh == refreshToken => true
     case _ => false
   }
 
   def getRecordByAccessToken(accessToken: String): IO[Option[OAuthTokenRecord]] = findTokenRecord {
-    case OAuthTokenRecord(_, Some(access), _, _, _) if access == accessToken => true
+    case OAuthTokenRecord(_, Some(access), _, _, _, _) if access == accessToken => true
     case _ => false
   }
 
   def removeRecordByRefreshToken(refreshToken: String): IO[Unit] =
     for
       records <- tokenRecordStream.filter {
-        case OAuthTokenRecord(_, _, Some(refresh), _, _) if refresh == refreshToken => false
+        case OAuthTokenRecord(_, _, Some(refresh), _, _, _) if refresh == refreshToken => false
         case _ => true
       }.compile.toList
       _ <- overwriteRecords(records)

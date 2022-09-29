@@ -18,6 +18,8 @@ import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.page.AuthorizationServerPage
 import com.peknight.demo.oauth2.random.*
 import com.peknight.demo.oauth2.repository.*
+import fs2.Stream
+import fs2.text.base64
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import io.circe.{Json, JsonObject}
@@ -26,15 +28,17 @@ import org.http4s.circe.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.*
 import org.http4s.scalatags.*
-import org.typelevel.ci.CIString
+import org.typelevel.ci.*
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
 import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim, JwtHeader}
 import scodec.bits.Bases.Alphabets.Base64Url
 
+import java.math.BigInteger
+import java.security.*
+import java.security.interfaces.{RSAPrivateCrtKey, RSAPublicKey}
 import java.security.spec.RSAPrivateKeySpec
-import java.security.{KeyFactory, KeyPair, KeyPairGenerator, PrivateKey, PublicKey}
 import scala.annotation.unused
 import scala.concurrent.duration.*
 
@@ -45,14 +49,15 @@ object AuthorizationServerApp extends IOApp.Simple :
       requestsR <- Ref.of[IO, Map[String, AuthorizeParam]](Map.empty)
       codesR <- Ref.of[IO, Map[String, AuthorizeCodeCache]](Map.empty)
       clientsR <- Ref.of[IO, Seq[ClientInfo]](clients)
+      usePop <- usePopConfig.load[IO]
       random <- Random.scalaUtilRandom[IO]
       logger <- Slf4jLogger.create[IO]
       given Logger[IO] = logger
       serverPort = port"8001"
       _ <- clearRecord
       _ <- insertRecord(OAuthTokenRecord("oauth-client-1".some, None, "j2r3oj32r23rmasd98uhjrk2o3i".some,
-        Set("foo", "bar").some, None)).timeout(5.seconds)
-      _ <- start[IO](serverPort)(service(random, requestsR, codesR, clientsR).orNotFound)
+        Set("foo", "bar").some, None, None)).timeout(5.seconds)
+      _ <- start[IO](serverPort)(service(random, usePop, requestsR, codesR, clientsR).orNotFound)
       _ <- info"OAuth Authorization Server is listening at https://$serverHost:$serverPort"
       _ <- IO.never
     yield ()
@@ -60,14 +65,14 @@ object AuthorizationServerApp extends IOApp.Simple :
   given Getter[Option, UrlForm, String, GrantType] = Getter[Option, UrlForm, String, String].to[GrantType]
   given Getter[Option, UrlForm, String, Uri] = Getter[Option, UrlForm, String, String].to[Uri]
 
-  private[this] def service(random: Random[IO], requestsR: Ref[IO, Map[String, AuthorizeParam]],
+  private[this] def service(random: Random[IO], usePop: Boolean, requestsR: Ref[IO, Map[String, AuthorizeParam]],
                             codesR: Ref[IO, Map[String, AuthorizeCodeCache]], clientsR: Ref[IO, Seq[ClientInfo]])
                            (using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => clientsR.get.flatMap(clients => Ok(AuthorizationServerPage.Text.index(authServer, clients)))
     case GET -> Root / "authorize" :? AuthorizeParam(authorizeParamValid) =>
       authorize(authorizeParamValid, random, requestsR, clientsR)
     case req @ POST -> Root / "approve" => approve(req, random, requestsR, codesR, clientsR)
-    case req @ POST -> Root / "token" => token(req, random, codesR, clientsR)
+    case req @ POST -> Root / "token" => token(req, random, usePop, codesR, clientsR)
     case req @ POST -> Root / "revoke" => revoke(req, clientsR)
     case req @ POST -> Root / "introspect" => introspect(req)
     case req @ POST -> Root / "register" => postRegister(req, random, clientsR)
@@ -135,7 +140,9 @@ object AuthorizationServerApp extends IOApp.Simple :
                   def encode(value: Set[String]): UrlFragmentValue = UrlFragmentValue(value.mkString(" "))
                 for
                   _ <- info"User $userInfo"
-                  tokenResponse <- generateTokens(random, query.clientId, userInfo.some, scope, query.state, None, false)
+                  tokenResponse <- generateTokens(random, query.clientId, userInfo.some, scope, query.state, None,
+                    false, false)
+                  x = tokenResponse.toFragment(camelToSnake)
                   resp <- Found(Location(query.redirectUri.withFragment(tokenResponse.toFragment(camelToSnake))))
                 yield resp
               }
@@ -149,11 +156,12 @@ object AuthorizationServerApp extends IOApp.Simple :
     }
   end approve
 
-  private[this] def token(req: Request[IO], random: Random[IO], codesR: Ref[IO, Map[String, AuthorizeCodeCache]],
-                          clientsR: Ref[IO, Seq[ClientInfo]])(using Logger[IO]): IO[Response[IO]] =
+  private[this] def token(req: Request[IO], random: Random[IO], usePop: Boolean,
+                          codesR: Ref[IO, Map[String, AuthorizeCodeCache]], clientsR: Ref[IO, Seq[ClientInfo]])
+                         (using Logger[IO]): IO[Response[IO]] =
     req.as[UrlForm].flatMap { body => checkAuthorization(req, body, clientsR) { client =>
       body.fGet[Option, String, GrantType]("grant_type") match
-        case Some(GrantType.AuthorizationCode) => authorizationCode(client.id, body, random, codesR)
+        case Some(GrantType.AuthorizationCode) => authorizationCode(client.id, body, random, usePop, codesR)
         case Some(GrantType.ClientCredentials) => clientCredentials(client, body, random)
         case Some(GrantType.RefreshToken) => refreshToken(client.id, body, random)
         case Some(GrantType.Password) => password(client, body, random)
@@ -162,7 +170,7 @@ object AuthorizationServerApp extends IOApp.Simple :
     }}
   end token
 
-  private[this] def authorizationCode(clientId: String, body: UrlForm, random: Random[IO],
+  private[this] def authorizationCode(clientId: String, body: UrlForm, random: Random[IO], usePop: Boolean,
                                       codesR: Ref[IO, Map[String, AuthorizeCodeCache]])
                                      (using Logger[IO]): IO[Response[IO]] =
     for
@@ -184,7 +192,7 @@ object AuthorizationServerApp extends IOApp.Simple :
                 resp <- checkCodeChallenge(cache, body) {
                   for
                     tokenResponse <- generateTokens(random, clientId, cache.user.flatMap(userInfos.get), cache.scope,
-                      None, cache.authorizationEndpointRequest.nonce, true)
+                      None, cache.authorizationEndpointRequest.nonce, true, usePop)
                     _ <- info"Issued tokens for code $code"
                     resp <- Ok(tokenResponse.asJson)
                   yield resp
@@ -201,7 +209,7 @@ object AuthorizationServerApp extends IOApp.Simple :
                                      (using Logger[IO]): IO[Response[IO]] =
     checkScope(body, client) { scope =>
       for
-        tokenResponse <- generateTokens(random, client.id, None, scope, None, None, false)
+        tokenResponse <- generateTokens(random, client.id, None, scope, None, None, false, false)
         resp <- Ok(tokenResponse.asJson)
       yield resp
     }
@@ -223,10 +231,10 @@ object AuthorizationServerApp extends IOApp.Simple :
             user = record.user.flatMap(preferredUsername => userInfos.values
               .find(_.preferredUsername.contains(preferredUsername)))
             accessToken <- generateAccessToken(user, record.scope, random)
-            _ <- insertRecord(OAuthTokenRecord(clientId.some, accessToken.some, None, record.scope, record.user))
+            _ <- insertRecord(OAuthTokenRecord(clientId.some, accessToken.some, None, record.scope, record.user, None))
             _ <- info"Issuing access token $accessToken for refresh token $refreshToken"
             resp <- Ok(OAuthToken(accessToken, AuthScheme.Bearer, body.fGet[Option, String, String]("refresh_token"),
-              None, None, None).asJson)
+              None, None, None, None, None).asJson)
           yield resp
         case _ => info"No matching token was found." *> invalidGrantResp
     yield resp
@@ -246,7 +254,8 @@ object AuthorizationServerApp extends IOApp.Simple :
             info"Mismatched resource owner password, expected $userPwd got $bodyPwd" *> invalidGrantResp
           } { _ => checkScope(body, client) { scope =>
             for
-              tokenResponse <- generateTokens(random, client.id, userOption, scope, None, None, true)
+              tokenResponse <- generateTokens(random, client.id, userOption, scope, None, None,
+                true, false)
               resp <- Ok(tokenResponse.asJson)
             yield resp
           }}
@@ -285,7 +294,8 @@ object AuthorizationServerApp extends IOApp.Simple :
             resp <- recordOption match
               case Some(record) => info"We found a matching token: ${record.accessToken.getOrElse("None")}" *>
                 Ok(IntrospectionResponse(true, record.scope, record.clientId, record.user,
-                  authorizationServerIndex.toString.some, record.user, protectedResourceIndex.toString.some).asJson)
+                  authorizationServerIndex.toString.some, record.user, protectedResourceIndex.toString.some,
+                  None, None, record.accessTokenKey).asJson)
               case _ => info"No matching token was found" *>
                 Ok(IntrospectionResponse(false).asJson)
           yield resp
@@ -341,12 +351,19 @@ object AuthorizationServerApp extends IOApp.Simple :
     }
 
   private[this] def generateTokens(random: Random[IO], clientId: String, user: Option[UserInfo], scope: Set[String],
-                                   state: Option[String], nonce: Option[String], generateRefreshToken: Boolean)
+                                   state: Option[String], nonce: Option[String], generateRefreshToken: Boolean,
+                                   generatePopKeys: Boolean)
                                   (using Logger[IO]): IO[OAuthToken] =
     for
       accessToken <- generateAccessToken(user, scope.some, random)
+      keyPair <-
+        if generatePopKeys then
+          rsaKeyPair.map {
+            case (sk, pk) => (sk.some, pk.some)
+          }
+        else IO.pure((none[RsaKey], none[RsaKey]))
       _ <- insertRecord(OAuthTokenRecord(clientId.some, accessToken.some, None, scope.some,
-        user.flatMap(_.preferredUsername)))
+        user.flatMap(_.preferredUsername), keyPair._2))
       _ <- info"Issuing accessToken $accessToken"
       refreshTokenOption <-
         if generateRefreshToken then
@@ -354,7 +371,7 @@ object AuthorizationServerApp extends IOApp.Simple :
             refresh <- randomString(random, 32)
             refreshOption = refresh.some
             _ <- insertRecord(OAuthTokenRecord(clientId.some, None, refreshOption, scope.some,
-              user.flatMap(_.preferredUsername)))
+              user.flatMap(_.preferredUsername), None))
             _ <- info"and refresh token $refresh"
           yield refreshOption
         else IO.pure(None)
@@ -363,7 +380,8 @@ object AuthorizationServerApp extends IOApp.Simple :
         if scope.contains("openid") && user.isDefined then
           rs256JwtForClient(clientId, user, nonce).map(_.some)
         else IO.pure(None)
-    yield OAuthToken(accessToken, AuthScheme.Bearer, refreshTokenOption, scope.some, state, idTokenOption)
+    yield OAuthToken(accessToken, if generatePopKeys then ci"PoP" else AuthScheme.Bearer, refreshTokenOption,
+      scope.some, state, idTokenOption, keyPair._1, if generatePopKeys then JwtAlgorithm.RS256.name.some else None)
 
   private[this] def checkScope(body: UrlForm, query: AuthorizeParam, clientsR: Ref[IO, Seq[ClientInfo]])
                               (resp: Set[String] => IO[Response[IO]]): IO[Response[IO]] =
@@ -578,9 +596,18 @@ object AuthorizationServerApp extends IOApp.Simple :
     val kpGen: KeyPairGenerator = KeyPairGenerator.getInstance("RSA")
     kpGen.initialize(2048)
     val kp: KeyPair = kpGen.generateKeyPair()
-    val sk: PrivateKey = kp.getPrivate
-    val pk: PublicKey = kp.getPublic
+    val sk: RSAPrivateCrtKey = kp.getPrivate.asInstanceOf[RSAPrivateCrtKey]
+    val pk: RSAPublicKey = kp.getPublic.asInstanceOf[RSAPublicKey]
+    val rsaSk = RsaKey(None, encodeToBase64Url(sk.getPrivateExponent).some, encodeToBase64Url(sk.getPublicExponent),
+      encodeToBase64Url(sk.getModulus), sk.getAlgorithm, None, encodeToBase64Url(sk.getPrimeP).some,
+      encodeToBase64Url(sk.getPrimeQ).some)
+    val rsaPk = RsaKey(None, None, encodeToBase64Url(pk.getPublicExponent), encodeToBase64Url(pk.getModulus),
+      pk.getAlgorithm, None, None, None)
+    (rsaSk, rsaPk)
   }
+
+  def encodeToBase64Url(decoded: BigInteger): String =
+    Stream(decoded.toByteArray*).through(base64.encodeWithAlphabet(Base64Url)).toList.mkString("")
 
   private[this] def getClient(clientId: String, clientsR: Ref[IO, Seq[ClientInfo]]): IO[Option[ClientInfo]] =
     clientsR.get.map(clients => clients.find(_.id == clientId))

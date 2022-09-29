@@ -51,17 +51,19 @@ package object app:
   given Mapper[Id, IdToken, OAuthTokenRecord] with
     def fMap(a: IdToken): Id[OAuthTokenRecord] =
       OAuthTokenRecord(a.audience.fold(none[String])(_.find(_.nonEmpty)), None, None,
-        a.content.flatMap(content => decode[TokenScope](content).toOption).map(_.scope), a.subject)
+        a.content.flatMap(content => decode[TokenScope](content).toOption).map(_.scope), a.subject, None)
   end given
 
   given Mapper[Option, IntrospectionResponse, OAuthTokenRecord] with
     def fMap(a: IntrospectionResponse): Option[OAuthTokenRecord] =
-      if a.active then Some(OAuthTokenRecord(a.clientId, None, None, a.scope, a.subject)) else None
+      if a.active then Some(OAuthTokenRecord(a.clientId, None, None, a.scope, a.subject, None)) else None
   end given
 
   val serverHost = host"local.peknight.com"
   private[this] val storePasswordConfig: ConfigValue[Effect, Secret[String]] = env("STORE_PASSWORD").secret
   private[this] val keyPasswordConfig: ConfigValue[Effect, Secret[String]] = env("KEY_PASSWORD").secret
+  val usePopConfig: ConfigValue[Effect, Boolean] = env("USE_POP").as[Boolean]
+
 
   def start[F[_]: Async](port: Port)(httpApp: HttpApp[F]): F[(Server, F[Unit])] =
     for

@@ -32,11 +32,9 @@ object ClientApp extends IOApp.Simple :
   val run: IO[Unit] =
     for
       clientR <- Ref.of[IO, Option[ClientInfo]](client.some)
-      oauthTokenCacheR <- Ref.of[IO, OAuthTokenCache](OAuthTokenCache(
-        None,
+      oauthTokenCacheR <- Ref.of[IO, OAuthTokenCache](OAuthTokenCache( None,
         None, // "j2r3oj32r23rmasd98uhjrk2o3i".some,
-        None,
-        None))
+        None, None, None, None))
       stateR <- Ref.of[IO, Option[String]](None)
       codeVerifierR <- Ref.of[IO, Option[String]](None)
       nonceR <- Ref.of[IO, Option[String]](None)
@@ -74,7 +72,7 @@ object ClientApp extends IOApp.Simple :
         callback(code, state, clientR, oauthTokenCacheR, stateR, codeVerifierR, nonceR)
       case GET -> Root / "callback" :? ErrorQueryParamMatcher(error) => Ok(ClientPage.Text.error(error))
       case GET -> Root / "refresh" => refresh(clientR, oauthTokenCacheR)
-      case GET -> Root / "fetch_resource" => fetchResource(clientR, oauthTokenCacheR)(resourceRequest)
+      case GET -> Root / "fetch_resource" => fetchResource(clientR, oauthTokenCacheR)(fetchResourceRequest)
       case GET -> Root / "greeting" :? LanguageQueryParamMatcher(language) =>
         greeting(language, clientR, oauthTokenCacheR)
       case GET -> Root / "words" => Ok(ClientPage.Text.words(Seq.empty[String], 0L, NoGet))
@@ -199,9 +197,9 @@ object ClientApp extends IOApp.Simple :
     yield resp
 
   private[this] def fetchResource(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
-                                 (buildRequest: String => Request[IO])(using Logger[IO]): IO[Response[IO]] =
-    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { accessToken =>
-      val req = buildRequest(accessToken)
+                                 (buildRequest: (String, OAuthTokenCache) => Request[IO])(using Logger[IO]): IO[Response[IO]] =
+    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { (accessToken, cache) =>
+      val req = buildRequest(accessToken, cache)
       for
         _ <- info"Making request with access token $accessToken"
         _ <- info"protectedResourceEndpoint ${req.uri}"
@@ -219,14 +217,14 @@ object ClientApp extends IOApp.Simple :
 
   private[this] def greeting(language: String, clientR: Ref[IO, Option[ClientInfo]],
                              oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
-    fetchResource(clientR, oauthTokenCacheR)(accessToken => GET(
+    fetchResource(clientR, oauthTokenCacheR)((accessToken, _) => GET(
       helloWorldApi.withQueryParam("language", language),
       Headers(Authorization(Credentials.Token(AuthScheme.Bearer, accessToken)))
     ))
 
   private[this] def getWords(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
                             (using Logger[IO]): IO[Response[IO]] =
-    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { accessToken =>
+    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { (accessToken, _) =>
       runHttpRequest(GET(wordApi, bearerHeaders(accessToken))) { response =>
         for
           data <- response.as[WordsData]
@@ -239,7 +237,7 @@ object ClientApp extends IOApp.Simple :
 
   private[this] def addWord(word: String, clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
                             (using Logger[IO]): IO[Response[IO]] =
-    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { accessToken =>
+    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { (accessToken, _) =>
       runHttpRequest(POST(UrlForm("word" -> word), wordApi, bearerHeaders(accessToken))) { _ =>
         Ok(ClientPage.Text.words(Seq.empty[String], 0L, Add))
       } { _ =>
@@ -249,7 +247,7 @@ object ClientApp extends IOApp.Simple :
 
   private[this] def deleteWord(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
                                (using Logger[IO]): IO[Response[IO]] =
-    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { accessToken =>
+    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { (accessToken, _) =>
       runHttpRequest(DELETE(wordApi, bearerHeaders(accessToken))) { _ =>
         Ok(ClientPage.Text.words(Seq.empty[String], 0L, Rm))
       } { _ =>
@@ -259,7 +257,7 @@ object ClientApp extends IOApp.Simple :
 
   private[this] def produce(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
                            (using Logger[IO]): IO[Response[IO]] =
-    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { accessToken =>
+    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { (accessToken, _) =>
       runHttpRequest(GET(produceApi, bearerHeaders(accessToken))) { response =>
         for
           data <- response.as[ProduceData]
@@ -276,7 +274,7 @@ object ClientApp extends IOApp.Simple :
 
   private[this] def favorites(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
                              (using Logger[IO]): IO[Response[IO]] =
-    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { accessToken =>
+    getOrRefreshAccessToken(clientR, oauthTokenCacheR) { (accessToken, _) =>
       runHttpRequest(GET(favoritesApi, bearerHeaders(accessToken))) { response =>
         for
           data <- response.as[UserFavoritesData]
@@ -300,7 +298,7 @@ object ClientApp extends IOApp.Simple :
         )
         for
           _ <- info"Revoking token $accessToken"
-          _ <- oauthTokenCacheR.set(OAuthTokenCache(None, None, None, None))
+          _ <- oauthTokenCacheR.set(OAuthTokenCache(None, None, None, None, None, None))
           response <- runHttpRequest(req){ _ =>
             oauthTokenCacheR.get.flatMap(cache => Ok(ClientPage.Text.index(client.some, cache)))
           } { statusCode => Ok(ClientPage.Text.error(s"$statusCode")) }
@@ -452,6 +450,12 @@ object ClientApp extends IOApp.Simple :
       )
     }
 
+  private[this] def fetchResourceRequest(accessToken: String, oauthTokenCache: OAuthTokenCache): Request[IO] =
+    oauthTokenCache.key match
+      // TODO
+      case Some(sk) => resourceRequest(accessToken)
+      case None => resourceRequest(accessToken)
+
   private[this] def refreshTokenRequest(client: ClientInfo, refreshToken: String): Request[IO] =
     POST(
       UrlForm(
@@ -481,16 +485,20 @@ object ClientApp extends IOApp.Simple :
         accessToken = Some(oauthToken.accessToken),
         refreshToken = oauthToken.refreshToken.orElse(origin.refreshToken),
         scope = oauthToken.scope.orElse(origin.scope),
-        idToken = payloadOption.orElse(origin.idToken)
+        idToken = payloadOption.orElse(origin.idToken),
+        key = oauthToken.accessTokenKey.orElse(origin.key),
+        algorithm = oauthToken.algorithm.orElse(origin.algorithm)
       ))
     yield oauthTokenCache
 
   private[this] def getOrRefreshAccessToken(clientR: Ref[IO, Option[ClientInfo]],
                                             oauthTokenCacheR: Ref[IO, OAuthTokenCache])
-                                           (handleToken: String => IO[Response[IO]])
+                                           (handleToken: (String, OAuthTokenCache) => IO[Response[IO]])
                                            (using Logger[IO]): IO[Response[IO]] =
     oauthTokenCacheR.get.flatMap(oauthTokenCache => oauthTokenCache.accessToken
-      .fold(refreshAccessToken(oauthTokenCache, clientR, oauthTokenCacheR, "Missing access token."))(handleToken)
+      .fold(refreshAccessToken(oauthTokenCache, clientR, oauthTokenCacheR, "Missing access token."))(
+        accessToken => handleToken(accessToken, oauthTokenCache)
+      )
     )
 
   private[this] def handleOAuthToken[T](oauthTokenCacheR: Ref[IO, OAuthTokenCache])(ifEmpty: OAuthTokenCache => IO[T])

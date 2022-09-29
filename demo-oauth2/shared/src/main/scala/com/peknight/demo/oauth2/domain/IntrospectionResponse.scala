@@ -3,6 +3,7 @@ package com.peknight.demo.oauth2.domain
 import cats.effect.Concurrent
 import com.peknight.demo.oauth2.constant.*
 import io.circe.Codec
+import io.circe.generic.auto.*
 import org.http4s.EntityDecoder
 import org.http4s.circe.*
 
@@ -14,12 +15,13 @@ case class IntrospectionResponse(active: Boolean,
                                  subject: Option[String] = None,
                                  audience: Option[String] = None,
                                  issuedAt: Option[Long] = None,
-                                 expiration: Option[Long] = None)
+                                 expiration: Option[Long] = None,
+                                 accessTokenKey: Option[RsaKey] = None)
 
 object IntrospectionResponse:
 
   given Codec[IntrospectionResponse] =
-    Codec.forProduct9(
+    Codec.forProduct10(
       activeKey,
       scopeKey,
       clientIdKey,
@@ -28,7 +30,8 @@ object IntrospectionResponse:
       subjectKey,
       audienceKey,
       issuedAtKey,
-      expirationKey
+      expirationKey,
+      accessTokenKeyKey
     )((active: Boolean,
        scope: Option[String],
        clientId: Option[String],
@@ -37,10 +40,11 @@ object IntrospectionResponse:
        subject: Option[String],
        audience: Option[String],
        issuedAt: Option[Long],
-       expiration: Option[Long]) =>
+       expiration: Option[Long],
+       accessTokenKey: Option[RsaKey]) =>
       IntrospectionResponse(active, scope.map(_.split("\\s++").toSet[String]), clientId, username, issuer,
-        subject, audience, issuedAt, expiration)
+        subject, audience, issuedAt, expiration, accessTokenKey)
     )(t => (t.active, t.scope.map(_.mkString(" ")), t.clientId, t.username, t.issuer, t.subject, t.audience, t.issuedAt,
-      t.expiration))
+      t.expiration, t.accessTokenKey))
 
   given [F[_]: Concurrent]: EntityDecoder[F, IntrospectionResponse] = jsonOf[F, IntrospectionResponse]

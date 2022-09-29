@@ -8,7 +8,9 @@ import org.http4s.syntax.literals.uri
 package object constant:
 
   val accessTokenKey = "access_token"
+  val accessTokenKeyKey = "access_token_key"
   val activeKey = "active"
+  val algorithmKey = "alg"
   val audienceKey = "aud"
   val clientIdKey = "client_id"
   val clientIdCreatedAtKey = "client_id_created_at"

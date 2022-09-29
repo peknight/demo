@@ -5,6 +5,8 @@ import com.peknight.demo.oauth2.constant.*
 import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.domain.WordsResult.*
 import io.circe.Json
+import io.circe.generic.auto.*
+import io.circe.syntax.*
 import org.http4s.Method.{GET, POST}
 import org.http4s.Uri
 import org.http4s.syntax.literals.uri
@@ -20,6 +22,8 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     p("Access token value: ", span(cls := "label label-danger")(oauthTokenCache.accessToken.getOrElse("NONE"))),
     p("Scope value: ", span(cls := "label label-danger")(oauthTokenCache.scope.map(_.mkString(" ")).getOrElse("NONE"))),
     p("Refresh token value: ", span(cls := "label label-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
+    p("Access token key value: ", span(cls := "label label-danger")(oauthTokenCache.key
+      .map(_.asJson.deepDropNullValues.noSpaces).getOrElse("NONE"))),
     p("Client ID: ", span(cls := "label label-danger")(client.map(_.id).getOrElse("None"))),
     p("Client Secret: ", span(cls := "label label-danger")(client.flatMap(_.secret).getOrElse("None"))),
     p("Registration access token: ", span(cls := "label label-danger")(client.flatMap(_.registrationAccessToken).getOrElse("None"))),
