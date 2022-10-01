@@ -4,6 +4,7 @@ import cats.Functor
 import cats.data.OptionT
 import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.functor.*
+import cats.syntax.option.*
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.common.Mapper.*
 import com.peknight.demo.oauth2.constant.*
@@ -14,6 +15,7 @@ import com.peknight.demo.oauth2.random.*
 import com.peknight.demo.oauth2.repository.getRecordByAccessToken
 import fs2.Stream
 import fs2.text.{hex, utf8}
+import io.circe.Json
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.http4s.*
@@ -23,15 +25,16 @@ import org.http4s.dsl.io.*
 import org.http4s.headers.*
 import org.http4s.scalatags.*
 import org.http4s.server.middleware.{CORS, CORSPolicy}
-import org.typelevel.ci.CIString
+import org.typelevel.ci.*
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
-import pdi.jwt.{JwtAlgorithm, JwtCirce}
+import pdi.jwt.*
+import pdi.jwt.algorithms.JwtRSAAlgorithm
 
 import scala.collection.immutable.Queue
 import scala.concurrent.duration.*
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 object ProtectedResourceApp extends IOApp.Simple :
 
@@ -39,10 +42,11 @@ object ProtectedResourceApp extends IOApp.Simple :
   val run: IO[Unit] =
     for
       savedWordsR <- Ref.of[IO, Queue[String]](Queue.empty)
+      usePop <- usePopConfig.load[IO]
       logger <- Slf4jLogger.create[IO]
       given Logger[IO] = logger
       serverPort = port"8002"
-      _ <- start[IO](serverPort)(corsPolicy(service(savedWordsR)).orNotFound)
+      _ <- start[IO](serverPort)(corsPolicy(service(usePop, savedWordsR)).orNotFound)
       _ <- info"OAuth Resource Server is listening at https://$serverHost:$serverPort"
       _ <- IO.never
     yield ()
@@ -60,10 +64,10 @@ object ProtectedResourceApp extends IOApp.Simple :
 
   object LanguageQueryParamMatcher extends OptionalQueryParamDecoderMatcher[String]("language")
 
-  def service(savedWordsR: Ref[IO, Queue[String]])(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
+  def service(usePop: Boolean, savedWordsR: Ref[IO, Queue[String]])(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(ProtectedResourcePage.Text.index)
     // case OPTIONS -> Root / "resource" => NoContent()
-    case req @ POST -> Root / "resource" => getResource(req)
+    case req @ POST -> Root / "resource" => getResource(usePop, req)
     case req @ GET -> Root / "words" => getWords(req, savedWordsR)
     case req @ POST -> Root / "words" => postWords(req, savedWordsR)
     case req @ DELETE -> Root / "words" => deleteWords(req, savedWordsR)
@@ -74,8 +78,13 @@ object ProtectedResourceApp extends IOApp.Simple :
     case req @ (GET | POST) -> Root / "userinfo" => userInfoEndpoint(req, protectedResourceAddr)
   }
 
-  private[this] def getResource(req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
-    requireAccessToken(req, protectedResourceAddr)(introspect)(record => Ok(ResourceScope(resource, record.scope).asJson))
+  private[this] def getResource(usePop: Boolean, req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
+    if usePop then
+      requirePop(req)(record => Ok(ResourceScope(resource, record.scope).asJson))
+    else
+      requireAccessToken(req, protectedResourceAddr)(introspect)(
+        record => Ok(ResourceScope(resource, record.scope).asJson)
+      )
 
   private[this] def getWords(req: Request[IO], savedWordsR: Ref[IO, Queue[String]])
                             (using Logger[IO]): IO[Response[IO]] =
@@ -145,6 +154,46 @@ object ProtectedResourceApp extends IOApp.Simple :
       )
     }
 
+  private[this] def requirePop(req: Request[IO])(handleOAuthTokenRecord: OAuthTokenRecord => IO[Response[IO]])
+                              (using Logger[IO]): IO[Response[IO]] =
+    val oauthTokenRecord =
+      for
+        inToken <- OptionT(req.headers.get[Authorization] match
+          case Some(Authorization(Credentials.Token(ci"PoP", token))) => IO(Some(token))
+          case _ => req.as[UrlForm].attempt
+            .map(_.toOption.flatMap(_.get(popAccessTokenKey).headOption).orElse(req.params.get(popAccessTokenKey)))
+        )
+        _ <- info"Incoming PoP: $inToken".optionT
+        headerPayload <- inToken.split("\\.").toList match
+          case headerStr :: payloadStr :: _ =>
+            for
+              jwtHeader <- OptionT(parseJwt[JwtHeader](headerStr))
+              popPayload <- OptionT(parseJwt[PopPayload](payloadStr))
+            yield (jwtHeader, popPayload)
+          case _ =>
+            for
+              _ <- info"Token invalid".optionT
+              empty <- OptionT.none[IO, (JwtHeader, PopPayload)]
+            yield empty
+        (jwtHeader, popPayload) = headerPayload
+        record <- OptionT(introspect(popPayload.at))
+        accessTokenKey <- OptionT(IO(record.accessTokenKey))
+        pubKey <- rsaPublicKey(accessTokenKey).optionT
+        _ <- OptionT(IO(JwtCirce.decodeJson(inToken, pubKey, jwtHeader.algorithm.toSeq
+          .asInstanceOf[Seq[JwtRSAAlgorithm]])).flatMap {
+          case Success(json) => IO(json.some)
+          case Failure(e) => info"Token invalid: $e" *> IO(none[Json])
+        })
+        _ <- info"Signature is valid".optionT
+        m = req.method.name
+        _ <- OptionT.fromOption(popPayload.m.orElse(m.some).filter(_ == m))
+        u = req.uri.authority.map(_.toString).getOrElse("")
+        _ <- OptionT.fromOption(popPayload.u.orElse(u.some).filter(_ == u))
+        p = req.uri.path.toString
+        _ <- OptionT.fromOption(popPayload.p.orElse(p.some).filter(_ == p))
+        _ <- info"All components matched".optionT
+      yield record
+    handleOAuthTokenRecordOptionT(oauthTokenRecord, protectedResourceAddr)(handleOAuthTokenRecord)
 
   private[this] def introspect(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
     val req: Request[IO] = POST(

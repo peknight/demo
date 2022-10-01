@@ -190,6 +190,7 @@ lazy val demoLog4Cats = (project in file("demo-log4cats"))
     libraryDependencies ++= Seq(
       log4CatsSlf4j,
       logbackClassic % Runtime,
+      jansi % Runtime,
     ),
   )
 
@@ -242,6 +243,7 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
       http4sJdkHttpClient,
       jQuery,
       logbackClassic % Runtime,
+      jansi % Runtime,
     ),
   )
   .jsSettings(
@@ -264,6 +266,7 @@ lazy val demoDoobie = (project in file("demo-doobie"))
       circeGeneric,
       circeParser,
       logbackClassic % Runtime,
+      jansi % Runtime,
       doobieScalaTest % Test,
       h2 % Test,
     )
@@ -281,7 +284,8 @@ lazy val demoRedis4Cats = (project in file("demo-redis4cats"))
       circeGeneric,
       circeParser,
       log4CatsSlf4j,
-      logbackClassic,
+      logbackClassic % Runtime,
+      jansi % Runtime,
     )
   )
 
@@ -291,7 +295,8 @@ lazy val demoAkka = (project in file("demo-akka"))
     name := "demo-akka",
     libraryDependencies ++= Seq(
       akkaActorTyped,
-      logbackClassic,
+      logbackClassic % Runtime,
+      jansi % Runtime,
     ),
   )
 
@@ -322,6 +327,7 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     libraryDependencies ++= Seq(
       http4sScalaTags,
       logbackClassic % Runtime,
+      jansi % Runtime,
     ),
   )
   .jsSettings(
@@ -358,9 +364,11 @@ lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth
       circeFs2,
       http4sScalaTags,
       jwtCirce,
+      scalaJwk,
       ciris,
       log4CatsSlf4j,
       logbackClassic % Runtime,
+      jansi % Runtime,
     ),
   )
   .jsSettings(
@@ -391,6 +399,7 @@ lazy val demoSecurity = (project in file("demo-security"))
       bouncyCastle,
       apacheCommonsCodec,
       jwtCirce,
+      scalaJwk,
     ),
   )
 
@@ -406,6 +415,7 @@ lazy val demoShapeless2 = (project in file("demo-shapeless2"))
     ),
     scalacOptions --= Seq(
       "-language:strictEquality",
+      "-Xmax-inlines:64"
     ),
   )
 
@@ -475,11 +485,13 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       redis4CatsLog4Cats,
       bouncyCastle,
       jwtCirce,
+      scalaJwk,
       acme4jClient,
       acme4jUtils,
       apacheCommonsCodec,
-      logbackClassic,
       jQuery,
+      logbackClassic % Runtime,
+      jansi % Runtime,
       doobieScalaTest % Test,
       h2 % Test,
     ),
@@ -495,7 +507,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
 
 // Scala
 
-val scalaCheckVersion = "1.16.0"
+val scalaCheckVersion = "1.17.0"
 val scalaTestVersion = "3.2.12"
 
 val scalaCheck = "org.scalacheck" %% "scalacheck" % scalaCheckVersion
@@ -503,17 +515,17 @@ val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
 
 // Functional
 
-val shapelessVersion = "3.1.0"
+val shapelessVersion = "3.2.0"
 val shapeless2Version = "2.3.10"
 val catsVersion = "2.8.0"
 val catsEffectVersion = "3.3.14"
 val catsParseVersion = "0.3.8"
-val fs2Version = "3.2.12"
-val circeVersion = "0.14.2"
+val fs2Version = "3.3.0"
+val circeVersion = "0.14.3"
 val circeFs2Version = "0.14.0"
 val monocleVersion = "3.1.0"
-val log4CatsVersion = "2.4.0"
-val cirisVersion = "2.3.3"
+val log4CatsVersion = "2.5.0"
+val cirisVersion = "2.4.0"
 val cirisHoconVersion = "1.0.1"
 val refinedCatsVersion = "0.10.1"
 val spireVersion = "0.18.0-M3"
@@ -572,17 +584,20 @@ val jawnAst = "org.typelevel" %% "jawn-ast" % jawnAstVersion
 
 // Library
 
-val logbackVersion = "1.2.11"
-val akkaVersion = "2.6.19"
+val logbackVersion = "1.4.1"
+val jansiVersion = "1.18"
+val akkaVersion = "2.6.20"
 val apacheCommonsCodecVersion = "1.15"
-val h2Version = "2.1.212"
-val jQueryVersion = "3.6.0"
+val h2Version = "2.1.214"
+val jQueryVersion = "3.6.1"
 val postgisJdbcVersion = "2021.1.0"
-val acme4jVersion = "2.13"
+val acme4jVersion = "2.14"
 val bouncyCastleVersion = "1.70"
-val jwtCirceVersion = "9.0.6"
+val jwtCirceVersion = "9.1.1"
+val scalaJwkVersion = "1.2.24"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
+val jansi = "org.fusesource.jansi" % "jansi" % jansiVersion
 val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
 val apacheCommonsCodec = "commons-codec" % "commons-codec" % apacheCommonsCodecVersion
 val h2 = "com.h2database" % "h2" % h2Version
@@ -593,12 +608,13 @@ val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jVersion
 val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jVersion
 val bouncyCastle = "org.bouncycastle" % "bcprov-jdk15on" % bouncyCastleVersion
 val jwtCirce = "com.github.jwt-scala" %% "jwt-circe" % jwtCirceVersion
+val scalaJwk = "com.chatwork" %% "scala-jwk" % scalaJwkVersion
 
 // Test
 
 val catsEffectTestingSpecsVersion = "1.4.0"
 val mUnitCatsEffectVersion = "1.0.7"
-val weaverCatsVersion = "0.7.11"
+val weaverCatsVersion = "0.8.0"
 
 val catsEffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
 val catsEffectTestingSpecs = "org.typelevel" %% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion

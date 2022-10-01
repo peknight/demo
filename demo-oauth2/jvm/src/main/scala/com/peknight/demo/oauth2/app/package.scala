@@ -19,10 +19,12 @@ import fs2.hash.sha256
 import fs2.io.file
 import fs2.io.net.Network
 import fs2.text.{base64, hex, utf8}
+import io.circe.Decoder.Result
+import io.circe.fs2.{byteStreamParser, decoder}
 import io.circe.generic.auto.*
 import io.circe.parser.*
 import io.circe.syntax.*
-import io.circe.{Json, JsonObject}
+import io.circe.{Decoder, HCursor, Json, JsonObject}
 import org.http4s.*
 import org.http4s.circe.*
 import org.http4s.dsl.io.*
@@ -34,11 +36,11 @@ import org.http4s.server.middleware.Logger as MiddlewareLogger
 import org.typelevel.ci.CIString
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.syntax.*
-import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim}
+import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim, JwtHeader}
 import scodec.bits.Bases.Alphabets.Base64Url
 
-import java.security.spec.RSAPublicKeySpec
-import java.security.{KeyFactory, PublicKey}
+import java.security.*
+import java.security.spec.{RSAPrivateKeySpec, RSAPublicKeySpec}
 import scala.util.{Failure, Success, Try}
 
 package object app:
@@ -56,13 +58,26 @@ package object app:
 
   given Mapper[Option, IntrospectionResponse, OAuthTokenRecord] with
     def fMap(a: IntrospectionResponse): Option[OAuthTokenRecord] =
-      if a.active then Some(OAuthTokenRecord(a.clientId, None, None, a.scope, a.subject, None)) else None
+      if a.active then Some(OAuthTokenRecord(a.clientId, None, None, a.scope, a.subject, a.accessTokenKey)) else None
+  end given
+
+  given Decoder[JwtHeader] with
+    def apply(c: HCursor): Result[JwtHeader] =
+      for
+        algorithm <- c.downField("alg").as[Option[String]]
+        typ <- c.downField("typ").as[Option[String]]
+        contentType <- c.downField("cty").as[Option[String]]
+        keyId <- c.downField("kid").as[Option[String]]
+      yield JwtHeader(algorithm.flatMap(JwtAlgorithm.optionFromString), typ, contentType, keyId)
   end given
 
   val serverHost = host"local.peknight.com"
-  private[this] val storePasswordConfig: ConfigValue[Effect, Secret[String]] = env("STORE_PASSWORD").secret
-  private[this] val keyPasswordConfig: ConfigValue[Effect, Secret[String]] = env("KEY_PASSWORD").secret
-  val usePopConfig: ConfigValue[Effect, Boolean] = env("USE_POP").as[Boolean]
+  private[this] val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
+    env("STORE_PASSWORD").default("123456").secret
+  private[this] val keyPasswordConfig: ConfigValue[Effect, Secret[String]] =
+    env("KEY_PASSWORD").default("123456").secret
+  val usePopConfig: ConfigValue[Effect, Boolean] =
+    env("USE_POP").as[Boolean].default(false)
 
 
   def start[F[_]: Async](port: Port)(httpApp: HttpApp[F]): F[(Server, F[Unit])] =
@@ -103,13 +118,18 @@ package object app:
         _ <- info"Incoming token: $accessToken".optionT
         record <- OptionT(queryOAuthTokenRecord(accessToken))
       yield record
-    oauthTokenRecord.value.flatMap {
+    handleOAuthTokenRecordOptionT(oauthTokenRecord, realm)(handleOAuthTokenRecord)
+
+  def handleOAuthTokenRecordOptionT(oauthTokenRecordOptionT: OptionT[IO, OAuthTokenRecord], realm: String)
+                                   (handleOAuthTokenRecord: OAuthTokenRecord => IO[Response[IO]])
+                                   (using Logger[IO]): IO[Response[IO]] =
+    oauthTokenRecordOptionT.value.flatMap {
       case Some(record) => info"We found a matching token: ${record.accessToken.getOrElse("")}" *>
         handleOAuthTokenRecord(record)
       case _ => info"No matching token was found." *>
         Unauthorized(`WWW-Authenticate`(Challenge(AuthScheme.Bearer.toString, realm)))
     }
-    
+
   def checkJwt[A](payloadIO: IO[Try[Json]], audience: String, nonce: Option[String])
                  (using Mapper[Id, IdToken, A], Logger[IO]): IO[Option[A]] =
     val payloadOptionT =
@@ -173,7 +193,7 @@ package object app:
         }
     }
 
-  private[this] val rsaPublicKey: IO[PublicKey] =
+  private[this] def rsaPublicKey(rsaKey: RsaKey): IO[PublicKey] =
     for
       modulus <- decodeToBigInt(rsaPubKey.n)
       exponent <- decodeToBigInt(rsaPubKey.e)
@@ -182,8 +202,17 @@ package object app:
       )))
     yield key
 
+  def rsaPrivateKey(rsaKey: RsaKey): IO[PrivateKey] =
+    for
+      modulus <- decodeToBigInt(rsaKey.n)
+      privateExponent <- decodeToBigInt(rsaKey.d.getOrElse(""))
+      key <- IO(KeyFactory.getInstance("RSA").generatePrivate(RSAPrivateKeySpec(
+        modulus.bigInteger, privateExponent.bigInteger
+      )))
+    yield key
+
   def jwtRS256Decode(accessToken: String): IO[Try[Json]] =
-    rsaPublicKey.flatMap(pubKey => IO(JwtCirce.decodeJson(accessToken, pubKey, Seq(JwtAlgorithm.RS256))))
+    rsaPublicKey(rsaKey).flatMap(pubKey => IO(JwtCirce.decodeJson(accessToken, pubKey, Seq(JwtAlgorithm.RS256))))
 
   def parseRequest[A](req: Request[IO])(jsonF: Json => A)(formF: UrlForm => A): IO[A] =
     req.headers.get[`Content-Type`] match
@@ -209,4 +238,11 @@ package object app:
 
   def toHex(value: String): String =
     Stream(value).through(utf8.encode).through(hex.encode).toList.mkString("")
+
+  def parseJwt[A: Decoder](value: String): IO[Option[A]] =
+    Stream(value).covary[IO]
+      .through(base64.decodeWithAlphabet(Base64Url))
+      .through(byteStreamParser)
+      .through(decoder[IO, A])
+      .compile.toList.map(_.headOption)
 

@@ -38,6 +38,7 @@ package object constant:
   val oauthGreetingCls = "oauth-greeting"
   val oauthProtectedResourceCls = "oauth-protected-resource"
   val oauthScopeValueCls = "oauth-scope-value"
+  val popAccessTokenKey = "pop_access_token"
   val redirectUriKey = "redirect_uri"
   val redirectUrisKey = "redirect_uris"
   val registrationAccessTokenKey = "registration_access_token"

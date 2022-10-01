@@ -38,7 +38,6 @@ import scodec.bits.Bases.Alphabets.Base64Url
 import java.math.BigInteger
 import java.security.*
 import java.security.interfaces.{RSAPrivateCrtKey, RSAPublicKey}
-import java.security.spec.RSAPrivateKeySpec
 import scala.annotation.unused
 import scala.concurrent.duration.*
 
@@ -544,15 +543,6 @@ object AuthorizationServerApp extends IOApp.Simple :
       accessToken <- IO(JwtCirce.encode(header.toJson, payload, toHex(sharedTokenSecret), algorithm))
     yield accessToken
 
-  private[this] val rsaPrivateKey: IO[PrivateKey] =
-    for
-      modulus <- decodeToBigInt(rsaKey.n)
-      privateExponent <- decodeToBigInt(rsaKey.d.getOrElse(""))
-      key <- IO(KeyFactory.getInstance("RSA").generatePrivate(RSAPrivateKeySpec(
-        modulus.bigInteger, privateExponent.bigInteger
-      )))
-    yield key
-
   // P166 可以再提高下 变成jwe加密
   //noinspection ScalaUnusedSymbol
   private[this] def rs256Jwt(user: Option[UserInfo], scope: Option[Set[String]], random: Random[IO]): IO[String] =
@@ -562,7 +552,7 @@ object AuthorizationServerApp extends IOApp.Simple :
       algorithm = JwtAlgorithm.RS256
       header = JwtHeader(algorithm.some, JwtHeader.DEFAULT_TYPE.some, none, rsaKey.kid)
       payload = createPayload(user, scope, protectedResourceIndex.toString, realTime, jwtId.some, None)
-      privateKey <- rsaPrivateKey
+      privateKey <- rsaPrivateKey(rsaKey)
       accessToken <- IO(JwtCirce.encode(header.toJson, payload, privateKey, algorithm))
     yield accessToken
 
@@ -573,7 +563,7 @@ object AuthorizationServerApp extends IOApp.Simple :
       algorithm = JwtAlgorithm.RS256
       header = JwtHeader(algorithm.some, JwtHeader.DEFAULT_TYPE.some, none, rsaKey.kid)
       payload = createPayload(user, none, clientId, realTime, none, nonce)
-      key <- rsaPrivateKey
+      key <- rsaPrivateKey(rsaKey)
       idToken <- IO(JwtCirce.encode(header.toJson, payload, key, algorithm))
       _ <- info"Issuing ID token $idToken"
     yield idToken
@@ -590,7 +580,7 @@ object AuthorizationServerApp extends IOApp.Simple :
       issuedAt = issuedAtSec.some,
       jwtId = jwtId,
       nonce = nonce
-    ).asJson.noSpaces
+    ).asJson.deepDropNullValues.noSpaces
 
   private[this] val rsaKeyPair = IO {
     val kpGen: KeyPairGenerator = KeyPairGenerator.getInstance("RSA")
@@ -606,7 +596,7 @@ object AuthorizationServerApp extends IOApp.Simple :
     (rsaSk, rsaPk)
   }
 
-  def encodeToBase64Url(decoded: BigInteger): String =
+  private[this] def encodeToBase64Url(decoded: BigInteger): String =
     Stream(decoded.toByteArray*).through(base64.encodeWithAlphabet(Base64Url)).toList.mkString("")
 
   private[this] def getClient(clientId: String, clientsR: Ref[IO, Seq[ClientInfo]]): IO[Option[ClientInfo]] =

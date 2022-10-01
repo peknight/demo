@@ -22,9 +22,12 @@ import org.http4s.headers.*
 import org.http4s.scalatags.scalatagsEncoder
 import org.http4s.syntax.literals.uri
 import org.http4s.{client as _, *}
+import org.typelevel.ci.*
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
+import pdi.jwt.*
+import pdi.jwt.algorithms.JwtRSAAlgorithm
 import scodec.bits.Bases.Alphabets.Base64Url
 
 object ClientApp extends IOApp.Simple :
@@ -197,10 +200,11 @@ object ClientApp extends IOApp.Simple :
     yield resp
 
   private[this] def fetchResource(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
-                                 (buildRequest: (String, OAuthTokenCache) => Request[IO])(using Logger[IO]): IO[Response[IO]] =
+                                 (buildRequest: (String, OAuthTokenCache) => IO[Request[IO]])
+                                 (using Logger[IO]): IO[Response[IO]] =
     getOrRefreshAccessToken(clientR, oauthTokenCacheR) { (accessToken, cache) =>
-      val req = buildRequest(accessToken, cache)
       for
+        req <- buildRequest(accessToken, cache)
         _ <- info"Making request with access token $accessToken"
         _ <- info"protectedResourceEndpoint ${req.uri}"
         response <- runHttpRequest(req) { resp =>
@@ -217,10 +221,10 @@ object ClientApp extends IOApp.Simple :
 
   private[this] def greeting(language: String, clientR: Ref[IO, Option[ClientInfo]],
                              oauthTokenCacheR: Ref[IO, OAuthTokenCache])(using Logger[IO]): IO[Response[IO]] =
-    fetchResource(clientR, oauthTokenCacheR)((accessToken, _) => GET(
+    fetchResource(clientR, oauthTokenCacheR)((accessToken, _) => IO.pure(GET(
       helloWorldApi.withQueryParam("language", language),
       Headers(Authorization(Credentials.Token(AuthScheme.Bearer, accessToken)))
-    ))
+    )))
 
   private[this] def getWords(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
                             (using Logger[IO]): IO[Response[IO]] =
@@ -437,24 +441,35 @@ object ClientApp extends IOApp.Simple :
           for
             oauthToken <- response.as[OAuthToken]
             _ <- updateOAuthTokenCache(oauthToken, client.id, None, oauthTokenCacheR)
-            resp <- Found(Location(uri"/fetch_resource"))
+            resp <- Ok(ClientPage.Text.error("Fetch resource error"))
+            // resp <- Found(Location(uri"/fetch_resource"))
           yield resp
         } { _ =>
           for
             _ <- info"No refresh token, asking the user to get a new access token"
             _ <- oauthTokenCacheR.update(_.copy(refreshToken = None))
             resp <- Ok(ClientPage.Text.error("Unable to refresh token."))
-          // resp <- Found(Location(uri"/authorize"))
+            // resp <- Found(Location(uri"/authorize"))
           yield resp
         }
       )
     }
 
-  private[this] def fetchResourceRequest(accessToken: String, oauthTokenCache: OAuthTokenCache): Request[IO] =
+  private[this] def fetchResourceRequest(accessToken: String, oauthTokenCache: OAuthTokenCache): IO[Request[IO]] =
     oauthTokenCache.key match
-      // TODO
-      case Some(sk) => resourceRequest(accessToken)
-      case None => resourceRequest(accessToken)
+      case Some(sk) =>
+        val jwtHeader = JwtHeader(oauthTokenCache.algorithm.map(JwtAlgorithm.fromString), "PoP".some, None, sk.kid)
+        for
+          realTime <- IO.realTime
+          payload = PopPayload(accessToken, realTime.toSeconds, POST.name.some, protectedResourceAddr.some,
+            "/resource".some)
+          privateKey <- rsaPrivateKey(sk)
+          _ <- IO.println(s"sk=$sk, privateKey=$privateKey")
+          signed <- IO(JwtCirce.encode(jwtHeader.toJson, payload.asJson.deepDropNullValues.noSpaces, privateKey,
+            oauthTokenCache.algorithm.flatMap(JwtAlgorithm.optionFromString).getOrElse(JwtAlgorithm.RS256)
+              .asInstanceOf[JwtRSAAlgorithm]))
+        yield POST(protectedResourceApi, Headers(Authorization(Credentials.Token(ci"PoP", signed))))
+      case None => IO.pure(resourceRequest(accessToken))
 
   private[this] def refreshTokenRequest(client: ClientInfo, refreshToken: String): Request[IO] =
     POST(
