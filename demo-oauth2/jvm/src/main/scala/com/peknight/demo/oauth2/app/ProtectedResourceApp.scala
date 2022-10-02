@@ -187,8 +187,8 @@ object ProtectedResourceApp extends IOApp.Simple :
         _ <- info"Signature is valid".optionT
         m = req.method.name
         _ <- OptionT.fromOption(popPayload.m.orElse(m.some).filter(_ == m))
-        u = req.uri.authority.map(_.toString).getOrElse("")
-        _ <- OptionT.fromOption(popPayload.u.orElse(u.some).filter(_ == u))
+        uOpt = req.uri.authority.map(_.toString)
+        _ <- uOpt.fold(OptionT.some[IO](""))(u => OptionT.fromOption[IO](popPayload.u.orElse(u.some).filter(_ == u)))
         p = req.uri.path.toString
         _ <- OptionT.fromOption(popPayload.p.orElse(p.some).filter(_ == p))
         _ <- info"All components matched".optionT

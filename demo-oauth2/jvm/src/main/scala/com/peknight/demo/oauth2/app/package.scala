@@ -79,7 +79,6 @@ package object app:
   val usePopConfig: ConfigValue[Effect, Boolean] =
     env("USE_POP").as[Boolean].default(false)
 
-
   def start[F[_]: Async](port: Port)(httpApp: HttpApp[F]): F[(Server, F[Unit])] =
     for
       storePassword <- storePasswordConfig.load[F]
@@ -195,8 +194,8 @@ package object app:
 
   private[this] def rsaPublicKey(rsaKey: RsaKey): IO[PublicKey] =
     for
-      modulus <- decodeToBigInt(rsaPubKey.n)
-      exponent <- decodeToBigInt(rsaPubKey.e)
+      modulus <- decodeToBigInt(rsaKey.n)
+      exponent <- decodeToBigInt(rsaKey.e)
       key <- IO(KeyFactory.getInstance("RSA").generatePublic(RSAPublicKeySpec(
         modulus.bigInteger, exponent.bigInteger
       )))

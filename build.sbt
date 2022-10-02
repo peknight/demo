@@ -364,7 +364,6 @@ lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth
       circeFs2,
       http4sScalaTags,
       jwtCirce,
-      scalaJwk,
       ciris,
       log4CatsSlf4j,
       logbackClassic % Runtime,
