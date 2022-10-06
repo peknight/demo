@@ -18,9 +18,10 @@ object StaticFilesApp extends IOApp.Simple:
 
   val anotherService = HttpRoutes.of[IO] { case _ => Ok() }
 
+  // 运行时目录，只能看html文件或者其它普通文件，不能看目录
   val routes = HttpRoutes.of[IO] { case request @ GET -> Root / "index.html" =>
     StaticFile.fromPath(
-      Path("./demo-js/js/src/main/resources/com/peknight/demo/js/tutorial/scalajs-tutorial-fastopt.html"),
+      Path("./demo-http4s/jvm/src/main/resources/index.html"),
       Some(request)
     ).getOrElseF(NotFound())
   }
@@ -44,7 +45,7 @@ object StaticFilesApp extends IOApp.Simple:
 
   val httpApp: HttpApp[IO] = Router(
     "api" -> anotherService,
-    "h5" -> fileService[IO](FileService.Config("./demo-h5/src")),
+    "h5" -> fileService[IO](FileService.Config("./demo-http4s/jvm/src/main/resources")),
     "path" -> routes,
     "resource" -> resourceRoutes,
     "file" -> fileRoutes,
@@ -54,7 +55,6 @@ object StaticFilesApp extends IOApp.Simple:
 
   val run =
     for
-      // 运行时目录，只能看html文件或者其它普通文件，不能看目录
       _ <- runLogEmberServer[IO](httpApp)
     yield ()
 
