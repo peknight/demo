@@ -113,7 +113,7 @@
 * 参考: ScalaJS官方文档[Basic Tutorial](https://www.scala-js.org/doc/tutorial/basic/)、Lihaiyi的[Hands-on Scala.js](https://www.lihaoyi.com/hands-on-scala-js/)、Lihaoyi的[uPickle](https://com-lihaoyi.github.io/upickle/)、Lihaoyi的[ScalaTags](https://com-lihaoyi.github.io/scalatags/)、[ScalaCss](https://japgolly.github.io/scalacss/book/)
 * 进度: 100%，学习scalajs时正好刚学完Fs2这些Cats全家桶知识，把练习的代码用Cats全家桶改写了一波巩固一下。另外Lihaoyi的Autowire库不支持Scala3，只能用Http4s自己手动完成了相关练习。
 
-#### demo-h5
+#### demo-front-end
 
 * 前端知识学习
 * 参考: [B站黑马前端H5+CSS3](https://www.bilibili.com/video/BV14J4114768?p=1)

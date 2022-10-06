@@ -344,6 +344,34 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     ),
   )
 
+lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-front-end"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-front-end",
+    libraryDependencies ++= Seq(
+      "org.http4s" %%% "http4s-dsl" % http4sVersion,
+      "org.http4s" %%% "http4s-ember-server" % http4sVersion,
+      "org.http4s" %%% "http4s-ember-client" % http4sVersion,
+      "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
+      "com.github.japgolly.scalacss" %% "core" % scalaCssVersion,
+    ),
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      http4sScalaTags,
+      ciris,
+      log4CatsSlf4j,
+      logbackClassic % Runtime,
+      jansi % Runtime,
+    ),
+  )
+  .jsSettings(
+    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+    libraryDependencies ++= Seq(
+      "org.http4s" %%% "http4s-dom" % http4sDomVersion,
+    ),
+  )
+
 lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth2"))
   .settings(commonSettings)
   .settings(
