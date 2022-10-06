@@ -326,6 +326,8 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
   .jvmSettings(
     libraryDependencies ++= Seq(
       http4sScalaTags,
+      ciris,
+      log4CatsSlf4j,
       logbackClassic % Runtime,
       jansi % Runtime,
     ),

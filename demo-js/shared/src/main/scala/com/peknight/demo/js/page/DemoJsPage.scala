@@ -118,7 +118,7 @@ class DemoJsPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, Ou
 
   val domWebsocketDemo: Frag = domSkeleton("Websocket")(
     input(id := "dom-websocket-demo-in", placeholder := "Type something in"),
-    pre(id := "dom-websocket-demo-out")("`docker run -d --name pek-echo-server -p 10000:8080 jmalloc/echo-server`"),
+    pre(id := "dom-websocket-demo-out")("output"),
     script("domWebsocketDemo(document.getElementById('dom-websocket-demo-in'), document.getElementById('dom-websocket-demo-out'))")
   )
 

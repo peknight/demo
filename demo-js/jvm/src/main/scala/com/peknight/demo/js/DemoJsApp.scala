@@ -1,9 +1,15 @@
 package com.peknight.demo.js
 
+import cats.Monad
 import cats.effect.*
+import cats.syntax.flatMap.*
+import cats.syntax.functor.*
+import ciris.*
 import com.comcast.ip4s.*
 import com.peknight.demo.js.page.DemoJsPage
+import fs2.Pipe
 import fs2.io.file
+import fs2.io.net.Network
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.http4s.*
@@ -12,15 +18,20 @@ import org.http4s.dsl.io.*
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.scalatags.*
 import org.http4s.server.Server
-import org.http4s.server.middleware.Logger
+import org.http4s.server.middleware.Logger as MiddlewareLogger
 import org.http4s.server.staticcontent.*
+import org.http4s.server.websocket.WebSocketBuilder
+import org.http4s.websocket.*
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.syntax.*
 
 object DemoJsApp extends IOApp.Simple:
 
   given CanEqual[Path, Path] = CanEqual.derived
   given CanEqual[Method, Method] = CanEqual.derived
 
-  val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private[this] val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(DemoJsPage.Text.index)
     case GET -> Root / "tutorial" => Ok(DemoJsPage.Text.tutorial)
     case GET -> Root / "alert" => Ok(DemoJsPage.Text.alertDemo)
@@ -52,15 +63,39 @@ object DemoJsApp extends IOApp.Simple:
         .getOrElseF(NotFound())
   }
 
-  def start[F[_]: Async](httpApp: HttpApp[F]): F[(Server, F[Unit])] =
-    EmberServerBuilder.default[F]
-      .withHostOption(None)
-      .withPort(port"8080")
-      .withHttpApp(Logger.httpApp(true, true)(httpApp))
-      .build.allocated
+  private[this] def echoRoutes[F[_]: Monad: Logger](builder: WebSocketBuilder[F]): HttpRoutes[F] = HttpRoutes.of[F] {
+    case GET -> Root =>
+      val process: Pipe[F, WebSocketFrame, WebSocketFrame] = _.evalMap { frame =>
+        info"WebSocket Received: $frame".map(_ => frame)
+      }
+      builder.build(process)
+  }
+
+  private[this] def echoApp[F[_]: Async: Logger](builder: WebSocketBuilder[F]): HttpApp[F] = echoRoutes(builder).orNotFound
+
+  private[this] val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
+    env("STORE_PASSWORD").default("123456").secret
+  private[this] val keyPasswordConfig: ConfigValue[Effect, Secret[String]] =
+    env("KEY_PASSWORD").default("123456").secret
+
+  private[this] def start[F[_]: Async](port: Port)(f: EmberServerBuilder[F] => EmberServerBuilder[F])
+  : F[(Server, F[Unit])] =
+    for
+      storePassword <- storePasswordConfig.load[F]
+      keyPassword <- keyPasswordConfig.load[F]
+      tlsContext <- Network[F].tlsContext.fromKeyStoreFile(
+        file.Path("demo-security/keystore/letsencrypt.keystore").toNioPath,
+        storePassword.value.toCharArray, keyPassword.value.toCharArray)
+      res <- f(EmberServerBuilder.default[F].withHostOption(None).withPort(port).withTLS(tlsContext)).build.allocated
+    yield res
 
   val run: IO[Unit] =
     for
-      _ <- start[IO](routes.orNotFound)
+      logger <- Slf4jLogger.create[IO]
+      given Logger[IO] = logger
+      _ <- start[IO](port"8080")(_.withHttpApp(
+        MiddlewareLogger.httpApp(true, true)(routes.orNotFound)
+      ))
+      _ <- start[IO](port"10000")(_.withHttpWebSocketApp(echoApp))
       _ <- IO.never
     yield ()

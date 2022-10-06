@@ -84,7 +84,7 @@ package object app:
       storePassword <- storePasswordConfig.load[F]
       keyPassword <- keyPasswordConfig.load[F]
       tlsContext <- Network[F].tlsContext.fromKeyStoreFile(
-        file.Path("demo-oauth2/keystore/letsencrypt.keystore").toNioPath,
+        file.Path("demo-security/keystore/letsencrypt.keystore").toNioPath,
         storePassword.value.toCharArray, keyPassword.value.toCharArray)
       res <- EmberServerBuilder.default[F]
         // .withHost(serverHost)
