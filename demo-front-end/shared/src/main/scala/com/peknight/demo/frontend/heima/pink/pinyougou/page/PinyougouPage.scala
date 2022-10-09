@@ -1,27 +1,36 @@
 package com.peknight.demo.frontend.heima.pink.pinyougou.page
 
-import com.peknight.demo.frontend.heima.pink.pinyougou.style.{BaseStyles, FontsStyles, PinyougouStyles}
+import com.peknight.demo.frontend.heima.pink.pinyougou.style.{BaseStyles, CommonStyles, FontsStyles, PinyougouStyles}
 import org.http4s.Uri
 import scalacss.ProdDefaults.{cssEnv, cssStringRenderer}
 import scalatags.generic.Bundle
 import scalatags.text.Builder
 
+/**
+ * 常用模块类名命名
+ * 快捷导航栏 shortcut
+ * 头部 header
+ * 标志 logo
+ * 购物车 shopcar
+ * 搜索 search
+ * 热点词 hotwords
+ * 导航 nav
+ * 导航左侧 dropdown 包含 .dd .dt
+ * 导航右侧 navitems
+ * 页面底部 footer
+ * 页面底部服务模块 mod_service
+ * 页面底部帮助模块 mod_help
+ * 页面底部版权模块 mod_copyright
+ */
 class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, Output, FragT]):
-  import bundle.all.{style as _, title as inlineTitle, *}
-  import bundle.tags2.{nav, style, title}
+  import bundle.all.{title as inlineTitle, style as _, *}
+  import bundle.tags2.{nav, section, style, title}
 
-  val index: Frag =
+  def index: Frag =
     html(lang := "zh-CN")(
-      head(
-        meta(charset := "UTF-8"),
-        title("品优购 - 优质！优质！"),
-        link(rel := "shortcut icon", href := "favicon.ico"),
-        // link(rel := "stylesheet", href := "css/base.css"),
-        style(BaseStyles.render[String]),
-        style(FontsStyles.render[String]),
-        style(PinyougouStyles.render[String]),
-      ),
+      headFrag,
       body(
+        shortcutFrag,
         header(
           div(cls := "top_bar")(div(cls := "w")(
             div(cls := "welcome")(
@@ -155,6 +164,40 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
         )
       )
     )
+
+  val headFrag: Modifier = head(
+    meta(charset := "UTF-8"),
+    meta(name := "viewport", content := "width=device-width, initial-scale=1.0"),
+    meta(httpEquiv := "X-UA-Compatible", content := "ie=edge"),
+    // TDK三大标签SEO优化: title description keywords
+    title("品优购商城-综合网购首选-正品低价、品质保障、配送及时、轻松购物！"),
+    // 网站说明
+    meta(name := "description", content := "品优购商城-专业的综合网上购物商城，销售家电、数码通讯、电脑、家居百货、服装服饰、" +
+      "母婴、图书、食品等数万个品牌优质商品。便捷、诚信的服务，为您提供愉悦的网上购物体验！"),
+    // 关键字
+    meta(name := "keywords", content := "网上购物,网上商城,手机,笔记本,电脑,MP3,CD,VCD,DV,相机,数码,配件,手表,存储卡,品优购"),
+    // 引入favicon图标
+    link(rel := "shortcut icon", href := "favicon.ico"),
+    // 引入我们初始化样式文件
+    // link(rel := "stylesheet", href := "css/base.css"),
+    style(BaseStyles.render[String]),
+    // 引入我们公共的样式文件
+    // link(rel := "stylesheet", href := "css/common.css"),
+    style(CommonStyles.render[String]),
+    style(FontsStyles.render[String]),
+    style(PinyougouStyles.render[String])
+  )
+
+  // 快捷导航模块
+  val shortcutFrag: Modifier =
+    section(cls := "shortcut")(div(cls := "w")(
+      div(cls := "fl")(ul(
+        li("品优购欢迎您！ "),
+        // 这里也用的li，而不是直接用a
+        li(a(href := "#")("请登录"), " ", a(href := "#", cls := "style_red")("免费注册"))
+      )),
+      div(cls := "fr")("abc")
+    ))
 end PinyougouPage
 
 object PinyougouPage:

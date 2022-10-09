@@ -36,12 +36,6 @@ object PinyougouStyles extends StyleSheet.Standalone:
     &.hover.before - display.block
   )
 
-  ".w" - (
-    width(1200.px),
-    height(100.%%),
-    margin(`0`, auto)
-  )
-
   "header" - borderBottom(2.px, solid, c"#bb0000")
 
   ".top_bar" - (

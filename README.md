@@ -123,7 +123,7 @@
 
 * 前端知识学习
 * 参考: [B站黑马前端H5+CSS3](https://www.bilibili.com/video/BV14J4114768?p=1)
-* 进度: P302品优购项目，暂停了一年了，前面有些东西忘了，后面再补上吧。
+* 进度: P307品优购项目，前端学习重启，用scalatags与scalacss重写
 
 #### demo-oauth2
 
