@@ -33,6 +33,7 @@ lazy val demo = (project in file("."))
     demoLog4Cats,
     demoCiris,
     demoSpire,
+    demoSquants,
     demoHttp4s.jvm,
     demoHttp4s.js,
     demoDoobie,
@@ -217,6 +218,15 @@ lazy val demoSpire = (project in file("demo-spire"))
     name := "demo-spire",
     libraryDependencies ++= Seq(
       spire,
+    ),
+  )
+
+lazy val demoSquants = (project in file("demo-squants"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-squants",
+    libraryDependencies ++= Seq(
+      squants,
     ),
   )
 
@@ -467,6 +477,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "dev.optics" %%% "monocle-core" % monocleVersion,
       "dev.optics" %%% "monocle-macro" % monocleVersion,
       "org.typelevel" %%% "spire" % spireVersion,
+      "org.typelevel" %%% "squants" % squantsVersion,
       "org.http4s" %%% "http4s-dsl" % http4sVersion,
       "org.http4s" %%% "http4s-ember-server" % http4sVersion,
       "org.http4s" %%% "http4s-ember-client" % http4sVersion,
@@ -558,6 +569,7 @@ val cirisVersion = "2.4.0"
 val cirisHoconVersion = "1.0.1"
 val refinedCatsVersion = "0.10.1"
 val spireVersion = "0.18.0-M3"
+val squantsVersion = "1.8.3"
 val http4sVersion = "1.0.0-M32"
 val http4sDomVersion = "1.0.0-M32"
 val http4sDropwizardMetricsVersion = "1.0.0-M32"
@@ -592,6 +604,7 @@ val cirisSquants = "is.cir" %% "ciris-squants" % cirisVersion
 val cirisHocon = "lt.dvim.ciris-hocon" %% "ciris-hocon" % cirisHoconVersion
 val refinedCats = "eu.timepit" %% "refined-cats" % refinedCatsVersion
 val spire = "org.typelevel" %% "spire" % spireVersion
+val squants = "org.typelevel" %% "squants" % squantsVersion
 val http4sDsl = "org.http4s" %% "http4s-dsl" % http4sVersion
 val http4sEmberServer = "org.http4s" %% "http4s-ember-server" % http4sVersion
 val http4sEmberClient = "org.http4s" %% "http4s-ember-client" % http4sVersion

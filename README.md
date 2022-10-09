@@ -101,6 +101,12 @@
 * 参考: [Spire官方文档](https://typelevel.org/spire/)
 * 进度: 100%
 
+#### demo-squants
+
+* 单位换算相关库。
+* 参考: [Squants官方文档](https://www.squants.com/)
+* 进度: 100%，一些实验内容没搞
+
 #### demo-http4s
 
 * Cats全家桶，基于Fs2的HTTP库。挺好用的，就是还没出正式版。
@@ -157,10 +163,4 @@
 
 * Cats全家桶，响应式编程库，等它支持Cats Effect 3.x我就开始学。不过看他们意思迁移到CE3.x是个复杂的过程，不知道要等多久，先占个坑。
 * 参考: [Monix官方文档](https://monix.io/)
-* 进度: 0%
-
-#### demo-squants
-
-* 单位换算相关库，有点感兴趣，但是学习优先级不高，先占个坑。
-* 参考: [Squants官方文档](https://www.squants.com/)
 * 进度: 0%
