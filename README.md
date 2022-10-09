@@ -149,12 +149,6 @@
 * 参考: [廖雪峰 Java教程 加密与安全](https://www.liaoxuefeng.com/wiki/1252599548343744/1255943717668160)
 * 进度: 100%，用fs2支持了AES的ECB模式与CBC模式的流式加解密。
 
-#### demo-shapeless2
-
-* Shapeless泛型编程学习，仅scala2，据说scala3集成了shapeless，那就先学scala2的。
-* 参考：火箭书[The Type Astronaut's Guide to Shapeless Book](https://underscore.io/books/shapeless-guide/)
-* 进度：100%
-
 #### demo-playground
 
 增加上述模块全部的依赖项，用于自己随时测试一些代码特性，验证自己的部分想法。

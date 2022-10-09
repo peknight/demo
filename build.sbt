@@ -1,6 +1,8 @@
 ThisBuild / version := "0.1-SNAPSHOT"
 
-ThisBuild / scalaVersion := "3.2.0"
+val scala2Version = "2.13.8"
+val scala3Version = "3.2.0"
+ThisBuild / scalaVersion := scala3Version
 
 ThisBuild / organization := "com.peknight"
 
@@ -45,7 +47,6 @@ lazy val demo = (project in file("."))
     demoOAuth2.js,
     demoAcme4j,
     demoSecurity,
-    demoShapeless2,
     demoPlayground.jvm,
     demoPlayground.js,
   )
@@ -68,11 +69,31 @@ lazy val demoShapeless = (project in file("demo-shapeless"))
   .settings(commonSettings)
   .settings(
     name := "demo-shapeless",
-    libraryDependencies ++= Seq(
-      shapeless,
-      catsCore,
-      scalaCheck,
-    ),
+    crossScalaVersions := List(scala3Version, scala2Version),
+    libraryDependencies ++= {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((3, _)) => Seq(
+          shapeless,
+          catsCore,
+          scalaCheck
+        )
+        case Some((2, _)) => Seq(
+          shapeless2,
+          catsCore,
+          scalaCheck
+        )
+        case _ => Seq()
+      }
+    },
+    scalacOptions --= {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, _)) => Seq(
+          "-language:strictEquality",
+          "-Xmax-inlines:64"
+        )
+        case _ => Seq()
+      }
+    }
   )
 
 lazy val demoFpInScala = (project in file("demo-fp"))
@@ -439,22 +460,6 @@ lazy val demoSecurity = (project in file("demo-security"))
       apacheCommonsCodec,
       jwtCirce,
       scalaJwk,
-    ),
-  )
-
-lazy val demoShapeless2 = (project in file("demo-shapeless2"))
-  .settings(commonSettings)
-  .settings(
-    name := "demo-shapeless2",
-    scalaVersion := "2.13.8",
-    libraryDependencies ++= Seq(
-      shapeless2,
-      catsCore,
-      scalaCheck,
-    ),
-    scalacOptions --= Seq(
-      "-language:strictEquality",
-      "-Xmax-inlines:64"
     ),
   )
 
