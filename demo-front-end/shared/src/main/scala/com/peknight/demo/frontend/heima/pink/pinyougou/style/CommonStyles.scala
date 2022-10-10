@@ -19,4 +19,14 @@ object CommonStyles extends StyleSheet.Standalone:
 
   ".shortcut ul li" - float.left
 
+  // 选择所有的偶数的小li
+  ".shortcut .fr ul li:nth-child(even)" - (
+    width(1.px),
+    height(12.px),
+    backgroundColor(c"#666"),
+    margin(9.px, 15.px, `0`)
+  )
+
+  ".arrow-icon".after - (content :=! "'\\ea52'")
+
 

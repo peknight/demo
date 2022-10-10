@@ -196,7 +196,21 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
         // 这里也用的li，而不是直接用a
         li(a(href := "#")("请登录"), " ", a(href := "#", cls := "style_red")("免费注册"))
       )),
-      div(cls := "fr")("abc")
+      div(cls := "fr")(ul(
+        li("我的订单"),
+        li(),
+        li(cls := "arrow-icon")("我的品优购"),
+        li(),
+        li("品优购会员"),
+        li(),
+        li("企业采购"),
+        li(),
+        li(cls := "arrow-icon")("关注品优购"),
+        li(),
+        li(cls := "arrow-icon")("客户服务"),
+        li(),
+        li(cls := "arrow-icon")("网站导航")
+      ))
     ))
 end PinyougouPage
 
