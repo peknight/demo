@@ -59,12 +59,6 @@
 * 参考: [GitHub fs2-grpc](https://github.com/typelevel/fs2-grpc)与[GitHub fs2-grpc-example](https://github.com/fiadliel/fs2-grpc-example)
 * 进度: 100%，参考的代码只有一个Demo，后续实践中再深入学习。
 
-#### demo-doobie
-
-* Cats全家桶，基于Fs2的数据库操作库。写SQL的纯函数式操作。就是还没出正式版。
-* 参考: [Doobie官方文档](https://tpolecat.github.io/doobie/)
-* 进度: 100%
-
 #### demo-circe
 
 * Cats全家桶的JSON库
@@ -77,23 +71,17 @@
 * 参考: [Monocle官方文档](https://www.optics.dev/Monocle/)
 * 进度: 100%，已迁移Scala3。
 
-#### demo-ciris
-
-* Cats全家桶的配置读取库，因为pureconfig暂不支持scala3，先学了ciris。
-* 参考: [Ciris官方文档](https://cir.is/) 
-* 进度: 100%(照抄文档)，但是没做深入研究，后面实践用到再说。
-
 #### demo-log4cats
 
 * Cats全家桶的日志库，底层还是要用Slf4j、Logback这套的，只是一层函数式的封装。
 * 参考: [Log4Cats官方文档](https://typelevel.org/log4cats/)
 * 进度: 100%
 
-#### demo-redis4cats
+#### demo-ciris
 
-* Cats全家桶的Redis操作库。
-* 参考: [Redis4Cats官方文档](https://redis4cats.profunktor.dev/)
-* 进度: 100%
+* Cats全家桶的配置读取库，因为pureconfig暂不支持scala3，先学了ciris。
+* 参考: [Ciris官方文档](https://cir.is/) 
+* 进度: 100%(照抄文档)，但是没做深入研究，后面实践用到再说。
 
 #### demo-spire
 
@@ -113,6 +101,30 @@
 * 参考: [Http4s官方文档](https://http4s.org/v1/docs/quickstart.html)
 * 进度: 100%，有些涉及前端安全等领域的中间件内容还没深入研究，后面结合前端知识学习补充。
 
+#### demo-doobie
+
+* Cats全家桶，基于Fs2的数据库操作库。写SQL的纯函数式操作。就是还没出正式版。
+* 参考: [Doobie官方文档](https://tpolecat.github.io/doobie/)
+* 进度: 100%
+
+#### demo-redis4cats
+
+* Cats全家桶的Redis操作库。
+* 参考: [Redis4Cats官方文档](https://redis4cats.profunktor.dev/)
+* 进度: 100%
+
+#### demo-zio
+
+* ZIO 一个和Cats Effect类似的另一个很火爆的Effect库
+* 参考: [ZIO官方文档](https://zio.dev/)
+* 进度: 10%，学完了Overview部分，后续Reference、Ecosystem等部分尚未提起兴趣学
+
+#### demo-akka
+
+* 基于Actor模型的重型框架
+* 参考: [Akka官方文档](https://doc.akka.io/docs/akka/current/typed/actors.html)
+* 进度: 由于近期沉迷函数式编辑，akka学习被无限延后，进度1%。
+
 #### demo-js
 
 * Scala JS，支持Scala3，Cats全家桶也基本都支持，虽然有些文档比较老了，但是也很实用。
@@ -130,12 +142,6 @@
 * OAuth2学习，OAuth2目前主要基于HTTPS实现。
 * 参考: 书[《OAuth2实战》](https://www.manning.com/books/oauth-2-in-action)、[代码](https://github.com/oauthinaction/oauth-in-action-code)
 * 进度: 100%，原生客户端实现部分跳过，书中代码由node.js实现，我在练习中用Scala重新实现（大量使用http4s，页面使用ScalaTags及ScalaCss构建）。
-
-#### demo-akka
-
-* 基于Actor模型的重型框架
-* 参考: [Akka官方文档](https://doc.akka.io/docs/akka/current/typed/actors.html)
-* 进度: 由于近期沉迷函数式编辑，akka学习被无限延后，进度1%。
 
 #### demo-acme4j
 

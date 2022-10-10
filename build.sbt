@@ -30,6 +30,7 @@ lazy val demo = (project in file("."))
     demoCatsEffect,
     demoCatsParse,
     demoFs2,
+    demoFs2Grpc,
     demoCirce,
     demoMonocle,
     demoLog4Cats,
@@ -40,9 +41,12 @@ lazy val demo = (project in file("."))
     demoHttp4s.js,
     demoDoobie,
     demoRedis4Cats,
+    demoZio,
     demoAkka,
     demoJs.jvm,
     demoJs.js,
+    demoFrontEnd.jvm,
+    demoFrontEnd.js,
     demoOAuth2.jvm,
     demoOAuth2.js,
     demoAcme4j,
@@ -320,6 +324,16 @@ lazy val demoRedis4Cats = (project in file("demo-redis4cats"))
     )
   )
 
+lazy val demoZio = (project in file("demo-zio"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-zio",
+    libraryDependencies ++= Seq(
+      zio,
+      zioStreams,
+    )
+  )
+
 lazy val demoAkka = (project in file("demo-akka"))
   .settings(commonSettings)
   .settings(
@@ -490,6 +504,8 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.http4s" %%% "http4s-client" % http4sVersion,
       "org.http4s" %%% "http4s-circe" % http4sVersion,
       "org.typelevel" %%% "jawn-ast" % jawnAstVersion,
+      "dev.zio" %%% "zio" % zioVersion,
+      "dev.zio" %%% "zio-streams" % zioVersion,
       "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.lihaoyi" %%% "upickle" % uPickleVersion,
       "com.github.japgolly.scalacss" %% "core" % scalaCssVersion,
@@ -582,6 +598,7 @@ val http4sJdkHttpClientVersion = "1.0.0-M1"
 val doobieVersion = "1.0.0-RC2"
 val redis4CatsVersion = "1.2.0"
 val jawnAstVersion = "1.4.0"
+val zioVersion = "2.0.2"
 
 val shapeless = "org.typelevel" %% "shapeless3-deriving" % shapelessVersion
 val shapeless2 = "com.chuusai" %% "shapeless" % shapeless2Version
@@ -628,6 +645,8 @@ val redis4CatsEffects = "dev.profunktor" %% "redis4cats-effects" % redis4CatsVer
 val redis4CatsStreams = "dev.profunktor" %% "redis4cats-streams" % redis4CatsVersion
 val redis4CatsLog4Cats = "dev.profunktor" %% "redis4cats-log4cats" % redis4CatsVersion
 val jawnAst = "org.typelevel" %% "jawn-ast" % jawnAstVersion
+val zio = "dev.zio" %% "zio" % zioVersion
+val zioStreams = "dev.zio" %% "zio-streams" % zioVersion
 
 // Library
 
