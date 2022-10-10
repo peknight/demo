@@ -1,7 +1,8 @@
 ThisBuild / version := "0.1-SNAPSHOT"
 
-val scala2Version = "2.13.8"
 val scala3Version = "3.2.0"
+val scala2Version = "2.13.8"
+
 ThisBuild / scalaVersion := scala3Version
 
 ThisBuild / organization := "com.peknight"
@@ -35,6 +36,7 @@ lazy val demo = (project in file("."))
     demoMonocle,
     demoLog4Cats,
     demoCiris,
+    demoCatsStm,
     demoSpire,
     demoSquants,
     demoHttp4s.jvm,
@@ -237,6 +239,15 @@ lazy val demoCiris = (project in file("demo-ciris"))
     ),
   )
 
+lazy val demoCatsStm = (project in file("demo-cats-stm"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-cats-stm",
+    libraryDependencies ++= Seq(
+      catsStm,
+    ),
+  )
+
 lazy val demoSpire = (project in file("demo-spire"))
   .settings(commonSettings)
   .settings(
@@ -304,7 +315,7 @@ lazy val demoDoobie = (project in file("demo-doobie"))
       jansi % Runtime,
       doobieScalaTest % Test,
       h2 % Test,
-    )
+    ),
   )
 
 lazy val demoRedis4Cats = (project in file("demo-redis4cats"))
@@ -321,7 +332,7 @@ lazy val demoRedis4Cats = (project in file("demo-redis4cats"))
       log4CatsSlf4j,
       logbackClassic % Runtime,
       jansi % Runtime,
-    )
+    ),
   )
 
 lazy val demoZio = (project in file("demo-zio"))
@@ -331,7 +342,7 @@ lazy val demoZio = (project in file("demo-zio"))
     libraryDependencies ++= Seq(
       zio,
       zioStreams,
-    )
+    ),
   )
 
 lazy val demoAkka = (project in file("demo-akka"))
@@ -495,6 +506,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "io.circe" %%% "circe-parser" % circeVersion,
       "dev.optics" %%% "monocle-core" % monocleVersion,
       "dev.optics" %%% "monocle-macro" % monocleVersion,
+      "io.github.timwspence" %% "cats-stm" % catsStmVersion,
       "org.typelevel" %%% "spire" % spireVersion,
       "org.typelevel" %%% "squants" % squantsVersion,
       "org.http4s" %%% "http4s-dsl" % http4sVersion,
@@ -589,6 +601,7 @@ val log4CatsVersion = "2.5.0"
 val cirisVersion = "2.4.0"
 val cirisHoconVersion = "1.0.1"
 val refinedCatsVersion = "0.10.1"
+val catsStmVersion = "0.11.0"
 val spireVersion = "0.18.0-M3"
 val squantsVersion = "1.8.3"
 val http4sVersion = "1.0.0-M32"
@@ -625,6 +638,7 @@ val cirisRefined = "is.cir" %% "ciris-refined" % cirisVersion
 val cirisSquants = "is.cir" %% "ciris-squants" % cirisVersion
 val cirisHocon = "lt.dvim.ciris-hocon" %% "ciris-hocon" % cirisHoconVersion
 val refinedCats = "eu.timepit" %% "refined-cats" % refinedCatsVersion
+val catsStm = "io.github.timwspence" %% "cats-stm" % catsStmVersion
 val spire = "org.typelevel" %% "spire" % spireVersion
 val squants = "org.typelevel" %% "squants" % squantsVersion
 val http4sDsl = "org.http4s" %% "http4s-dsl" % http4sVersion

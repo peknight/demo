@@ -83,6 +83,12 @@
 * 参考: [Ciris官方文档](https://cir.is/) 
 * 进度: 100%(照抄文档)，但是没做深入研究，后面实践用到再说。
 
+#### demo-cats-stm
+
+* Cats全家桶的STM内存事务库。
+* 参考: [Cats STM官方文档](https://timwspence.github.io/cats-stm/)
+* 进度: 50%，完成Theory部分学习
+
 #### demo-spire
 
 * Cats全家桶的数学库，还没出正式版。
