@@ -87,7 +87,7 @@
 
 * Cats全家桶的STM内存事务库。
 * 参考: [Cats STM官方文档](https://timwspence.github.io/cats-stm/)
-* 进度: 50%，完成Theory部分学习
+* 进度: 100%
 
 #### demo-spire
 

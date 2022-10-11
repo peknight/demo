@@ -6,7 +6,7 @@ import io.github.timwspence.cats.stm.STM
 
 object TxnApp extends IOApp.Simple:
 
-  class CatsSTM(stm: STM[IO]):
+  class CatsSTM(val stm: STM[IO]):
     import stm.*
     val prog: IO[(Int, Int)] =
       for
