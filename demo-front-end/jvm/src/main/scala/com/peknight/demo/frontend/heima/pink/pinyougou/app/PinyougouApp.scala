@@ -46,7 +46,7 @@ object PinyougouApp extends IOApp.Simple:
         .withHostOption(None)
         .withPort(port"8080")
         .withTLS(tlsContext)
-        .withHttpApp(MiddlewareLogger.httpApp(true, true)(httpApp))
+        .withHttpApp(MiddlewareLogger.httpApp(true, false)(httpApp))
         .build.allocated
     yield res
 

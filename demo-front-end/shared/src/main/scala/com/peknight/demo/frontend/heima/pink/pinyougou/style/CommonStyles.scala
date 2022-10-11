@@ -27,6 +27,9 @@ object CommonStyles extends StyleSheet.Standalone:
     margin(9.px, 15.px, `0`)
   )
 
-  ".arrow-icon".after - (content :=! "'\\ea52'")
+  ".arrow-icon".after - (
+    fontFamily :=! "'icomoon'",
+    content :=! "'\\ea52'"
+  )
 
 

@@ -8,11 +8,11 @@ object FontsStyles extends StyleSheet.Inline:
 
   fontFace("icomoon")(_
     .src(
-      "url(fonts/icomoon.eot?qi0s96)",
-      "url('fonts/icomoon.eot?qi0s9y#iefix') format('embedded-opentype')",
-      "url('fonts/icomoon.ttf?qi0s9y') format('truetype')",
-      "url('fonts/icomoon.woff?qi0s9y') format('woff')",
-      "url('fonts/icomoon.svg?qi0s9y#icomoon') format('svg')"
+      "url(fonts/icomoon.eot?3a2xdr)",
+      "url('fonts/icomoon.eot?3a2xdr#iefix') format('embedded-opentype')",
+      "url('fonts/icomoon.ttf?3a2xdr') format('truetype')",
+      "url('fonts/icomoon.woff?3a2xdr') format('woff')",
+      "url('fonts/icomoon.svg?3a2xdr#icomoon') format('svg')"
     )
     .fontWeight.normal
     .fontStyle.normal
