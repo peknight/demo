@@ -8,7 +8,12 @@ object BaseStyles extends StyleSheet.Standalone:
   import dsl.*
 
   // 清除元素默认的内外边距
-  "*" - (margin.`0`, padding.`0`)
+  "*" - (
+    margin.`0`,
+    padding.`0`,
+    // css3盒子模型
+    boxSizing.borderBox
+  )
 
   // 让所有斜体 不倾斜
   "em, i" - fontStyle.normal
@@ -28,7 +33,11 @@ object BaseStyles extends StyleSheet.Standalone:
   "a".hover - style(color(c"#e33333"))
 
   "button, input" - style(
-    fontFamily :=! """'Microsoft YaHei', 'Heiti SC', tahoma, arial, 'Hiragino Sans GB', \\5B8B\4F53, sans-serif"""
+    fontFamily :=! """'Microsoft YaHei', 'Heiti SC', tahoma, arial, 'Hiragino Sans GB', \\5B8B\4F53, sans-serif""",
+    // 默认有灰色边框我们需要手动去掉
+    border.`0`,
+    // 去掉蓝色外边框
+    outline.none
   )
 
   "body" - (
