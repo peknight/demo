@@ -181,8 +181,33 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
   // 首页专有的模块 main
   val mainFrag: Modifier =
     div(cls := "w")(div(cls := "main")(
-      div(cls := "focus")("焦点图"),
-      div(cls := "newsflash")("快报模块")
+      div(cls := "focus white_mask")(
+        ol(for _ <- 1 to 4 yield li()),
+        ul(for i <- 1 to 4 yield li(img(src := s"uploads/banner$i.jpg"))),
+        a(href := "#", cls := "prev")("‹"),
+        a(href := "#", cls := "next")("›"),
+      ),
+      div(cls := "newsflash")(
+        div(cls := "news")(
+          div(cls := "news-hd")(
+            h5("品优购快报"),
+            a(href := "#", cls := "more")("更多")
+          ),
+          div(cls := "news-bd")(ul(Seq(
+            ("特惠", "备战开学季 全民半价购数码"),
+            ("公告", "品优稳占家电网购六成份额"),
+            ("特惠", "百元中秋全品类礼券限量领"),
+            ("公告", "上品优生鲜 享阳澄湖大闸蟹"),
+            ("特惠", "每日享折扣品优品质游")
+          ).map {
+            case (l, r) => li(a(href := "#")(strong(s"[$l]"), s" $r"))
+          }))
+        ),
+        div(cls := "lifeservice")(ul(Seq(
+          "话费", "机票", "电影票", "游戏", "彩票", "加油卡", "酒店", "火车票", "众筹", "理财", "礼品卡", "白条"
+        ).map(s => li(i(), p(s))))),
+        div(cls := "bargain")(img(src := "uploads/ad.jpg"))
+      )
     ))
 
   extension [A] (seq: Seq[A])
@@ -196,26 +221,7 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
   val history: Frag =
     frag(
       div(cls := "top_container")(div(cls := "w")(
-        div(cls := "banner_area white_mask")(
-          a(href := "#")(img(src := "uploads/banner1.jpg")),
-          a(href := "#", cls := "prev")(""),
-          a(href := "#", cls := "next")(""),
-          ul(cls := "banner_nav")(for _ <- 1 to 4 yield li())
-        ),
         div(cls := "news_nav_banner_area")(
-          div(cls := "news_area")(
-            div(cls := "news_header")(
-              h4("品优购快报"),
-              a(href := "#")("更多")
-            ),
-            div(cls := "news_body")(ul(Seq(
-              "【特惠】备战开学季 全民半价购数码",
-              "【公告】备战开学季 全民半价购数码",
-              "【特惠】备战开学季 全民半价购数码",
-              "【公告】备战开学季 全民半价购数码",
-              "【特惠】备战开学季 全民半价购数码"
-            ).map(s => li(a(href := "#")(s)))))
-          ),
           div(cls := "nav_area")(
             ul(cls := "nav_line nav_line1 clearfix")(Seq("话费", "机票", "电影票", "游戏").map(li(_))),
             ul(cls := "nav_line nav_line2 clearfix")(Seq("彩票", "加油站", "酒店", "火车票").map(li(_))),

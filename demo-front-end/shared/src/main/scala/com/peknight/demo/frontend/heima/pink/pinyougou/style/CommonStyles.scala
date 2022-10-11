@@ -14,6 +14,22 @@ object CommonStyles extends StyleSheet.Standalone:
 
   ".style_red" - color(c"#c81623")
 
+  ".white_mask" - (
+    position.relative,
+    &.before - (
+      display.none,
+      position.absolute,
+      top.`0`,
+      left.`0`,
+      width(100.%%),
+      height(100.%%),
+      background := rgba(255,255,255,.3),
+      content :=! "''",
+      pointerEvents.none
+    ),
+    &.hover.before - display.block
+  )
+
   // 快捷导航模块
   ".shortcut" - (height(31.px), lineHeight(31.px), backgroundColor(c"#f1f1f1"))
 
@@ -244,4 +260,3 @@ object CommonStyles extends StyleSheet.Standalone:
   ".links a" - margin(`0`, 3.px)
 
   ".copyright" - lineHeight(20.px)
-
