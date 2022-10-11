@@ -119,6 +119,19 @@ object IndexStyles extends StyleSheet.Standalone:
     background := "url('images/icons.png') no-repeat"
   )
 
+  ".lifeservice ul li".nthOfType(2) - (
+    position.relative,
+    &.after - (
+      position.absolute,
+      top.`0`,
+      right.`0`,
+      content :=! "'减'",
+      fontSize(12.px),
+      color(white),
+      backgroundColor(green),
+    )
+  )
+
   ".lifeservice ul li:nth-of-type(1) i" - style(backgroundPosition := "-19px -15px")
   ".lifeservice ul li:nth-of-type(2) i" - style(backgroundPosition := "-79px -17px")
   ".lifeservice ul li:nth-of-type(3) i" - style(backgroundPosition := "-142px -17px")
