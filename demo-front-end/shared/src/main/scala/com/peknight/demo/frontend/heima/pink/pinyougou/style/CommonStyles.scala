@@ -12,9 +12,9 @@ object CommonStyles extends StyleSheet.Standalone:
   ".fl" - float.left
   ".fr" - float.right
 
-  ".style_red" - color(c"#c81623")
+  ".style-red" - color(c"#c81623")
 
-  ".white_mask" - (
+  ".white-mask" - (
     position.relative,
     &.before - (
       display.none,
@@ -208,52 +208,52 @@ object CommonStyles extends StyleSheet.Standalone:
     paddingTop(30.px)
   )
 
-  ".mod_service" - (
+  ".mod-service" - (
     height(80.px),
     borderBottom(1.px, solid, c"#ccc")
   )
 
-  ".mod_service ul li" - (
+  ".mod-service ul li" - (
     float.left,
     width(240.px),
     height(50.px),
     paddingLeft(35.px)
   )
 
-  ".mod_service ul li h5" - (
+  ".mod-service ul li h5" - (
     float.left,
-    width(50.px),
+    width(52.px),
     height(50.px),
     background := "url('images/icons.png') no-repeat",
     marginRight(8.px)
   )
 
-  ".mod_service .intro1 h5" - style(backgroundPosition := "-252px -2px")
-  ".mod_service .intro2 h5" - style(backgroundPosition := "-254px -53px")
-  ".mod_service .intro3 h5" - style(backgroundPosition := "-256px -105px")
-  ".mod_service .intro4 h5" - style(backgroundPosition := "-257px -156px")
-  ".mod_service .intro5 h5" - style(backgroundPosition := "-255px -209px")
+  ".mod-service .intro1 h5" - style(backgroundPosition := "-252px -2px")
+  ".mod-service .intro2 h5" - style(backgroundPosition := "-254px -53px")
+  ".mod-service .intro3 h5" - style(backgroundPosition := "-256px -105px")
+  ".mod-service .intro4 h5" - style(backgroundPosition := "-257px -156px")
+  ".mod-service .intro5 h5" - style(backgroundPosition := "-255px -209px")
 
-  ".service_txt h4" - fontSize(14.px)
+  ".service-txt h4" - fontSize(14.px)
 
-  ".service_txt p" - fontSize(12.px)
+  ".service-txt p" - fontSize(12.px)
 
-  ".mod_help" - (
+  ".mod-help" - (
     height(185.px),
     borderBottom(1.px, solid, c"#ccc"),
     paddingTop(20.px),
     paddingLeft(50.px)
   )
 
-  ".mod_help dl" - (
+  ".mod-help dl" - (
     float.left,
     width(200.px),
     &.lastChild - (width(90.px), textAlign.center)
   )
 
-  ".mod_help dl dt" - (fontSize(16.px), marginBottom(10.px))
+  ".mod-help dl dt" - (fontSize(16.px), marginBottom(10.px))
 
-  ".mod_copyright" - (textAlign.center, paddingTop(20.px))
+  ".mod-copyright" - (textAlign.center, paddingTop(20.px))
 
   ".links" - marginBottom(15.px)
 

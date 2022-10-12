@@ -5,6 +5,7 @@ import org.http4s.Uri
 import scalacss.ProdDefaults.{cssEnv, cssStringRenderer}
 import scalatags.generic.Bundle
 import scalatags.text.Builder
+import scalacss.internal.mutable.StyleSheet
 
 /**
  * 常用模块类名命名
@@ -18,9 +19,9 @@ import scalatags.text.Builder
  * 导航左侧 dropdown 包含 .dd .dt
  * 导航右侧 navitems
  * 页面底部 footer
- * 页面底部服务模块 mod_service
- * 页面底部帮助模块 mod_help
- * 页面底部版权模块 mod_copyright
+ * 页面底部服务模块 mod-service
+ * 页面底部帮助模块 mod-help
+ * 页面底部版权模块 mod-copyright
  */
 class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, Output, FragT]):
   import bundle.all.{title as inlineTitle, style as _, *}
@@ -28,22 +29,38 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
 
   def index: Frag =
     html(lang := "zh-CN")(
-      headFrag,
+      headFrag("品优购商城", IndexStyles),
       body(
         shortcutFrag,
-        headerFrag,
-        navFrag,
+        headerFrag(""),
+        navFrag(indexNavFrag),
         mainFrag,
+        recommendFrag,
+        likeFrag,
+        floorFrag,
+        brandFrag,
+        sidebarFrag,
         footerFrag
       )
     )
 
-  val headFrag: Modifier = head(
+  def list: Frag =
+    html(lang := "zh-CN")(
+      headFrag("列表页", ListStyles),
+      body(
+        shortcutFrag,
+        headerFrag(secondKillFrag),
+        navFrag(listNavFrag),
+        footerFrag
+      )
+    )
+
+  def headFrag(headTitle: String, styleSheet: StyleSheet.Base): Modifier = head(
     meta(charset := "UTF-8"),
     meta(name := "viewport", content := "width=device-width, initial-scale=1.0"),
     meta(httpEquiv := "X-UA-Compatible", content := "ie=edge"),
     // TDK三大标签SEO优化: title description keywords
-    title("品优购商城-综合网购首选-正品低价、品质保障、配送及时、轻松购物！"),
+    title(s"$headTitle-综合网购首选-正品低价、品质保障、配送及时、轻松购物！"),
     // 网站说明
     meta(name := "description", content := "品优购商城-专业的综合网上购物商城，销售家电、数码通讯、电脑、家居百货、服装服饰、" +
       "母婴、图书、食品等数万个品牌优质商品。便捷、诚信的服务，为您提供愉悦的网上购物体验！"),
@@ -58,7 +75,7 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
     // link(rel := "stylesheet", href := "css/common.css"),
     style(FontsStyles.render[String]),
     style(CommonStyles.render[String]),
-    style(IndexStyles.render[String])
+    style(styleSheet.render[String])
   )
 
   // 快捷导航模块
@@ -67,7 +84,7 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
       div(cls := "fl")(ul(
         li("品优购欢迎您！ "),
         // 这里也用的li，而不是直接用a
-        li(a(href := "#")("请登录"), " ", a(href := "#", cls := "style_red")("免费注册"))
+        li(a(href := "#")("请登录"), " ", a(href := "#", cls := "style-red")("免费注册"))
       )),
       div(cls := "fr")(ul(
         li("我的订单"), li(),
@@ -81,9 +98,10 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
     ))
 
   // header头部模块制作
-  def headerFrag: Modifier =
+  def headerFrag(afterLogo: Modifier): Modifier =
     header(cls := "header w")(
       logoFrag,
+      afterLogo,
       // search搜索模块
       div(cls := "search")(
         input(`type` := "search", name := "", id := "", placeholder := "语言开发"),
@@ -91,7 +109,7 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
       ),
       // hotwords模块制作
       div(cls := "hotwords")(
-        a(href := "#", cls := "style_red")("品优购首发"),
+        a(href := "#", cls := "style-red")("品优购首发"),
         Seq("亿元优惠", "9.9元团购", "每满99减30", "办公用品", "电脑", "通信").map(a(href := "#")(_))
       ),
       // 购物车模块
@@ -118,8 +136,11 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
     )
 
   // nav模块制作
-  val navFrag: Modifier =
-    nav(cls := "nav")(div(cls := "w")(
+  def navFrag(navModifier: Modifier): Modifier =
+    nav(cls := "nav")(div(cls := "w")(navModifier))
+
+  val indexNavFrag: Modifier =
+    modifier(
       div(cls := "dropdown")(
         div(cls := "dt")("全部商品分类"),
         div(cls := "dd")(ul(
@@ -135,12 +156,13 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
       div(cls := "navitems")(ul(
         Seq("服装城", "美妆馆", "传智超市", "全球购", "闪购", "团购", "拍卖", "有趣").map(s => li(a(href := "#")(s)))
       ))
-    ))
+    )
+
 
   // 底部模块的制作
   val footerFrag: Modifier =
     footer(cls := "footer")(div(cls := "w")(
-      div(cls := "mod_service")(ul(
+      div(cls := "mod-service")(ul(
         Seq(
           ("正品保障", "正品保障，提供发票"),
           ("极速物流", "极速物流，极速送达"),
@@ -149,10 +171,10 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
           ("帮助中心", "您的购物指南")
         ).zipWithIndex.map {
           case ((serviceTitle, serviceTxt), index) =>
-            li(cls := s"intro${index + 1}")(h5(), div(cls := "service_txt")(h4(serviceTitle), p(serviceTxt)))
+            li(cls := s"intro${index + 1}")(h5(), div(cls := "service-txt")(h4(serviceTitle), p(serviceTxt)))
         }
       )),
-      div(cls := "mod_help")(
+      div(cls := "mod-help")(
         Seq(
           ("服务指南", Seq("购物流程", "会员介绍", "生活旅行/团购", "常见问题", "大家电", "联系客服")),
           ("配送方式", Seq("上门自提", "211限时达", "配送服务查询", "配送费收取标准", "海外配送")),
@@ -163,9 +185,9 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
           case (helpTitle, helpSeq) =>
             dl(dt(helpTitle), helpSeq.map(s => dd(a(href := "#")(s))))
         },
-        dl(dt("帮助中心"), dd(img(src := "images/wx_cz.jpg", alt := ""), "品优购客户端"))
+        dl(dt("帮助中心"), dd(img(src := "images/wx_cz.jpg"), "品优购客户端"))
       ),
-      div(cls := "mod_copyright")(
+      div(cls := "mod-copyright")(
         div(cls := "links")(
           Seq("关于我们", "联系我们", "联系客服", "商家入驻", "营销中心", "手机品优购", "友情链接", "销售联盟", "品优购社区",
             "品优购公益", "English Site", "Contact Us").map(s => a(href := "#")(s)).sep[Frag]("|")
@@ -181,7 +203,7 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
   // 首页专有的模块 main
   val mainFrag: Modifier =
     div(cls := "w")(div(cls := "main")(
-      div(cls := "focus white_mask")(
+      div(cls := "focus white-mask")(
         ol(for _ <- 1 to 4 yield li()),
         ul(for i <- 1 to 4 yield li(img(src := s"uploads/banner$i.jpg"))),
         a(href := "#", cls := "prev")("‹"),
@@ -194,21 +216,146 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
             a(href := "#", cls := "more")("更多")
           ),
           div(cls := "news-bd")(ul(Seq(
-            ("特惠", "备战开学季 全民半价购数码"),
+            ("特惠", "备战开学季 全民半价购数码，超长文本测试"),
             ("公告", "品优稳占家电网购六成份额"),
             ("特惠", "百元中秋全品类礼券限量领"),
             ("公告", "上品优生鲜 享阳澄湖大闸蟹"),
-            ("特惠", "每日享折扣品优品质游")
+            ("特惠", "每日享折扣品优品质游，超长文本测试")
           ).map {
             case (l, r) => li(a(href := "#")(strong(s"[$l]"), s" $r"))
           }))
         ),
         div(cls := "lifeservice")(ul(Seq(
           "话费", "机票", "电影票", "游戏", "彩票", "加油卡", "酒店", "火车票", "众筹", "理财", "礼品卡", "白条"
-        ).map(s => li(i(), p(s))))),
+        ).zipWithIndex.map {
+          case (s, index) if index == 1 => li(i(), p(s), div(cls := "promotion")("减"))
+          case (s, _) => li(i(), p(s))
+        })),
         div(cls := "bargain")(img(src := "uploads/ad.jpg"))
       )
     ))
+
+  // 推荐模块
+  val recommendFrag: Modifier =
+    div(cls := "w recom")(
+      div(cls := "recom-hd")(
+        img(src := "images/clock.png"),
+        h4("今日推荐")
+      ),
+      div(cls := "recom-bd")(ul(
+        for i <- 1 to 4 yield li(cls := "white-mask")(img(src := s"uploads/today0$i.png"))
+      ))
+    )
+
+  // 猜你喜欢模块
+  val likeFrag: Modifier =
+    div(cls := "w like")(
+      div(cls := "like-hd")(
+        h3(cls := "fl")("猜你喜欢"),
+        div(cls := "fr change-btn")(a(href := "#")("换一换"))
+      ),
+      div(cls := "like-bd")(ul(Seq[(Frag, Int)](
+        ("时光美包新款单肩女包时尚子母包四件套女", 116),
+        ("爱仕达 30CM炒锅不粘锅电磁炉炒", 116),
+        (frag("捷波朗", br(), "（jabra）BOSSI劲步"), 236),
+        ("阳光美包新款单肩包女包时尚子母包四件套女", 116),
+        (frag("捷波朗", br(), "（jabra）BOSSI劲步"), 236),
+        (frag("三星（G5500）", br(), "移动联通双网通"), 566)
+      ).zipWithIndex.map {
+        case ((itemTitle, price), index) =>
+          li(
+            a(href := "#")(img(src := s"uploads/like_0${index + 1}.png")),
+            div(cls := "like-text")(
+              h4(cls := "item-title")(itemTitle),
+              span(cls := "item-price")(s"￥$price.00")
+            )
+          )
+      }))
+    )
+
+  // 楼层区域制作
+  def floorFrag: Modifier =
+    div(cls := "floor")(
+      // 1楼家用电器楼层
+      floorChildFrag("appliance", "家用电器", Seq(
+        "热门", "大家电", "生活电器", "厨房电器", "个护健康", "应季电器", "空气/净水", "新奇特", "高端电器"
+      )),
+      // 2楼手机楼层
+      floorChildFrag("cellphone", "手机通讯", Seq(
+        "热门", "品质优选", "新机尝鲜", "高性价比", "口碑推荐", "合约机", "手机卡", "店铺精选", "手机配件"
+      )),
+      floorChildFrag("computer", "电脑办公", Seq(
+        "热门", "大家电", "生活电器", "厨房电器", "应季电器", "空气/净水", "高端电器"
+      )),
+    )
+
+  def floorChildFrag(className: String, floorTitle: String, tabList: Seq[String]): Modifier =
+    div(cls := s"w $className")(
+      div(cls := "box-hd")(
+        h3(floorTitle),
+        div(cls := "tab-list")(ul(tabList.zipWithIndex.map {
+          case (s, index) if index == 0 => li(a(href := "#", cls := "style-red")(s))
+          case (s, _) => li(a(href := "#")(s))
+        }))
+      ),
+      div(cls := "box-bd")(div(cls := "tab-content")(
+        div(cls := "tab-list-item")(
+          div(cls := "container col-210")(
+            ul(Seq("节能补贴", "4K电视", "空气净化器", "IH电饭煲", "滚筒洗衣机", "电热水器").map(s => li(a(href := "#")(s)))),
+            a(href := "#")(img(src := "uploads/floor-1-1.png"))
+          ),
+          div(cls := "container col-329")(
+            a(href := "#")(img(src := "uploads/floor-1-b01.png"))
+          ),
+          div(cls := "container col-221")(
+            a(href := "#", cls := "bb")(img(src := "uploads/floor-1-2.png")),
+            a(href := "#")(img(src := "uploads/floor-1-3.png"))
+          ),
+          div(cls := "container col-221")(
+            a(href := "#")(img(src := "uploads/floor-1-4.png"))
+          ),
+          div(cls := "container col-219")(
+            a(href := "#", cls := "bb")(img(src := "uploads/floor-1-5.png")),
+            a(href := "#")(img(src := "uploads/floor-1-6.png"))
+          )
+        )
+      ))
+    )
+
+  // 商标
+  val brandFrag: Modifier =
+    div(cls := "w")(div(cls := "brand")(ul(
+      Seq("21", "03", "05", "07", "09", "11", "13", "15", "17", "19").map(s => li(img(src := s"uploads/brand_$s.png")))
+    )))
+
+  val sidebarFrag: Modifier =
+    div(cls := "sidebar")(
+      div(cls := "right-bar"),
+      div(cls := "middle")(
+        div(cls := "sidebar-icon cart-icon")(i(cls := "badge")(8)),
+        div(cls := "sidebar-icon favorite-icon"),
+        div(cls := "sidebar-icon history-icon")
+      ),
+      div(cls := "bottom")(
+        div(cls := "sidebar-icon top-icon"),
+        div(cls := "sidebar-icon comment-icon")
+      )
+    )
+
+  // 列表页的秒杀模块
+  val secondKillFrag: Modifier =
+    div(cls := "sk")(img(src := "uploads/secKill_03.png"))
+
+  val listNavFrag: Modifier =
+    modifier(
+      div(cls := "sk-list")(ul(Seq("品优秒杀", "即将售罄", "超值低价").map(s => li(a(href := "#")(s))))),
+      div(cls := "sk-con")(ul(Seq(
+        "女装", "女鞋", "男装", "男鞋", "母婴童装", "食品", "智能数码", "运动户外", "更多分类"
+      ).zipWithIndex.map {
+        case (s, index) if index == 1 => li(a(href := "#", cls := "style-red")(s))
+        case (s, _)  => li(a(href := "#")(s))
+      }))
+    )
 
   extension [A] (seq: Seq[A])
     def sep[B](b: B): Seq[A | B] =
@@ -217,77 +364,6 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
         else a +: b +: acc
       )
   end extension
-
-  val history: Frag =
-    frag(
-      div(cls := "top_container")(div(cls := "w")(
-        div(cls := "news_nav_banner_area")(
-          div(cls := "nav_area")(
-            ul(cls := "nav_line nav_line1 clearfix")(Seq("话费", "机票", "电影票", "游戏").map(li(_))),
-            ul(cls := "nav_line nav_line2 clearfix")(Seq("彩票", "加油站", "酒店", "火车票").map(li(_))),
-            ul(cls := "nav_line nav_line3 clearfix")(Seq("众筹", "理财", "礼品卡", "白条").map(li(_)))
-          ),
-          div(cls := "little_banner_area")(img(src := "uploads/ad.jpg"))
-        )
-      )),
-      div(cls := "middle_banner")(div(cls := "w")(dl(
-        dt(
-          img(src := "images/clock.png"),
-          h4("今日推荐")
-        ),
-        for i <- 1 to 4 yield dd(cls := "white_mask")(img(src := s"uploads/today0$i.png"))
-      ))),
-      div(cls := "recommend_area")(div(cls := "w")(
-        div(cls := "recommend_head clearfix")(
-          h2("猜你喜欢"),
-          button(cls := "change")("换一换")
-        ),
-        ul(cls := "clearfix")(
-          li(cls := "recommend_item")(
-            a(href := "#", cls := "item_pic")(img(src := "uploads/like_01.png")),
-            h4(cls := "item-title")("时光美包新款单肩女包时尚子母包四件套女"),
-            span(cls := "item_price")("￥116.00")
-          ),
-          li(cls := "recommend_item")(
-            a(href := "#", cls := "item_pic")(img(src := "uploads/like_02.png")),
-            h4(cls := "item-title")("爱仕达 30CM炒锅不粘锅电磁炉炒"),
-            span(cls := "item_price")("￥116.00")
-          ),
-          li(cls := "recommend_item")(
-            a(href := "#", cls := "item_pic")(img(src := "uploads/like_03.png")),
-            h4(cls := "item-title")("捷波朗", br(), "（jabra）BOSSI劲步"),
-            span(cls := "item_price")("￥236.00")
-          ),
-          li(cls := "recommend_item")(
-            a(href := "#", cls := "item_pic")(img(src := "uploads/like_04.png")),
-            h4(cls := "item-title")("阳光美包新款单肩包女包时尚子母包四件套女"),
-            span(cls := "item_price")("￥116.00")
-          ),
-          li(cls := "recommend_item")(
-            a(href := "#", cls := "item_pic")(img(src := "uploads/like_05.png")),
-            h4(cls := "item-title")("捷波朗", br(), "（jabra）BOSSI劲步"),
-            span(cls := "item_price")("￥236.00")
-          ),
-          li(cls := "recommend_item")(
-            a(href := "#", cls := "item_pic")(img(src := "uploads/like_06.png")),
-            h4(cls := "item-title")("三星（G5500）", br(), "移动联通双网通"),
-            span(cls := "item_price")("￥566.00")
-          ),
-        )
-      )),
-      div(cls := "sidebar_area")(
-        div(cls := "right_bar"),
-        div(cls := "middle_area")(
-          div(cls := "sidebar_icon cart_icon")(div(cls := "badge")("0")),
-          div(cls := "sidebar_icon favorite_icon"),
-          div(cls := "sidebar_icon history_icon")
-        ),
-        div(cls := "bottom_area")(
-          div(cls := "sidebar_icon top_icon"),
-          div(cls := "sidebar_icon comment_icon")
-        )
-      )
-    )
 
 end PinyougouPage
 

@@ -28,6 +28,8 @@ object PinyougouApp extends IOApp.Simple:
   private[this] def routes(using Logger[IO]): HttpRoutes[IO] =
     HttpRoutes.of[IO] {
       case GET -> Root => Ok(PinyougouPage.Text.index)
+      case GET -> Root / "index.html" => Ok(PinyougouPage.Text.index)
+      case GET -> Root / "list.html" => Ok(PinyougouPage.Text.list)
     } <+> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/pinyougou").toRoutes
 
   private[this] val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
