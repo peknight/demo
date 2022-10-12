@@ -51,14 +51,63 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
         shortcutFrag,
         headerFrag(secondKillFrag),
         navFrag(listNavFrag),
+        secKillContainerFrag,
         footerFrag
       )
     )
 
+  // 注册页面 比较隐私，不需要SEO优化
+  def register: Frag =
+    html(lang := "zh-CN")(
+      head(
+        metaFrag,
+        title("个人注册"),
+        // 引入favicon图标
+        link(rel := "shortcut icon", href := "favicon.ico"),
+        // 引入我们初始化的css
+        style(BaseStyles.render[String]),
+        style(FontsStyles.render[String]),
+        // 引入我们自己的注册页面的css
+        style(RegisterStyles.render[String]),
+      ),
+      body(
+        div(cls := "w")(
+          header(
+            div(cls := "logo")(a(href := "index.html")(img(src := "images/logo.png")))
+          ),
+          div(cls := "register-area")(
+            h3("注册新用户", div(cls := "login")("我有账号，去", a(href := "#")("登录"))),
+            div(cls := "reg-form")(ul(
+              li(
+                label(`for` := "")("手机号："),
+                input(`type` := "text"),
+                span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "手机号码格式不正确，请重新输入")
+              ),
+              li(
+                label(`for` := "")("短信验证码："),
+                input(`type` := "text"),
+                span(cls := "success")(" ", i(cls := "success-icon")("\uE906"), "短信验证码输入正确")
+              ),
+              li(
+                label(`for` := "")("登录密码："),
+                input(`type` := "text"),
+                span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "手机号码格式不正确，请重新输入")
+              ),
+              li(
+                label(`for` := "")("确认密码："),
+                input(`type` := "text"),
+                span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "手机号码格式不正确，请重新输入")
+              ),
+            ))
+          ),
+          footer("底部区域")
+        )
+      )
+    )
+
+
   def headFrag(headTitle: String, styleSheet: StyleSheet.Base): Modifier = head(
-    meta(charset := "UTF-8"),
-    meta(name := "viewport", content := "width=device-width, initial-scale=1.0"),
-    meta(httpEquiv := "X-UA-Compatible", content := "ie=edge"),
+    metaFrag,
     // TDK三大标签SEO优化: title description keywords
     title(s"$headTitle-综合网购首选-正品低价、品质保障、配送及时、轻松购物！"),
     // 网站说明
@@ -77,6 +126,13 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
     style(CommonStyles.render[String]),
     style(styleSheet.render[String])
   )
+
+  val metaFrag: Modifier =
+    modifier(
+      meta(charset := "UTF-8"),
+      meta(name := "viewport", content := "width=device-width, initial-scale=1.0"),
+      meta(httpEquiv := "X-UA-Compatible", content := "ie=edge")
+    )
 
   // 快捷导航模块
   val shortcutFrag: Modifier =
@@ -355,6 +411,33 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
         case (s, index) if index == 1 => li(a(href := "#", cls := "style-red")(s))
         case (s, _)  => li(a(href := "#")(s))
       }))
+    )
+
+  // 列表页主体部分
+  val secKillContainerFrag: Modifier =
+    div(cls := "w sk-container")(
+      div(cls := "sk-hd")(img(src := "uploads/bg_03.png")),
+      div(cls := "sk-bd")(ul(cls := "clearfix")(for _ <- 1 to 8 yield li(
+        a(href := "#")(img(src := "uploads/mobile.png")),
+        div(cls := "item-info")(
+          h3("Apple苹果iPhone 6s Plus (A1699) 32G 金色 移动联通电信4G手机"),
+          div(cls := "price")(
+            span(cls := "unit style-red")("￥"),
+            span(cls := "promotion-price style-red")(6088),
+            " ",
+            span(cls := "origin-price")("￥6988")
+          ),
+          div(cls := "inventory clearfix")(
+            div(cls := "fl")("已售87%"),
+            div(cls := "progress-bar")(
+              div(cls := "progress-bar-left")(),
+              div(cls := "progress-bar-right")()
+            ),
+            div(cls := "fl")("剩余", span(cls := "style-red")(29), "件")
+          )
+        ),
+        button(cls := "buy")("立即抢购")
+      )))
     )
 
   extension [A] (seq: Seq[A])
