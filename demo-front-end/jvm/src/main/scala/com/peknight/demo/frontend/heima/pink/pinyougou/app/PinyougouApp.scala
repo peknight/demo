@@ -1,71 +1,42 @@
 package com.peknight.demo.frontend.heima.pink.pinyougou.app
 
 import cats.effect.*
-import cats.syntax.flatMap.*
-import cats.syntax.functor.*
 import cats.syntax.semigroupk.*
-import ciris.*
-import com.comcast.ip4s.*
-import com.peknight.demo.frontend.heima.pink.pinyougou.page.PinyougouPage
+import com.peknight.demo.frontend.app.DemoFrontEndHttp4sApp
+import com.peknight.demo.frontend.heima.pink.pinyougou.page.*
 import com.peknight.demo.frontend.heima.pink.pinyougou.style.*
-import fs2.io.file
-import fs2.io.net.Network
 import org.http4s.*
 import org.http4s.dsl.io.*
-import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.scalatags.*
-import org.http4s.server.Server
-import org.http4s.server.middleware.Logger as MiddlewareLogger
+import org.http4s.server.Router
 import org.http4s.server.staticcontent.*
 import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
-import org.typelevel.log4cats.syntax.*
 import scalacss.ProdDefaults.*
 
-object PinyougouApp extends IOApp.Simple:
+object PinyougouApp extends DemoFrontEndHttp4sApp:
 
-  given CanEqual[Path, Path] = CanEqual.derived
-  given CanEqual[Method, Method] = CanEqual.derived
+  private[this] val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+    case GET -> Root => Ok(IndexPage.Text.index)
+    case GET -> Root / "index.html" => Ok(IndexPage.Text.index)
+    case GET -> Root / "list.html" => Ok(ListPage.Text.list)
+    case GET -> Root / "register.html" => Ok(RegisterPage.Text.register)
+  }
 
-  private[this] def routes(using Logger[IO]): HttpRoutes[IO] =
-    HttpRoutes.of[IO] {
-      case GET -> Root => Ok(PinyougouPage.Text.index)
-      case GET -> Root / "index.html" => Ok(PinyougouPage.Text.index)
-      case GET -> Root / "list.html" => Ok(PinyougouPage.Text.list)
-      case GET -> Root / "register.html" => Ok(PinyougouPage.Text.register)
-      case GET -> Root / "css" / "base.css" => Ok(BaseStyles.render[String])
-      case GET -> Root / "css" / "fonts.css" => Ok(FontsStyles.render[String])
-      case GET -> Root / "css" / "common.css" => Ok(CommonStyles.render[String])
-      case GET -> Root / "css" / "copyright.css" => Ok(CopyrightStyles.render[String])
-      case GET -> Root / "css" / "index.css" => Ok(IndexStyles.render[String])
-      case GET -> Root / "css" / "list.css" => Ok(ListStyles.render[String])
-      case GET -> Root / "css" / "register.css" => Ok(RegisterStyles.render[String])
-    } <+> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/pinyougou").toRoutes
+  private[this] val resourceRoutes: HttpRoutes[IO] =
+    resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/pinyougou").toRoutes
 
-  private[this] val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
-    env("STORE_PASSWORD").default("123456").secret
-  private[this] val keyPasswordConfig: ConfigValue[Effect, Secret[String]] =
-    env("KEY_PASSWORD").default("123456").secret
+  private[this] val cssRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+    case GET -> Root / "base.css" => Ok(BaseStyles.render[String])
+    case GET -> Root / "fonts.css" => Ok(FontsStyles.render[String])
+    case GET -> Root / "common.css" => Ok(CommonStyles.render[String])
+    case GET -> Root / "copyright.css" => Ok(CopyrightStyles.render[String])
+    case GET -> Root / "index.css" => Ok(IndexStyles.render[String])
+    case GET -> Root / "list.css" => Ok(ListStyles.render[String])
+    case GET -> Root / "register.css" => Ok(RegisterStyles.render[String])
+  }
 
-  private[this] def start[F[_]: Async](httpApp: HttpApp[F]): F[(Server, F[Unit])] =
-    for
-      storePassword <- storePasswordConfig.load[F]
-      keyPassword <- keyPasswordConfig.load[F]
-      tlsContext <- Network[F].tlsContext.fromKeyStoreFile(
-        file.Path("demo-security/keystore/letsencrypt.keystore").toNioPath,
-        storePassword.value.toCharArray, keyPassword.value.toCharArray)
-      res <- EmberServerBuilder.default[F]
-        .withHostOption(None)
-        .withPort(port"8080")
-        .withTLS(tlsContext)
-        .withHttpApp(MiddlewareLogger.httpApp(true, false)(httpApp))
-        .build.allocated
-    yield res
-
-  val run: IO[Unit] =
-    for
-      logger <- Slf4jLogger.create[IO]
-      given Logger[IO] = logger
-      _ <- start[IO](routes.orNotFound)
-      _ <- IO.never
-    yield ()
+  def routes(using Logger[IO]): HttpRoutes[IO] =
+    Router(
+      "/" -> (htmlRoutes <+> resourceRoutes),
+      "css" -> cssRoutes
+    )
