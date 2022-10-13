@@ -6,66 +6,6 @@ import scalacss.internal.Dsl.*
 object IndexStyles extends StyleSheet.Standalone:
   import dsl.*
 
-  ".sidebar" - (
-    position.fixed,
-    top.`0`,
-    right.`0`,
-    height(100.%%)
-  )
-
-  ".sidebar .right-bar" - (
-    float.right,
-    width(5.px),
-    height(100.%%),
-    backgroundColor(c"#7a6e6e")
-  )
-
-  ".sidebar .sidebar-icon" - (
-    position.relative,
-    width(100.%%),
-    height(32.px),
-    marginTop(2.px),
-    borderRadius(4.px),
-    background := "#7a6e6e url('images/cartPanelViewIcons.png')",
-  )
-
-  ".sidebar .middle" - (
-    position.absolute,
-    top(50.%%),
-    right.`0`,
-    width(32.px),
-    height(100.px),
-    marginTop(-50.px)
-  )
-
-  ".sidebar .middle .cart-icon " - style(backgroundPosition := "-51px -2px")
-  ".sidebar .middle .favorite-icon" - style(backgroundPosition := "-51px -50px")
-  ".sidebar .middle .history-icon" - style(backgroundPosition := "-51px -101px")
-
-  ".sidebar .middle .cart-icon .badge" - (
-    position.absolute,
-    top(-5.px),
-    left(16.px),
-    minWidth(12.px),
-    fontSize(10.px),
-    lineHeight(10.px),
-    borderRadius(6.px),
-    color(c"#fff"),
-    backgroundColor(c"#e60012"),
-    textAlign.center
-  )
-
-  ".sidebar .bottom" - (
-    position.absolute,
-    bottom.`0`,
-    right.`0`,
-    width(32.px),
-    height(66.px)
-  )
-
-  ".sidebar .bottom .top-icon" - style(backgroundPosition := "-51px -252px")
-  ".sidebar .bottom .comment-icon" - style(backgroundPosition := "-51px -300px")
-
   ".main" - (
     width(980.px),
     height(455.px),
@@ -391,3 +331,63 @@ object IndexStyles extends StyleSheet.Standalone:
     padding(`0`, 10.px),
     &.lastOfType - style(borderRight :=! "0 none")
   )
+
+  ".sidebar" - (
+    position.fixed,
+    top.`0`,
+    right.`0`,
+    height(100.%%)
+  )
+
+  ".sidebar .right-bar" - (
+    float.right,
+    width(5.px),
+    height(100.%%),
+    backgroundColor(c"#7a6e6e")
+  )
+
+  ".sidebar .sidebar-icon" - (
+    position.relative,
+    width(100.%%),
+    height(32.px),
+    marginTop(2.px),
+    borderRadius(4.px),
+    background := "#7a6e6e url('images/cartPanelViewIcons.png')",
+  )
+
+  ".sidebar .middle" - (
+    position.absolute,
+    top(50.%%),
+    right.`0`,
+    width(32.px),
+    height(100.px),
+    marginTop(-50.px)
+  )
+
+  ".sidebar .middle .cart-icon " - style(backgroundPosition := "-51px -2px")
+  ".sidebar .middle .favorite-icon" - style(backgroundPosition := "-51px -50px")
+  ".sidebar .middle .history-icon" - style(backgroundPosition := "-51px -101px")
+
+  ".sidebar .middle .cart-icon .badge" - (
+    position.absolute,
+    top(-5.px),
+    left(16.px),
+    minWidth(12.px),
+    fontSize(10.px),
+    lineHeight(10.px),
+    borderRadius(6.px),
+    color(c"#fff"),
+    backgroundColor(c"#e60012"),
+    textAlign.center
+  )
+
+  ".sidebar .bottom" - (
+    position.absolute,
+    bottom.`0`,
+    right.`0`,
+    width(32.px),
+    height(66.px)
+  )
+
+  ".sidebar .bottom .top-icon" - style(backgroundPosition := "-51px -252px")
+  ".sidebar .bottom .comment-icon" - style(backgroundPosition := "-51px -300px")

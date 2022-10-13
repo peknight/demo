@@ -75,25 +75,27 @@ object ListStyles extends StyleSheet.Standalone:
 
   ".item-info .inventory" - marginTop(10.px)
 
-  ".item-info .progress-bar" - (float.left, paddingTop(3.px))
-
-  ".item-info .progress-bar-left" - (
+  ".item-info .progress-bar" - (
     float.left,
-    width(130.px),
+    width(150.px),
     height(10.px),
-    marginLeft(5.px),
-    border(1.px, solid, c"#c81523"),
-    borderRadius(5.px, `0`, `0`, 5.px),
-    backgroundColor(c"#c81523"),
+    paddingTop(3.px),
+    margin(`0`, 5.px),
+    border(1.px, solid, c"#c81623"),
+    borderRadius(5.px),
+    padding(1.px),
   )
 
-  ".item-info .progress-bar-right" - (
-    float.left,
-    width(20.px),
-    height(10.px),
-    marginRight(5.px),
-    border(1.px, solid, c"#c81523"),
-    borderRadius(`0`, 5.px, 5.px, `0`),
+  ".item-info .progress-bar-in" - (
+    width(87.%%),
+    height(100.%%),
+    backgroundColor(c"#c81523"),
+    borderRadius(3.px),
+    transition := "width 1s",
+  )
+
+  ".item-info:hover .progress-bar-in" - (
+    width(100.%%)
   )
 
   ".sk-bd ul li .buy" - (

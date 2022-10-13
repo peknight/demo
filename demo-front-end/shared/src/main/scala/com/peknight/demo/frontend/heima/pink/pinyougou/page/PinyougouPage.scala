@@ -77,29 +77,41 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
           ),
           div(cls := "register-area")(
             h3("注册新用户", div(cls := "login")("我有账号，去", a(href := "#")("登录"))),
-            div(cls := "reg-form")(ul(
+            div(cls := "reg-form")(form(action := "")(ul(
               li(
                 label(`for` := "")("手机号："),
-                input(`type` := "text"),
+                input(`type` := "text", cls := "inp"),
                 span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "手机号码格式不正确，请重新输入")
               ),
               li(
                 label(`for` := "")("短信验证码："),
-                input(`type` := "text"),
+                input(`type` := "text", cls := "inp"),
                 span(cls := "success")(" ", i(cls := "success-icon")("\uE906"), "短信验证码输入正确")
               ),
               li(
                 label(`for` := "")("登录密码："),
-                input(`type` := "text"),
-                span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "手机号码格式不正确，请重新输入")
+                input(`type` := "password", cls := "inp"),
+                span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "密码不少于6位数，请重新输入")
+              ),
+              li(cls := "safe")(
+                "安全程度 ",
+                em(cls := "weak")("弱"), " ",
+                em(cls := "medium")("中"), " ",
+                em(cls := "strong")("强")
               ),
               li(
                 label(`for` := "")("确认密码："),
-                input(`type` := "text"),
-                span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "手机号码格式不正确，请重新输入")
+                input(`type` := "password", cls := "inp"),
+                span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "密码不一致，请重新输入")
               ),
+              li(cls := "agree")(
+                input(`type` := "checkbox")(" 同意协议并注册 ", a(href := "#")("知晓用户协议"))
+              ),
+              li(
+                input(`type` := "submit", value := "提交注册", cls := "btn")
+              )
             ))
-          ),
+          )),
           footer("底部区域")
         )
       )
@@ -430,8 +442,7 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
           div(cls := "inventory clearfix")(
             div(cls := "fl")("已售87%"),
             div(cls := "progress-bar")(
-              div(cls := "progress-bar-left")(),
-              div(cls := "progress-bar-right")()
+              div(cls := "progress-bar-in"),
             ),
             div(cls := "fl")("剩余", span(cls := "style-red")(29), "件")
           )

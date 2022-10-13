@@ -60,7 +60,7 @@ object RegisterStyles extends StyleSheet.Standalone:
     textAlign.right,
   )
 
-  ".reg-form ul li input" - (
+  ".reg-form ul li .inp" - (
     width(242.px),
     height(37.px),
     border(1.px, solid, c"#ccc")
@@ -69,6 +69,7 @@ object RegisterStyles extends StyleSheet.Standalone:
   ".error" - (
     color(c"#c81623")
   )
+
   ".error-icon, .success-icon" - (
     display.inlineBlock,
     verticalAlign.middle,
@@ -87,4 +88,46 @@ object RegisterStyles extends StyleSheet.Standalone:
 
   ".success-icon" - (
     color(green),
+  )
+
+  ".safe" - (
+    paddingLeft(156.px)
+  )
+
+  ".safe em" - (
+    padding(`0`, 12.px),
+    color(white),
+  )
+
+  ".weak" - (
+    backgroundColor(c"#de1111")
+  )
+
+  ".medium" - (
+    backgroundColor(c"#40b83f")
+  )
+
+  ".strong" - (
+    backgroundColor(c"#f79100")
+  )
+
+  ".agree" - (
+    paddingLeft(80.px)
+  )
+
+  ".agree input" - (
+    verticalAlign.middle
+  )
+
+  ".agree a" - (
+    color(c"#1ba1e6")
+  )
+
+  ".btn" - (
+    width(200.px),
+    height(34.px),
+    backgroundColor(c"#c81623"),
+    fontSize(14.px),
+    color(white),
+    margin(30.px, `0`, `0`, 70.px),
   )
