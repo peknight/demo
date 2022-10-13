@@ -59,85 +59,41 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
   // 注册页面 比较隐私，不需要SEO优化
   def register: Frag =
     html(lang := "zh-CN")(
-      head(
-        metaFrag,
-        title("个人注册"),
-        // 引入favicon图标
-        link(rel := "shortcut icon", href := "favicon.ico"),
-        // 引入我们初始化的css
-        style(BaseStyles.render[String]),
-        style(FontsStyles.render[String]),
-        // 引入我们自己的注册页面的css
-        style(RegisterStyles.render[String]),
-      ),
+      registerHeadFrag,
       body(
         div(cls := "w")(
           header(
             div(cls := "logo")(a(href := "index.html")(img(src := "images/logo.png")))
           ),
-          div(cls := "register-area")(
-            h3("注册新用户", div(cls := "login")("我有账号，去", a(href := "#")("登录"))),
-            div(cls := "reg-form")(form(action := "")(ul(
-              li(
-                label(`for` := "")("手机号："),
-                input(`type` := "text", cls := "inp"),
-                span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "手机号码格式不正确，请重新输入")
-              ),
-              li(
-                label(`for` := "")("短信验证码："),
-                input(`type` := "text", cls := "inp"),
-                span(cls := "success")(" ", i(cls := "success-icon")("\uE906"), "短信验证码输入正确")
-              ),
-              li(
-                label(`for` := "")("登录密码："),
-                input(`type` := "password", cls := "inp"),
-                span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "密码不少于6位数，请重新输入")
-              ),
-              li(cls := "safe")(
-                "安全程度 ",
-                em(cls := "weak")("弱"), " ",
-                em(cls := "medium")("中"), " ",
-                em(cls := "strong")("强")
-              ),
-              li(
-                label(`for` := "")("确认密码："),
-                input(`type` := "password", cls := "inp"),
-                span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "密码不一致，请重新输入")
-              ),
-              li(cls := "agree")(
-                input(`type` := "checkbox")(" 同意协议并注册 ", a(href := "#")("知晓用户协议"))
-              ),
-              li(
-                input(`type` := "submit", value := "提交注册", cls := "btn")
-              )
-            ))
-          )),
-          footer("底部区域")
+          registerAreaFrag,
+          footer(copyRightFrag)
         )
       )
     )
 
 
-  def headFrag(headTitle: String, styleSheet: StyleSheet.Base): Modifier = head(
-    metaFrag,
-    // TDK三大标签SEO优化: title description keywords
-    title(s"$headTitle-综合网购首选-正品低价、品质保障、配送及时、轻松购物！"),
-    // 网站说明
-    meta(name := "description", content := "品优购商城-专业的综合网上购物商城，销售家电、数码通讯、电脑、家居百货、服装服饰、" +
-      "母婴、图书、食品等数万个品牌优质商品。便捷、诚信的服务，为您提供愉悦的网上购物体验！"),
-    // 关键字
-    meta(name := "keywords", content := "网上购物,网上商城,手机,笔记本,电脑,MP3,CD,VCD,DV,相机,数码,配件,手表,存储卡,品优购"),
-    // 引入favicon图标
-    link(rel := "shortcut icon", href := "favicon.ico"),
-    // 引入我们初始化样式文件
-    // link(rel := "stylesheet", href := "css/base.css"),
-    style(BaseStyles.render[String]),
-    // 引入我们公共的样式文件
-    // link(rel := "stylesheet", href := "css/common.css"),
-    style(FontsStyles.render[String]),
-    style(CommonStyles.render[String]),
-    style(styleSheet.render[String])
-  )
+  def headFrag(headTitle: String, styleSheet: StyleSheet.Base): Modifier =
+    head(
+      metaFrag,
+      // TDK三大标签SEO优化: title description keywords
+      title(s"$headTitle-综合网购首选-正品低价、品质保障、配送及时、轻松购物！"),
+      // 网站说明
+      meta(name := "description", content := "品优购商城-专业的综合网上购物商城，销售家电、数码通讯、电脑、家居百货、服装服饰、" +
+        "母婴、图书、食品等数万个品牌优质商品。便捷、诚信的服务，为您提供愉悦的网上购物体验！"),
+      // 关键字
+      meta(name := "keywords", content := "网上购物,网上商城,手机,笔记本,电脑,MP3,CD,VCD,DV,相机,数码,配件,手表,存储卡,品优购"),
+      // 引入favicon图标
+      link(rel := "shortcut icon", href := "favicon.ico"),
+      // 引入我们初始化样式文件
+      // link(rel := "stylesheet", href := "css/base.css"),
+      style(BaseStyles.render[String]),
+      // 引入我们公共的样式文件
+      // link(rel := "stylesheet", href := "css/common.css"),
+      style(FontsStyles.render[String]),
+      style(CommonStyles.render[String]),
+      style(CopyrightStyles.render[String]),
+      style(styleSheet.render[String])
+    )
 
   val metaFrag: Modifier =
     modifier(
@@ -146,13 +102,27 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
       meta(httpEquiv := "X-UA-Compatible", content := "ie=edge")
     )
 
+  val registerHeadFrag: Modifier =
+    head(
+      metaFrag,
+      title("个人注册"),
+      // 引入favicon图标
+      link(rel := "shortcut icon", href := "favicon.ico"),
+      // 引入我们初始化的css
+      style(BaseStyles.render[String]),
+      style(FontsStyles.render[String]),
+      // 引入我们自己的注册页面的css
+      style(RegisterStyles.render[String]),
+      style(CopyrightStyles.render[String])
+    )
+
   // 快捷导航模块
   val shortcutFrag: Modifier =
     section(cls := "shortcut")(div(cls := "w")(
       div(cls := "fl")(ul(
         li("品优购欢迎您！ "),
         // 这里也用的li，而不是直接用a
-        li(a(href := "#")("请登录"), " ", a(href := "#", cls := "style-red")("免费注册"))
+        li(a(href := "#")("请登录"), " ", a(href := "register.html", cls := "style-red")("免费注册"))
       )),
       div(cls := "fr")(ul(
         li("我的订单"), li(),
@@ -213,7 +183,7 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
         div(cls := "dt")("全部商品分类"),
         div(cls := "dd")(ul(
           li(a(href := "#")("家用电器")),
-          li(a(href := "#")("手机"), "、", a(href := "#")("数码"), "、", a(href := "#")("通信")),
+          li(a(href := "list.html")("手机"), "、", a(href := "#")("数码"), "、", a(href := "#")("通信")),
           Seq(
             "电脑、办公", "家居、家具、家装、厨具", "男装、女装、童装、内衣", "个护化妆、清洁用品、宠物", "鞋靴、箱包、珠宝、奢侈品",
             "运动户外、钟表", "汽车、汽车用品", "母婴、玩具乐器", "食品、酒类、生鲜、特产", "医药保健", "图书、音像、电子书",
@@ -228,7 +198,7 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
 
 
   // 底部模块的制作
-  val footerFrag: Modifier =
+  def footerFrag: Modifier =
     footer(cls := "footer")(div(cls := "w")(
       div(cls := "mod-service")(ul(
         Seq(
@@ -255,18 +225,21 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
         },
         dl(dt("帮助中心"), dd(img(src := "images/wx_cz.jpg"), "品优购客户端"))
       ),
-      div(cls := "mod-copyright")(
-        div(cls := "links")(
-          Seq("关于我们", "联系我们", "联系客服", "商家入驻", "营销中心", "手机品优购", "友情链接", "销售联盟", "品优购社区",
-            "品优购公益", "English Site", "Contact Us").map(s => a(href := "#")(s)).sep[Frag]("|")
-        ),
-        div(cls := "copyright")(
-          "地址：北京市昌平区建材城西路金燕龙办公楼一层 邮编：100096 电话：400-618-4000 传真：010-82935100",
-          br(),
-          "京ICP备08001421号京公网安备110108007702"
-        )
-      )
+      copyRightFrag
     ))
+
+  val copyRightFrag: Modifier =
+    div(cls := "mod-copyright")(
+      div(cls := "links")(
+        Seq("关于我们", "联系我们", "联系客服", "商家入驻", "营销中心", "手机品优购", "友情链接", "销售联盟", "品优购社区",
+          "品优购公益", "English Site", "Contact Us").map(s => a(href := "#")(s)).sep[Frag]("|")
+      ),
+      div(cls := "copyright")(
+        "地址：北京市昌平区建材城西路金燕龙办公楼一层 邮编：100096 电话：400-618-4000 传真：010-82935100",
+        br(),
+        "京ICP备08001421号京公网安备110108007702"
+      )
+    )
 
   // 首页专有的模块 main
   val mainFrag: Modifier =
@@ -429,7 +402,7 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
   val secKillContainerFrag: Modifier =
     div(cls := "w sk-container")(
       div(cls := "sk-hd")(img(src := "uploads/bg_03.png")),
-      div(cls := "sk-bd")(ul(cls := "clearfix")(for _ <- 1 to 8 yield li(
+      div(cls := "sk-bd")(ul(cls := "clearfix")(for _ <- 1 to 9 yield li(
         a(href := "#")(img(src := "uploads/mobile.png")),
         div(cls := "item-info")(
           h3("Apple苹果iPhone 6s Plus (A1699) 32G 金色 移动联通电信4G手机"),
@@ -450,6 +423,46 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
         button(cls := "buy")("立即抢购")
       )))
     )
+
+  val registerAreaFrag: Modifier =
+    div(cls := "register-area")(
+      h3("注册新用户", div(cls := "login")("我有账号，去", a(href := "#")("登录"))),
+      div(cls := "reg-form")(form(action := "")(ul(
+        li(
+          label(`for` := "")("手机号："),
+          input(`type` := "text", cls := "inp"),
+          span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "手机号码格式不正确，请重新输入")
+        ),
+        li(
+          label(`for` := "")("短信验证码："),
+          input(`type` := "text", cls := "inp"),
+          span(cls := "success")(" ", i(cls := "success-icon")("\uE906"), "短信验证码输入正确")
+        ),
+        li(
+          label(`for` := "")("登录密码："),
+          input(`type` := "password", cls := "inp"),
+          span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "密码不少于6位数，请重新输入")
+        ),
+        li(cls := "safe")(
+          "安全程度 ",
+          em(cls := "weak")("弱"), " ",
+          em(cls := "medium")("中"), " ",
+          em(cls := "strong")("强")
+        ),
+        li(
+          label(`for` := "")("确认密码："),
+          input(`type` := "password", cls := "inp"),
+          span(cls := "error")(" ", i(cls := "error-icon")("\uE905"), "密码不一致，请重新输入")
+        ),
+        li(cls := "agree")(
+          input(`type` := "checkbox")(" 同意协议并注册 ", a(href := "#")("知晓用户协议"))
+        ),
+        li(
+          input(`type` := "submit", value := "提交注册", cls := "btn")
+        )
+      )))
+    )
+
 
   extension [A] (seq: Seq[A])
     def sep[B](b: B): Seq[A | B] =

@@ -252,11 +252,3 @@ object CommonStyles extends StyleSheet.Standalone:
   )
 
   ".mod-help dl dt" - (fontSize(16.px), marginBottom(10.px))
-
-  ".mod-copyright" - (textAlign.center, paddingTop(20.px))
-
-  ".links" - marginBottom(15.px)
-
-  ".links a" - margin(`0`, 3.px)
-
-  ".copyright" - lineHeight(20.px)
