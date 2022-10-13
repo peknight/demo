@@ -46,7 +46,7 @@ object RegisterStyles extends StyleSheet.Standalone:
     verticalAlign.middle,
     width(20.px),
     height(20.px),
-    // background := "url('images/error.png') no-repeat",
+    // background := "url('../images/error.png') no-repeat",
     marginTop(-6.px),
     fontFamily :=! "'icomoon'",
     color(c"#c81623"),

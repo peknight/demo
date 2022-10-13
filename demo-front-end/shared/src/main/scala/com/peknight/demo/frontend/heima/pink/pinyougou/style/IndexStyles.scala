@@ -107,7 +107,7 @@ object IndexStyles extends StyleSheet.Standalone:
     width(24.px),
     height(28.px),
     marginTop(12.px),
-    background := "url('images/icons.png') no-repeat"
+    background := "url('../images/icons.png') no-repeat"
   )
 
   ".lifeservice ul li .promotion" - (
@@ -194,7 +194,7 @@ object IndexStyles extends StyleSheet.Standalone:
       width(20.px),
       marginLeft(2.px),
       backgroundColor(pink),
-      background := "url(images/icons.png) no-repeat -418px -105px",
+      background := "url(../images/icons.png) no-repeat -418px -105px",
     )
   )
 
@@ -273,8 +273,8 @@ object IndexStyles extends StyleSheet.Standalone:
     paddingBottom(17.px),
   )
 
-  // ".tab-list-item > div" - ( // 这个>选择器在inline的情况下会被url编码，这里绕个弯
-  ".tab-list-item .container" - (
+  // 如果用inline引入这里的`>`会被UrlEncode导致样式失效，导出文件后引入没有这个问题
+  ".tab-list-item > div" - (
     float.left,
     height(100.%%)
   )
@@ -352,7 +352,7 @@ object IndexStyles extends StyleSheet.Standalone:
     height(32.px),
     marginTop(2.px),
     borderRadius(4.px),
-    background := "#7a6e6e url('images/cartPanelViewIcons.png')",
+    background := "#7a6e6e url('../images/cartPanelViewIcons.png')",
   )
 
   ".sidebar .middle" - (

@@ -29,7 +29,7 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
 
   def index: Frag =
     html(lang := "zh-CN")(
-      headFrag("品优购商城", IndexStyles),
+      headFrag("品优购商城", link(rel := "stylesheet", href := "css/index.css")),
       body(
         shortcutFrag,
         headerFrag(""),
@@ -46,7 +46,7 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
 
   def list: Frag =
     html(lang := "zh-CN")(
-      headFrag("列表页", ListStyles),
+      headFrag("列表页", link(rel := "stylesheet", href := "css/list.css")),
       body(
         shortcutFrag,
         headerFrag(secondKillFrag),
@@ -72,7 +72,7 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
     )
 
 
-  def headFrag(headTitle: String, styleSheet: StyleSheet.Base): Modifier =
+  def headFrag(headTitle: String, styleSheet: Modifier): Modifier =
     head(
       metaFrag,
       // TDK三大标签SEO优化: title description keywords
@@ -85,14 +85,13 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
       // 引入favicon图标
       link(rel := "shortcut icon", href := "favicon.ico"),
       // 引入我们初始化样式文件
-      // link(rel := "stylesheet", href := "css/base.css"),
-      style(BaseStyles.render[String]),
+      link(rel := "stylesheet", href := "css/base.css"),
+      // style(BaseStyles.render[String]),
       // 引入我们公共的样式文件
-      // link(rel := "stylesheet", href := "css/common.css"),
-      style(FontsStyles.render[String]),
-      style(CommonStyles.render[String]),
-      style(CopyrightStyles.render[String]),
-      style(styleSheet.render[String])
+      link(rel := "stylesheet", href := "css/fonts.css"),
+      link(rel := "stylesheet", href := "css/common.css"),
+      link(rel := "stylesheet", href := "css/copyright.css"),
+      styleSheet
     )
 
   val metaFrag: Modifier =
@@ -109,11 +108,11 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
       // 引入favicon图标
       link(rel := "shortcut icon", href := "favicon.ico"),
       // 引入我们初始化的css
-      style(BaseStyles.render[String]),
-      style(FontsStyles.render[String]),
+      link(rel := "stylesheet", href := "css/base.css"),
+      link(rel := "stylesheet", href := "css/fonts.css"),
       // 引入我们自己的注册页面的css
-      style(RegisterStyles.render[String]),
-      style(CopyrightStyles.render[String])
+      link(rel := "stylesheet", href := "css/register.css"),
+      link(rel := "stylesheet", href := "css/copyright.css"),
     )
 
   // 快捷导航模块
@@ -341,21 +340,21 @@ class PinyougouPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
       ),
       div(cls := "box-bd")(div(cls := "tab-content")(
         div(cls := "tab-list-item")(
-          div(cls := "container col-210")(
+          div(cls := "col-210")(
             ul(Seq("节能补贴", "4K电视", "空气净化器", "IH电饭煲", "滚筒洗衣机", "电热水器").map(s => li(a(href := "#")(s)))),
             a(href := "#")(img(src := "uploads/floor-1-1.png"))
           ),
-          div(cls := "container col-329")(
+          div(cls := "col-329")(
             a(href := "#")(img(src := "uploads/floor-1-b01.png"))
           ),
-          div(cls := "container col-221")(
+          div(cls := "col-221")(
             a(href := "#", cls := "bb")(img(src := "uploads/floor-1-2.png")),
             a(href := "#")(img(src := "uploads/floor-1-3.png"))
           ),
-          div(cls := "container col-221")(
+          div(cls := "col-221")(
             a(href := "#")(img(src := "uploads/floor-1-4.png"))
           ),
-          div(cls := "container col-219")(
+          div(cls := "col-219")(
             a(href := "#", cls := "bb")(img(src := "uploads/floor-1-5.png")),
             a(href := "#")(img(src := "uploads/floor-1-6.png"))
           )

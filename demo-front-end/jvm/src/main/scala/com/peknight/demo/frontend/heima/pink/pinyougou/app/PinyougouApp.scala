@@ -7,6 +7,7 @@ import cats.syntax.semigroupk.*
 import ciris.*
 import com.comcast.ip4s.*
 import com.peknight.demo.frontend.heima.pink.pinyougou.page.PinyougouPage
+import com.peknight.demo.frontend.heima.pink.pinyougou.style.*
 import fs2.io.file
 import fs2.io.net.Network
 import org.http4s.*
@@ -17,8 +18,9 @@ import org.http4s.server.Server
 import org.http4s.server.middleware.Logger as MiddlewareLogger
 import org.http4s.server.staticcontent.*
 import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.syntax.*
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.syntax.*
+import scalacss.ProdDefaults.*
 
 object PinyougouApp extends IOApp.Simple:
 
@@ -31,6 +33,13 @@ object PinyougouApp extends IOApp.Simple:
       case GET -> Root / "index.html" => Ok(PinyougouPage.Text.index)
       case GET -> Root / "list.html" => Ok(PinyougouPage.Text.list)
       case GET -> Root / "register.html" => Ok(PinyougouPage.Text.register)
+      case GET -> Root / "css" / "base.css" => Ok(BaseStyles.render[String])
+      case GET -> Root / "css" / "fonts.css" => Ok(FontsStyles.render[String])
+      case GET -> Root / "css" / "common.css" => Ok(CommonStyles.render[String])
+      case GET -> Root / "css" / "copyright.css" => Ok(CopyrightStyles.render[String])
+      case GET -> Root / "css" / "index.css" => Ok(IndexStyles.render[String])
+      case GET -> Root / "css" / "list.css" => Ok(ListStyles.render[String])
+      case GET -> Root / "css" / "register.css" => Ok(RegisterStyles.render[String])
     } <+> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/pinyougou").toRoutes
 
   private[this] val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
