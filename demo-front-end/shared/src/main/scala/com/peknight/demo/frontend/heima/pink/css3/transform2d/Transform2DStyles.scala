@@ -1,6 +1,5 @@
 package com.peknight.demo.frontend.heima.pink.css3.transform2d
 
-import com.peknight.demo.frontend.style.BoxStyles
 import scalacss.ProdDefaults.*
 import scalacss.internal.Dsl.*
 
@@ -17,8 +16,26 @@ import scalacss.internal.Dsl.*
  * - 可以设置转换中心点缩放，默认是以中心点缩放的
  * - 不影响其他盒子
  */
-object Transform2DStyles extends BoxStyles:
+object Transform2DStyles extends StyleSheet.Standalone:
   import dsl.*
+
+  "*" - (
+    margin.`0`,
+    padding.`0`,
+    border(1.px, solid, black),
+    color.white,
+  )
+
+  ".box" - (
+    float.left,
+    &.after - style(
+      visibility.hidden,
+      clear.both,
+      display.block,
+      content :=! "'.'",
+      height.`0`
+    )
+  )
 
   ".trans-1" - (
     width(200.px),

@@ -8,12 +8,12 @@ class BasePage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, Outp
   import bundle.all.{title as inlineTitle, style as _, *}
   import bundle.tags2.{nav, section, style, title}
 
-  protected def simplePage(headTitle: String)(styleSheet: StyleSheet.Base)(bodyFrag: Frag*): Frag =
+  protected def simplePage(headTitle: String)(styleSheets: StyleSheet.Base*)(bodyFrag: Frag*): Frag =
     html(lang := "zh-CN")(
       head(
         metaFrag,
         title(headTitle),
-        style(styleSheet.render[String])
+        styleSheets.map(styleSheet => (style(styleSheet.render[String])))
       ),
       body(bodyFrag)
     )
