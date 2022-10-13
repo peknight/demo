@@ -29,7 +29,6 @@ object PinyougouApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "base.css" => Ok(BaseStyles.render[String])
     case GET -> Root / "fonts.css" => Ok(FontsStyles.render[String])
     case GET -> Root / "common.css" => Ok(CommonStyles.render[String])
-    case GET -> Root / "copyright.css" => Ok(CopyrightStyles.render[String])
     case GET -> Root / "index.css" => Ok(IndexStyles.render[String])
     case GET -> Root / "list.css" => Ok(ListStyles.render[String])
     case GET -> Root / "register.css" => Ok(RegisterStyles.render[String])

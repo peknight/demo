@@ -1,5 +1,6 @@
 package com.peknight.demo.frontend.heima.pink.css3.transform2d
 
+import com.peknight.demo.frontend.style.BoxStyles
 import scalacss.ProdDefaults.*
 import scalacss.internal.Dsl.*
 
@@ -16,25 +17,8 @@ import scalacss.internal.Dsl.*
  * - 可以设置转换中心点缩放，默认是以中心点缩放的
  * - 不影响其他盒子
  */
-object Transform2DStyles extends StyleSheet.Standalone:
+object Transform2DStyles extends BoxStyles:
   import dsl.*
-
-  "*" - (
-    color.white,
-    border(1.px, solid, black),
-  )
-
-
-  ".box" - (
-    float.left,
-    &.after - style(
-      visibility.hidden,
-      clear.both,
-      display.block,
-      content :=! "'.'",
-      height.`0`
-    )
-  )
 
   ".trans-1" - (
     width(200.px),
@@ -74,9 +58,7 @@ object Transform2DStyles extends StyleSheet.Standalone:
     backgroundColor.purple,
     transition := "all 5s",
     // 用纯百分比搞居中
-    &.hover - (
-      transform := "translate(-50%, -50%)"
-    )
+    &.hover - style(transform := "translate(-50%, -50%)")
   )
 
   "span" - (
@@ -112,7 +94,8 @@ object Transform2DStyles extends StyleSheet.Standalone:
       transform := "rotate(45deg)",
       transition := "transform 2s"
     ),
-    &.hover.after - style(transform := "rotate(225deg) translate(-50%,-50%)")
+    // 顺序会影响转换的效果 先旋转会改变坐标轴方向 记得要将位移放到最前
+    &.hover.after - style(transform := "translate(50%,50%) rotate(225deg)")
   )
 
   ".origin-1" - (
@@ -135,19 +118,19 @@ object Transform2DStyles extends StyleSheet.Standalone:
     &.hover - (transform := "rotate(-360deg)"),
   )
 
-  ".case" - (
+  ".case-1" - (
     overflow.hidden,
     width(200.px),
     height(200.px),
     backgroundColor.purple,
     &.before - (
-      content :=! "'case-before'",
+      content :=! "'case-1-before'",
       display.block,
       width(100.%%),
       height(100.%%),
       backgroundColor.hotpink,
       transition := "transform 2s",
-      transform := "rotate(180deg)",
+      transform := "rotate(90deg)",
       transformOrigin := "left bottom",
     ),
     &.hover.before - (
@@ -182,4 +165,58 @@ object Transform2DStyles extends StyleSheet.Standalone:
       transformOrigin := "left bottom",
       transform := "scale(2)",
     )
+  )
+
+  ".case-2" - (
+    overflow.hidden,
+    position.relative,
+    float.left,
+    width(200.px),
+    height(200.px),
+    backgroundColor(pink),
+    margin(10.px),
+  )
+
+  ".case-2-inner" - (
+    position.absolute,
+    top(50.%%),
+    left(50.%%),
+    width(95.%%),
+    height(95.%%),
+    backgroundColor(skyblue),
+    transition := "all 1s",
+    transform := "translate(-50%,-50%)",
+    &.hover - style(transform := "translate(-50%,-50%) scale(1.1)")
+  )
+
+  ".case-3-li" - (
+    float.left,
+    width(30.px),
+    height(30.px),
+    margin(10.px),
+    textAlign.center,
+    lineHeight(30.px),
+    listStyle := "none",
+    borderRadius(50.%%),
+    cursor.pointer,
+    backgroundColor(orange),
+    transition := "all 1s",
+    &.hover - style(transform := "scale(1.2)")
+  )
+
+  ".multiple-1" - (
+    width(200.px),
+    height(200.px),
+    backgroundColor(green),
+    transition := "all 5s",
+    &.hover - style(transform := "translate(50px,50px) rotate(180deg) scale(.5)")
+  )
+
+  ".multiple-2" - (
+    width(200.px),
+    height(200.px),
+    backgroundColor(indigo),
+    transition := "all 5s",
+    // 执行顺序问题
+    &.hover - style(transform := "rotate(180deg) translate(50px,50px) scale(1.2)")
   )

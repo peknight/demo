@@ -33,7 +33,6 @@ class RegisterPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[
       link(rel := "stylesheet", href := "css/fonts.css"),
       // 引入我们自己的注册页面的css
       link(rel := "stylesheet", href := "css/register.css"),
-      link(rel := "stylesheet", href := "css/copyright.css"),
     )
 
   private[this] val registerAreaFrag: Modifier =

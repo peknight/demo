@@ -3,7 +3,7 @@ package com.peknight.demo.frontend.heima.pink.pinyougou.style
 import scalacss.ProdDefaults.*
 import scalacss.internal.Dsl.*
 
-object CommonStyles extends StyleSheet.Standalone:
+object CommonStyles extends StyleSheet.Standalone with CopyrightStyles:
   import dsl.*
 
   // 版心

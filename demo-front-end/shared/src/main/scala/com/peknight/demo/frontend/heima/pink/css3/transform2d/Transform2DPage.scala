@@ -31,13 +31,29 @@ class Transform2DPage[Builder, Output <: FragT, FragT](override val bundle: Bund
       div(cls := "origin-1")("origin-1"),
       div(cls := "origin-2")("origin-2"),
     ),
+    // 旋转案例
     div(cls := "box")(
-      div(cls := "case")("case"),
+      div(cls := "case-1")("case-1"),
     ),
+    // 缩放
     div(cls := "box")(
       div(cls := "scale-1")("scale-1"),
       div(cls := "scale-2")("scale-2"),
       div(cls := "scale-3")("scale-3"),
+    ),
+    // 缩放案例
+    div(cls := "box")(
+      div(cls := "case-2")(div(cls := "case-2-inner")("case-2-inner")),
+      div(cls := "case-2")(div(cls := "case-2-inner")("case-2-inner")),
+      div(cls := "case-2")(div(cls := "case-2-inner")("case-2-inner")),
+    ),
+    // 分页按钮缩放案例
+    div(cls := "box")(
+      ul(for i <- 1 to 7 yield li(cls := "case-3-li")(i)),
+    ),
+    div(cls := "box")(
+      div(cls := "multiple-1")("multiple-1"),
+      div(cls := "multiple-2")("multiple-2"),
     ),
   )
 
@@ -45,5 +61,3 @@ end Transform2DPage
 object Transform2DPage:
   object Text extends Transform2DPage(scalatags.Text)
 end Transform2DPage
-
-

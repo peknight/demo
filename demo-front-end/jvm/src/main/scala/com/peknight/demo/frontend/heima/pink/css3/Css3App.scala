@@ -2,6 +2,7 @@ package com.peknight.demo.frontend.heima.pink.css3
 
 import cats.effect.*
 import com.peknight.demo.frontend.app.DemoFrontEndHttp4sApp
+import com.peknight.demo.frontend.heima.pink.css3.animation.AnimationPage
 import com.peknight.demo.frontend.heima.pink.css3.transform2d.Transform2DPage
 import org.http4s.*
 import org.http4s.dsl.io.*
@@ -12,5 +13,6 @@ object Css3App extends DemoFrontEndHttp4sApp:
 
   def routes(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "transform2d" => Ok(Transform2DPage.Text.transform2D)
+    case GET -> Root / "animation" => Ok(AnimationPage.Text.animation)
   }
 

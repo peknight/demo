@@ -3,7 +3,7 @@ package com.peknight.demo.frontend.heima.pink.pinyougou.style
 import scalacss.ProdDefaults.*
 import scalacss.internal.Dsl.*
 
-object CopyrightStyles extends StyleSheet.Standalone:
+trait CopyrightStyles extends StyleSheet.Standalone:
   import dsl.*
 
   ".mod-copyright" - (textAlign.center, paddingTop(20.px))

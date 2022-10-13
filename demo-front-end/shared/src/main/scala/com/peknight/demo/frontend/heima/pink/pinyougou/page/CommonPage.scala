@@ -42,7 +42,6 @@ class CommonPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
       // 引入我们公共的样式文件
       link(rel := "stylesheet", href := "css/fonts.css"),
       link(rel := "stylesheet", href := "css/common.css"),
-      link(rel := "stylesheet", href := "css/copyright.css"),
       styleSheet
     )
 

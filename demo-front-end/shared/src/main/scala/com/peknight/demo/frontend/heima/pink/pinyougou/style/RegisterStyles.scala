@@ -6,7 +6,7 @@ import scalacss.internal.Dsl.*
 /**
  * 注册页专有的css
  */
-object RegisterStyles extends StyleSheet.Standalone:
+object RegisterStyles extends StyleSheet.Standalone with CopyrightStyles:
   import dsl.*
 
   ".w" - (width(1200.px), margin(`0`, auto))
