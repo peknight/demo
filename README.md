@@ -143,6 +143,7 @@
 * 前端知识学习
 * 参考: [B站黑马前端H5+CSS3](https://www.bilibili.com/video/BV14J4114768?p=1)
 * 进度: P355品优购项目完成，前端学习重启，用scalatags与scalacss重写
+* 素材: [html+css素材](https://gitee.com/xiaoqiang001/html_css_material.git), [品优购素材](https://gitee.com/xiaoqiang001/pinyougoujingtaiyemian)
 
 #### demo-oauth2
 
