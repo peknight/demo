@@ -9,7 +9,7 @@ class ListPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Buil
 
   def list: Frag =
     html(lang := "zh-CN")(
-      headFrag("列表页", link(rel := "stylesheet", href := "css/list.css")),
+      headFrag("列表页", link(rel := "stylesheet", href := "/css/list.css")),
       body(
         shortcutFrag,
         headerFrag(secondKillFrag),
@@ -21,7 +21,7 @@ class ListPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Buil
 
   // 列表页的秒杀模块
   private[this] val secondKillFrag: Modifier =
-    div(cls := "sk")(img(src := "uploads/secKill_03.png"))
+    div(cls := "sk")(img(src := "/uploads/secKill_03.png"))
 
   private[this] val listNavFrag: Modifier =
     modifier(
@@ -37,9 +37,9 @@ class ListPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Buil
   // 列表页主体部分
   private[this] val secKillContainerFrag: Modifier =
     div(cls := "w sk-container")(
-      div(cls := "sk-hd")(img(src := "uploads/bg_03.png")),
+      div(cls := "sk-hd")(img(src := "/uploads/bg_03.png")),
       div(cls := "sk-bd")(ul(cls := "clearfix")(for _ <- 1 to 9 yield li(
-        a(href := "#")(img(src := "uploads/mobile.png")),
+        a(href := "#")(img(src := "/uploads/mobile.png")),
         div(cls := "item-info")(
           h3("Apple苹果iPhone 6s Plus (A1699) 32G 金色 移动联通电信4G手机"),
           div(cls := "price")(

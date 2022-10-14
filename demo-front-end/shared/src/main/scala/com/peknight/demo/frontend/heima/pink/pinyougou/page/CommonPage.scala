@@ -37,11 +37,11 @@ class CommonPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
       // 引入favicon图标
       link(rel := "shortcut icon", href := "favicon.ico"),
       // 引入我们初始化样式文件
-      link(rel := "stylesheet", href := "css/base.css"),
+      link(rel := "stylesheet", href := "/css/base.css"),
       // style(BaseStyles.render[String]),
       // 引入我们公共的样式文件
-      link(rel := "stylesheet", href := "css/fonts.css"),
-      link(rel := "stylesheet", href := "css/common.css"),
+      link(rel := "stylesheet", href := "/css/fonts.css"),
+      link(rel := "stylesheet", href := "/css/common.css"),
       styleSheet
     )
 
@@ -132,7 +132,7 @@ class CommonPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
           case (helpTitle, helpSeq) =>
             dl(dt(helpTitle), helpSeq.map(s => dd(a(href := "#")(s))))
         },
-        dl(dt("帮助中心"), dd(img(src := "images/wx_cz.jpg"), "品优购客户端"))
+        dl(dt("帮助中心"), dd(img(src := "/images/wx_cz.jpg"), "品优购客户端"))
       ),
       copyRightFrag
     ))

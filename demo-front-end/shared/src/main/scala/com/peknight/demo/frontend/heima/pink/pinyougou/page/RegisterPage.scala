@@ -14,7 +14,7 @@ class RegisterPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[
       body(
         div(cls := "w")(
           header(
-            div(cls := "logo")(a(href := "index.html")(img(src := "images/logo.png")))
+            div(cls := "logo")(a(href := "index.html")(img(src := "/images/logo.png")))
           ),
           registerAreaFrag,
           footer(copyRightFrag)
@@ -29,10 +29,10 @@ class RegisterPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[
       // 引入favicon图标
       link(rel := "shortcut icon", href := "favicon.ico"),
       // 引入我们初始化的css
-      link(rel := "stylesheet", href := "css/base.css"),
-      link(rel := "stylesheet", href := "css/fonts.css"),
+      link(rel := "stylesheet", href := "/css/base.css"),
+      link(rel := "stylesheet", href := "/css/fonts.css"),
       // 引入我们自己的注册页面的css
-      link(rel := "stylesheet", href := "css/register.css"),
+      link(rel := "stylesheet", href := "/css/register.css"),
     )
 
   private[this] val registerAreaFrag: Modifier =

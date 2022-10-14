@@ -63,7 +63,7 @@ object CommonStyles extends StyleSheet.Standalone with CopyrightStyles:
     display.block,
     width(175.px),
     height(56.px),
-    background := "url('../images/logo.png') no-repeat",
+    background := "url('/images/logo.png') no-repeat",
     // 京东的做法
     // fontSize(`0`),
     // 淘宝的做法让文字隐藏
@@ -224,7 +224,7 @@ object CommonStyles extends StyleSheet.Standalone with CopyrightStyles:
     float.left,
     width(52.px),
     height(50.px),
-    background := "url('../images/icons.png') no-repeat",
+    background := "url('/images/icons.png') no-repeat",
     marginRight(8.px)
   )
 

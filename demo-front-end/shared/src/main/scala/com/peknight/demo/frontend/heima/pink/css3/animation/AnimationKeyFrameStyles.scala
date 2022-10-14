@@ -56,3 +56,25 @@ object AnimationKeyFrameStyles extends StyleSheet.Inline:
       opacity(0),
     )
   )
+
+  val w = keyframes(
+    0.%% -> keyframe(width.`0`),
+    100.%% -> keyframe(width(200.px))
+  )
+
+  val bear = keyframes(
+    0.%% -> keyframe(backgroundPosition := "0 0"),
+    100.%% -> keyframe(backgroundPosition := "-1600px 0"),
+  )
+
+  val moveBear = keyframes(
+    0.%% -> keyframe(left.`0`),
+    100.%% -> keyframe(
+      left(50.%%),
+      transform := "translateX(-50%)"
+    ),
+  )
+
+  val moveMountain = keyframes(
+    100.%% -> keyframe(transform := "translateX(-50%)")
+  )

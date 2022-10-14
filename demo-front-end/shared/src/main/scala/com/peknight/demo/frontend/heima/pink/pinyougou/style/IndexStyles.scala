@@ -107,7 +107,7 @@ object IndexStyles extends StyleSheet.Standalone:
     width(24.px),
     height(28.px),
     marginTop(12.px),
-    background := "url('../images/icons.png') no-repeat"
+    background := "url('/images/icons.png') no-repeat"
   )
 
   ".lifeservice ul li .promotion" - (
@@ -194,7 +194,7 @@ object IndexStyles extends StyleSheet.Standalone:
       width(20.px),
       marginLeft(2.px),
       backgroundColor(pink),
-      background := "url(../images/icons.png) no-repeat -418px -105px",
+      background := "url(/images/icons.png) no-repeat -418px -105px",
     )
   )
 
@@ -352,7 +352,7 @@ object IndexStyles extends StyleSheet.Standalone:
     height(32.px),
     marginTop(2.px),
     borderRadius(4.px),
-    background := "#7a6e6e url('../images/cartPanelViewIcons.png')",
+    background := "#7a6e6e url('/images/cartPanelViewIcons.png')",
   )
 
   ".sidebar .middle" - (

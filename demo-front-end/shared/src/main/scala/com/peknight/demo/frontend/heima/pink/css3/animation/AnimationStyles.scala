@@ -131,3 +131,59 @@ object AnimationStyles extends StyleSheet.Standalone:
   ".city div.pulse-2" - animationDelay(0.7.seconds)
   ".pulse-3" - animationDelay(1.3.seconds).important
 
+  ".steps-1" - (
+    overflow.hidden,
+    fontSize(20.px),
+    // 让文字强制一行内显示
+    width.`0`,
+    height(30.px),
+    backgroundColor(forestgreen),
+    whiteSpace.nowrap,
+    // 分步完成动画
+    animation := s"${AnimationKeyFrameStyles.w.name.value} 4s steps(10) forwards"
+  )
+
+  ".bear-outer" - (
+    overflow.hidden,
+    position.relative,
+    width(1000.px),
+    height(500.px),
+    backgroundColor(c"#ccc"),
+  )
+
+  ".bear-inner" - (
+    position.absolute,
+    bottom.`0`,
+    width(200.px),
+    height(100.px),
+    background := "url('/media/bear.png') no-repeat",
+    animation := s"${AnimationKeyFrameStyles.bear.name.value} 1s steps(8) infinite" +
+      s",${AnimationKeyFrameStyles.moveBear.name.value} 3s linear forwards"
+    // animationName :=! s"${AnimationKeyFrameStyles.bear.name.value},${AnimationKeyFrameStyles.moveBear.name.value}",
+    // animationDuration :=! "1s,3s",
+    // animationTimingFunction :=! "steps(8),linear",
+    // animationIterationCount :=! "infinite,1",
+    // animationFillMode :=! "backwards,forwards",
+  )
+
+  ".bear-bg-1" - (
+    position.absolute,
+    bottom.`0`,
+    width(200.%%),
+    animation := s"${AnimationKeyFrameStyles.moveMountain.name.value} 10s linear infinite"
+  )
+
+  ".bear-bg-1 img" - (
+    width(50.%%),
+    &.lastOfType - left(50.%%)
+  )
+
+  ".bear-bg-2" - (
+    position.absolute,
+    bottom.`0`,
+    width(100.%%),
+  )
+
+  ".bear-bg-2 img" - (
+    width(100.%%),
+  )

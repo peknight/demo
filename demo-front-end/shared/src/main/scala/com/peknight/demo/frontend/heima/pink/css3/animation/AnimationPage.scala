@@ -11,7 +11,7 @@ class AnimationPage[Builder, Output <: FragT, FragT](override val bundle: Bundle
 
   def animation: Frag = simplePage("Animation")(
     style(AnimationKeyFrameStyles.render[String]),
-    link(rel := "stylesheet", href := "css/animation.css"),
+    link(rel := "stylesheet", href := "/css/animation.css"),
   )(
     // 位移
     div(cls := "box")(
@@ -32,6 +32,17 @@ class AnimationPage[Builder, Output <: FragT, FragT](override val bundle: Bundle
         for i <- 1 to 3 yield div(cls := s"pulse-$i")
       )))
     ),
+    div(cls := "box")(
+      div(cls := "steps-1")("世纪佳缘我在这里等你")
+    ),
+    div(cls := "box")(
+      div(cls := "bear-outer")(
+        div(cls := "bear-bg-2")(img(src := "/media/bg2.png")),
+        // 两张图搞循环玩
+        div(cls := "bear-bg-1")(img(src := "/media/bg1.png"),img(src := "/media/bg1.png")),
+        div(cls := "bear-inner"),
+      )
+    )
   )
 
 end AnimationPage

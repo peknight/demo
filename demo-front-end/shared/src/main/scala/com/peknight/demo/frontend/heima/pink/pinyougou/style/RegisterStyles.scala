@@ -46,7 +46,7 @@ object RegisterStyles extends StyleSheet.Standalone with CopyrightStyles:
     verticalAlign.middle,
     width(20.px),
     height(20.px),
-    // background := "url('../images/error.png') no-repeat",
+    // background := "url('/images/error.png') no-repeat",
     marginTop(-6.px),
     fontFamily(FontsStyles.icomoon),
     color(c"#c81623"),
