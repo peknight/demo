@@ -69,7 +69,7 @@ object IndexStyles extends StyleSheet.Standalone:
 
   ".news-hd .more" - (
     float.right,
-    &.after - (content :=! "'\\e902'", fontFamily :=! "'icomoon'")
+    &.after - (content.string("\ue902"), fontFamily(FontsStyles.icomoon))
   )
 
   ".news-bd" - padding(5.px, 15.px, `0`)
@@ -127,7 +127,7 @@ object IndexStyles extends StyleSheet.Standalone:
       borderLeft(7.px, solid, green),
       borderRight(7.px, solid, green),
       borderBottom(5.px, solid, transparent),
-      content :=! "''",
+      content.string(""),
     )
   )
 
@@ -167,7 +167,7 @@ object IndexStyles extends StyleSheet.Standalone:
   ".recom-bd ul li img" - (width(248.px), height(163.px))
 
   ".recom-bd ul li".nthChild("-n+3").after - (
-    content :=! "''",
+    content.string(""),
     position.absolute,
     right.`0`,
     top(10.px),
@@ -187,7 +187,7 @@ object IndexStyles extends StyleSheet.Standalone:
     height(25.px),
     lineHeight(25.px),
     &.after - (
-      content :=! "''",
+      content.string(""),
       display.block,
       float.right,
       height(100.%%),
@@ -215,7 +215,7 @@ object IndexStyles extends StyleSheet.Standalone:
   )
 
   ".like-bd ul li".nthChild("-n+5").after - (
-    content :=! "''",
+    content.string(""),
     position.absolute,
     right.`0`,
     top(10.px),
@@ -257,8 +257,8 @@ object IndexStyles extends StyleSheet.Standalone:
 
   ".tab-list ul li" - (
     float.left,
-    &.after - style(content :=! "'|'"),
-    &.lastOfType.after - style(content :=! "''")
+    &.after - style(content.string("|")),
+    &.lastOfType.after - style(content.string(""))
   )
 
   ".tab-list ul li a" - margin(`0`, 15.px)

@@ -48,7 +48,7 @@ object RegisterStyles extends StyleSheet.Standalone with CopyrightStyles:
     height(20.px),
     // background := "url('../images/error.png') no-repeat",
     marginTop(-6.px),
-    fontFamily :=! "'icomoon'",
+    fontFamily(FontsStyles.icomoon),
     color(c"#c81623"),
     fontSize(18.px),
   )

@@ -42,3 +42,17 @@ object AnimationKeyFrameStyles extends StyleSheet.Inline:
     50.%% -> keyframe(transform := "translateX(200px)"),
     100.%% -> keyframe(transform := "translate(0,0)"),
   )
+
+  val pulse = keyframes(
+    70.%% -> keyframe(
+      // 这里不用transform: scale(5) 是因为它会让阴影变大，不好看
+      width(40.px),
+      height(40.px),
+      opacity(1),
+    ),
+    100.%% -> keyframe(
+      width(70.px),
+      height(70.px),
+      opacity(0),
+    )
+  )

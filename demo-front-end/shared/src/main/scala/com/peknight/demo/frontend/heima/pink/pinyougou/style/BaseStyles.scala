@@ -53,6 +53,6 @@ object BaseStyles extends StyleSheet.Standalone:
     visibility.hidden,
     clear.both,
     display.block,
-    content :=! "'.'",
+    content.string("."),
     height.`0`
   )

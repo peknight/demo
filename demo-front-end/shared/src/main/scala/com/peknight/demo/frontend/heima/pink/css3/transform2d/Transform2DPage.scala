@@ -1,6 +1,7 @@
 package com.peknight.demo.frontend.heima.pink.css3.transform2d
 
 import com.peknight.demo.frontend.page.BasePage
+import scalacss.ProdDefaults.*
 import scalatags.generic.Bundle
 
 class Transform2DPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Builder, Output, FragT])
@@ -8,7 +9,7 @@ class Transform2DPage[Builder, Output <: FragT, FragT](override val bundle: Bund
   import bundle.all.{title as inlineTitle, style as _, *}
   import bundle.tags2.{nav, section, style, title}
 
-  def transform2D: Frag = simplePage("2D Transform")(Transform2DStyles)(
+  def transform2D: Frag = simplePage("2D Transform")(style(Transform2DStyles.render[String]))(
     // 位移
     div(cls := "box")(
       div(cls := "trans-1")("trans-1"),

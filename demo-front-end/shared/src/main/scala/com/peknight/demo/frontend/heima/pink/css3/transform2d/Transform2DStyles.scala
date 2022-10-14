@@ -32,7 +32,7 @@ object Transform2DStyles extends StyleSheet.Standalone:
       visibility.hidden,
       clear.both,
       display.block,
-      content :=! "'.'",
+      content.string("."),
       height.`0`
     )
   )
@@ -98,7 +98,7 @@ object Transform2DStyles extends StyleSheet.Standalone:
     width(249.px),
     height(35.px),
     &.after - (
-      content :=! "''",
+      content.string(""),
       position.absolute,
       top(8.px),
       right(15.px),
@@ -141,7 +141,7 @@ object Transform2DStyles extends StyleSheet.Standalone:
     height(200.px),
     backgroundColor.purple,
     &.before - (
-      content :=! "'case-1-before'",
+      content.string("case-1-before"),
       display.block,
       width(100.%%),
       height(100.%%),

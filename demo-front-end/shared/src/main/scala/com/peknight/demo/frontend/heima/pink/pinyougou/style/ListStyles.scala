@@ -45,7 +45,7 @@ object ListStyles extends StyleSheet.Standalone:
     fontSize(14.px)
   )
 
-  ".sk-con ul li:last-of-type a".after - (content :=! "'\\e900'", fontFamily :=! "'icomoon'")
+  ".sk-con ul li:last-of-type a".after - (content.string("\ue900"), fontFamily(FontsStyles.icomoon))
 
   ".sk-bd ul li" - (
     overflow.hidden,

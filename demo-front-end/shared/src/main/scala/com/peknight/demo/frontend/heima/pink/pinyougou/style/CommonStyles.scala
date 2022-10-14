@@ -24,7 +24,7 @@ object CommonStyles extends StyleSheet.Standalone with CopyrightStyles:
       width(100.%%),
       height(100.%%),
       background := rgba(255,255,255,.3),
-      content :=! "''",
+      content.string(""),
       pointerEvents.none
     ),
     &.hover.before - display.block
@@ -44,8 +44,8 @@ object CommonStyles extends StyleSheet.Standalone with CopyrightStyles:
   )
 
   ".arrow-icon".after - (
-    content :=! "'\\e900'",
-    fontFamily :=! "'icomoon'",
+    content.string("\ue900"),
+    fontFamily(FontsStyles.icomoon),
     marginLeft(6.px)
   )
 
@@ -114,15 +114,15 @@ object CommonStyles extends StyleSheet.Standalone with CopyrightStyles:
     backgroundColor(c"#f7f7f7"),
 
     &.before - (
-      content :=! "'\\e904'",
-      fontFamily :=! "'icomoon'",
+      content.string("\ue904"),
+      fontFamily(FontsStyles.icomoon),
       marginRight(5.px),
       color(c"#b1191a")
     ),
 
     &.after - (
-      content :=! "'\\e902'",
-      fontFamily :=! "'icomoon'",
+      content.string("\ue902"),
+      fontFamily(FontsStyles.icomoon),
       marginLeft(10.px)
     )
   )
@@ -182,8 +182,8 @@ object CommonStyles extends StyleSheet.Standalone with CopyrightStyles:
       position.absolute,
       top(1.px),
       right(10.px),
-      content :=! "'\\e902'",
-      fontFamily :=! "'icomoon'"
+      content.string("\ue902"),
+      fontFamily(FontsStyles.icomoon)
     )
   )
 
