@@ -11,7 +11,7 @@ object BaseStyles extends StyleSheet.Standalone:
   "*" - (
     margin.`0`,
     padding.`0`,
-    // css3盒子模型
+    // css3盒子模型 默认是contentBox
     boxSizing.borderBox
   )
 

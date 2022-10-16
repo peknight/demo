@@ -31,3 +31,54 @@ object Image2XStyles extends StyleSheet.Standalone:
     height(50.px),
   )
 
+  ".demo-3 div" - (
+    width(500.px),
+    height(500.px),
+    border(2.px, solid, red),
+    background := "url('/flowlayout/images/dog.jpg') no-repeat",
+  )
+
+  ".demo-3 .bg-size-1" - (
+    backgroundSize := "500px 200px",
+  )
+
+  ".demo-3 .bg-size-2" - (
+    // 只写一个参数 肯定是宽度，调试省略了，会等比例缩放
+    backgroundSize := "500px",
+  )
+
+  ".demo-3 .bg-size-3" - (
+    // 里面的单位可以跟% 相对于父盒子来说的
+    backgroundSize := "50%",
+  )
+
+  ".demo-3 .cover-1" - (
+    // cover要完全覆盖div盒子，可能有部分背景图片显示不全
+    backgroundSize := "cover",
+  )
+
+  ".demo-3 .contain-1" - (
+    // contain 高度和宽度等比例拉伸 当宽度或者高度铺满div盒子就不再进行拉伸了 可能有部分空白区域
+    backgroundSize := "contain",
+  )
+
+  ".demo-3 .contain-2" - (
+    width(100.px),
+    height(100.px),
+    backgroundSize := "contain",
+  )
+
+  ".demo-4 .apple-50" - (
+    width(50.px),
+    height(50.px),
+    border(1.px, solid, red),
+    background := "url('/flowlayout/images/apple50.jpg') no-repeat",
+  )
+
+  ".demo-4 .apple-100" - (
+    width(50.px),
+    height(50.px),
+    border(1.px, solid, red),
+    background := "url('/flowlayout/images/apple100.jpg') no-repeat",
+    backgroundSize := "50px 50px",
+  )
