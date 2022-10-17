@@ -4,7 +4,7 @@ import cats.effect.*
 import cats.syntax.semigroupk.*
 import com.peknight.demo.frontend.app.DemoFrontEndHttp4sApp
 import com.peknight.demo.frontend.heima.pink.mobile.flowlayout.{FlowLayoutPage, Image2XPage, SpecialPage, ViewportPage}
-import com.peknight.demo.frontend.heima.pink.mobile.jd.JingdongPage
+import com.peknight.demo.frontend.heima.pink.mobile.jd.{IndexStyles, JingdongPage}
 import com.peknight.demo.frontend.style.NormalizeStyles
 import org.http4s.*
 import org.http4s.dsl.io.*
@@ -29,6 +29,7 @@ object MobileApp extends DemoFrontEndHttp4sApp:
 
   private[this] val cssRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "normalize.css" => Ok(NormalizeStyles.render[String])
+    case GET -> Root / "index.css" => Ok(IndexStyles.render[String])
   }
 
   def routes(using Logger[IO]): HttpRoutes[IO] =
