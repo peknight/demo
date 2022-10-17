@@ -329,7 +329,7 @@ object IndexStyles extends StyleSheet.Standalone:
     float.left,
     borderRight(1.px, dotted, c"#e4e4e4"),
     padding(`0`, 10.px),
-    &.lastOfType - style(borderRight :=! "0 none")
+    &.lastOfType - style(borderRight.`0`)
   )
 
   ".sidebar" - (

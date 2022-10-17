@@ -21,7 +21,47 @@ class JingdongPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, 
         link(rel := "stylesheet", href := "/css/index.css"),
       ),
       body(
-        123
+        // 顶部
+        header(cls := "open-app")(ul(
+          li(img(src := "/jd/images/close.png")),
+          li(img(src := "/jd/images/logo.png")),
+          li("打开京东App，购物更轻松"),
+          li("立即打开"),
+        )),
+        // 搜索
+        div(cls := "search-wrap")(
+          div(cls := "search-btn"),
+          div(cls := "search")(
+            div(cls := "jd-icon"),
+            div(cls := "magnifier-icon"),
+            input(`type` := "text", placeholder := "好奇x蔡康永新书《薄学》免费送"),
+          ),
+          div(cls := "search-login")("登录"),
+        ),
+        // 主体内部部分
+        div(cls := "main-content")(
+          // 滑动图
+          div(cls := "slider")(
+            img(src := "/jd/upload/banner.dpg")
+          ),
+          // 小家电品牌日
+          div(cls := "brand")(
+            div(a(href := "#")(img(src := "/jd/upload/pic11.dpg"))),
+            div(a(href := "#")(img(src := "/jd/upload/pic22.dpg"))),
+            div(a(href := "#")(img(src := "/jd/upload/pic33.dpg"))),
+          ),
+          // nav部分
+          nav(cls := "clearfix")(for i <- 0 to 9 yield a(href := "#")(
+            img(src := s"/jd/upload/nav${i % 3 + 1}.webp"),
+            span("京东超市")
+          )),
+          // 新闻模块
+          div(cls := "news")(
+            a(href := "#")(img(src := "/jd/upload/new1.dpg")),
+            a(href := "#")(img(src := "/jd/upload/new2.dpg")),
+            a(href := "#")(img(src := "/jd/upload/new3.dpg")),
+          )
+        ),
       )
     )
 

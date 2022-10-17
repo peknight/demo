@@ -3,6 +3,7 @@ package com.peknight.demo.frontend.heima.pink.mobile
 import cats.effect.*
 import cats.syntax.semigroupk.*
 import com.peknight.demo.frontend.app.DemoFrontEndHttp4sApp
+import com.peknight.demo.frontend.heima.pink.mobile.flexlayout.FlexLayoutPage
 import com.peknight.demo.frontend.heima.pink.mobile.flowlayout.{FlowLayoutPage, Image2XPage, SpecialPage, ViewportPage}
 import com.peknight.demo.frontend.heima.pink.mobile.jd.{IndexStyles, JingdongPage}
 import com.peknight.demo.frontend.style.NormalizeStyles
@@ -22,6 +23,7 @@ object MobileApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "image2x" => Ok(Image2XPage.Text.image2xPage)
     case GET -> Root / "special" => Ok(SpecialPage.Text.specialPage)
     case GET -> Root / "flow_layout" => Ok(FlowLayoutPage.Text.flowLayoutPage)
+    case GET -> Root / "flex_layout" => Ok(FlexLayoutPage.Text.flexLayoutPage)
   }
 
   private[this] val resourceRoutes: HttpRoutes[IO] =

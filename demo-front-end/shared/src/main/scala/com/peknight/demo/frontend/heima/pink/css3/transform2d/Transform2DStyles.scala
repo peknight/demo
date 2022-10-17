@@ -105,7 +105,7 @@ object Transform2DStyles extends StyleSheet.Standalone:
       width(10.px),
       height(10.px),
       // 去除上面的通用边框
-      border :=! "0px none",
+      border.`0`,
       borderRight(1.px, solid, black),
       borderBottom(1.px, solid, black),
       transform := "rotate(45deg)",
