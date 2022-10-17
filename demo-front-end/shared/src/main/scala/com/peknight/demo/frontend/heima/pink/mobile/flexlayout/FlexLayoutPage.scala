@@ -16,6 +16,11 @@ class FlexLayoutPage[Builder, Output <: FragT, FragT](override val bundle: Bundl
     div(cls := "flex-4")(for j <- 1 to 3 yield span(j)),
     for i <- 5 to 6 yield div(cls := s"flex-$i")(for j <- 1 to 5 yield span(j)),
     for i <- 7 to 8 yield div(cls := s"flex-$i")(for j <- 1 to 3 yield span(j)),
+    div(cls := "flex-9")(for j <- 1 to 6 yield span(j)),
+    div(cls := "flex-10")(for j <- 1 to 5 yield span(j)),
+    section(cls := "flex-11")(for _ <- 1 to 3 yield div()),
+    p(cls := "flex-12")(for j <- 1 to 3 yield span(j)),
+    div(cls := "flex-13")(for j <- 1 to 3 yield span(j)),
   )
 
 end FlexLayoutPage

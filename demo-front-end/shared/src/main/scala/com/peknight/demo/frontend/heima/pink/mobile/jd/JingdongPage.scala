@@ -18,7 +18,7 @@ class JingdongPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, 
         // 引入我们的css初始化文件
         link(rel := "stylesheet", href := "/css/normalize.css"),
         // 引入我们首页的css
-        link(rel := "stylesheet", href := "/css/index.css"),
+        link(rel := "stylesheet", href := "/css/jingdong.css"),
       ),
       body(
         // 顶部

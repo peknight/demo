@@ -4,7 +4,7 @@ import scalacss.ProdDefaults.*
 import scalacss.internal.Attr
 import scalacss.internal.Dsl.*
 
-object IndexStyles extends StyleSheet.Standalone:
+object JingdongStyles extends StyleSheet.Standalone:
   import dsl.*
 
   "body" - (
