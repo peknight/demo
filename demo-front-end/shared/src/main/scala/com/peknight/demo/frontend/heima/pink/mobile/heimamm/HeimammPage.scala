@@ -20,38 +20,56 @@ class HeimammPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, O
         link(rel := "stylesheet", href := "/css/heimamm.css"),
       ),
       body(
-        // 头部区域
-        header(cls := "header")("黑马面面"),
-        nav(cls := "nav")(
-          Seq("HR面试", "笔试", "技术面试", "模拟面试", "面试技巧", "薪资查询").map(s => a(href := "#", cls := "item")(s))
+        section(cls := "wrap")(
+          // 头部区域
+          header(cls := "header")("黑马面面"),
+          nav(cls := "nav")(Seq("HR面试", "笔试", "技术面试", "模拟面试", "面试技巧", "薪资查询").zipWithIndex.map {
+            case (s, index) => a(href := "#", cls := "item")(img(src := s"/heimamm/icons/icon${index + 1}.png"), span(s))
+          }),
+          // go模块
+          section(cls := "go")(img(src := "/heimamm/images/go.png")),
         ),
+        // 就业指导模块
+        section(cls := "content")(
+          div(cls := "con-hd")(
+            h4(span(cls := "icon")(img(src := "/heimamm/icons/i2.png")), "就业指导"),
+            a(href := "#", cls := "more")("更多>>"),
+          ),
+          div(cls := "get-job-focus")(
+            div(cls := "swiper get-job-fo")(
+              div(cls := "swiper-wrapper")(Seq(
+                ("老师教你应对面试技巧", "pic.png"),
+                ("老师教你应对面试技巧", "ldh.jpg"),
+                ("老师教你应对面试技巧", "3.jpg")
+              ).map {
+                case (text, pic) =>
+                  div(cls := "swiper-slide")(
+                    a(href := "#")(img(src := s"/heimamm/images/$pic")),
+                    p(text),
+                  )
+              }),
+            ),
+            // 根据需求，这个代码放到container外面
+            div(cls := "swiper-button-prev"),
+            div(cls := "swiper-button-next"),
+          ),
+        ),
+
         script(src := "/js/flexible.js"),
         script(src := "/js/swiper.min.js"),
         script(raw(
           """
-            |// 第一个函数里面是就业指导轮播图
-            |(function () {
-            |  var swiper = new Swiper(".get_job_fo", {
-            |    // 能够显示的slider的个数
+            |// 第一个函数里面是 就业指导轮播图
+            |(function() {
+            |  var swiper = new Swiper(".swiper", {
             |    slidesPerView: 2,
-            |    // 每个slide之间的距离
             |    spaceBetween: 30,
             |    centeredSlides: true,
             |    loop: true,
-            |    // 添加左右箭头
             |    navigation: {
-            |      nextEl: ".swiper-button-next",
-            |      prevEl: ".swiper-button-prev",
+            |      nextEl: '.swiper-button-next',
+            |      prevEl: '.swiper-button-prev',
             |    },
-            |  });
-            |})();
-            |// 第二个函数的轮播图
-            |(function() {
-            |  // 如果有多个轮播图最好修改证 swiper-container
-            |  var swiper = new Swiper(".study_fo", {
-            |    // 我们可以看到的是2个半
-            |    slidesPerView: 2.2,
-            |    spaceBetween: 20,
             |  });
             |})();
           """.stripMargin
