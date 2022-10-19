@@ -1,8 +1,6 @@
 package com.peknight.demo.frontend.heima.pink.mobile.suning
 
 import scalacss.ProdDefaults.*
-import scalacss.internal.Attr
-import scalacss.internal.Dsl.*
 
 object SuningFlexibleMediaStyles extends StyleSheet.Inline:
   import dsl.*

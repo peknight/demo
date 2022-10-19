@@ -105,39 +105,3 @@ object SuningStyles extends StyleSheet.Standalone:
       )
     ),
   )
-
-
-  // ---
-
-  "*" - (
-    Attr.real("-webkit-tap-highlight-color") := "transparent"
-  )
-
-  "input" - (
-    Attr.real("-webkit-appearance") := "none"
-  )
-
-  "img, a" - (
-    Attr.real("-webkit-touch-callout") := "none"
-  )
-
-  "ul" - (
-    margin.`0`,
-    padding.`0`,
-    listStyle := "none"
-  )
-
-  // 去除底下的空白缝隙
-  "img" - verticalAlign.middle
-
-  // css3盒子模型
-  "div" - boxSizing.borderBox
-
-  ".clearfix".after - (
-    content.string(""),
-    display.block,
-    lineHeight.`0`,
-    visibility.hidden,
-    height.`0`,
-    clear.both
-  )

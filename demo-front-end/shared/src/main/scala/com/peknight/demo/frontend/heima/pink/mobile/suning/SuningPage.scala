@@ -9,7 +9,10 @@ class SuningPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, Ou
 
   val index: Frag = skeleton(link(rel := "stylesheet", href := "/css/common.css"))
 
-  val flexible: Frag = skeleton(style(SuningFlexibleMediaStyles.render[String]), script(src := "/suning/js/flexible.js"))
+  val flexible: Frag = skeleton(
+    style(SuningFlexibleMediaStyles.render[String]),
+    script(src := "/js/flexible.js")
+  )
 
   def skeleton(heads: Modifier*): Frag =
     html(lang := "zh-CN")(

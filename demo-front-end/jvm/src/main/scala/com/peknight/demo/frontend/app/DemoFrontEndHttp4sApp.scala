@@ -30,15 +30,15 @@ trait DemoFrontEndHttp4sApp extends IOApp.Simple:
 
   private[this] def start[F[_]: Async](httpApp: HttpApp[F]): F[(Server, F[Unit])] =
     for
-      // storePassword <- storePasswordConfig.load[F]
-      // keyPassword <- keyPasswordConfig.load[F]
-      // tlsContext <- Network[F].tlsContext.fromKeyStoreFile(
-      //   file.Path("demo-security/keystore/letsencrypt.keystore").toNioPath,
-      //   storePassword.value.toCharArray, keyPassword.value.toCharArray)
+      storePassword <- storePasswordConfig.load[F]
+      keyPassword <- keyPasswordConfig.load[F]
+      tlsContext <- Network[F].tlsContext.fromKeyStoreFile(
+        file.Path("demo-security/keystore/letsencrypt.keystore").toNioPath,
+        storePassword.value.toCharArray, keyPassword.value.toCharArray)
       res <- EmberServerBuilder.default[F]
         .withHostOption(None)
         .withPort(port"8080")
-      //  .withTLS(tlsContext)
+        .withTLS(tlsContext)
         .withHttpApp(MiddlewareLogger.httpApp(true, false)(httpApp))
         .build.allocated
     yield res
