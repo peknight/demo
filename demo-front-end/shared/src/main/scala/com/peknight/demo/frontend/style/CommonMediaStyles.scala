@@ -6,11 +6,13 @@ import scalacss.internal.Dsl.*
 
 object CommonMediaStyles extends StyleSheet.Inline :
 
-  // 我们此次定义划分的份数为15
-  val no: Double = 15
+  // 我们此次定义划分的份数为10
+  val no: Double = 10
 
-  // pc端显示最大用750像素的版本，这一行一定要写在最上面
-  style(unsafeRoot("html")(fontSize(50.px)))
+  style(
+    // pc端显示最大用750像素的版本，这一行一定要写在最上面
+    unsafeRoot("html")(fontSize(50.px)),
+  )
 
   // 设置常见的屏幕尺寸 修改里面的html文字大小
   Seq(320, 360, 375, 384, 400, 414, 424, 480, 540, 720, 750).map(screenSize =>

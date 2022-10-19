@@ -11,7 +11,7 @@ import com.peknight.demo.frontend.heima.pink.mobile.less.{LessPage, LessStyles}
 import com.peknight.demo.frontend.heima.pink.mobile.media.{Demo3W320Styles, Demo3W640Styles, MediaQueryPage}
 import com.peknight.demo.frontend.heima.pink.mobile.rem.RemPage
 import com.peknight.demo.frontend.heima.pink.mobile.suning.{SuningPage, SuningStyles}
-import com.peknight.demo.frontend.style.{NormalizeStyles, CommonMediaStyles}
+import com.peknight.demo.frontend.style.{CommonMediaStyles, NormalizeStyles}
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.scalatags.*
@@ -38,6 +38,7 @@ object MobileApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "count" => Ok(LessPage.Text.count)
     case GET -> Root / "rem" => Ok(RemPage.Text.rem)
     case GET -> Root / "suning" => Ok(SuningPage.Text.index)
+    case GET -> Root / "suning-flexible" => Ok(SuningPage.Text.flexible)
   }
 
   private[this] val resourceRoutes: HttpRoutes[IO] =
