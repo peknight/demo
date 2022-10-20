@@ -11,7 +11,7 @@ class SuningPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, Ou
 
   val flexible: Frag = skeleton(
     style(SuningFlexibleMediaStyles.render[String]),
-    script(src := "/js/flexible.js")
+    script(src := "/flexible/js/index.min.js")
   )
 
   def skeleton(heads: Modifier*): Frag =
