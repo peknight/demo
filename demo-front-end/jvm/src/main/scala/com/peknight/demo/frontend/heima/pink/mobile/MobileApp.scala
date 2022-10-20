@@ -49,7 +49,7 @@ object MobileApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "nest" => renderHtml(LessPage.Text.nest)
     case GET -> Root / "count" => renderHtml(LessPage.Text.count)
     case GET -> Root / "rem" => renderHtml(RemPage.Text.rem)
-    case GET -> Root / "suning" => Ok(SuningPage.Text.index)
+    case GET -> Root / "suning" => renderHtml(SuningPage.Text.index)
     case GET -> Root / "suning-flexible" => renderHtml(SuningPage.Text.flexible)
     case GET -> Root / "heimamm" => renderHtml(HeimammPage.Text.index)
     case GET -> Root / "responsive" => renderHtml(ResponsivePage.Text.index)
