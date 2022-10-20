@@ -101,7 +101,7 @@ object HeimammStyles extends StyleSheet.Standalone:
     position.relative,
     unsafeChild(".swiper")(
       width(540.pxToRem),
-      height(450.pxToRem),
+      height(428.75.pxToRem),
     ),
     unsafeChild(".swiper-slide")(
       textAlign.center,
@@ -128,10 +128,77 @@ object HeimammStyles extends StyleSheet.Standalone:
         color(c"#333"),
       )
     ),
+    unsafeChild("[class^='swiper-button']")(
+      Attr.real("--swiper-navigation-size") := 40.pxToRem,
+      Attr.real("--swiper-navigation-color") := "#333",
+    ),
     // 当前选中的slide 中间那个
-    unsafeChild(".swiper-slide-active, .swiper-slide-duplicate-active")(
+    unsafeChild(".swiper-slide-active")(
       transform := "scale(1)",
       zIndex(1),
       opacity(1),
     ),
+    unsafeChild(".swiper-slide-duplicate-active")(
+      transform := "scale(1)",
+      zIndex(1),
+      opacity(1),
+    ),
+  )
+
+  ".study-con" - paddingBottom(140.pxToRem)
+
+  ".study" - (
+    unsafeChild(".swiper")(
+      width(682.pxToRem),
+      height(340.pxToRem),
+      padding(10.pxToRem),
+    ),
+    unsafeChild(".swiper-slide")(
+      fontSize(18.pxToRem),
+      background := "#fff",
+      width(300.pxToRem),
+      height(340.pxToRem),
+      borderRadius(10.pxToRem),
+      boxShadow := "0 0px 10px rgba(0,0,0,.1)",
+      unsafeChild("h5")(
+        fontSize(26.pxToRem),
+        margin(20.pxToRem, `0`),
+        fontWeight._400,
+        padding(`0`, 10.pxToRem),
+      ),
+      unsafeChild("p")(
+        margin.`0`,
+        padding(`0`, 10.pxToRem),
+        fontSize(26.pxToRem),
+        color(c"#ff4400"),
+      ),
+    ),
+  )
+
+  ".footer" - (
+    position.fixed,
+    left.`0`,
+    bottom.`0`,
+    width(100.%%),
+    height(70.pxToRem),
+    zIndex(1),
+    display.flex,
+    padding(20.pxToRem),
+    borderTop(1.px, solid, c"#ccc"),
+    backgroundColor(c"#fff"),
+    unsafeChild(".item")(
+      flex := "1",
+      display.flex,
+      flexDirection.column,
+      alignItems.center,
+      unsafeChild("img")(
+        width(39.pxToRem),
+        height(41.pxToRem),
+      ),
+      unsafeChild("p")(
+        fontSize(22.pxToRem),
+        color(c"#666"),
+        margin(10.pxToRem, `0`, `0`),
+      )
+    )
   )

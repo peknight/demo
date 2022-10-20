@@ -65,7 +65,7 @@ object MobileApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "suning.css" => renderCss(SuningStyles)
     case GET -> Root / "heimamm.css" => renderCss(HeimammStyles)
     case GET -> Root / "heimamm-media.css" => renderCss(HeimammMediaStyles)
-    case GET -> Root / "swiper.min.css" => fetchCss(uri"https://unpkg.com/swiper@8.4.4/swiper-bundle.min.css")
+    // case GET -> Root / "swiper.min.css" => fetchCss(uri"https://unpkg.com/swiper@8.4.4/swiper-bundle.min.css")
   }
 
   private[this] def fetchCss(uri: Uri): IO[Response[IO]] = fetch(uri)(renderCss)
@@ -76,12 +76,13 @@ object MobileApp extends DemoFrontEndHttp4sApp:
   private[this] def renderCss(styleSheet: String): IO[Response[IO]] =
     Ok(styleSheet).map(_.withContentType(`Content-Type`(MediaType.text.css, `UTF-8`)))
 
-  private[this] val jsRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    // case GET -> Root / "flexible.js" =>
-    //   fetchJavaScript(uri"https://raw.githubusercontent.com/amfe/lib-flexible/2.0/index.min.js")
-    case GET -> Root / "swiper.min.js" => fetchJavaScript(uri"https://unpkg.com/swiper@8.4.4/swiper-bundle.min.js")
-    // https://unpkg.com/swiper@8.4.4/swiper-bundle.min.js.map
-  }
+  // private[this] val jsRoutes: HttpRoutes[IO] =
+  //   HttpRoutes.of[IO] {
+  //     case GET -> Root / "flexible.js" =>
+  //       fetchJavaScript(uri"https://raw.githubusercontent.com/amfe/lib-flexible/2.0/index.min.js")
+  //     case GET -> Root / "swiper.min.js" => fetchJavaScript(uri"https://unpkg.com/swiper@8.4.4/swiper-bundle.min.js")
+  //     https://unpkg.com/swiper@8.4.4/swiper-bundle.min.js.map
+  //   }
 
   private[this] def fetchJavaScript(uri: Uri): IO[Response[IO]] = fetch(uri)(renderJavaScript)
 
@@ -94,7 +95,7 @@ object MobileApp extends DemoFrontEndHttp4sApp:
   def routes(using Logger[IO]): HttpRoutes[IO] =
     Router(
       "/" -> (htmlRoutes <+> resourceRoutes),
-      "css" -> cssRoutes,
-      "js" -> jsRoutes
+      "css" -> cssRoutes
+      // "js" -> jsRoutes
     )
 
