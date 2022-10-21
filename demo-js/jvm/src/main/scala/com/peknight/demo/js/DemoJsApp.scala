@@ -94,7 +94,7 @@ object DemoJsApp extends IOApp.Simple:
       logger <- Slf4jLogger.create[IO]
       given Logger[IO] = logger
       _ <- start[IO](port"8080")(_.withHttpApp(
-        MiddlewareLogger.httpApp(true, true)(routes.orNotFound)
+        MiddlewareLogger.httpApp(true, false)(routes.orNotFound)
       ))
       _ <- start[IO](port"10000")(_.withHttpWebSocketApp(echoApp))
       _ <- IO.never

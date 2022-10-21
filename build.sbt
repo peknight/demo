@@ -47,6 +47,8 @@ lazy val demo = (project in file("."))
     demoAkka,
     demoJs.jvm,
     demoJs.js,
+    demoJsModule.jvm,
+    demoJsModule.js,
     demoFrontEnd.jvm,
     demoFrontEnd.js,
     demoOAuth2.jvm,
@@ -397,6 +399,30 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
       "org.http4s" %%% "http4s-dom" % http4sDomVersion,
+    ),
+  )
+
+import org.scalajs.linker.interface.ModuleInitializer
+lazy val demoJsModule = (crossProject(JSPlatform, JVMPlatform) in file("demo-js/module"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-js-module",
+    libraryDependencies ++= Seq(
+    ),
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+    ),
+  )
+  .jsSettings(
+    // This is an application with a main method
+    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
+    Compile / scalaJSModuleInitializers ++= Seq(
+      ModuleInitializer.mainMethod("com.peknight.demo.js.module.emitting.AppB", "main").withModuleID("b")
+    ),
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
     ),
   )
 

@@ -2,7 +2,7 @@ package com.peknight.demo.js.css.features.functional
 
 import scalacss.DevDefaults.*
 
-object MyStyles extends StyleSheet .Standalone:
+object MyStyles extends StyleSheet.Standalone:
 
   import dsl.*
 
