@@ -40,6 +40,9 @@ object SuningStyles extends StyleSheet.Standalone:
     ),
     unsafeChild(".search")(
       flex := "1",
+      unsafeChild("form")(
+        display.flex,
+      ),
       unsafeChild("input")(
         outline.none,
         width(100.%%),
@@ -90,9 +93,12 @@ object SuningStyles extends StyleSheet.Standalone:
     width((750 / baseFont).rem),
     unsafeChild("a")(
       float.left,
+      display.flex,
+      flexDirection.column,
+      justifyContent.spaceBetween,
+      alignItems.center,
       width((150 / baseFont).rem),
       height((140 / baseFont).rem),
-      textAlign.center,
       unsafeChild("img")(
         display.block,
         width((82 / baseFont).rem),

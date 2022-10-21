@@ -4,6 +4,7 @@ import _root_.scalatags.Text.all.Frag
 import cats.effect.*
 import cats.syntax.semigroupk.*
 import com.peknight.demo.frontend.app.DemoFrontEndHttp4sApp
+import com.peknight.demo.frontend.heima.pink.mobile.alibaixiu.AlibaixiuPage
 import com.peknight.demo.frontend.heima.pink.mobile.bootstrap.BootstrapPage
 import com.peknight.demo.frontend.heima.pink.mobile.ctrip.{CtripPage, CtripStyles}
 import com.peknight.demo.frontend.heima.pink.mobile.flexlayout.FlexLayoutPage
@@ -49,11 +50,12 @@ object MobileApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "nest" => renderHtml(LessPage.Text.nest)
     case GET -> Root / "count" => renderHtml(LessPage.Text.count)
     case GET -> Root / "rem" => renderHtml(RemPage.Text.rem)
-    case GET -> Root / "suning" => Ok(SuningPage.Text.index)
+    case GET -> Root / "suning" => renderHtml(SuningPage.Text.index)
     case GET -> Root / "suning-flexible" => renderHtml(SuningPage.Text.flexible)
     case GET -> Root / "heimamm" => renderHtml(HeimammPage.Text.index)
     case GET -> Root / "responsive" => renderHtml(ResponsivePage.Text.index)
     case GET -> Root / "bootstrap" => renderHtml(BootstrapPage.Text.index)
+    case GET -> Root / "alibaixiu" => renderHtml(AlibaixiuPage.Text.index)
   }
 
   private[this] def renderHtml(frag: Frag): IO[Response[IO]] =
