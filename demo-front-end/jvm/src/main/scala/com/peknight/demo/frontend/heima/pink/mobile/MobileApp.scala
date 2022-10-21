@@ -5,6 +5,7 @@ import cats.effect.*
 import cats.syntax.semigroupk.*
 import com.peknight.demo.frontend.app.DemoFrontEndHttp4sApp
 import com.peknight.demo.frontend.heima.pink.mobile.alibaixiu.AlibaixiuPage
+import com.peknight.demo.frontend.heima.pink.mobile.bilibili.BilibiliPage
 import com.peknight.demo.frontend.heima.pink.mobile.bootstrap.BootstrapPage
 import com.peknight.demo.frontend.heima.pink.mobile.ctrip.{CtripPage, CtripStyles}
 import com.peknight.demo.frontend.heima.pink.mobile.flexlayout.FlexLayoutPage
@@ -16,6 +17,7 @@ import com.peknight.demo.frontend.heima.pink.mobile.media.{Demo3W320Styles, Demo
 import com.peknight.demo.frontend.heima.pink.mobile.rem.RemPage
 import com.peknight.demo.frontend.heima.pink.mobile.responsive.ResponsivePage
 import com.peknight.demo.frontend.heima.pink.mobile.suning.{SuningPage, SuningStyles}
+import com.peknight.demo.frontend.heima.pink.mobile.viewportwidth.ViewportWidthPage
 import com.peknight.demo.frontend.style.{CommonMediaStyles, NormalizeStyles}
 import org.http4s.*
 import org.http4s.Charset.`UTF-8`
@@ -56,6 +58,8 @@ object MobileApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "responsive" => renderHtml(ResponsivePage.Text.index)
     case GET -> Root / "bootstrap" => renderHtml(BootstrapPage.Text.index)
     case GET -> Root / "alibaixiu" => renderHtml(AlibaixiuPage.Text.index)
+    case GET -> Root / "vw" => renderHtml(ViewportWidthPage.Text.index)
+    case GET -> Root / "bilibili" => renderHtml(BilibiliPage.Text.index)
   }
 
   private[this] def renderHtml(frag: Frag): IO[Response[IO]] =
