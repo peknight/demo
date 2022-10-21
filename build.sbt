@@ -417,7 +417,7 @@ lazy val demoJsModule = (crossProject(JSPlatform, JVMPlatform) in file("demo-js/
   .jsSettings(
     // This is an application with a main method
     jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
-    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
+    // scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
     Compile / scalaJSModuleInitializers ++= Seq(
       ModuleInitializer.mainMethod("com.peknight.demo.js.module.emitting.AppB", "main").withModuleID("b")
     ),
