@@ -449,6 +449,12 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
   )
   .jsSettings(
     jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+    Compile / scalaJSModuleInitializers ++= Seq(
+      ModuleInitializer.mainMethod(
+        "com.peknight.demo.frontend.heima.pink.io.IOScript",
+        "promptDemo"
+      ),
+    ),
     libraryDependencies ++= Seq(
       "org.http4s" %%% "http4s-dom" % http4sDomVersion,
     ),
