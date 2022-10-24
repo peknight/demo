@@ -1,3 +1,5 @@
+import org.scalajs.linker.interface.ModuleInitializer
+
 ThisBuild / version := "0.1-SNAPSHOT"
 
 val scala3Version = "3.2.0"
@@ -47,8 +49,8 @@ lazy val demo = (project in file("."))
     demoAkka,
     demoJs.jvm,
     demoJs.js,
-    demoJsModule.jvm,
-    demoJsModule.js,
+    demoJsModuleA,
+    demoJsModuleB,
     demoFrontEnd.jvm,
     demoFrontEnd.js,
     demoOAuth2.jvm,
@@ -402,24 +404,27 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
     ),
   )
 
-import org.scalajs.linker.interface.ModuleInitializer
-lazy val demoJsModule = (crossProject(JSPlatform, JVMPlatform) in file("demo-js/module"))
+lazy val demoJsModuleA = (project in file("demo-js/module/module-a"))
+  .enablePlugins(ScalaJSPlugin)
   .settings(commonSettings)
   .settings(
-    name := "demo-js-module",
-    libraryDependencies ++= Seq(
-    ),
-  )
-  .jvmSettings(
-    libraryDependencies ++= Seq(
-    ),
-  )
-  .jsSettings(
-    // This is an application with a main method
+    name := "demo-js-module-a",
     jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
     // scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+    ),
+  )
+
+lazy val demoJsModuleB = (project in file("demo-js/module/module-b"))
+   .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-js-module-b",
+    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
     Compile / scalaJSModuleInitializers ++= Seq(
-      ModuleInitializer.mainMethod("com.peknight.demo.js.module.emitting.AppB", "main").withModuleID("b")
+      ModuleInitializer.mainMethod("com.peknight.demo.js.module.emitting.AppB", "main")
+        .withModuleID("b")
     ),
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
@@ -449,12 +454,6 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
   )
   .jsSettings(
     jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
-    Compile / scalaJSModuleInitializers ++= Seq(
-      ModuleInitializer.mainMethod(
-        "com.peknight.demo.frontend.heima.pink.io.IOScript",
-        "promptDemo"
-      ),
-    ),
     libraryDependencies ++= Seq(
       "org.http4s" %%% "http4s-dom" % http4sDomVersion,
     ),

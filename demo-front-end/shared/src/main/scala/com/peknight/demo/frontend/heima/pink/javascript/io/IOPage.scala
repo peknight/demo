@@ -19,6 +19,7 @@ class IOPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, Output
       body(
         "Hello World",
         script(`type` := "text/javascript", src := "/main.js"),
+        script("promptDemo()"),
       )
     )
 
