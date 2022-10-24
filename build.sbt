@@ -53,6 +53,7 @@ lazy val demo = (project in file("."))
     demoJsModuleB,
     demoFrontEnd.jvm,
     demoFrontEnd.js,
+    demoFrontEndModuleHeimamm,
     demoOAuth2.jvm,
     demoOAuth2.js,
     demoAcme4j,
@@ -409,7 +410,6 @@ lazy val demoJsModuleA = (project in file("demo-js/module/module-a"))
   .settings(commonSettings)
   .settings(
     name := "demo-js-module-a",
-    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
     // scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
@@ -421,7 +421,6 @@ lazy val demoJsModuleB = (project in file("demo-js/module/module-b"))
   .settings(commonSettings)
   .settings(
     name := "demo-js-module-b",
-    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
     Compile / scalaJSModuleInitializers ++= Seq(
       ModuleInitializer.mainMethod("com.peknight.demo.js.module.emitting.AppB", "main")
         .withModuleID("b")
@@ -457,9 +456,18 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
     ),
   )
   .jsSettings(
-    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
     libraryDependencies ++= Seq(
       "org.http4s" %%% "http4s-dom" % http4sDomVersion,
+    ),
+  )
+
+lazy val demoFrontEndModuleHeimamm = (project in file("demo-front-end/module/heimamm"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-front-end-module-heimamm",
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
     ),
   )
 
@@ -494,7 +502,6 @@ lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth
   .jsSettings(
     scalaJSUseMainModuleInitializer := true,
     Compile / mainClass := Some("com.peknight.demo.oauth2.webclient.WebClient"),
-    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
     libraryDependencies ++= Seq(
       "org.http4s" %%% "http4s-dom" % http4sDomVersion,
     ),
