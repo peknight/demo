@@ -19,6 +19,7 @@ import com.peknight.demo.frontend.heima.pink.mobile.responsive.ResponsivePage
 import com.peknight.demo.frontend.heima.pink.mobile.suning.{SuningPage, SuningStyles}
 import com.peknight.demo.frontend.heima.pink.mobile.viewportwidth.ViewportWidthPage
 import com.peknight.demo.frontend.style.{CommonMediaStyles, NormalizeStyles}
+import fs2.io.file
 import org.http4s.*
 import org.http4s.Charset.`UTF-8`
 import org.http4s.client.dsl.io.*
@@ -90,9 +91,16 @@ object MobileApp extends DemoFrontEndHttp4sApp:
   private[this] def renderCss(styleSheet: String): IO[Response[IO]] =
     Ok(styleSheet).map(_.withContentType(`Content-Type`(MediaType.text.css, `UTF-8`)))
 
+  private[this] val jsRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+    case req @ GET -> Root / "heimamm" / path if Set(".js", ".map").exists(path.endsWith) =>
+      StaticFile.fromPath(file.Path(s"./demo-front-end/module/heimamm/target/scala-3.2.0/demo-front-end-module-heimamm-opt/$path"), Some(req))
+        .getOrElseF(NotFound())
+  }
+
   def routes(using Logger[IO]): HttpRoutes[IO] =
     Router(
       "/" -> (htmlRoutes <+> resourceRoutes),
-      "css" -> cssRoutes
+      "css" -> cssRoutes,
+      "js" -> jsRoutes,
     )
 

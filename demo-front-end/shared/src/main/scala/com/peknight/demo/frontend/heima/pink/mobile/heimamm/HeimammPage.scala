@@ -71,30 +71,7 @@ class HeimammPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, O
         }),
         script(src := "/webjars/amfe-flexible/2.2.1/index.min.js"),
         script(src := "/webjars/swiper/8.3.2/swiper-bundle.min.js"),
-        script(raw(
-          """
-            |// 第一个函数里面是 就业指导轮播图
-            |(function() {
-            |  var swiper = new Swiper(".get-job-fo", {
-            |    slidesPerView: 2,
-            |    spaceBetween: 30,
-            |    centeredSlides: true,
-            |    loop: true,
-            |    navigation: {
-            |      nextEl: '.swiper-button-next',
-            |      prevEl: '.swiper-button-prev',
-            |    },
-            |  });
-            |})();
-            |// 第二个函数的轮播图
-            |(function() {
-            |  var swiper = new Swiper(".study-fo", {
-            |    slidesPerView: 2.2,
-            |    spaceBetween: 20,
-            |  });
-            |})();
-          """.stripMargin
-        ))
+        script(src := "/js/heimamm/heimamm.js"),
       )
     )
 

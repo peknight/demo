@@ -5,5 +5,5 @@ import scala.scalajs.js.annotation.JSGlobal
 
 @js.native
 @JSGlobal
-class Swiper(el: String, params: js.Object) extends js.Object
+class Swiper(el: String, params: SwiperOptions) extends js.Object
 

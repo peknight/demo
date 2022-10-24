@@ -466,8 +466,11 @@ lazy val demoFrontEndModuleHeimamm = (project in file("demo-front-end/module/hei
   .settings(commonSettings)
   .settings(
     name := "demo-front-end-module-heimamm",
-    libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+    Compile / scalaJSModuleInitializers ++= Seq(
+      ModuleInitializer.mainMethod(
+        "com.peknight.demo.frontend.heima.pink.mobile.heimamm.HeimammSwipers",
+        "init")
+        .withModuleID("heimamm")
     ),
   )
 
