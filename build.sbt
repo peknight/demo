@@ -448,6 +448,10 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
       http4sScalaTags,
       ciris,
       log4CatsSlf4j,
+      flexible,
+      swiper,
+      bootstrap,
+      bootstrapIcons,
       logbackClassic % Runtime,
       jansi % Runtime,
     ),
@@ -700,7 +704,6 @@ val jansiVersion = "1.18"
 val akkaVersion = "2.6.20"
 val apacheCommonsCodecVersion = "1.15"
 val h2Version = "2.1.214"
-val jQueryVersion = "3.6.1"
 val postgisJdbcVersion = "2021.1.0"
 val acme4jVersion = "2.14"
 val bouncyCastleVersion = "1.70"
@@ -712,7 +715,6 @@ val jansi = "org.fusesource.jansi" % "jansi" % jansiVersion
 val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
 val apacheCommonsCodec = "commons-codec" % "commons-codec" % apacheCommonsCodecVersion
 val h2 = "com.h2database" % "h2" % h2Version
-val jQuery = "org.webjars" % "jquery" % jQueryVersion
 val postgisJdbc = "net.postgis" % "postgis-jdbc" % postgisJdbcVersion
 val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
 val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jVersion
@@ -720,6 +722,20 @@ val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jVersion
 val bouncyCastle = "org.bouncycastle" % "bcprov-jdk15on" % bouncyCastleVersion
 val jwtCirce = "com.github.jwt-scala" %% "jwt-circe" % jwtCirceVersion
 val scalaJwk = "com.chatwork" %% "scala-jwk" % scalaJwkVersion
+
+// Webjars
+
+val jQueryVersion = "3.6.1"
+val flexibleVersion = "2.2.1"
+val swiperVersion = "8.3.2"
+val bootstrapVersion = "5.2.2"
+val bootstrapIconsVersion = "1.9.1"
+
+val jQuery = "org.webjars" % "jquery" % jQueryVersion
+val flexible = "org.webjars.npm" % "amfe-flexible" % flexibleVersion
+val swiper = "org.webjars.npm" % "swiper" % swiperVersion
+val bootstrap = "org.webjars.npm" % "bootstrap" % bootstrapVersion
+val bootstrapIcons = "org.webjars.npm" % "bootstrap-icons" % bootstrapIconsVersion
 
 // Test
 

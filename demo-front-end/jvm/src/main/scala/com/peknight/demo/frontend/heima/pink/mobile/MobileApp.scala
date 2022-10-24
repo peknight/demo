@@ -27,7 +27,7 @@ import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.headers.`Content-Type`
 import org.http4s.scalatags.*
 import org.http4s.server.Router
-import org.http4s.server.staticcontent.resourceServiceBuilder
+import org.http4s.server.staticcontent.{resourceServiceBuilder, webjarServiceBuilder}
 import org.http4s.syntax.literals.uri
 import org.typelevel.log4cats.Logger
 import scalacss.ProdDefaults.*
@@ -68,12 +68,7 @@ object MobileApp extends DemoFrontEndHttp4sApp:
   private[this] val resourceRoutes: HttpRoutes[IO] =
     Router(
       "/" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/mobile").toRoutes,
-      // https://raw.githubusercontent.com/amfe/lib-flexible/2.0/index.min.js
-      "flexible" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/flexible/2.0").toRoutes,
-      // https://unpkg.com/swiper@8.4.4/swiper-bundle.min.js
-      "swiper" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/swiper/8.4.4").toRoutes,
-      "bootstrap" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/bootstrap/5.2.2").toRoutes,
-      "bootstrap-icons" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/bootstrap/1.9.1").toRoutes,
+      "webjars" -> webjarServiceBuilder[IO].toRoutes
     )
 
   private[this] val cssRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {

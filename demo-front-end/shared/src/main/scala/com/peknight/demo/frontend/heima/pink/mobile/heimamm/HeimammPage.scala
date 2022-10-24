@@ -15,7 +15,7 @@ class HeimammPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, O
         title("黑马面面"),
         link(rel := "stylesheet", href := "/css/normalize.css"),
         // 先引入css文件 放到自己css文件的上面
-        link(rel := "stylesheet", href := "/swiper/css/swiper.min.css"),
+        link(rel := "stylesheet", href := "/webjars/swiper/8.3.2/swiper-bundle.min.css"),
         link(rel := "stylesheet", href := "/css/heimamm-media.css"),
         link(rel := "stylesheet", href := "/css/heimamm.css"),
       ),
@@ -69,8 +69,8 @@ class HeimammPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, O
         footer(cls := "footer")(Seq(("首页", "home"), ("模拟面试", "ms"), ("技术面试", "net"), ("我的首页", "user")).map {
           case (text, pic) => a(href := "#", cls := "item")(img(src := s"/heimamm/icons/$pic.png"), p(text))
         }),
-        script(src := "/flexible/js/index.min.js"),
-        script(src := "/swiper/js/swiper.min.js"),
+        script(src := "/webjars/amfe-flexible/2.2.1/index.min.js"),
+        script(src := "/webjars/swiper/8.3.2/swiper-bundle.min.js"),
         script(raw(
           """
             |// 第一个函数里面是 就业指导轮播图
