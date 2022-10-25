@@ -34,6 +34,10 @@ build/
 ### VS Code ###
 .vscode/
 
+.bloop/
+.metals/
+metals.sbt
+
 node_modules
 package.json
 package-lock.json
