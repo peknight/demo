@@ -35,6 +35,8 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "switch-tab" => Ok(SwitchTablePage.Text.index)
     case GET -> Root / "data-set" => Ok(DataSetPage.Text.index)
     case GET -> Root / "sina-dropdown" => Ok(SinaDropdownPage.Text.index)
+    case GET -> Root / "post-comment" => Ok(PostCommentPage.Text.index)
+    case GET -> Root / "dynamic-tab" => Ok(DynamicTablePage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
       StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.2.0/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())
