@@ -3,7 +3,7 @@ package com.peknight.demo.frontend.heima.pink.javascript
 import cats.effect.*
 import cats.syntax.semigroupk.*
 import com.peknight.demo.frontend.app.DemoFrontEndHttp4sApp
-import com.peknight.demo.frontend.heima.pink.javascript.jdpwd.JingdongPasswordPage
+import com.peknight.demo.frontend.heima.pink.javascript.webapis.*
 import fs2.io.file
 import org.http4s.*
 import org.http4s.Charset.`UTF-8`
@@ -27,6 +27,14 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
 
   private[this] val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "jdpwd" => Ok(JingdongPasswordPage.Text.index)
+    case GET -> Root / "close-qr" => Ok(CloseTaobaoQRCodePage.Text.index)
+    case GET -> Root / "sprite-loop" => Ok(SpriteLoopPage.Text.index)
+    case GET -> Root / "sina-register" => Ok(SinaRegisterPage.Text.index)
+    case GET -> Root / "baidu-skin" => Ok(BaiduChangeSkinPage.Text.index)
+    case GET -> Root / "select-all" => Ok(SelectAllPage.Text.index)
+    case GET -> Root / "switch-tab" => Ok(SwitchTablePage.Text.index)
+    case GET -> Root / "data-set" => Ok(DataSetPage.Text.index)
+    case GET -> Root / "sina-dropdown" => Ok(SinaDropdownPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
       StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.2.0/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())
