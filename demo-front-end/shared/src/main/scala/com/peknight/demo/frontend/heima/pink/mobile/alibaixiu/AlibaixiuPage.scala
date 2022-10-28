@@ -49,7 +49,7 @@ class AlibaixiuPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
                 case (text, pic) => li(a(href := "#")(img(src := s"/alibaixiu/upload/${pic}"), p(text)))
               })),
               // 发表
-              div(cls := "publish")(for _ <- 1 to 6 yield
+              div(cls := "publish")(List.fill(6)(
                 div(cls := "row")(
                   div(cls := "col-md-9")(
                     h3("生活馆 关于指甲的10个健康知识 你知道几个？"),
@@ -63,7 +63,7 @@ class AlibaixiuPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
                   ),
                   div(cls := "col-sm-3 pic d-none d-md-block")(img(src := "/alibaixiu/upload/3.jpg")),
                 )
-              ),
+              )),
             ),
             tag("aside")(cls := "col-md-3")(
               a(href := "#", cls := "banner")(img(src := "/alibaixiu/upload/zgboke.jpg")),

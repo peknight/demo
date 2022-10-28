@@ -10,7 +10,7 @@ object FontsStyles extends StyleSheet.Inline:
   // 声明字体图标 这里一定要注意路径的变化（独立的css文件时）
   val icomoon: FontFace[String] = fontFace("icomoon")(_
     .src(
-      "url('/fonts/icomoon.eot?7gw1oq')",
+      // "url('/fonts/icomoon.eot?7gw1oq')",
       "url('/fonts/icomoon.eot?7gw1oq#iefix') format('embedded-opentype')",
       "url('/fonts/icomoon.ttf?7gw1oq') format('truetype')",
       "url('/fonts/icomoon.woff?7gw1oq') format('woff')",

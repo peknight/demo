@@ -36,20 +36,20 @@ class Transform3DPage[Builder, Output <: FragT, FragT](override val bundle: Bund
       )
     ),
     div(cls := "box")(
-      ul(cls := "case-2")(for _ <- 1 to 2 yield li(div(cls := "case-2-outer")(
+      ul(cls := "case-2")(List.fill(2)(li(div(cls := "case-2-outer")(
         div(cls := "case-2-front")("正面"),
         div(cls := "case-2-bottom")("下面")
-      )))
+      ))))
     ),
     div(cls := "box")(
-      ul(cls := "case-3")(for _ <- 1 to 2 yield li(div(cls := "case-3-outer")(
+      ul(cls := "case-3")(List.fill(2)(li(div(cls := "case-3-outer")(
         div(cls := "case-3-front")("正面"),
         div(cls := "case-3-bottom")("下面")
-      )))
+      ))))
     ),
     div(cls := "box")(
       div(cls := "case-4-outer")(
-        section(cls := "case-4-inner")(for _ <- 1 to 6 yield div())
+        section(cls := "case-4-inner")(List.fill(6)(div()))
       )
     )
   )

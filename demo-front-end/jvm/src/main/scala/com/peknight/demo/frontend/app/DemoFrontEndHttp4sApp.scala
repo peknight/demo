@@ -1,5 +1,6 @@
 package com.peknight.demo.frontend.app
 
+import _root_.scalatags.Text.all.Frag
 import cats.effect.*
 import cats.syntax.flatMap.*
 import cats.syntax.functor.*
@@ -8,13 +9,17 @@ import com.comcast.ip4s.*
 import fs2.io.file
 import fs2.io.net.Network
 import org.http4s.*
+import org.http4s.Charset.`UTF-8`
 import org.http4s.dsl.io.*
 import org.http4s.ember.server.EmberServerBuilder
+import org.http4s.headers.`Content-Type`
 import org.http4s.server.Server
 import org.http4s.server.middleware.Logger as MiddlewareLogger
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
+import scalacss.ProdDefaults.*
+import scalacss.internal.mutable.StyleSheet
 
 trait DemoFrontEndHttp4sApp extends IOApp.Simple:
 
@@ -22,6 +27,15 @@ trait DemoFrontEndHttp4sApp extends IOApp.Simple:
   given CanEqual[Method, Method] = CanEqual.derived
 
   def routes(using Logger[IO]): HttpRoutes[IO]
+
+  protected def renderHtml(frag: Frag): IO[Response[IO]] =
+    Ok("<!DOCTYPE html>" + frag).map(_.withContentType(`Content-Type`(MediaType.text.html, `UTF-8`)))
+
+  protected def renderCss(styleSheet: StyleSheet.Base): IO[Response[IO]] =
+    renderCss(styleSheet.render[String])
+
+  private[this] def renderCss(styleSheet: String): IO[Response[IO]] =
+    Ok(styleSheet).map(_.withContentType(`Content-Type`(MediaType.text.css, `UTF-8`)))
 
   private[this] val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
     env("STORE_PASSWORD").default("123456").secret

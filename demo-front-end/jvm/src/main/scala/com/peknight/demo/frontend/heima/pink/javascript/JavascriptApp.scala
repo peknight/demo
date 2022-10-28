@@ -42,6 +42,9 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "jd-focus" => Ok(JingdongKeyUpFocusPage.Text.index)
     case GET -> Root / "jd-track" => Ok(JingdongTrackingNumPage.Text.index)
     case GET -> Root / "count-down" => Ok(CountDownPage.Text.index)
+    case GET -> Root / "send-msg" => Ok(SendMessagePage.Text.index)
+    case GET -> Root / "offset" => Ok(OffsetPage.Text.index)
+    case GET -> Root / "drag-box" => Ok(DragBoxPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
       StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.2.0/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())

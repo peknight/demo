@@ -24,7 +24,7 @@ class CommonPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
   import bundle.all.{title as inlineTitle, style as _, *}
   import bundle.tags2.{nav, section, style, title}
 
-  protected[page] def headFrag(headTitle: String, styleSheet: Modifier): Modifier =
+  protected[page] def headFrag(headTitle: String, modifiers: Modifier*): Modifier =
     head(
       metaFrag,
       // TDK三大标签SEO优化: title description keywords
@@ -35,14 +35,14 @@ class CommonPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
       // 关键字
       meta(name := "keywords", content := "网上购物,网上商城,手机,笔记本,电脑,MP3,CD,VCD,DV,相机,数码,配件,手表,存储卡,品优购"),
       // 引入favicon图标
-      link(rel := "shortcut icon", href := "favicon.ico"),
+      link(rel := "shortcut icon", href := "favicon.ico", `type` := "image/x-icon"),
       // 引入我们初始化样式文件
       link(rel := "stylesheet", href := "/css/base.css"),
       // style(BaseStyles.render[String]),
       // 引入我们公共的样式文件
       link(rel := "stylesheet", href := "/css/fonts.css"),
       link(rel := "stylesheet", href := "/css/common.css"),
-      styleSheet
+      modifiers
     )
 
   // 快捷导航模块
@@ -105,6 +105,25 @@ class CommonPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
   // nav模块制作
   protected[page] def navFrag(navModifier: Modifier): Modifier =
     nav(cls := "nav")(div(cls := "w")(navModifier))
+
+  protected[page] def indexNavFrag(ddDisplay: Modifier*): Modifier =
+    modifier(
+      div(cls := "dropdown")(
+        div(cls := "dt")("全部商品分类"),
+        div(cls := "dd", ddDisplay)(ul(
+          li(a(href := "#")("家用电器")),
+          li(a(href := "list.html")("手机"), "、", a(href := "#")("数码"), "、", a(href := "#")("通信")),
+          Seq(
+            "电脑、办公", "家居、家具、家装、厨具", "男装、女装、童装、内衣", "个护化妆、清洁用品、宠物", "鞋靴、箱包、珠宝、奢侈品",
+            "运动户外、钟表", "汽车、汽车用品", "母婴、玩具乐器", "食品、酒类、生鲜、特产", "医药保健", "图书、音像、电子书",
+            "彩票、旅行、充值、票务", "理财、众筹、白条、保险"
+          ).map(s => li(a(href := "#")(s)))
+        )),
+      ),
+      div(cls := "navitems")(ul(
+        Seq("服装城", "美妆馆", "传智超市", "全球购", "闪购", "团购", "拍卖", "有趣").map(s => li(a(href := "#")(s)))
+      ))
+    )
 
   // 底部模块的制作
   protected[page] def footerFrag: Modifier =

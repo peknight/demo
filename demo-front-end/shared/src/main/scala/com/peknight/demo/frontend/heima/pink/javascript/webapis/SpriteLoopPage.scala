@@ -16,7 +16,7 @@ class SpriteLoopPage[Builder, Output <: FragT, FragT](override val bundle: Bundl
   override def styles: Seq[StyleSheet.Base] = Seq(Styles)
   override def headTitle: String = "循环精灵图"
   override def javaScriptMethod: Option[String] = Some("spriteLoop")
-  override def bodyFrag = div(cls := "box")(ul(for _ <- 1 to 12 yield li()))
+  override def bodyFrag = div(cls := "box")(ul(List.fill(12)(li())))
 
 end SpriteLoopPage
 object SpriteLoopPage:

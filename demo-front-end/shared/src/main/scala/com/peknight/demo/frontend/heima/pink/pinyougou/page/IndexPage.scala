@@ -9,11 +9,15 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
 
   def index: Frag =
     html(lang := "zh-CN")(
-      headFrag("品优购商城", link(rel := "stylesheet", href := "/css/index.css")),
+      headFrag("品优购商城",
+        link(rel := "stylesheet", href := "/css/index.css"),
+        script(src := "/main.js"),
+        script("pinyougouIndex()")
+      ),
       body(
         shortcutFrag,
         headerFrag(""),
-        navFrag(indexNavFrag),
+        navFrag(indexNavFrag()),
         mainFrag,
         recommendFrag,
         likeFrag,
@@ -24,31 +28,12 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
       )
     )
 
-  private[this] val indexNavFrag: Modifier =
-    modifier(
-      div(cls := "dropdown")(
-        div(cls := "dt")("全部商品分类"),
-        div(cls := "dd")(ul(
-          li(a(href := "#")("家用电器")),
-          li(a(href := "list.html")("手机"), "、", a(href := "#")("数码"), "、", a(href := "#")("通信")),
-          Seq(
-            "电脑、办公", "家居、家具、家装、厨具", "男装、女装、童装、内衣", "个护化妆、清洁用品、宠物", "鞋靴、箱包、珠宝、奢侈品",
-            "运动户外、钟表", "汽车、汽车用品", "母婴、玩具乐器", "食品、酒类、生鲜、特产", "医药保健", "图书、音像、电子书",
-            "彩票、旅行、充值、票务", "理财、众筹、白条、保险"
-          ).map(s => li(a(href := "#")(s)))
-        )),
-      ),
-      div(cls := "navitems")(ul(
-        Seq("服装城", "美妆馆", "传智超市", "全球购", "闪购", "团购", "拍卖", "有趣").map(s => li(a(href := "#")(s)))
-      ))
-    )
-
   // 首页专有的模块 main
   private[this] val mainFrag: Modifier =
     div(cls := "w")(div(cls := "main")(
       div(cls := "focus white-mask")(
-        ol(for _ <- 1 to 4 yield li()),
-        ul(for i <- 1 to 4 yield li(img(src := s"/uploads/banner$i.jpg"))),
+        ol(List.fill(4)(li())),
+        ul(List.fill(4)(li(img(src := s"/uploads/banner$i.jpg")))),
         a(href := "#", cls := "prev")("‹"),
         a(href := "#", cls := "next")("›"),
       ),

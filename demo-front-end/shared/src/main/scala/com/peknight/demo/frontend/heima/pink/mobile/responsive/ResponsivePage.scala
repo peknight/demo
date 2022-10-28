@@ -31,7 +31,7 @@ class ResponsivePage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder
       body(
         // 响应式开发里面，首先需要一个布局容器
         div(cls := "container")(
-          ul(for _ <- 1 to 8 yield li("导航栏"))
+          ul(List.fill(8)(li("导航栏")))
         )
       )
     )

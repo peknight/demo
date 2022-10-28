@@ -16,10 +16,10 @@ class SinaDropdownPage[Builder, Output <: FragT, FragT](override val bundle: Bun
   override def styles: Seq[StyleSheet.Base] = Seq(Styles)
   override def headTitle: String = "新浪下拉菜单"
   override def javaScriptMethod: Option[String] = Some("sinaDropdown")
-  override def bodyFrag = ul(cls := "nav")(for _ <- 1 to 4 yield li(
+  override def bodyFrag = ul(cls := "nav")(List.fill(4)(li(
     a(href := "#")("微博"),
     ul(Seq("私信", "评论", "@我").map(s => li(a(href := "#")(s))))
-  ))
+  )))
 
 end SinaDropdownPage
 object SinaDropdownPage:

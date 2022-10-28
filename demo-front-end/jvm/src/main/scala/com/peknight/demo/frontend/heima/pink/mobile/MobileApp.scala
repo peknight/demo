@@ -1,6 +1,5 @@
 package com.peknight.demo.frontend.heima.pink.mobile
 
-import _root_.scalatags.Text.all.Frag
 import cats.effect.*
 import cats.syntax.semigroupk.*
 import com.peknight.demo.frontend.app.DemoFrontEndHttp4sApp
@@ -21,11 +20,9 @@ import com.peknight.demo.frontend.heima.pink.mobile.viewportwidth.ViewportWidthP
 import com.peknight.demo.frontend.style.{CommonMediaStyles, NormalizeStyles}
 import fs2.io.file
 import org.http4s.*
-import org.http4s.Charset.`UTF-8`
 import org.http4s.client.dsl.io.*
 import org.http4s.dsl.io.*
 import org.http4s.ember.client.EmberClientBuilder
-import org.http4s.headers.`Content-Type`
 import org.http4s.scalatags.*
 import org.http4s.server.Router
 import org.http4s.server.staticcontent.{resourceServiceBuilder, webjarServiceBuilder}
@@ -63,9 +60,6 @@ object MobileApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "bilibili" => renderHtml(BilibiliPage.Text.index)
   }
 
-  private[this] def renderHtml(frag: Frag): IO[Response[IO]] =
-    Ok("<!DOCTYPE html>" + frag).map(_.withContentType(`Content-Type`(MediaType.text.html, `UTF-8`)))
-
   private[this] val resourceRoutes: HttpRoutes[IO] =
     Router(
       "/" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/mobile").toRoutes,
@@ -84,12 +78,6 @@ object MobileApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "heimamm.css" => renderCss(HeimammStyles)
     case GET -> Root / "heimamm-media.css" => renderCss(HeimammMediaStyles)
   }
-
-  private[this] def renderCss(styleSheet: StyleSheet.Base): IO[Response[IO]] =
-    renderCss(styleSheet.render[String])
-
-  private[this] def renderCss(styleSheet: String): IO[Response[IO]] =
-    Ok(styleSheet).map(_.withContentType(`Content-Type`(MediaType.text.css, `UTF-8`)))
 
   private[this] val jsRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case req @ GET -> Root / "heimamm" / path if Set(".js", ".map").exists(path.endsWith) =>
