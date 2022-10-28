@@ -13,6 +13,7 @@ object DetailStyles extends StyleSheet.Standalone:
   ".crumb-wrap a" - marginRight(10.px)
   ".preview-wrap" - (width(400.px), height(590.px))
   ".preview-img" - (position.relative, height(398.px), border(1.px, solid, c"#ccc"))
+  ".preview-img>img" - (width(100.%%), height(100.%%))
   ".mask" - (
     display.none,
     position.absolute,
@@ -46,8 +47,9 @@ object DetailStyles extends StyleSheet.Standalone:
     border(2.px, solid, transparent),
     margin(`0`, 2.px)
   )
+  ".list-item li img" - (width(100.%%), height(100.%%))
   ".list-item li.current" - borderColor(c"#c81623")
-  ".arrow-prev .arrow-next" - (
+  ".arrow-prev, .arrow-next" - (
     position.absolute,
     top(15.px),
     width(22.px),
@@ -151,7 +153,7 @@ object DetailStyles extends StyleSheet.Standalone:
     borderBottom.`0`,
     color.red
   )
-  ".first-tab" - width(104.px)
+  ".first-tab" - width(103.px)
   ".second-tab" - (width(103.px), borderLeft(1.px, solid, c"#ccc"))
   ".tab-con" - padding(`0`, 10.px)
   ".tab-con li" - borderBottom(1.px, solid, c"#ccc")

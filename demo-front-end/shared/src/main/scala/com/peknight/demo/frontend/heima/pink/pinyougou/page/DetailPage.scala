@@ -95,8 +95,8 @@ class DetailPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
   private[this] def toAnchors(texts: List[String]): Modifier =
     texts match
       case head :: tail => modifier(
-        a(href := "javascript:;", cls := "current")(head),
-        tail.map(s => a(href := "javascript:;")(s))
+        a(href := "javascript:;", cls := "current")(head), " ",
+        tail.map(s => a(href := "javascript:;")(s)).sep[Frag](" ")
       )
       case _ => modifier()
 
