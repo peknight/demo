@@ -33,9 +33,9 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
     div(cls := "w")(div(cls := "main")(
       div(cls := "focus white-mask")(
         ol(List.fill(4)(li())),
-        ul(List.fill(4)(li(img(src := s"/uploads/banner$i.jpg")))),
-        a(href := "#", cls := "prev")("‹"),
-        a(href := "#", cls := "next")("›"),
+        ul(for i <- 0 to 4 yield li(a(href := "#")(img(src := s"/uploads/banner${i % 4 + 1}.jpg")))),
+        a(href := "#", cls := "arrow-l")("‹"),
+        a(href := "#", cls := "arrow-r")("›"),
       ),
       div(cls := "newsflash")(
         div(cls := "news")(

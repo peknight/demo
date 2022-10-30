@@ -38,9 +38,16 @@ object IndexStyles extends StyleSheet.Standalone:
     &.firstOfType - style(background := rgba(255, 255, 255, 1))
   )
 
-  ".focus ul li img" - (width(100.%%), height(100.%%))
+  ".focus ul" - (
+    position.absolute,
+    top.`0`,
+    left.`0`,
+    width(600.%%)
+  )
 
-  ".focus a" - (
+  ".focus ul li" - float.left
+
+  ".focus>a" - (
     position.absolute,
     top(50.%%),
     height(50.px),
@@ -51,8 +58,8 @@ object IndexStyles extends StyleSheet.Standalone:
     lineHeight(50.px)
   )
 
-  ".focus .prev" - left(0.px)
-  ".focus .next" - right(0.px)
+  ".focus .arrow-l" - left(0.px)
+  ".focus .arrow-r" - right(0.px)
 
   ".newsflash" - (float.right, width(250.px), height(455.px))
 
