@@ -27,3 +27,6 @@ object TaobaoFixedSidebarScript:
       else
         goBack.style.display = "none"
     })
+    // 当我们点击了返回顶部模块，就让窗口滚动到页面的最上方
+    goBack.addEventListener("click", _ => AnimateScript.scroll(0))
+

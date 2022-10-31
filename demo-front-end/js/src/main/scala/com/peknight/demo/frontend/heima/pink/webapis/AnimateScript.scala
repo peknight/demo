@@ -16,8 +16,22 @@ object AnimateScript:
         animateTimers.get(element).foreach(dom.window.clearInterval)
         callback()
       else
-        val step = (target - offsetLeft) / 10
-        val next = offsetLeft + (if step > 0 then math.ceil(step) else math.floor(step))
-        element.style.left = s"${next}px"
+        element.style.left = s"${next(offsetLeft, target)}px"
     }, 15)
     animateTimers.put(element, timer)
+
+  def scroll(target: Double, callback: () => Unit = () => ()): Unit =
+    val window = dom.window
+    lazy val timer: Int = window.setInterval(() => {
+      val pageYOffset = window.pageYOffset
+      if pageYOffset == target then
+        window.clearInterval(timer)
+        callback()
+      else
+        window.scroll(0, next(pageYOffset, target))
+    }, 15)
+    timer
+
+  private[this] def next(current: Double, target: Double): Int =
+    val step = (target - current) / 10
+    (current + (if step > 0 then math.ceil(step) else math.floor(step))).toInt

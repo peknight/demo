@@ -1,7 +1,6 @@
 package com.peknight.demo.frontend.amfe.flexible
 
 import org.scalajs.dom
-import org.scalajs.dom.Element
 
 import scala.scalajs.js
 
