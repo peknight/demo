@@ -47,4 +47,24 @@ object PinyougouScript extends App:
       })
     })
 
+  @JSExportTopLevel("pinyougouFocus")
+  def pinyougouFocus(): Unit =
+    dom.window.addEventListener("load", _ => {
+      val arrowL = dom.document.querySelector(".arrow-l").asInstanceOf[dom.HTMLElement]
+      val arrowR = dom.document.querySelector(".arrow-r").asInstanceOf[dom.HTMLElement]
+      val focus = dom.document.querySelector(".focus").asInstanceOf[dom.HTMLElement]
+      val focusWidth = focus.offsetWidth
+      var timerOption: Option[Int] = None
+      focus.addEventListener("mouseenter", _ => {
+        arrowL.style.display = "block"
+        arrowR.style.display = "block"
+        timerOption.foreach(dom.window.clearInterval)
+        timerOption = None
+      })
+      focus.addEventListener("mouseleave", _ => {
+        arrowL.style.display = "none"
+        arrowR.style.display = "none"
+        timerOption = Some(dom.window.setInterval(() => arrowL.click(), 2000))
+      })
+    })
 
