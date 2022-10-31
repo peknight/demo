@@ -1,6 +1,8 @@
 package com.peknight.demo.frontend.heima.pink.webapis
 
+import com.peknight.demo.frontend.heima.pink.webapis.AnimateScript.animate
 import org.scalajs.dom
+import scalatags.JsDom.all.*
 
 import scala.scalajs.js.annotation.JSExportTopLevel
 import scala.util.matching.Regex
@@ -54,7 +56,7 @@ object PinyougouScript extends App:
       val arrowR = dom.document.querySelector(".arrow-r").asInstanceOf[dom.HTMLElement]
       val focus = dom.document.querySelector(".focus").asInstanceOf[dom.HTMLElement]
       val focusWidth = focus.offsetWidth
-      var timerOption: Option[Int] = None
+      var timerOption: Option[Int] = Some(dom.window.setInterval(() => arrowR.click(), 2000))
       focus.addEventListener("mouseenter", _ => {
         arrowL.style.display = "block"
         arrowR.style.display = "block"
@@ -64,7 +66,53 @@ object PinyougouScript extends App:
       focus.addEventListener("mouseleave", _ => {
         arrowL.style.display = "none"
         arrowR.style.display = "none"
-        timerOption = Some(dom.window.setInterval(() => arrowL.click(), 2000))
+        timerOption = Some(dom.window.setInterval(() => arrowR.click(), 2000))
+      })
+      val ulElement = focus.querySelector("ul").asInstanceOf[dom.HTMLElement]
+      val olElement = focus.querySelector(".circle").asInstanceOf[dom.HTMLElement]
+      olElement.appendChild(frag(List.fill(ulElement.children.length)(li())).render)
+      ulElement.appendChild(ulElement.children.head.cloneNode(true))
+      val imgCount = ulElement.children.length
+      val circles = olElement.children
+      circles.head.classList.add("current")
+      var imgIndex = 0
+      var circleIndex = 0
+      circles.zipWithIndex.foreach {
+        case (circle, index) => circle.addEventListener("click", _ => {
+          circles.foreach(_.classList.remove("current"))
+          circle.classList.add("current")
+          imgIndex = index
+          circleIndex = index
+          animate(ulElement, -index * focusWidth)
+        })
+      }
+      var flag = true
+      arrowR.addEventListener("click", _ => {
+        if flag then
+          flag = false
+          if imgIndex == imgCount - 1 then
+            ulElement.style.left = "0"
+            imgIndex = 0
+          imgIndex += 1
+          animate(ulElement, -imgIndex * focusWidth, () => flag = true)
+          circleIndex += 1
+          if circleIndex == circles.length then circleIndex = 0
+          circleChange(circles, circleIndex)
+      })
+      arrowL.addEventListener("click", _ => {
+        if flag then
+          flag = false
+          if imgIndex == 0 then
+            imgIndex = imgCount - 1
+            ulElement.style.left = s"${-imgIndex * focusWidth}px"
+          imgIndex -= 1
+          animate(ulElement, -imgIndex * focusWidth, () => flag = true)
+          circleIndex -= 1
+          if circleIndex < 0 then circleIndex = circles.length - 1
+          circleChange(circles, circleIndex)
       })
     })
 
+  private[this] def circleChange(circles: dom.HTMLCollection[dom.Element], circleIndex: Int): Unit =
+    circles.foreach(_.classList.remove("current"))
+    circles(circleIndex).classList.add("current")

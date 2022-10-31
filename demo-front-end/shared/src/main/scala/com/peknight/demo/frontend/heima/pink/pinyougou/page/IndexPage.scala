@@ -12,7 +12,8 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
       headFrag("品优购商城",
         link(rel := "stylesheet", href := "/css/index.css"),
         script(src := "/main.js"),
-        script("pinyougouIndex()")
+        script("pinyougouIndex()"),
+        script("pinyougouFocus()")
       ),
       body(
         shortcutFrag,
@@ -31,11 +32,11 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
   // 首页专有的模块 main
   private[this] val mainFrag: Modifier =
     div(cls := "w")(div(cls := "main")(
-      div(cls := "focus white-mask")(
-        ol(List.fill(4)(li())),
-        ul(for i <- 0 to 4 yield li(a(href := "#")(img(src := s"/uploads/banner${i % 4 + 1}.jpg")))),
-        a(href := "#", cls := "arrow-l")("‹"),
-        a(href := "#", cls := "arrow-r")("›"),
+      div(cls := "focus fl")(
+        a(href := "javascript:;", cls := "arrow-l")("‹"),
+        a(href := "javascript:;", cls := "arrow-r")("›"),
+        ul(for i <- 1 to 4 yield li(a(href := "#")(img(src := s"/uploads/banner$i.jpg")))),
+        ol(cls := "circle"),
       ),
       div(cls := "newsflash")(
         div(cls := "news")(

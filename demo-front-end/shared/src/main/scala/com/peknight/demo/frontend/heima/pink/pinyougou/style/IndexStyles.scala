@@ -15,27 +15,9 @@ object IndexStyles extends StyleSheet.Standalone:
 
   ".focus" - (
     position.relative,
-    float.left,
     width(721.px),
     height(455.px),
     overflow.hidden
-  )
-
-  ".focus ol" - (
-    position.absolute,
-    left(50.%%),
-    bottom(12.px),
-    marginLeft(-28.px)
-  )
-
-  ".focus ol li" - (
-    float.left,
-    width(10.px),
-    height(10.px),
-    margin(0.px, 2.px),
-    borderRadius(5.px),
-    background := rgba(255, 255, 255, .5),
-    &.firstOfType - style(background := rgba(255, 255, 255, 1))
   )
 
   ".focus ul" - (
@@ -47,19 +29,47 @@ object IndexStyles extends StyleSheet.Standalone:
 
   ".focus ul li" - float.left
 
-  ".focus>a" - (
-    position.absolute,
-    top(50.%%),
-    height(50.px),
-    marginTop(-25.px),
-    background := rgba(0, 0, 0, .3),
-    color(white),
-    fontSize(30.px),
-    lineHeight(50.px)
+  ".focus ul li a img" - (
+    width(720.px),
+    height(455.px)
   )
 
-  ".focus .arrow-l" - left(0.px)
-  ".focus .arrow-r" - right(0.px)
+  ".arrow-l, .arrow-r" - (
+    display.none,
+    position.absolute,
+    top(50.%%),
+    marginTop(-20.px),
+    width(24.px),
+    height(40.px),
+    background := rgba(0, 0, 0, .3),
+    textAlign.center,
+    lineHeight(40.px),
+    color(c"#fff"),
+    fontSize(18.px),
+    zIndex(2),
+  )
+
+  ".arrow-l" - left(0.px)
+  ".arrow-r" - right(0.px)
+
+  ".circle" - (
+    position.absolute,
+    bottom(10.px),
+    left(50.%%),
+    transform := "translateX(-50%)"
+  )
+
+  ".circle li" - (
+    float.left,
+    width(8.px),
+    height(8.px),
+    border(2.px, solid, rgba(255, 255, 255, .5)),
+    margin(0.px, 3.px),
+    borderRadius(50.%%),
+    cursor.pointer,
+  )
+
+  ".current" - backgroundColor(c"#fff")
 
   ".newsflash" - (float.right, width(250.px), height(455.px))
 
