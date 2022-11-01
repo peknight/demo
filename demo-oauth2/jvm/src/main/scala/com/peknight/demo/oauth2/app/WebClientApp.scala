@@ -25,7 +25,7 @@ object WebClientApp extends IOApp.Simple:
 
   val service: HttpApp[IO] = HttpRoutes.of[IO] {
       case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-        StaticFile.fromPath(file.Path(s"./demo-oauth2/js/target/scala-3.2.0/demo-oauth2-opt/$path"), Some(req))
+        StaticFile.fromPath(file.Path(s"./demo-oauth2/js/target/scala-3.2.1/demo-oauth2-opt/$path"), Some(req))
           .getOrElseF(NotFound())
       case GET -> _ => Ok(ClientPage.Text.webIndex)
     }.orNotFound

@@ -59,7 +59,7 @@ object DemoJsApp extends IOApp.Simple:
     case GET -> Root / "weather-search" => Ok(DemoJsPage.Text.weatherSearchDemo)
     case GET -> Root / "future-weather" => Ok(DemoJsPage.Text.futureWeatherDemo)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-js/js/target/scala-3.2.0/demo-js-opt/$path"), Some(req))
+      StaticFile.fromPath(file.Path(s"./demo-js/js/target/scala-3.2.1/demo-js-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
 

@@ -59,7 +59,7 @@ object MobileApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "vw" => renderHtml(ViewportWidthPage.Text.index)
     case GET -> Root / "bilibili" => renderHtml(BilibiliPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.2.0/demo-front-end-opt/$path"), Some(req))
+      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.2.1/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
 
@@ -84,7 +84,7 @@ object MobileApp extends DemoFrontEndHttp4sApp:
 
   private[this] val jsRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case req @ GET -> Root / "heimamm" / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-front-end/module/heimamm/target/scala-3.2.0/demo-front-end-module-heimamm-opt/$path"), Some(req))
+      StaticFile.fromPath(file.Path(s"./demo-front-end/module/heimamm/target/scala-3.2.1/demo-front-end-module-heimamm-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
 

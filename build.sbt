@@ -2,8 +2,8 @@ import org.scalajs.linker.interface.ModuleInitializer
 
 ThisBuild / version := "0.1-SNAPSHOT"
 
-val scala3Version = "3.2.0"
-val scala2Version = "2.13.8"
+val scala3Version = "3.2.1"
+val scala2Version = "2.13.10"
 
 ThisBuild / scalaVersion := scala3Version
 

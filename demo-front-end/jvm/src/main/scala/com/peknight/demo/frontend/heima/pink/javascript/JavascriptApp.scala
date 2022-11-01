@@ -53,7 +53,7 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "fast-click" => renderHtml(FastClickPage.Text.index)
     case GET -> Root / "video-player" => renderHtml(VideoPlayerPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.2.0/demo-front-end-opt/$path"), Some(req))
+      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.2.1/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
 

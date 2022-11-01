@@ -3,7 +3,7 @@ package com.peknight.demo.shapeless2.labelledgeneric
 import shapeless.syntax.singleton._
 
 object LiteralTypesApp extends App {
-  // 2.13.8 定义成var会报错诶 https://github.com/milessabin/shapeless/issues/674
+  // 2.13 定义成var会报错诶 https://github.com/milessabin/shapeless/issues/674
   val x = 42.narrow
   println(x + 1)
   println(1.narrow)

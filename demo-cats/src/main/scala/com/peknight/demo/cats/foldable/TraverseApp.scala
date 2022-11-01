@@ -84,7 +84,7 @@ object TraverseApp extends App:
 
   println(Await.result(numbers2, 1.second))
 
-  // Scala 3.2.0编译器有BUG吧
+  // Scala 3编译器有BUG吧
   val hostnameUptimes: Future[List[Int]] = hostnames.traverse(getUptime)
   println(Await.result(hostnameUptimes, 1.second))
 
