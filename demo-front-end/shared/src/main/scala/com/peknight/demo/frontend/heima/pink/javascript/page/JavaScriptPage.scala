@@ -8,7 +8,9 @@ abstract class JavaScriptPage[Builder, Output <: FragT, FragT](val bundle: Bundl
   import bundle.all.{title as inlineTitle, style as _, *}
   import bundle.tags2.{nav, section, style, title}
 
+  protected def links: Seq[String] = Seq()
   protected def styles: Seq[StyleSheet.Base] = Seq()
+  protected def scripts: Seq[String] = Seq()
   protected def headTitle: String = "Document"
   protected def javaScriptMethod: Option[String] = None
   protected def bodyFrag: Frag = ""
@@ -19,8 +21,10 @@ abstract class JavaScriptPage[Builder, Output <: FragT, FragT](val bundle: Bundl
         meta(charset := "UTF-8"),
         meta(name := "viewport", content := "width=device-width, initial-scale=1.0"),
         meta(httpEquiv := "X-UA-Compatible", content := "ie=edge"),
+        links.map(s => link(rel := "stylesheet", href := s)),
         styles.map(s => style(raw(s.render[String]))),
         script(`type` := "text/javascript", src := "/main.js"),
+        scripts.map(s => script(src := s)),
         title(headTitle),
       ),
       body(

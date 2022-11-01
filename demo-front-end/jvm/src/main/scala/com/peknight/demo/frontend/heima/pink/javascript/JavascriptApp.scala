@@ -26,28 +26,32 @@ import scala.concurrent.duration.*
 object JavascriptApp extends DemoFrontEndHttp4sApp:
 
   private[this] val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root / "jdpwd" => Ok(JingdongPasswordPage.Text.index)
-    case GET -> Root / "close-qr" => Ok(CloseTaobaoQRCodePage.Text.index)
-    case GET -> Root / "sprite-loop" => Ok(SpriteLoopPage.Text.index)
-    case GET -> Root / "sina-register" => Ok(SinaRegisterPage.Text.index)
-    case GET -> Root / "baidu-skin" => Ok(BaiduChangeSkinPage.Text.index)
-    case GET -> Root / "select-all" => Ok(SelectAllPage.Text.index)
-    case GET -> Root / "switch-tab" => Ok(SwitchTablePage.Text.index)
-    case GET -> Root / "data-set" => Ok(DataSetPage.Text.index)
-    case GET -> Root / "sina-dropdown" => Ok(SinaDropdownPage.Text.index)
-    case GET -> Root / "post-comment" => Ok(PostCommentPage.Text.index)
-    case GET -> Root / "dynamic-tab" => Ok(DynamicTablePage.Text.index)
-    case GET -> Root / "angel" => Ok(AngelFollowMousePage.Text.index)
-    case GET -> Root / "keyboard-event" => Ok(KeyboardEventPage.Text.index)
-    case GET -> Root / "jd-focus" => Ok(JingdongKeyUpFocusPage.Text.index)
-    case GET -> Root / "jd-track" => Ok(JingdongTrackingNumPage.Text.index)
-    case GET -> Root / "count-down" => Ok(CountDownPage.Text.index)
-    case GET -> Root / "send-msg" => Ok(SendMessagePage.Text.index)
-    case GET -> Root / "offset" => Ok(OffsetPage.Text.index)
-    case GET -> Root / "drag-box" => Ok(DragBoxPage.Text.index)
-    case GET -> Root / "taobao-sidebar" => Ok(TaobaoFixedSidebarPage.Text.index)
-    case GET -> Root / "import-animate" => Ok(ImportAnimatePage.Text.index)
-    case GET -> Root / "somersault-cloud" => Ok(SomersaultCloudPage.Text.index)
+    case GET -> Root / "jdpwd" => renderHtml(JingdongPasswordPage.Text.index)
+    case GET -> Root / "close-qr" => renderHtml(CloseTaobaoQRCodePage.Text.index)
+    case GET -> Root / "sprite-loop" => renderHtml(SpriteLoopPage.Text.index)
+    case GET -> Root / "sina-register" => renderHtml(SinaRegisterPage.Text.index)
+    case GET -> Root / "baidu-skin" => renderHtml(BaiduChangeSkinPage.Text.index)
+    case GET -> Root / "select-all" => renderHtml(SelectAllPage.Text.index)
+    case GET -> Root / "switch-tab" => renderHtml(SwitchTablePage.Text.index)
+    case GET -> Root / "data-set" => renderHtml(DataSetPage.Text.index)
+    case GET -> Root / "sina-dropdown" => renderHtml(SinaDropdownPage.Text.index)
+    case GET -> Root / "post-comment" => renderHtml(PostCommentPage.Text.index)
+    case GET -> Root / "dynamic-tab" => renderHtml(DynamicTablePage.Text.index)
+    case GET -> Root / "angel" => renderHtml(AngelFollowMousePage.Text.index)
+    case GET -> Root / "keyboard-event" => renderHtml(KeyboardEventPage.Text.index)
+    case GET -> Root / "jd-focus" => renderHtml(JingdongKeyUpFocusPage.Text.index)
+    case GET -> Root / "jd-track" => renderHtml(JingdongTrackingNumPage.Text.index)
+    case GET -> Root / "count-down" => renderHtml(CountDownPage.Text.index)
+    case GET -> Root / "send-msg" => renderHtml(SendMessagePage.Text.index)
+    case GET -> Root / "offset" => renderHtml(OffsetPage.Text.index)
+    case GET -> Root / "drag-box" => renderHtml(DragBoxPage.Text.index)
+    case GET -> Root / "taobao-sidebar" => renderHtml(TaobaoFixedSidebarPage.Text.index)
+    case GET -> Root / "import-animate" => renderHtml(ImportAnimatePage.Text.index)
+    case GET -> Root / "somersault-cloud" => renderHtml(SomersaultCloudPage.Text.index)
+    case GET -> Root / "touch-event" => renderHtml(TouchEventPage.Text.index)
+    case GET -> Root / "drag-element" => renderHtml(DragElementPage.Text.index)
+    case GET -> Root / "fast-click" => renderHtml(FastClickPage.Text.index)
+    case GET -> Root / "video-player" => renderHtml(VideoPlayerPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
       StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.2.0/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())
@@ -56,6 +60,8 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
   private[this] val resourceRoutes: HttpRoutes[IO] =
     Router(
       "/" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/javascript").toRoutes,
+      "/zymedia" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/ireaderlab/zymedia").toRoutes,
+      "webjars" -> webjarServiceBuilder[IO].toRoutes
     )
 
   def routes(using Logger[IO]): HttpRoutes[IO] = htmlRoutes <+> resourceRoutes

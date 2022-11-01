@@ -7,6 +7,10 @@ import scalacss.internal.Dsl.*
 object JingdongStyles extends StyleSheet.Standalone:
   import dsl.*
 
+  ":root" - (
+    Attr.real("--swiper-pagination-color") := c"#fff"
+  )
+
   "body" - (
     width(100.%%),
     minWidth(320.px),
@@ -87,7 +91,7 @@ object JingdongStyles extends StyleSheet.Standalone:
     height(44.px),
     minWidth(320.px),
     maxWidth(640.px),
-    zIndex(1)
+    zIndex(9999)
   )
 
   ".search-btn" - (
@@ -170,6 +174,24 @@ object JingdongStyles extends StyleSheet.Standalone:
   ".slider" - marginTop(-44.px)
 
   ".slider img" - width(100.%%)
+
+  ".swiper" - (width(100.%%), height(100.%%))
+
+  ".swiper-slide" - (
+    textAlign.center,
+    fontSize(18.px),
+    backgroundColor.white,
+    display.flex,
+    justifyContent.center,
+    alignItems.center,
+  )
+
+  ".swiper-slide img" - (
+    display.block,
+    width(100.%%),
+    height(100.%%),
+    objectFit.cover,
+  )
 
   // 品牌日
 

@@ -15,7 +15,7 @@ import scalacss.ProdDefaults.*
 object GoatApp extends DemoFrontEndHttp4sApp:
 
   private[this] val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root => Ok(LoginPage.Text.login)
+    case GET -> Root => renderHtml(LoginPage.Text.login)
   }
 
   private[this] val resourceRoutes: HttpRoutes[IO] =

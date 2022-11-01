@@ -19,6 +19,10 @@ class JingdongPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, 
         link(rel := "stylesheet", href := "/css/normalize.css"),
         // 引入我们首页的css
         link(rel := "stylesheet", href := "/css/jingdong.css"),
+        link(rel := "stylesheet", href := "/webjars/swiper/8.3.2/swiper-bundle.min.css"),
+        script(src := "/webjars/swiper/8.3.2/swiper-bundle.min.js"),
+        script(src := "/main.js"),
+        script("jingdongSlider()")
       ),
       body(
         // 顶部
@@ -42,7 +46,12 @@ class JingdongPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, 
         div(cls := "main-content")(
           // 滑动图
           div(cls := "slider")(
-            img(src := "/jd/upload/banner.dpg")
+            div(cls := "swiper")(
+              div(cls := "swiper-wrapper")(for i <- 0 to 3 yield div(cls := "swiper-slide")(
+                img(src := s"/jd/upload/banner${if i == 0 then "" else s"$i"}.dpg")
+              )),
+              div(cls := "swiper-pagination")
+            )
           ),
           // 小家电品牌日
           div(cls := "brand")(

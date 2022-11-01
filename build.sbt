@@ -53,6 +53,9 @@ lazy val demo = (project in file("."))
     demoJsModuleB,
     demoFrontEnd.jvm,
     demoFrontEnd.js,
+    demoFrontEndModuleSwiper,
+    demoFrontEndModuleFastClick,
+    demoFrontEndModuleZyMedia,
     demoFrontEndModuleHeimamm,
     demoOAuth2.jvm,
     demoOAuth2.js,
@@ -451,18 +454,51 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
       swiper,
       bootstrap,
       bootstrapIcons,
+      fastClick,
       logbackClassic % Runtime,
       jansi % Runtime,
     ),
   )
+  .jsConfigure(_.dependsOn(demoFrontEndModuleSwiper, demoFrontEndModuleFastClick, demoFrontEndModuleZyMedia))
   .jsSettings(
     libraryDependencies ++= Seq(
       "org.http4s" %%% "http4s-dom" % http4sDomVersion,
     ),
   )
 
+lazy val demoFrontEndModuleSwiper = (project in file("demo-front-end/module/swiper"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-front-end-module-swiper",
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+    ),
+  )
+
+lazy val demoFrontEndModuleFastClick = (project in file("demo-front-end/module/fastclick"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-front-end-module-fastclick",
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+    ),
+  )
+
+lazy val demoFrontEndModuleZyMedia = (project in file("demo-front-end/module/zymedia"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-front-end-module-zymedia",
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+    ),
+  )
+
 lazy val demoFrontEndModuleHeimamm = (project in file("demo-front-end/module/heimamm"))
   .enablePlugins(ScalaJSPlugin)
+  .dependsOn(demoFrontEndModuleSwiper)
   .settings(commonSettings)
   .settings(
     name := "demo-front-end-module-heimamm",
@@ -608,6 +644,11 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       acme4jUtils,
       apacheCommonsCodec,
       jQuery,
+      flexible,
+      swiper,
+      bootstrap,
+      bootstrapIcons,
+      fastClick,
       logbackClassic % Runtime,
       jansi % Runtime,
       doobieScalaTest % Test,
@@ -740,12 +781,14 @@ val flexibleVersion = "2.2.1"
 val swiperVersion = "8.3.2"
 val bootstrapVersion = "5.2.2"
 val bootstrapIconsVersion = "1.9.1"
+val fastClickVersion = "1.0.6"
 
 val jQuery = "org.webjars" % "jquery" % jQueryVersion
 val flexible = "org.webjars.npm" % "amfe-flexible" % flexibleVersion
 val swiper = "org.webjars.npm" % "swiper" % swiperVersion
 val bootstrap = "org.webjars.npm" % "bootstrap" % bootstrapVersion
 val bootstrapIcons = "org.webjars.npm" % "bootstrap-icons" % bootstrapIconsVersion
+val fastClick = "org.webjars.npm" % "fastclick" % fastClickVersion
 
 // Test
 

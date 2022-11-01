@@ -49,6 +49,7 @@ object CtripStyles extends StyleSheet.Standalone:
     backgroundColor(c"#f6f6f6"),
     borderTop(1.px, solid, c"#ccc"),
     borderBottom(1.px, solid, c"#ccc"),
+    zIndex(999)
   )
 
   ".search" - (
@@ -92,9 +93,54 @@ object CtripStyles extends StyleSheet.Standalone:
     ),
   )
 
-  ".focus" - paddingTop(44.px)
+  ".go-back" - (
+    display.none,
+    position.fixed,
+    bottom(50.px),
+    right(20.px),
+    width(38.px),
+    height(38.px),
+    background := "url('/flexlayout/images/back.png') no-repeat",
+    backgroundSize := "38px 38px"
+  )
+
+  ".focus" - (
+    position.relative,
+    paddingTop(44.px),
+    overflow.hidden
+  )
 
   ".focus img" - width(100.%%)
+
+  ".focus ul" - (
+    overflow.hidden,
+    width(500.%%),
+    marginLeft(-100.%%)
+  )
+
+  ".focus ul li" - (
+    float.left,
+    width(20.%%)
+  )
+
+  ".focus ol" - (
+    position.absolute,
+    bottom(5.px),
+    right(5.px),
+    margin.`0`
+  )
+
+  ".focus ol li" - (
+    display.inlineBlock,
+    width(5.px),
+    height(5.px),
+    backgroundColor(c"#fff"),
+    listStyle := "none",
+    borderRadius(2.px),
+    transition := "all .3s"
+  )
+
+  ".focus ol li.current" - width(15.px)
 
   // 局部导航栏
   ".local-nav" - (
