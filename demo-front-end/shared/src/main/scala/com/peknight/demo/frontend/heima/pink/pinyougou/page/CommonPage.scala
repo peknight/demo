@@ -65,7 +65,7 @@ class CommonPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     ))
 
   // header头部模块制作
-  protected[page] def headerFrag(afterLogo: Modifier): Modifier =
+  protected[page] def headerFrag(afterLogo: Modifier*): Modifier =
     header(cls := "header w")(
       logoFrag,
       afterLogo,

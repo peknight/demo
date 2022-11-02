@@ -17,7 +17,7 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
       ),
       body(
         shortcutFrag,
-        headerFrag(""),
+        headerFrag(),
         navFrag(indexNavFrag()),
         mainFrag,
         recommendFrag,

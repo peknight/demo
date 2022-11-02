@@ -23,6 +23,7 @@ object PinyougouApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "list.html" => renderHtml(ListPage.Text.list)
     case GET -> Root / "register.html" => renderHtml(RegisterPage.Text.register)
     case GET -> Root / "detail.html" => renderHtml(DetailPage.Text.detail)
+    case GET -> Root / "cart.html" => renderHtml(ShoppingCartPage.Text.cart)
     case GET -> Root / "jingdong" => renderHtml(JingdongPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
       StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.2.1/demo-front-end-opt/$path"), Some(req))
@@ -41,6 +42,7 @@ object PinyougouApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "list.css" => renderCss(ListStyles)
     case GET -> Root / "register.css" => renderCss(RegisterStyles)
     case GET -> Root / "detail.css" => renderCss(DetailStyles)
+    case GET -> Root / "cart.css" => renderCss(ShoppingCartStyles)
     case GET -> Root / "normalize.css" => renderCss(NormalizeStyles)
     case GET -> Root / "jingdong.css" => renderCss(JingdongStyles)
   }

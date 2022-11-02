@@ -16,7 +16,7 @@ class DetailPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
       ),
       body(
         shortcutFrag,
-        headerFrag(""),
+        headerFrag(),
         navFrag(indexNavFrag(inlineStyle := "display: none;")),
         detailContainerFrag,
         footerFrag
