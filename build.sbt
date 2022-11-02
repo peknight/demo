@@ -53,6 +53,7 @@ lazy val demo = (project in file("."))
     demoJsModuleB,
     demoFrontEnd.jvm,
     demoFrontEnd.js,
+    demoFrontEndModuleBootstrap,
     demoFrontEndModuleSwiper,
     demoFrontEndModuleFastClick,
     demoFrontEndModuleZyMedia,
@@ -459,10 +460,25 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
       jansi % Runtime,
     ),
   )
-  .jsConfigure(_.dependsOn(demoFrontEndModuleSwiper, demoFrontEndModuleFastClick, demoFrontEndModuleZyMedia))
+  .jsConfigure(_.dependsOn(
+    demoFrontEndModuleBootstrap,
+    demoFrontEndModuleSwiper,
+    demoFrontEndModuleFastClick,
+    demoFrontEndModuleZyMedia
+  ))
   .jsSettings(
     libraryDependencies ++= Seq(
       "org.http4s" %%% "http4s-dom" % http4sDomVersion,
+    ),
+  )
+
+lazy val demoFrontEndModuleBootstrap = (project in file("demo-front-end/module/bootstrap"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-front-end-module-bootstrap",
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
     ),
   )
 

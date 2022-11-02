@@ -7,6 +7,8 @@ class AlibaixiuPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
   import bundle.all.{title as inlineTitle, style as _, *}
   import bundle.tags2.{nav, section, style, title}
 
+  private[this] val carouselId = "alibaixiu-carousel"
+
   val index: Frag =
     html(lang := "zh-CN")(
       head(
@@ -18,6 +20,9 @@ class AlibaixiuPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
         link(href := "/webjars/bootstrap-icons/1.9.1/font/bootstrap-icons.css", rel := "stylesheet"),
         style(raw(AlibaixiuMediaStyles.render[String])),
         style(raw(AlibaixiuStyles.render[String])),
+        script(src := "/webjars/bootstrap/5.2.2/dist/js/bootstrap.bundle.min.js"),
+        script(`type` := "text/javascript", src := "/main.js"),
+        script("alibaixiuCarousel()")
       ),
       body(
         div(cls := "container")(
@@ -39,15 +44,41 @@ class AlibaixiuPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
             ),
             tag("article")(cls := "col-md-7 article")(
               // 新闻
-              div(cls := "news clearfix")(ul(Seq(
-                ("阿里百秀", "lg.png"),
-                ("奇了 成都一小区护卫长的像马云 市民纷纷请求合影", "1.jpg"),
-                ("奇了 成都一小区护卫长的像马云 市民纷纷请求合影", "2.jpg"),
-                ("奇了 成都一小区护卫长的像马云 市民纷纷请求合影", "3.jpg"),
-                ("奇了 成都一小区护卫长的像马云 市民纷纷请求合影", "4.jpg")
-              ).map {
-                case (text, pic) => li(a(href := "#")(img(src := s"/alibaixiu/upload/${pic}"), p(text)))
-              })),
+              div(cls := "news clearfix")(ul(
+                // ("阿里百秀", "lg.png"),
+                li(
+                  div(id := carouselId, cls := "carousel slide", attr("data-bs-ride") := "carousel")(
+                    div(cls :="carousel-inner")(
+                      div(cls := "carousel-item active")(
+                        img(src := "/jd/upload/banner.dpg", cls := "d-block w-100"),
+                        div(cls := "carousel-caption d-none d-md-block")("阿里百秀1")
+                      ),
+                      for i <- 1 to 3 yield div(cls := "carousel-item")(
+                        img(src := s"/jd/upload/banner$i.dpg", cls := "d-block w-100"),
+                        div(cls := "carousel-caption d-none d-md-block")(s"阿里百秀${i + 1}")
+                      ),
+                    ),
+                    button(cls := "carousel-control-prev", `type` := "button", attr("data-bs-target") := s"#$carouselId",
+                      attr("data-bs-slide") := "prev")(
+                      span(cls := "carousel-control-prev-icon", attr("aria-hidden") := "true"),
+                      span(cls := "visually-hidden")("Previous"),
+                    ),
+                    button(cls := "carousel-control-next", `type` := "button", attr("data-bs-target") := s"#$carouselId",
+                      attr("data-bs-slide") := "next")(
+                      span(cls := "carousel-control-next-icon", attr("aria-hidden") := "true"),
+                      span(cls := "visually-hidden")("Next"),
+                    ),
+                  )
+                ),
+                Seq(
+                  ("奇了 成都一小区护卫长的像马云 市民纷纷请求合影", "1.jpg"),
+                  ("奇了 成都一小区护卫长的像马云 市民纷纷请求合影", "2.jpg"),
+                  ("奇了 成都一小区护卫长的像马云 市民纷纷请求合影", "3.jpg"),
+                  ("奇了 成都一小区护卫长的像马云 市民纷纷请求合影", "4.jpg")
+                ).map {
+                  case (text, pic) => li(a(href := "#")(img(src := s"/alibaixiu/upload/${pic}"), p(text)))
+                }
+              )),
               // 发表
               div(cls := "publish")(List.fill(6)(
                 div(cls := "row")(
@@ -75,7 +106,6 @@ class AlibaixiuPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
             ),
           ),
         ),
-        script(src := "/webjars/bootstrap/5.2.2/dist/js/bootstrap.bundle.min.js"),
       )
     )
 

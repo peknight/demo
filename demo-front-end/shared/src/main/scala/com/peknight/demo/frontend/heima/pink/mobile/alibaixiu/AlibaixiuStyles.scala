@@ -88,32 +88,36 @@ object AlibaixiuStyles extends StyleSheet.Standalone:
       position.relative,
       width(100.%%),
       height(100.%%),
-      unsafeChild("img")(
-        width(100.%%),
-        height(100.%%),
-      ),
-      unsafeChild("p")(
-        position.absolute,
-        bottom.`0`,
-        left.`0`,
-        width(100.%%),
-        height(41.px),
-        padding(5.px, 10.px),
-        marginBottom.`0`,
-        background := rgba(0, 0, 0, .5),
-        fontSize(12.px),
-        color.white,
-      )
+    ),
+    unsafeChild("img")(
+      width(100.%%),
+      height(100.%%),
     ),
     &.firstOfType - (
       width(50.%%),
       height(266.px),
-      unsafeChild("p")(
+      unsafeChild(".carousel-caption")(
         lineHeight(41.px),
         fontSize(20.px),
         padding(`0`, 10.px),
+      ),
+      unsafeChild("img")(
+        height(266.px)
       )
     ),
+  )
+
+  ".news ul li a p, .carousel-caption" - (
+    position.absolute,
+    bottom.`0`,
+    left.`0`,
+    width(100.%%),
+    height(41.px),
+    padding(5.px, 10.px),
+    marginBottom.`0`,
+    background := rgba(0, 0, 0, .5),
+    fontSize(12.px),
+    color.white,
   )
 
   ".publish" - (
