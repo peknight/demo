@@ -7,5 +7,5 @@ import scala.scalajs.js.annotation.JSGlobal
 
 @js.native
 @JSGlobal
-class Swiper(container: CSSSelector | HTMLElement, params: js.UndefOr[SwiperOptions] = js.undefined) extends js.Object
+class Swiper(container: CSSSelector | HTMLElement, params: SwiperOptions = ???) extends js.Object
 

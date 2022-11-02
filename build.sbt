@@ -452,6 +452,7 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
       ciris,
       log4CatsSlf4j,
       flexible,
+      jQuery,
       swiper,
       bootstrap,
       bootstrapIcons,
@@ -469,6 +470,7 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
   .jsSettings(
     libraryDependencies ++= Seq(
       "org.http4s" %%% "http4s-dom" % http4sDomVersion,
+      "org.querki" %%% "jquery-facade" % jQueryFacadeVersion,
     ),
   )
 
@@ -677,6 +679,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
       "org.http4s" %%% "http4s-dom" % http4sDomVersion,
+      "org.querki" %%% "jquery-facade" % jQueryFacadeVersion,
     ),
   )
 
@@ -824,3 +827,4 @@ val scalaTagsVersion = "0.11.1"
 val uPickleVersion = "2.0.0"
 val uTestVersion = "0.7.11"
 val scalaCssVersion = "1.0.0"
+val jQueryFacadeVersion = "2.1"

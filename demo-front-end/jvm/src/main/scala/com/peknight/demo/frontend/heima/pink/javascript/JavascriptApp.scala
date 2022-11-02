@@ -3,6 +3,7 @@ package com.peknight.demo.frontend.heima.pink.javascript
 import cats.effect.*
 import cats.syntax.semigroupk.*
 import com.peknight.demo.frontend.app.DemoFrontEndHttp4sApp
+import com.peknight.demo.frontend.heima.pink.javascript.jquery.*
 import com.peknight.demo.frontend.heima.pink.javascript.webapis.*
 import fs2.io.file
 import org.http4s.*
@@ -52,6 +53,12 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "drag-element" => renderHtml(DragElementPage.Text.index)
     case GET -> Root / "fast-click" => renderHtml(FastClickPage.Text.index)
     case GET -> Root / "video-player" => renderHtml(VideoPlayerPage.Text.index)
+    case GET -> Root / "jquery-basic" => renderHtml(JQueryBasicDemoPage.Text.index)
+    case GET -> Root / "jquery-dom-convert" => renderHtml(JQueryDomConvertPage.Text.index)
+    case GET -> Root / "taobao-apparel" => renderHtml(TaobaoHighQualityApparelPage.Text.index)
+    case GET -> Root / "jquery-transition" => renderHtml(JQueryTransitionPage.Text.index)
+    case GET -> Root / "high-light-show" => renderHtml(HighLightShowPage.Text.index)
+    case GET -> Root / "accordion" => renderHtml(AccordionPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
       StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.2.1/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())
@@ -60,7 +67,7 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
   private[this] val resourceRoutes: HttpRoutes[IO] =
     Router(
       "/" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/javascript").toRoutes,
-      "/zymedia" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/ireaderlab/zymedia").toRoutes,
+      "zymedia" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/ireaderlab/zymedia").toRoutes,
       "webjars" -> webjarServiceBuilder[IO].toRoutes
     )
 

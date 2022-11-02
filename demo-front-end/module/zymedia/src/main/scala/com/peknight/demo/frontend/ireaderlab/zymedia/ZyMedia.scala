@@ -8,4 +8,4 @@ object ZyMedia:
   type CSSSelector = String
   @js.native
   @JSGlobal("zymedia")
-  def zyMedia(selector: CSSSelector | HTMLElement, options: js.UndefOr[ZyMediaOptions] = js.undefined): Unit = js.native
+  def zyMedia(selector: CSSSelector | HTMLElement, options: ZyMediaOptions = ???): Unit = js.native

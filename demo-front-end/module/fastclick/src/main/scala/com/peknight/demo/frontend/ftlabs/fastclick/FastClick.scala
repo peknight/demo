@@ -7,10 +7,10 @@ import scala.scalajs.js.annotation.JSGlobal
 
 @js.native
 @JSGlobal
-class FastClick(layer: dom.Element, options: js.UndefOr[FastClickOptions]) extends js.Object
+class FastClick(layer: dom.Element, options: FastClickOptions) extends js.Object
 
 @js.native
 @JSGlobal
 object FastClick extends js.Object:
-  def attach(layer: dom.Element, options: js.UndefOr[FastClickOptions] = js.undefined): FastClick = js.native
+  def attach(layer: dom.Element, options: FastClickOptions = ???): FastClick = js.native
 

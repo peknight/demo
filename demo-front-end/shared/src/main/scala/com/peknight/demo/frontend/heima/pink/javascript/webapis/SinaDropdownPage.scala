@@ -14,6 +14,8 @@ class SinaDropdownPage[Builder, Output <: FragT, FragT](override val bundle: Bun
   import bundle.tags2.{nav, section, style, title}
 
   override def styles: Seq[StyleSheet.Base] = Seq(Styles)
+
+  override def scripts: Seq[String] = Seq("/webjars/jquery/3.6.1/jquery.min.js")
   override def headTitle: String = "新浪下拉菜单"
   override def javaScriptMethod: Option[String] = Some("sinaDropdown")
   override def bodyFrag = ul(cls := "nav")(List.fill(4)(li(
@@ -42,7 +44,7 @@ object SinaDropdownPage:
       width(100.%%),
       height(100.%%),
       lineHeight(41.px),
-      color(c"#333")
+      color(c"#333"),
     )
     ".nav>li>a".hover - backgroundColor(c"#eee")
     ".nav ul" - (
