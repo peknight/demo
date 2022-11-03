@@ -1,6 +1,7 @@
 package com.peknight.demo.frontend.heima.pink.webapis
 
 import com.peknight.demo.frontend.heima.pink.webapis.AnimateScript.animate
+import org.querki.jquery.*
 import org.scalajs.dom
 import scalatags.JsDom.all.*
 
@@ -116,3 +117,67 @@ object PinyougouScript extends App:
   private[this] def circleChange(circles: dom.HTMLCollection[dom.Element], circleIndex: Int): Unit =
     circles.foreach(_.classList.remove("current"))
     circles(circleIndex).classList.add("current")
+
+  @JSExportTopLevel("pinyougouCart")
+  def pinyougouCart(): Unit =
+    $(() => {
+      $(".check-all").change((e: JQueryEventObject) => {
+        val checked = $(e.currentTarget).prop("checked").asInstanceOf[Boolean]
+        $(".j-checkbox, .check-all").prop("checked", checked)
+        val cartItem = $(".cart-item")
+        if checked then cartItem.addClass("check-cart-item") else cartItem.removeClass("check-cart-item")
+      })
+      $(".j-checkbox").change((e: JQueryEventObject) => {
+        val checkAll = $(".check-all")
+        if $(".j-checkbox:checked").length == $(".j-checkbox").length then checkAll.prop("checked", true)
+        else checkAll.prop("checked", false)
+        val target = $(e.currentTarget)
+        if target.prop("checked").asInstanceOf[Boolean] then target.parents(".cart-item").addClass("check-cart-item")
+        else target.parents(".cart-item").removeClass("check-cart-item")
+      })
+      $(".increment").click((e: JQueryEventObject) => {
+        val target = $(e.currentTarget)
+        val iTxt = target.siblings(".i-txt")
+        val num: Int = iTxt.value().asInstanceOf[String].toInt + 1
+        updatePSum(target, iTxt, num)
+      })
+      $(".decrement").click((e: JQueryEventObject) => {
+        val target = $(e.currentTarget)
+        val iTxt = target.siblings(".i-txt")
+        val num: Int = iTxt.value().asInstanceOf[String].toInt - 1
+        if num > 0 then updatePSum(target, iTxt, num)
+      })
+      $(".i-txt").change((e: JQueryEventObject) => {
+        val target = $(e.currentTarget)
+        val num = target.value().asInstanceOf[String].toInt
+        updatePSum(target, target, num)
+      })
+      updateSum()
+      $(".p-action a").click((e: JQueryEventObject) => {
+        $(e.currentTarget).parents(".cart-item").remove()
+        updateSum()
+      })
+      $(".remove-batch").click(() => {
+        $(".j-checkbox:checked").parents(".cart-item").remove()
+        updateSum()
+      })
+      $(".clear-all").click(() => {
+        $(".cart-item").remove()
+        updateSum()
+      })
+    })
+
+  def updatePSum(target: JQuery, iTxt: JQuery, num: Int): Unit =
+    iTxt.value(s"$num")
+    val pNum = target.parents(".p-num")
+    val price: Double = pNum.siblings(".p-price").html().tail.toDouble
+    pNum.siblings(".p-sum").html("￥%.2f".format(price * num))
+    updateSum()
+
+  def updateSum(): Unit =
+    var count: Int = 0
+    var money: Double = 0
+    $(".i-txt").each((ele: dom.Element) => count += $(ele).value().asInstanceOf[String].toInt)
+    $(".amount-sum em").text(s"$count")
+    $(".p-sum").each((ele: dom.Element) => money += $(ele).text().tail.toDouble)
+    $(".price-sum em").text("￥%.2f".format(money))

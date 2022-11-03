@@ -31,8 +31,11 @@ object PinyougouApp extends DemoFrontEndHttp4sApp:
   }
 
   private[this] val resourceRoutes: HttpRoutes[IO] =
-    resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/pinyougou").toRoutes <+>
-      resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/mobile").toRoutes
+    Router(
+      "/" -> (resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/pinyougou").toRoutes <+>
+        resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/mobile").toRoutes),
+      "webjars" -> webjarServiceBuilder[IO].toRoutes
+    )
 
   private[this] val cssRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "base.css" => renderCss(BaseStyles)
