@@ -5,6 +5,7 @@ import org.querki.jquery.*
 import org.scalajs.dom
 import scalatags.JsDom.all.*
 
+import scala.scalajs.js
 import scala.scalajs.js.annotation.JSExportTopLevel
 import scala.util.matching.Regex
 
@@ -15,40 +16,6 @@ object PinyougouScript extends App:
     val regex: Regex = ("(?i)(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|" +
       "Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)").r
     if regex.findFirstMatchIn(dom.window.navigator.userAgent).isDefined then dom.window.location.href = "/jingdong"
-
-  @JSExportTopLevel("pinyougouDetail")
-  def pinyougouDetail(): Unit =
-    dom.window.addEventListener("load", _ => {
-      val previewImg = dom.document.querySelector(".preview-img").asInstanceOf[dom.HTMLElement]
-      val mask = previewImg.querySelector(".mask").asInstanceOf[dom.HTMLElement]
-      val big = previewImg.querySelector(".big").asInstanceOf[dom.HTMLElement]
-      previewImg.addEventListener("mouseover", _ => {
-        mask.style.display = "block"
-        big.style.display = "block"
-      })
-      previewImg.addEventListener("mouseout", _ => {
-        mask.style.display = "none"
-        big.style.display = "none"
-      })
-      previewImg.addEventListener[dom.MouseEvent]("mousemove", e => {
-        // 先计算鼠标在盒子内的坐标
-        val x = e.pageX - previewImg.offsetLeft
-        val y = e.pageY - previewImg.offsetTop
-        val maskXMax = previewImg.offsetWidth - mask.offsetWidth
-        val maskYMax = previewImg.offsetHeight - mask.offsetHeight
-        val maskX = math.min(math.max(x - mask.offsetWidth / 2, 0), maskXMax)
-        val maskY = math.min(math.max(y - mask.offsetHeight / 2, 0), maskYMax)
-        mask.style.left = s"${maskX}px"
-        mask.style.top = s"${maskY}px"
-        val bigImg = big.querySelector(".big-img").asInstanceOf[dom.HTMLElement]
-        val bigXMax = bigImg.offsetWidth - big.offsetWidth
-        val bigYMax = bigImg.offsetHeight - big.offsetHeight
-        val bigX = maskX * bigXMax / maskXMax
-        val bigY = maskY * bigYMax / maskYMax
-        bigImg.style.left = s"${-bigX}px"
-        bigImg.style.top = s"${-bigY}px"
-      })
-    })
 
   @JSExportTopLevel("pinyougouFocus")
   def pinyougouFocus(): Unit =
@@ -117,6 +84,75 @@ object PinyougouScript extends App:
   private[this] def circleChange(circles: dom.HTMLCollection[dom.Element], circleIndex: Int): Unit =
     circles.foreach(_.classList.remove("current"))
     circles(circleIndex).classList.add("current")
+
+  @JSExportTopLevel("pinyougouFixedTool")
+  def pinyougouFixedTool(): Unit =
+    $(() => {
+      var flag = true
+      val toolTop = $(".recom").offset().top
+      val fixedTool = $(".fixed-tool")
+      def toggleTool(): Unit =
+        if $(dom.document).scrollTop() >= toolTop then fixedTool.fadeIn()
+        else fixedTool.fadeOut()
+      toggleTool()
+      $(dom.window).scroll(() => {
+        toggleTool()
+        if flag then $(".floor .w").each((element: dom.Element, index: Int) => {
+          if $(dom.document).scrollTop() >= $(element).offset().top then
+            $(".fixed-tool li").eq(index).addClass("current").siblings().removeClass("current")
+        })
+      })
+      $(".fixed-tool li").click((e: JQueryEventObject) => {
+        flag = false
+        val target = $(e.currentTarget)
+        // 当我们每次点击li，就需要计算出页面要去往的位置
+        // 选出对应索引号的内容区的盒子 计算它的offset().top
+        val current = $(".floor .w").eq(target.index()).offset().top
+        // 页面动画滚动效果
+        $("body, html").stop().animate(
+          js.Dictionary[js.Any]("scrollTop" -> current),
+          1000, "",
+          _ => flag = true
+        )
+        target.addClass("current").siblings().removeClass("current")
+      })
+    })
+
+
+
+  @JSExportTopLevel("pinyougouDetail")
+  def pinyougouDetail(): Unit =
+    dom.window.addEventListener("load", _ => {
+      val previewImg = dom.document.querySelector(".preview-img").asInstanceOf[dom.HTMLElement]
+      val mask = previewImg.querySelector(".mask").asInstanceOf[dom.HTMLElement]
+      val big = previewImg.querySelector(".big").asInstanceOf[dom.HTMLElement]
+      previewImg.addEventListener("mouseover", _ => {
+        mask.style.display = "block"
+        big.style.display = "block"
+      })
+      previewImg.addEventListener("mouseout", _ => {
+        mask.style.display = "none"
+        big.style.display = "none"
+      })
+      previewImg.addEventListener[dom.MouseEvent]("mousemove", e => {
+        // 先计算鼠标在盒子内的坐标
+        val x = e.pageX - previewImg.offsetLeft
+        val y = e.pageY - previewImg.offsetTop
+        val maskXMax = previewImg.offsetWidth - mask.offsetWidth
+        val maskYMax = previewImg.offsetHeight - mask.offsetHeight
+        val maskX = math.min(math.max(x - mask.offsetWidth / 2, 0), maskXMax)
+        val maskY = math.min(math.max(y - mask.offsetHeight / 2, 0), maskYMax)
+        mask.style.left = s"${maskX}px"
+        mask.style.top = s"${maskY}px"
+        val bigImg = big.querySelector(".big-img").asInstanceOf[dom.HTMLElement]
+        val bigXMax = bigImg.offsetWidth - big.offsetWidth
+        val bigYMax = bigImg.offsetHeight - big.offsetHeight
+        val bigX = maskX * bigXMax / maskXMax
+        val bigY = maskY * bigYMax / maskYMax
+        bigImg.style.left = s"${-bigX}px"
+        bigImg.style.top = s"${-bigY}px"
+      })
+    })
 
   @JSExportTopLevel("pinyougouCart")
   def pinyougouCart(): Unit =

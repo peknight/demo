@@ -408,3 +408,27 @@ object IndexStyles extends StyleSheet.Standalone:
 
   ".sidebar .bottom .top-icon" - style(backgroundPosition := "-51px -252px")
   ".sidebar .bottom .comment-icon" - style(backgroundPosition := "-51px -300px")
+
+  ".fixed-tool" - (
+    position.fixed,
+    top(100.px),
+    left(50.%%),
+    marginLeft(-676.px),
+    width(66.px),
+    backgroundColor(c"#fff"),
+    display.none
+  )
+
+  ".fixed-tool li" - (
+    height(32.px),
+    lineHeight(32.px),
+    textAlign.center,
+    fontSize(12.px),
+    borderBottom(1.px, solid, c"#ccc"),
+    cursor.pointer,
+  )
+
+  ".fixed-tool .current" - (
+    backgroundColor(c"#c81623"),
+    color(c"#fff")
+  )

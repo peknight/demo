@@ -11,9 +11,11 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
     html(lang := "zh-CN")(
       headFrag("品优购商城",
         link(rel := "stylesheet", href := "/css/index.css"),
+        script(src := "/webjars/jquery/3.6.1/jquery.min.js"),
         script(src := "/main.js"),
         script("pinyougouIndex()"),
-        script("pinyougouFocus()")
+        script("pinyougouFocus()"),
+        script("pinyougouFixedTool()"),
       ),
       body(
         shortcutFrag,
@@ -25,6 +27,7 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
         floorFrag,
         brandFrag,
         sidebarFrag,
+        fixedToolFrag,
         footerFrag
       )
     )
@@ -116,6 +119,9 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
       floorChildFrag("computer", "电脑办公", Seq(
         "热门", "大家电", "生活电器", "厨房电器", "应季电器", "空气/净水", "高端电器"
       )),
+      floorChildFrag("furniture", "精品家具", Seq(
+        "热门", "大家电", "生活电器", "厨房电器", "应季电器", "空气/净水", "高端电器"
+      )),
     )
 
   private[this] def floorChildFrag(className: String, floorTitle: String, tabList: Seq[String]): Modifier =
@@ -170,6 +176,12 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
         div(cls := "sidebar-icon comment-icon")
       )
     )
+
+  private[this] val fixedToolFrag: Modifier =
+    div(cls := "fixed-tool")(ul(
+      li(cls := "current")("家用电器"),
+      Seq("手机通讯", "电脑办公", "精品家具").map(li(_))
+    ))
 
 end IndexPage
 object IndexPage:
