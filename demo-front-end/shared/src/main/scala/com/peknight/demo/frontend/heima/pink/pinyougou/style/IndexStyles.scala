@@ -30,7 +30,7 @@ object IndexStyles extends StyleSheet.Standalone:
   ".focus ul li" - float.left
 
   ".focus ul li a img" - (
-    width(720.px),
+    width(721.px),
     height(455.px)
   )
 

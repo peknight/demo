@@ -28,7 +28,8 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
         brandFrag,
         sidebarFrag,
         fixedToolFrag,
-        footerFrag
+        footerFrag,
+        script("pinyougouLazyLoad()"),
       )
     )
 
@@ -38,7 +39,7 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
       div(cls := "focus fl")(
         a(href := "javascript:;", cls := "arrow-l")("‹"),
         a(href := "javascript:;", cls := "arrow-r")("›"),
-        ul(for i <- 1 to 4 yield li(a(href := "#")(img(src := s"/uploads/banner$i.jpg")))),
+        ul(for i <- 1 to 4 yield li(a(href := "#")(img(attr("data-lazy-src") := s"/uploads/banner$i.jpg")))),
         ol(cls := "circle"),
       ),
       div(cls := "newsflash")(
@@ -63,7 +64,7 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
           case (s, index) if index == 1 => li(i(), p(s), div(cls := "promotion")("减"))
           case (s, _) => li(i(), p(s))
         })),
-        div(cls := "bargain")(img(src := "/uploads/ad.jpg"))
+        div(cls := "bargain")(img(attr("data-lazy-src") := "/uploads/ad.jpg"))
       )
     ))
 
@@ -71,11 +72,11 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
   private[this] val recommendFrag: Modifier =
     div(cls := "w recom")(
       div(cls := "recom-hd")(
-        img(src := "/images/clock.png"),
+        img(attr("data-lazy-src") := "/images/clock.png"),
         h4("今日推荐")
       ),
       div(cls := "recom-bd")(ul(
-        for i <- 1 to 4 yield li(cls := "white-mask")(img(src := s"/uploads/today0$i.png"))
+        for i <- 1 to 4 yield li(cls := "white-mask")(img(attr("data-lazy-src") := s"/uploads/today0$i.png"))
       ))
     )
 
@@ -96,7 +97,7 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
       ).zipWithIndex.map {
         case ((itemTitle, price), index) =>
           li(
-            a(href := "#")(img(src := s"/uploads/like_0${index + 1}.png")),
+            a(href := "#")(img(attr("data-lazy-src") := s"/uploads/like_0${index + 1}.png")),
             div(cls := "like-text")(
               h4(cls := "item-title")(itemTitle),
               span(cls := "item-price")(s"￥$price.00")
@@ -137,21 +138,21 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
         div(cls := "tab-list-item")(
           div(cls := "col-210")(
             ul(Seq("节能补贴", "4K电视", "空气净化器", "IH电饭煲", "滚筒洗衣机", "电热水器").map(s => li(a(href := "#")(s)))),
-            a(href := "#")(img(src := "/uploads/floor-1-1.png"))
+            a(href := "#")(img(attr("data-lazy-src") := "/uploads/floor-1-1.png"))
           ),
           div(cls := "col-329")(
-            a(href := "#")(img(src := "/uploads/floor-1-b01.png"))
+            a(href := "#")(img(attr("data-lazy-src") := "/uploads/floor-1-b01.png"))
           ),
           div(cls := "col-221")(
-            a(href := "#", cls := "bb")(img(src := "/uploads/floor-1-2.png")),
-            a(href := "#")(img(src := "/uploads/floor-1-3.png"))
+            a(href := "#", cls := "bb")(img(attr("data-lazy-src") := "/uploads/floor-1-2.png")),
+            a(href := "#")(img(attr("data-lazy-src") := "/uploads/floor-1-3.png"))
           ),
           div(cls := "col-221")(
-            a(href := "#")(img(src := "/uploads/floor-1-4.png"))
+            a(href := "#")(img(attr("data-lazy-src") := "/uploads/floor-1-4.png"))
           ),
           div(cls := "col-219")(
-            a(href := "#", cls := "bb")(img(src := "/uploads/floor-1-5.png")),
-            a(href := "#")(img(src := "/uploads/floor-1-6.png"))
+            a(href := "#", cls := "bb")(img(attr("data-lazy-src") := "/uploads/floor-1-5.png")),
+            a(href := "#")(img(attr("data-lazy-src") := "/uploads/floor-1-6.png"))
           )
         )
       ))
@@ -160,7 +161,7 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
   // 商标
   private[this] val brandFrag: Modifier =
     div(cls := "w")(div(cls := "brand")(ul(
-      Seq("21", "03", "05", "07", "09", "11", "13", "15", "17", "19").map(s => li(img(src := s"/uploads/brand_$s.png")))
+      Seq("21", "03", "05", "07", "09", "11", "13", "15", "17", "19").map(s => li(img(attr("data-lazy-src") := s"/uploads/brand_$s.png")))
     )))
 
   private[this] val sidebarFrag: Modifier =

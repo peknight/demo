@@ -34,6 +34,7 @@ object PinyougouApp extends DemoFrontEndHttp4sApp:
     Router(
       "/" -> (resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/pinyougou").toRoutes <+>
         resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/mobile").toRoutes),
+      "easylazyload" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/jquery/easylazyload").toRoutes,
       "webjars" -> webjarServiceBuilder[IO].toRoutes
     )
 

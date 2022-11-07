@@ -1,15 +1,16 @@
 package com.peknight.demo.frontend.heima.pink.webapis
 
+import com.peknight.demo.frontend.channg.easylazyload.{EasyLazyLoad, LazyLoadOptions}
 import com.peknight.demo.frontend.heima.pink.webapis.AnimateScript.animate
 import org.querki.jquery.*
 import org.scalajs.dom
 import scalatags.JsDom.all.*
 
 import scala.scalajs.js
-import scala.scalajs.js.annotation.JSExportTopLevel
+import scala.scalajs.js.annotation.{JSExportTopLevel, JSGlobal}
 import scala.util.matching.Regex
 
-object PinyougouScript extends App:
+object PinyougouScript:
 
   @JSExportTopLevel("pinyougouIndex")
   def pinyougouIndex(): Unit =
@@ -118,6 +119,9 @@ object PinyougouScript extends App:
       })
     })
 
+  @JSExportTopLevel("pinyougouLazyLoad")
+  def pinyougouLazyLoad(): Unit =
+    EasyLazyLoad.lazyLoadInit(LazyLoadOptions(showTime = 500))
 
 
   @JSExportTopLevel("pinyougouDetail")
