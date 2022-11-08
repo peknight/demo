@@ -62,6 +62,8 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "scroll-top" => renderHtml(ScrollTopPage.Text.index)
     case GET -> Root / "weibo-publish" => renderHtml(WeiboPublishPage.Text.index)
     case GET -> Root / "masonry" => renderHtml(MasonryLayoutPage.Text.index)
+    case GET -> Root / "full-page" => renderHtml(FullPageScrollPage.Text.index)
+    case GET -> Root / "bootstrap" => renderHtml(BootstrapPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
       StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.2.1/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())
@@ -72,6 +74,7 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
       "/" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/javascript").toRoutes,
       "zymedia" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/ireaderlab/zymedia").toRoutes,
       "masonry" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/jquery/pinterestgrid").toRoutes,
+      "fullpage" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/jquery/fullpage").toRoutes,
       "webjars" -> webjarServiceBuilder[IO].toRoutes
     )
 

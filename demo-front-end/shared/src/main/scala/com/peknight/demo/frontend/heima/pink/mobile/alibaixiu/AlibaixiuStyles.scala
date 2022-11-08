@@ -58,8 +58,10 @@ object AlibaixiuStyles extends StyleSheet.Standalone:
   ".nav" - (
     backgroundColor(c"#eee"),
     borderBottom(1.px, solid, c"#ccc"),
-    unsafeChild("ul")(width(100.%%)),
-    unsafeChild("li")(width(100.%%)),
+    unsafeChild("ul")(
+      width(100.%%),
+      unsafeChild("li")(width(100.%%)),
+    ),
     unsafeChild("a")(
       display.block,
       width(100.%%),

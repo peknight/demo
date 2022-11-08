@@ -7,4 +7,4 @@ import scala.scalajs.js.annotation.JSGlobal
 
 @js.native
 @JSGlobal("bootstrap.Carousel")
-class Carousel(element: dom.HTMLElement, config: CarouselConfig) extends js.Object
+class Carousel(element: dom.HTMLElement, config: CarouselOptions) extends js.Object
