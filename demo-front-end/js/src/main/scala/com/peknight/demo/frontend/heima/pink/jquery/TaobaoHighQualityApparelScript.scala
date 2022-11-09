@@ -9,8 +9,8 @@ object TaobaoHighQualityApparelScript:
 
   @JSExportTopLevel("taobaoApparel")
   def taobaoApparel(): Unit = $(() => {
-    $("#left li").mouseover((e: JQueryEventObject) => {
-      val index = $(e.currentTarget).index()
+    $("#left li").mouseover((element: dom.Element) => {
+      val index = $(element).index()
       dom.console.log(index)
       $("#content div").eq(index).show().siblings().hide()
     })

@@ -103,9 +103,9 @@ object PinyougouScript:
             $(".fixed-tool li").eq(index).addClass("current").siblings().removeClass("current")
         })
       })
-      $(".fixed-tool li").click((e: JQueryEventObject) => {
+      $(".fixed-tool li").click((element: dom.Element) => {
         flag = false
-        val target = $(e.currentTarget)
+        val target = $(element)
         // 当我们每次点击li，就需要计算出页面要去往的位置
         // 选出对应索引号的内容区的盒子 计算它的offset().top
         val current = $(".floor .w").eq(target.index()).offset().top
@@ -161,40 +161,40 @@ object PinyougouScript:
   @JSExportTopLevel("pinyougouCart")
   def pinyougouCart(): Unit =
     $(() => {
-      $(".check-all").change((e: JQueryEventObject) => {
-        val checked = $(e.currentTarget).prop("checked").asInstanceOf[Boolean]
+      $(".check-all").change((element: dom.Element) => {
+        val checked = $(element).prop("checked").asInstanceOf[Boolean]
         $(".j-checkbox, .check-all").prop("checked", checked)
         val cartItem = $(".cart-item")
         if checked then cartItem.addClass("check-cart-item") else cartItem.removeClass("check-cart-item")
       })
-      $(".j-checkbox").change((e: JQueryEventObject) => {
+      $(".j-checkbox").change((element: dom.Element) => {
         val checkAll = $(".check-all")
         if $(".j-checkbox:checked").length == $(".j-checkbox").length then checkAll.prop("checked", true)
         else checkAll.prop("checked", false)
-        val target = $(e.currentTarget)
+        val target = $(element)
         if target.prop("checked").asInstanceOf[Boolean] then target.parents(".cart-item").addClass("check-cart-item")
         else target.parents(".cart-item").removeClass("check-cart-item")
       })
-      $(".increment").click((e: JQueryEventObject) => {
-        val target = $(e.currentTarget)
+      $(".increment").click((element: dom.Element) => {
+        val target = $(element)
         val iTxt = target.siblings(".i-txt")
         val num: Int = iTxt.value().asInstanceOf[String].toInt + 1
         updatePSum(target, iTxt, num)
       })
-      $(".decrement").click((e: JQueryEventObject) => {
-        val target = $(e.currentTarget)
+      $(".decrement").click((element: dom.Element) => {
+        val target = $(element)
         val iTxt = target.siblings(".i-txt")
         val num: Int = iTxt.value().asInstanceOf[String].toInt - 1
         if num > 0 then updatePSum(target, iTxt, num)
       })
-      $(".i-txt").change((e: JQueryEventObject) => {
-        val target = $(e.currentTarget)
+      $(".i-txt").change((element: dom.Element) => {
+        val target = $(element)
         val num = target.value().asInstanceOf[String].toInt
         updatePSum(target, target, num)
       })
       updateSum()
-      $(".p-action a").click((e: JQueryEventObject) => {
-        $(e.currentTarget).parents(".cart-item").remove()
+      $(".p-action a").click((element: dom.Element) => {
+        $(element).parents(".cart-item").remove()
         updateSum()
       })
       $(".remove-batch").click(() => {

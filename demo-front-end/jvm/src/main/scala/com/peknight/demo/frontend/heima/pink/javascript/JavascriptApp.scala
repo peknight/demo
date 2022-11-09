@@ -3,6 +3,7 @@ package com.peknight.demo.frontend.heima.pink.javascript
 import cats.effect.*
 import cats.syntax.semigroupk.*
 import com.peknight.demo.frontend.app.DemoFrontEndHttp4sApp
+import com.peknight.demo.frontend.heima.pink.javascript.echarts.*
 import com.peknight.demo.frontend.heima.pink.javascript.jquery.*
 import com.peknight.demo.frontend.heima.pink.javascript.webapis.*
 import fs2.io.file
@@ -64,6 +65,8 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "masonry" => renderHtml(MasonryLayoutPage.Text.index)
     case GET -> Root / "full-page" => renderHtml(FullPageScrollPage.Text.index)
     case GET -> Root / "bootstrap" => renderHtml(BootstrapPage.Text.index)
+    case GET -> Root / "todo-list" => renderHtml(TodoListPage.Text.index)
+    case GET -> Root / "echarts-get-started" => renderHtml(EChartsGetStartedPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
       StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.2.1/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())

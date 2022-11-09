@@ -9,8 +9,8 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 object AccordionScript:
 
   @JSExportTopLevel("accordion")
-  def accordion(): Unit = $(() => $(".king li").mouseenter((e: JQueryEventObject) => {
-    val target = $(e.currentTarget)
+  def accordion(): Unit = $(() => $(".king li").mouseenter((element: dom.Element) => {
+    val target = $(element)
     target.stop().animate(js.Dictionary[js.Any]("width" -> 224), 1000)
       .find(".small").stop().fadeOut()
       .siblings(".big").stop().fadeIn()

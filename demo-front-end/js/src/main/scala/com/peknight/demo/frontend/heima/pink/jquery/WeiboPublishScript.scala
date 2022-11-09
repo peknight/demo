@@ -18,8 +18,8 @@ object WeiboPublishScript:
       liElement.slideDown()
       $(".txt").value("")
     })
-    $("ul").on("click", "a", null, (e: JQueryEventObject) => {
-      val target = $(e.currentTarget).parent()
+    $("ul").on("click", "a", null, (element: dom.Element) => {
+      val target = $(element).parent()
       target.slideUp(500, () => target.remove())
     })
 

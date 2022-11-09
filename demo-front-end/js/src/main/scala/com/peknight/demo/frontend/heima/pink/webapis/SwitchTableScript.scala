@@ -18,8 +18,8 @@ object SwitchTableScript:
     //     tabContents.foreach(_.style.display = "")
     //     content.style.display = "block"
     // }
-    $(".tab-list li").click { (e: JQueryEventObject) =>
-      val target = $(e.currentTarget)
+    $(".tab-list li").click { (element: dom.Element) =>
+      val target = $(element)
       target.addClass("current").siblings().removeClass("current")
       $(".tab-con .item").eq(target.index()).show().siblings().hide()
     }

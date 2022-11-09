@@ -53,7 +53,7 @@ lazy val demo = (project in file("."))
     demoJsModuleB,
     demoFrontEnd.jvm,
     demoFrontEnd.js,
-    demoFrontEndModuleBootstrap,
+    demoFrontEndModuleECharts,
     demoFrontEndModuleSwiper,
     demoFrontEndModuleFastClick,
     demoFrontEndModuleZyMedia,
@@ -442,6 +442,9 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
       "org.http4s" %%% "http4s-dsl" % http4sVersion,
       "org.http4s" %%% "http4s-ember-server" % http4sVersion,
       "org.http4s" %%% "http4s-ember-client" % http4sVersion,
+      "io.circe" %%% "circe-core" % circeVersion,
+      "io.circe" %%% "circe-generic" % circeVersion,
+      "io.circe" %%% "circe-jawn" % circeVersion,
       "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.github.japgolly.scalacss" %% "core" % scalaCssVersion,
     ),
@@ -457,12 +460,13 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
       bootstrap,
       bootstrapIcons,
       fastClick,
+      eCharts,
       logbackClassic % Runtime,
       jansi % Runtime,
     ),
   )
   .jsConfigure(_.dependsOn(
-    demoFrontEndModuleBootstrap,
+    demoFrontEndModuleECharts,
     demoFrontEndModuleSwiper,
     demoFrontEndModuleFastClick,
     demoFrontEndModuleZyMedia
@@ -474,11 +478,11 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
     ),
   )
 
-lazy val demoFrontEndModuleBootstrap = (project in file("demo-front-end/module/bootstrap"))
+lazy val demoFrontEndModuleECharts = (project in file("demo-front-end/module/echarts"))
   .enablePlugins(ScalaJSPlugin)
   .settings(commonSettings)
   .settings(
-    name := "demo-front-end-module-bootstrap",
+    name := "demo-front-end-module-echarts",
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
     ),
@@ -602,6 +606,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "co.fs2" %%% "fs2-scodec" % fs2Version,
       "io.circe" %%% "circe-core" % circeVersion,
       "io.circe" %%% "circe-generic" % circeVersion,
+      "io.circe" %%% "circe-jawn" % circeVersion,
       "io.circe" %%% "circe-parser" % circeVersion,
       "dev.optics" %%% "monocle-core" % monocleVersion,
       "dev.optics" %%% "monocle-macro" % monocleVersion,
@@ -667,6 +672,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       bootstrap,
       bootstrapIcons,
       fastClick,
+      eCharts,
       logbackClassic % Runtime,
       jansi % Runtime,
       doobieScalaTest % Test,
@@ -801,6 +807,7 @@ val swiperVersion = "8.3.2"
 val bootstrapVersion = "5.2.2"
 val bootstrapIconsVersion = "1.9.1"
 val fastClickVersion = "1.0.6"
+val eChartsVersion = "5.4.0"
 
 val jQuery = "org.webjars" % "jquery" % jQueryVersion
 val flexible = "org.webjars.npm" % "amfe-flexible" % flexibleVersion
@@ -808,6 +815,7 @@ val swiper = "org.webjars.npm" % "swiper" % swiperVersion
 val bootstrap = "org.webjars.npm" % "bootstrap" % bootstrapVersion
 val bootstrapIcons = "org.webjars.npm" % "bootstrap-icons" % bootstrapIconsVersion
 val fastClick = "org.webjars.npm" % "fastclick" % fastClickVersion
+val eCharts = "org.webjars.npm" % "echarts" % eChartsVersion
 
 // Test
 
