@@ -53,6 +53,7 @@ lazy val demo = (project in file("."))
     demoJsModuleB,
     demoFrontEnd.jvm,
     demoFrontEnd.js,
+    demoFrontEndModuleZRender,
     demoFrontEndModuleECharts,
     demoFrontEndModuleSwiper,
     demoFrontEndModuleFastClick,
@@ -466,6 +467,7 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
     ),
   )
   .jsConfigure(_.dependsOn(
+    demoFrontEndModuleZRender,
     demoFrontEndModuleECharts,
     demoFrontEndModuleSwiper,
     demoFrontEndModuleFastClick,
@@ -478,8 +480,19 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
     ),
   )
 
+lazy val demoFrontEndModuleZRender = (project in file("demo-front-end/module/zrender"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-front-end-module-zrender",
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+    ),
+  )
+
 lazy val demoFrontEndModuleECharts = (project in file("demo-front-end/module/echarts"))
   .enablePlugins(ScalaJSPlugin)
+  .dependsOn(demoFrontEndModuleZRender)
   .settings(commonSettings)
   .settings(
     name := "demo-front-end-module-echarts",
