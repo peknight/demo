@@ -1,6 +1,10 @@
 package com.peknight.demo.frontend.apache.echarts.chart.bar
 
-import com.peknight.demo.frontend.apache.echarts.util.StatesMixinBase
+import com.peknight.demo.frontend.apache.echarts.util.{DefaultStatesMixinEmphasis, StatesMixinBase}
 
-// TODO
-trait BarStatesMixin extends StatesMixinBase
+import scala.scalajs.js
+
+trait BarStatesMixin extends StatesMixinBase:
+  type EmphasisType = DefaultStatesMixinEmphasis
+  type SelectType = js.Any
+  type BlurType = js.Any

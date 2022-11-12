@@ -55,7 +55,7 @@ object TooltipOption:
     val _appendToBody: js.UndefOr[Boolean] = appendToBody
     val _className: js.UndefOr[String] = className
     val _order: js.UndefOr[TooltipOrderMode] = order
-    new TooltipOption {
+    new TooltipOption:
       override val mainType: UndefOr[MainType] = "tooltip"
       override val axisPointer: js.UndefOr[AxisPointerOption & AxisPointerMixin] = _axisPointer
       override val showContent: js.UndefOr[Boolean] = _showContent
@@ -65,4 +65,3 @@ object TooltipOption:
       override val appendToBody: js.UndefOr[Boolean] = _appendToBody
       override val className: js.UndefOr[String] = _className
       override val order: js.UndefOr[TooltipOrderMode] = _order
-    }

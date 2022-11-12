@@ -63,7 +63,7 @@ object TitleOption:
     val _subtextStyle: js.UndefOr[LabelOption] = subtextStyle
     val _triggerEvent: js.UndefOr[Boolean] = triggerEvent
     val _borderRadius: js.UndefOr[Number | js.Array[Number]] = borderRadius
-    new TitleOption {
+    new TitleOption:
       override val show: js.UndefOr[Boolean] = _show
       override val text: js.UndefOr[String] = _text
       override val link: js.UndefOr[String] = _link
@@ -81,5 +81,4 @@ object TitleOption:
       override val subtextStyle: js.UndefOr[LabelOption] = _subtextStyle
       override val triggerEvent: js.UndefOr[Boolean] = _triggerEvent
       override val borderRadius: js.UndefOr[Number | js.Array[Number]] = _borderRadius
-    }
 

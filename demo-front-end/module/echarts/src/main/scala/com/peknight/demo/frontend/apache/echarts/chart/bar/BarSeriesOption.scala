@@ -2,7 +2,7 @@ package com.peknight.demo.frontend.apache.echarts.chart.bar
 
 import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.`export`.SeriesInjectedOption
-import com.peknight.demo.frontend.apache.echarts.util.{ItemStyleOption, OptionDataValue, OptionId, OptionName}
+import com.peknight.demo.frontend.apache.echarts.util.*
 
 import scala.scalajs.js
 
@@ -32,7 +32,7 @@ object BarSeriesOption:
     val _backgroundStyle: js.UndefOr[ItemStyleOption[js.Any] & BorderRadiusMixin] = backgroundStyle
     val _data: js.UndefOr[js.Array[BarDataItemOption | OptionDataValue | js.Array[OptionDataValue]]] = data
     val _realtimeSort: js.UndefOr[Boolean] = realtimeSort
-    new BarSeriesOption {
+    new BarSeriesOption:
       override val `type`: js.UndefOr[Type] = "bar"
       override val id: js.UndefOr[OptionId] = _id
       override val name: js.UndefOr[NameType] = _name
@@ -45,4 +45,3 @@ object BarSeriesOption:
       override val backgroundStyle: js.UndefOr[ItemStyleOption[js.Any] & BorderRadiusMixin] = _backgroundStyle
       override val data: js.UndefOr[DataType] = _data
       override val realtimeSort: js.UndefOr[Boolean] = _realtimeSort
-    }

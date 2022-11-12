@@ -18,6 +18,8 @@ package object util:
   type ColorString = String
   type ZRColor = ColorString | LinearGradientObject | RadialGradientObject | PatternObject
   type ZRLineType = "solid" | "dotted" | "dashed" | Number | js.Array[Number]
+  type ZRFontStyle = "normal" | "italic" | "oblique"
+  type ZRFontWeight = "normal" | "bold" | "bolder" | "lighter" | Number
 
   // types.d.ts 44
   type ZRTextAlign = TextAlign
@@ -35,7 +37,12 @@ package object util:
 
   // types.d.ts 318
   type DimensionName = String
-  // types.d.ts 347
+
+  // types.d.ts 335
+  type DimensionDefinitionLoose = DimensionName | DimensionDefinition
+  // types.d.ts 345
+  type SeriesLayoutBy = "column" | "row"
+  type OptionSourceHeader = Boolean | "auto" | Number
   type SeriesDataType = "main" | "node" | "edge"
 
   // types.d.ts 453
@@ -47,6 +54,7 @@ package object util:
 
   // types.d.ts.465
   type OptionDataValue = String | Number | js.Date
+  type OptionDataValueNumeric = Number | '-'
   // types.d.ts.471
   type DisplayState = "normal" | "emphasis" | "blur" | "select"
 
@@ -61,3 +69,6 @@ package object util:
 
   // types.d.ts 1021
   type SeriesTooltipOption = CommonTooltipOption[CallbackDataParams] & TriggerMixin
+
+  // types.d.ts 1107
+  type DefaultEmphasisFocus = "none" | "self" | "series"

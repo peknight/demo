@@ -60,11 +60,10 @@ object EChartsOption:
     val _tooltip = tooltip
     val _legend = legend
     val _series = series
-    new EChartsOption {
+    new EChartsOption:
       override val title: js.UndefOr[TitleOption | js.Array[TitleOption]] = _title
       override val xAxis: js.UndefOr[XAXisOption | js.Array[XAXisOption]] = _xAxis
       override val yAxis: js.UndefOr[YAXisOption | js.Array[YAXisOption]] = _yAxis
       override val tooltip: js.UndefOr[TooltipOption | js.Array[TooltipOption]] = _tooltip
       override val legend: js.UndefOr[LegendComponentOption | js.Array[LegendComponentOption]] = _legend
       override val series: js.UndefOr[SeriesOption | js.Array[SeriesOption]] = _series
-    }

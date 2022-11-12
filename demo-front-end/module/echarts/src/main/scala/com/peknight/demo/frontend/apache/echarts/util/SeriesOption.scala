@@ -43,7 +43,7 @@ trait SeriesOption[StateOption, StatesMixin <: StatesMixinBase] extends js.Objec
    * namely, the series is "layout" on columns or rows
    * @default "column"
    */
-  val seriesLayoutBy: js.UndefOr["column" | "row"] = js.undefined
+  val seriesLayoutBy: js.UndefOr[SeriesLayoutBy] = js.undefined
   val labelLine: js.UndefOr[LabelLineOption] = js.undefined
   /**
    * Overall label layout option in label layout stage.
