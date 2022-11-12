@@ -36,7 +36,7 @@ trait SeriesOption[StateOption, StatesMixin <: StatesMixinBase] extends js.Objec
   /**
    * Not available on every series
    */
-  val coordinateSystem: js.UndefOr[CoordinateSystemType] = js.undefined
+  // val coordinateSystem: js.UndefOr[CoordinateSystemType] = js.undefined
   val hoverLayerThreshold: js.UndefOr[Number] = js.undefined
   /**
    * When dataset is used, seriesLayoutBy specifies whether the column or the row of dataset is mapped to the series

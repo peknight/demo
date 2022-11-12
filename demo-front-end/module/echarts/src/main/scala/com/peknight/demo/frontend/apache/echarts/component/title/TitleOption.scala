@@ -4,7 +4,6 @@ import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.util.*
 
 import scala.scalajs.js
-import scala.scalajs.js.UndefOr
 
 trait TitleOption extends js.Object with ComponentOption with BoxLayoutOptionMixin with BorderOptionMixin:
   type Type = String
@@ -29,7 +28,13 @@ trait TitleOption extends js.Object with ComponentOption with BoxLayoutOptionMix
   val borderRadius: js.UndefOr[Number | js.Array[Number]] = js.undefined
 
 object TitleOption:
-  def apply(show: js.UndefOr[Boolean] = js.undefined,
+  def apply(width: js.UndefOr[Number | String] = js.undefined,
+            height: js.UndefOr[Number | String] = js.undefined,
+            top: js.UndefOr[Number | String] = js.undefined,
+            right: js.UndefOr[Number | String] = js.undefined,
+            bottom: js.UndefOr[Number | String] = js.undefined,
+            left: js.UndefOr[Number | String] = js.undefined,
+            show: js.UndefOr[Boolean] = js.undefined,
             text: js.UndefOr[String] = js.undefined,
             link: js.UndefOr[String] = js.undefined,
             target: js.UndefOr["self" | "blank"] = js.undefined,
@@ -46,6 +51,12 @@ object TitleOption:
             subtextStyle: js.UndefOr[LabelOption] = js.undefined,
             triggerEvent: js.UndefOr[Boolean] = js.undefined,
             borderRadius: js.UndefOr[Number | js.Array[Number]] = js.undefined): TitleOption =
+    val _width: js.UndefOr[Number | String] = width
+    val _height: js.UndefOr[Number | String] = height
+    val _top: js.UndefOr[Number | String] = top
+    val _right: js.UndefOr[Number | String] = right
+    val _bottom: js.UndefOr[Number | String] = bottom
+    val _left: js.UndefOr[Number | String] = left
     val _show: js.UndefOr[Boolean] = show
     val _text: js.UndefOr[String] = text
     val _link: js.UndefOr[String] = link
@@ -64,6 +75,12 @@ object TitleOption:
     val _triggerEvent: js.UndefOr[Boolean] = triggerEvent
     val _borderRadius: js.UndefOr[Number | js.Array[Number]] = borderRadius
     new TitleOption:
+      override val width: js.UndefOr[Number | String] = _width
+      override val height: js.UndefOr[Number | String] = _height
+      override val top: js.UndefOr[Number | String] = _top
+      override val right: js.UndefOr[Number | String] = _right
+      override val bottom: js.UndefOr[Number | String] = _bottom
+      override val left: js.UndefOr[Number | String] = _left
       override val show: js.UndefOr[Boolean] = _show
       override val text: js.UndefOr[String] = _text
       override val link: js.UndefOr[String] = _link

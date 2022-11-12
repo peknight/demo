@@ -4,7 +4,6 @@ import com.peknight.demo.frontend.apache.echarts.component.axispointer.AxisPoint
 import com.peknight.demo.frontend.apache.echarts.util.*
 
 import scala.scalajs.js
-import scala.scalajs.js.UndefOr
 
 trait TooltipOption extends js.Object with CommonTooltipOption[TopLevelFormatterParams] with ComponentOption:
   type Type = String
@@ -56,7 +55,7 @@ object TooltipOption:
     val _className: js.UndefOr[String] = className
     val _order: js.UndefOr[TooltipOrderMode] = order
     new TooltipOption:
-      override val mainType: UndefOr[MainType] = "tooltip"
+      override val mainType: js.UndefOr[MainType] = "tooltip"
       override val axisPointer: js.UndefOr[AxisPointerOption & AxisPointerMixin] = _axisPointer
       override val showContent: js.UndefOr[Boolean] = _showContent
       override val trigger: js.UndefOr["item" | "axis" | "none"] = _trigger

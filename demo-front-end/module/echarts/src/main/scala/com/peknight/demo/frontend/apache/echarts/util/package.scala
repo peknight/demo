@@ -52,11 +52,15 @@ package object util:
   // types.d.ts 445
   type OptionDataItem = OptionDataValue | js.Dictionary[OptionDataValue] | js.Array[OptionDataValue] | OptionDataItemObject[OptionDataValue]
 
-  // types.d.ts.465
+  // types.d.ts 465
   type OptionDataValue = String | Number | js.Date
   type OptionDataValueNumeric = Number | '-'
-  // types.d.ts.471
+  // types.d.ts 471
   type DisplayState = "normal" | "emphasis" | "blur" | "select"
+
+  // types.d.ts 514
+  type DecalDashArrayX = Number | js.Array[Number | js.Array[Number]]
+  type DecalDashArrayY = Number | js.Array[Number]
 
   // types.d.ts 583
   type ColorBy = "series" | "data"

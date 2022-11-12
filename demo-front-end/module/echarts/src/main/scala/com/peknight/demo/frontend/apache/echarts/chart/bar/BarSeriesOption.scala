@@ -38,7 +38,7 @@ object BarSeriesOption:
       override val name: js.UndefOr[NameType] = _name
       override val z: js.UndefOr[Number] = _z
       override val zlevel: js.UndefOr[Number] = _zlevel
-      override val coordinateSystem: js.UndefOr[CoordinateSystemType] = _coordinateSystem
+      // override val coordinateSystem: js.UndefOr[CoordinateSystemType] = _coordinateSystem
       override val clip: js.UndefOr[Boolean] = _clip
       override val roundCap: js.UndefOr[Boolean] = _roundCap
       override val showBackground: js.UndefOr[Boolean] = _showBackground

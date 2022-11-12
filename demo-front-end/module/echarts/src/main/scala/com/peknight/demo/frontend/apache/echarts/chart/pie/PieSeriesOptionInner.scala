@@ -4,7 +4,6 @@ import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.util.*
 
 import scala.scalajs.js
-import scala.scalajs.js.UndefOr
 
 trait PieSeriesOptionInner extends js.Object
   with SeriesOption[PieStateOption[PieCallbackDataParams], ExtraStateOption] with PieStateOption[PieCallbackDataParams]
@@ -25,5 +24,6 @@ trait PieSeriesOptionInner extends js.Object
   val animationTypeUpdate: js.UndefOr["transition" | "expansion"] = js.undefined
   val showEmptyCircle: js.UndefOr[Boolean] = js.undefined
   val emptyCircleStyle: js.UndefOr[PieItemStyleOption[_]] = js.undefined
+  val emphasis: js.UndefOr[EmphasisMixin] = js.undefined
   override val seriesLayoutBy: js.UndefOr[SeriesLayoutBy] = js.undefined
-  override val labelLine: UndefOr[PieLabelLineOption] = js.undefined
+  override val labelLine: js.UndefOr[PieLabelLineOption] = js.undefined

@@ -15,13 +15,21 @@ class EChartsGetStartedPage[Builder, Output <: FragT, FragT](override val bundle
   override def styles: Seq[StyleSheet.Base] = Seq(Styles)
   override def headTitle: String = "ECharts - Get Started"
   override def javaScriptMethod: Option[String] = Some("echartsGetStarted")
-  override def bodyFrag = div(id := "main")()
+  override def bodyFrag = frag(
+    div(id := "main"),
+    div(id := "pie-simple"),
+  )
 end EChartsGetStartedPage
 object EChartsGetStartedPage:
   object Text extends EChartsGetStartedPage(scalatags.Text)
   object Styles extends StyleSheet.Standalone:
     import dsl.*
     "#main" - (
+      width(400.px),
+      height(400.px),
+      backgroundColor.pink,
+    )
+    "#pie-simple" - (
       width(400.px),
       height(400.px),
       backgroundColor.pink,
