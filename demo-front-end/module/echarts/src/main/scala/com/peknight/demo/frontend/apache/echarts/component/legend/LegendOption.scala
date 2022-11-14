@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.component.legend
 
-import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.util.*
+import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 
 import scala.scalajs.js
 
@@ -122,7 +122,7 @@ object LegendOption:
     val _selectorButtonGap: js.UndefOr[Number] = selectorButtonGap
     val _data: js.UndefOr[js.Array[String | DataItem]] = data
     val _tooltip: js.UndefOr[CommonTooltipOption[LegendTooltipFormatterParams]] = tooltip
-    new LegendOption:
+    val legendOption = new LegendOption:
       override val width: js.UndefOr[Number | String] = _width
       override val height: js.UndefOr[Number | String] = _height
       override val top: js.UndefOr[Number | String] = _top
@@ -148,3 +148,4 @@ object LegendOption:
       override val selectorButtonGap: js.UndefOr[Number] = _selectorButtonGap
       override val data: js.UndefOr[js.Array[String | DataItem]] = _data
       override val tooltip: js.UndefOr[CommonTooltipOption[LegendTooltipFormatterParams]] = _tooltip
+    legendOption.clean

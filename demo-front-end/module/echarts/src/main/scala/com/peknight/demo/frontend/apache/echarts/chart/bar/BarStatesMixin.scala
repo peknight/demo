@@ -4,7 +4,4 @@ import com.peknight.demo.frontend.apache.echarts.util.{DefaultStatesMixinEmphasi
 
 import scala.scalajs.js
 
-trait BarStatesMixin extends StatesMixinBase:
-  type EmphasisType = DefaultStatesMixinEmphasis
-  type SelectType = js.Any
-  type BlurType = js.Any
+trait BarStatesMixin extends StatesMixinBase[DefaultStatesMixinEmphasis, js.Any, js.Any]

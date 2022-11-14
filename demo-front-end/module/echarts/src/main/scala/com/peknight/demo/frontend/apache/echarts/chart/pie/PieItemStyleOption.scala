@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.chart.pie
 
-import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.util.{ColorString, ItemStyleOption}
+import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 
 import scala.scalajs.js
 
@@ -17,8 +17,9 @@ object PieItemStyleOption:
     val _shadowColor: js.UndefOr[ColorString] = shadowColor
     val _shadowOffsetX: js.UndefOr[Number] = shadowOffsetX
     val _shadowOffsetY: js.UndefOr[Number] = shadowOffsetY
-    new PieItemStyleOption[TCbParams]:
+    val pieItemStyleOption = new PieItemStyleOption[TCbParams]:
       override val shadowBlur: js.UndefOr[Number] = _shadowBlur
       override val shadowColor: js.UndefOr[ColorString] = _shadowColor
       override val shadowOffsetX: js.UndefOr[Number] = _shadowOffsetX
       override val shadowOffsetY: js.UndefOr[Number] = _shadowOffsetY
+    pieItemStyleOption.clean

@@ -1,12 +1,13 @@
 package com.peknight.demo.frontend.apache.echarts.chart.bar
 
-import com.peknight.demo.frontend.apache.echarts.util.{SeriesOnCartesianOptionMixin, SeriesOnPolarOptionMixin, SeriesOption, StatesMixinBase}
 import com.peknight.demo.frontend.apache.echarts.Number
+import com.peknight.demo.frontend.apache.echarts.util.{SeriesOnCartesianOptionMixin, SeriesOnPolarOptionMixin, SeriesOption}
 
 import scala.scalajs.js
 
-trait BaseBarSeriesOption[StateOption, ExtraStateOption <: StatesMixinBase]
-  extends SeriesOption[StateOption, ExtraStateOption] with SeriesOnCartesianOptionMixin with SeriesOnPolarOptionMixin:
+trait BaseBarSeriesOption[StateOption, EmphasisType, SelectType, BlurType]
+  extends SeriesOption[StateOption, EmphasisType, SelectType, BlurType] with SeriesOnCartesianOptionMixin
+    with SeriesOnPolarOptionMixin:
   /**
    * Min height of bar
    */

@@ -13,6 +13,6 @@ trait ECUnitOption extends js.Object with AnimationOptionMixin with ColorPalette
   val timeline: js.UndefOr[TimelineType] = js.undefined
   val backgroundColor: js.UndefOr[ZRColor] = js.undefined
   val darkMode: js.UndefOr[Boolean | "auto"] = js.undefined
-  // val textStyle: js.UndefOr[Pick[LabelOption, "color" | "fontStyle" | "fontWeight" | "fontSize" | "fontFamily"]] = js.undefined
+  val textStyle: js.UndefOr[BaseTextStyle] = js.undefined
   val useUTC: js.UndefOr[Boolean] = js.undefined
   val stateAnimation: js.UndefOr[AnimationOption] = js.undefined

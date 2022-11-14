@@ -1,11 +1,13 @@
 package com.peknight.demo.frontend.apache.echarts.chart.pie
 
+import com.peknight.demo.frontend.apache.echarts.clean
 import com.peknight.demo.frontend.apache.echarts.util.*
 
 import scala.scalajs.js
 
-trait PieDataItemOption extends js.Object with OptionDataItemObject[OptionDataValueNumeric] with PieStateOption[_]
-  with StatesOptionMixin[PieStateOption[_], ExtraStateOption]:
+trait PieDataItemOption extends js.Object with OptionDataItemObject[OptionDataValueNumeric]
+  with PieStateOption[PieCallbackDataParams]
+  with StatesOptionMixin[PieStateOption[PieCallbackDataParams], PieEmphasisMixin, js.Any, js.Any]:
   val cursor: js.UndefOr[String] = js.undefined
 
 object PieDataItemOption:
@@ -22,10 +24,11 @@ object PieDataItemOption:
     val _value: js.UndefOr[js.Array[OptionDataValueNumeric] | OptionDataValueNumeric] = value
     val _selected: js.UndefOr[Boolean] = selected
     val _cursor: js.UndefOr[String] = cursor
-    new PieDataItemOption:
+    val pieDataItemOption = new PieDataItemOption:
       override val id: js.UndefOr[OptionId] = _id
       override val name: js.UndefOr[OptionName] = _name
       override val groupId: js.UndefOr[OptionId] = _groupId
       override val value: js.UndefOr[js.Array[OptionDataValueNumeric] | OptionDataValueNumeric] = _value
       override val selected: js.UndefOr[Boolean] = _selected
       override val cursor: js.UndefOr[ColorString] = _cursor
+    pieDataItemOption.clean

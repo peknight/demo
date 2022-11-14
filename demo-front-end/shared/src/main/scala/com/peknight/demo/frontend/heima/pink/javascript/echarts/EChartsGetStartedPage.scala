@@ -18,6 +18,7 @@ class EChartsGetStartedPage[Builder, Output <: FragT, FragT](override val bundle
   override def bodyFrag = frag(
     div(id := "main"),
     div(id := "pie-simple"),
+    div(id := "line-simple"),
   )
 end EChartsGetStartedPage
 object EChartsGetStartedPage:
@@ -25,14 +26,19 @@ object EChartsGetStartedPage:
   object Styles extends StyleSheet.Standalone:
     import dsl.*
     "#main" - (
+      float.left,
       width(400.px),
       height(400.px),
-      backgroundColor.pink,
     )
     "#pie-simple" - (
+      float.left,
       width(400.px),
       height(400.px),
-      backgroundColor.pink,
+    )
+    "#line-simple" - (
+      float.left,
+      width(400.px),
+      height(400.px),
     )
   end Styles
 end EChartsGetStartedPage

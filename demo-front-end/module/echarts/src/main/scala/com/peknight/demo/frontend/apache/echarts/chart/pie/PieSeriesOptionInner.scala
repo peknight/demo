@@ -6,8 +6,9 @@ import com.peknight.demo.frontend.apache.echarts.util.*
 import scala.scalajs.js
 
 trait PieSeriesOptionInner extends js.Object
-  with SeriesOption[PieStateOption[PieCallbackDataParams], ExtraStateOption] with PieStateOption[PieCallbackDataParams]
-  with CircleLayoutOptionMixin with BoxLayoutOptionMixin with SeriesEncodeOptionMixin:
+  with SeriesOption[PieStateOption[PieCallbackDataParams], PieEmphasisMixin, js.Any, js.Any]
+  with PieStateOption[PieCallbackDataParams] with CircleLayoutOptionMixin with BoxLayoutOptionMixin
+  with SeriesEncodeOptionMixin:
   type Type = "pie"
   type CoordinateSystemType = String
   type DataType = js.Array[OptionDataValueNumeric | js.Array[OptionDataValueNumeric] | PieDataItemOption]
@@ -23,7 +24,6 @@ trait PieSeriesOptionInner extends js.Object
   val animationType: js.UndefOr["expansion" | "scale"] = js.undefined
   val animationTypeUpdate: js.UndefOr["transition" | "expansion"] = js.undefined
   val showEmptyCircle: js.UndefOr[Boolean] = js.undefined
-  val emptyCircleStyle: js.UndefOr[PieItemStyleOption[_]] = js.undefined
-  val emphasis: js.UndefOr[EmphasisMixin] = js.undefined
+  val emptyCircleStyle: js.UndefOr[PieItemStyleOption[PieCallbackDataParams]] = js.undefined
   override val seriesLayoutBy: js.UndefOr[SeriesLayoutBy] = js.undefined
   override val labelLine: js.UndefOr[PieLabelLineOption] = js.undefined

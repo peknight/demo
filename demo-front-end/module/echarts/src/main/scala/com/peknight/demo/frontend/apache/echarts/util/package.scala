@@ -54,7 +54,7 @@ package object util:
 
   // types.d.ts 465
   type OptionDataValue = String | Number | js.Date
-  type OptionDataValueNumeric = Number | '-'
+  type OptionDataValueNumeric = Number | "-"
   // types.d.ts 471
   type DisplayState = "normal" | "emphasis" | "blur" | "select"
 
@@ -65,6 +65,12 @@ package object util:
   // types.d.ts 583
   type ColorBy = "series" | "data"
 
+  // types.d.ts 657
+  type SymbolSizeCallback[T] = js.Function2[js.Any, T, Number | js.Array[Number]]
+  type SymbolCallback[T] = js.Function2[js.Any, T, String]
+  type SymbolRotateCallback[T] = js.Function2[js.Any, T, Number]
+  type SymbolOffsetCallback[T] = js.Function2[js.Any, T, String | Number | js.Array[String | Number]]
+
   // types.d.ts 836
   type LabelLayoutOptionCallback = js.Function1[LabelLayoutOptionCallbackParams, LabelLayoutOption]
 
@@ -74,5 +80,17 @@ package object util:
   // types.d.ts 1021
   type SeriesTooltipOption = CommonTooltipOption[CallbackDataParams] & TriggerMixin
 
+  // types.d.ts 1096
+  type BlurScope = "coordinateSystem" | "series" | "global"
+
   // types.d.ts 1107
   type DefaultEmphasisFocus = "none" | "self" | "series"
+
+  // types.d.ts 1262
+  type SamplingFunc = js.Function1[js.Array[Number], Number]
+
+  // model.d.ts 175
+  type ModelFinderIndexQuery = Number | js.Array[Number] | "all" | "none" | false
+  type ModelFinderIdQuery = OptionId | js.Array[OptionId]
+  type ModelFinderNameQuery = OptionId | js.Array[OptionId]
+  type ModelFinder = String | ModelFinderObject

@@ -1,8 +1,8 @@
 package com.peknight.demo.frontend.apache.echarts.chart.pie
 
-import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.`export`.SeriesInjectedOption
 import com.peknight.demo.frontend.apache.echarts.util.*
+import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 
 import scala.scalajs.js
 
@@ -26,9 +26,9 @@ object PieSeriesOption:
             animationType: js.UndefOr["expansion" | "scale"] = js.undefined,
             animationTypeUpdate: js.UndefOr["transition" | "expansion"] = js.undefined,
             showEmptyCircle: js.UndefOr[Boolean] = js.undefined,
-            emptyCircleStyle: js.UndefOr[PieItemStyleOption[_]] = js.undefined,
+            emptyCircleStyle: js.UndefOr[PieItemStyleOption[PieCallbackDataParams]] = js.undefined,
             data: js.UndefOr[js.Array[OptionDataValueNumeric | js.Array[OptionDataValueNumeric] | PieDataItemOption]] = js.undefined,
-            emphasis: js.UndefOr[EmphasisMixin] = js.undefined): PieSeriesOption =
+            emphasis: js.UndefOr[PieEmphasisOption] = js.undefined): PieSeriesOption =
     val _id: js.UndefOr[OptionId] = id
     val _name: js.UndefOr[OptionName] = name
     val _z: js.UndefOr[Number] = z
@@ -46,16 +46,17 @@ object PieSeriesOption:
     val _animationType: js.UndefOr["expansion" | "scale"] = animationType
     val _animationTypeUpdate: js.UndefOr["transition" | "expansion"] = animationTypeUpdate
     val _showEmptyCircle: js.UndefOr[Boolean] = showEmptyCircle
-    val _emptyCircleStyle: js.UndefOr[PieItemStyleOption[_]] = emptyCircleStyle
+    val _emptyCircleStyle: js.UndefOr[PieItemStyleOption[PieCallbackDataParams]] = emptyCircleStyle
     val _data: js.UndefOr[js.Array[OptionDataValueNumeric | js.Array[OptionDataValueNumeric] | PieDataItemOption]] = data
-    val _emphasis: js.UndefOr[EmphasisMixin] = emphasis
-    new PieSeriesOption:
+    val _emphasis: js.UndefOr[PieEmphasisOption] = emphasis
+    val pieSeriesOption: PieSeriesOption = new PieSeriesOption:
+      override val mainType: js.UndefOr[MainType] = "series"
       override val `type`: js.UndefOr[Type] = "pie"
       override val id: js.UndefOr[OptionId] = _id
       override val name: js.UndefOr[NameType] = _name
       override val z: js.UndefOr[Number] = _z
       override val zlevel: js.UndefOr[Number] = _zlevel
-      // override val coordinateSystem: js.UndefOr[CoordinateSystemType] = _coordinateSystem
+      override val coordinateSystem: js.UndefOr[CoordinateSystemType] = _coordinateSystem
       override val roseType: js.UndefOr["radius" | "area"] = _roseType
       override val clockwise: js.UndefOr[Boolean] = _clockwise
       override val startAngle: js.UndefOr[Number] = _startAngle
@@ -68,8 +69,8 @@ object PieSeriesOption:
       override val animationType: js.UndefOr["expansion" | "scale"] = _animationType
       override val animationTypeUpdate: js.UndefOr["transition" | "expansion"] = _animationTypeUpdate
       override val showEmptyCircle: js.UndefOr[Boolean] = _showEmptyCircle
-      override val emptyCircleStyle: js.UndefOr[PieItemStyleOption[_]] = _emptyCircleStyle
+      override val emptyCircleStyle: js.UndefOr[PieItemStyleOption[PieCallbackDataParams]] = _emptyCircleStyle
       override val data: js.UndefOr[DataType] = _data
-      override val emphasis: js.UndefOr[EmphasisMixin] = _emphasis
-
+      override val emphasis: js.UndefOr[PieEmphasisOption] = _emphasis
+    pieSeriesOption.clean
 

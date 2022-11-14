@@ -1,5 +1,6 @@
 package com.peknight.demo.frontend.apache.echarts.component.tooltip
 
+import com.peknight.demo.frontend.apache.echarts.clean
 import com.peknight.demo.frontend.apache.echarts.component.axispointer.AxisPointerOption
 import com.peknight.demo.frontend.apache.echarts.util.*
 
@@ -54,7 +55,7 @@ object TooltipOption:
     val _appendToBody: js.UndefOr[Boolean] = appendToBody
     val _className: js.UndefOr[String] = className
     val _order: js.UndefOr[TooltipOrderMode] = order
-    new TooltipOption:
+    val tooltipOption = new TooltipOption:
       override val mainType: js.UndefOr[MainType] = "tooltip"
       override val axisPointer: js.UndefOr[AxisPointerOption & AxisPointerMixin] = _axisPointer
       override val showContent: js.UndefOr[Boolean] = _showContent
@@ -64,3 +65,4 @@ object TooltipOption:
       override val appendToBody: js.UndefOr[Boolean] = _appendToBody
       override val className: js.UndefOr[String] = _className
       override val order: js.UndefOr[TooltipOrderMode] = _order
+    tooltipOption.clean

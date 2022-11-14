@@ -12,4 +12,4 @@ trait LabelLineOption extends js.Object:
   val length2: js.UndefOr[Number] = js.undefined
   val smooth: js.UndefOr[Boolean | Number] = js.undefined
   val minTurnAngle: js.UndefOr[Number] = js.undefined
-  val lineStyle: js.UndefOr[LineStyleOption] = js.undefined
+  val lineStyle: js.UndefOr[LineStyleOption[ZRColor]] = js.undefined
