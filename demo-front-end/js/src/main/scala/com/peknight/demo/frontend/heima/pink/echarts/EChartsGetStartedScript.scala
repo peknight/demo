@@ -54,6 +54,7 @@ object EChartsGetStartedScript:
 
     ECharts.init(dom.document.getElementById("line-simple").asInstanceOf[dom.HTMLElement])
       .setOption(EChartsOption(
+        color = js.Array("pink", "blue", "green", "skyblue", "red"),
         title = TitleOption(text = "Stacked Line"),
         tooltip = TooltipOption(trigger = "axis"),
         legend = LegendOption(data = js.Array("Email", "Union Ads", "Video Ads", "Direct", "Search Engine")),
