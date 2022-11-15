@@ -1,5 +1,6 @@
 package com.peknight.demo.frontend.apache.echarts.util
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.ecomfe.zrender.core.BuiltinTextPosition
 
 import scala.scalajs.js

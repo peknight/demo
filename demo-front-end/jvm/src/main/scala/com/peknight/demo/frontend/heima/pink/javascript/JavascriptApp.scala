@@ -3,6 +3,7 @@ package com.peknight.demo.frontend.heima.pink.javascript
 import cats.effect.*
 import cats.syntax.semigroupk.*
 import com.peknight.demo.frontend.app.DemoFrontEndHttp4sApp
+import com.peknight.demo.frontend.heima.pink.javascript.datavisualization.*
 import com.peknight.demo.frontend.heima.pink.javascript.echarts.*
 import com.peknight.demo.frontend.heima.pink.javascript.jquery.*
 import com.peknight.demo.frontend.heima.pink.javascript.webapis.*
@@ -67,6 +68,7 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "bootstrap" => renderHtml(BootstrapPage.Text.index)
     case GET -> Root / "todo-list" => renderHtml(TodoListPage.Text.index)
     case GET -> Root / "echarts-get-started" => renderHtml(EChartsGetStartedPage.Text.index)
+    case GET -> Root / "data-visualization" => renderHtml(DataVisualizationPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
       StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.2.1/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())
@@ -81,5 +83,15 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
       "webjars" -> webjarServiceBuilder[IO].toRoutes
     )
 
-  def routes(using Logger[IO]): HttpRoutes[IO] = htmlRoutes <+> resourceRoutes
+  private[this] val cssRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+    case GET -> Root / "data-visualization-fonts.css" => renderCss(DataVisualizationFontsStyles)
+    case GET -> Root / "data-visualization-media.css" => renderCss(DataVisualizationMediaStyles)
+    case GET -> Root / "data-visualization-keyframes.css" => renderCss(DataVisualizationKeyFrameStyles)
+    case GET -> Root / "data-visualization.css" => renderCss(DataVisualizationStyles)
+  }
+
+  def routes(using Logger[IO]): HttpRoutes[IO] = Router(
+    "/" -> (htmlRoutes <+> resourceRoutes),
+    "css" -> cssRoutes
+  )
 

@@ -4,7 +4,7 @@ import scalacss.ProdDefaults.*
 import scalacss.internal.Attr
 import scalacss.internal.Dsl.*
 
-object CommonMediaStyles extends StyleSheet.Inline :
+object CommonMediaStyles extends StyleSheet.Inline:
 
   // 我们此次定义划分的份数为10
   val no: Double = 10
