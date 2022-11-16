@@ -1,14 +1,14 @@
-package com.peknight.demo.frontend.apache.echarts.util
+package com.peknight.demo.frontend.apache.echarts.coord.geo
 
+import com.peknight.demo.frontend.apache.echarts.util.{ColorString, DecalObject, ItemStyleOption, ZRColor, ZRLineType}
 import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number, clean}
 
 import scala.scalajs.js
 
-trait ItemStyleOption[TCbParams] extends js.Object with ShadowOptionMixin with BorderOptionMixin:
-  val color: js.UndefOr[ZRColor | TCbParams | js.Function1[TCbParams, ZRColor]] = js.undefined
-  val opacity: js.UndefOr[Number] = js.undefined
-  val decal: js.UndefOr[DecalObject | "none"] = js.undefined
-object ItemStyleOption:
+trait GeoItemStyleOption[TCbParams] extends ItemStyleOption[TCbParams]:
+  val areaColor: js.UndefOr[ZRColor] = js.undefined
+
+object GeoItemStyleOption:
   def apply[TCbParams](shadowBlur: js.UndefOr[Number] = js.undefined,
                        shadowColor: js.UndefOr[ColorString] = js.undefined,
                        shadowOffsetX: js.UndefOr[Number] = js.undefined,
@@ -22,7 +22,8 @@ object ItemStyleOption:
                        borderMiterLimit: js.UndefOr[Number] = js.undefined,
                        color: js.UndefOr[ZRColor | TCbParams | js.Function1[TCbParams, ZRColor]] = js.undefined,
                        opacity: js.UndefOr[Number] = js.undefined,
-                       decal: js.UndefOr[DecalObject | "none"] = js.undefined): ItemStyleOption[TCbParams] =
+                       decal: js.UndefOr[DecalObject | "none"] = js.undefined,
+                       areaColor: js.UndefOr[ZRColor] = js.undefined): GeoItemStyleOption[TCbParams] =
     val _shadowBlur: js.UndefOr[Number] = shadowBlur
     val _shadowColor: js.UndefOr[ColorString] = shadowColor
     val _shadowOffsetX: js.UndefOr[Number] = shadowOffsetX
@@ -37,7 +38,8 @@ object ItemStyleOption:
     val _color: js.UndefOr[ZRColor | TCbParams | js.Function1[TCbParams, ZRColor]] = color
     val _opacity: js.UndefOr[Number] = opacity
     val _decal: js.UndefOr[DecalObject | "none"] = decal
-    val itemStyleOption: ItemStyleOption[TCbParams] = new ItemStyleOption[TCbParams]:
+    val _areaColor: js.UndefOr[ZRColor] = areaColor
+    val geoItemStyleOption: GeoItemStyleOption[TCbParams] = new GeoItemStyleOption[TCbParams]:
       override val shadowBlur: js.UndefOr[Number] = _shadowBlur
       override val shadowColor: js.UndefOr[ColorString] = _shadowColor
       override val shadowOffsetX: js.UndefOr[Number] = _shadowOffsetX
@@ -52,4 +54,5 @@ object ItemStyleOption:
       override val color: js.UndefOr[ZRColor | TCbParams | js.Function1[TCbParams, ZRColor]] = _color
       override val opacity: js.UndefOr[Number] = _opacity
       override val decal: js.UndefOr[DecalObject | "none"] = _decal
-    itemStyleOption.clean
+      override val areaColor: js.UndefOr[ZRColor] = _areaColor
+    geoItemStyleOption.clean

@@ -8,6 +8,6 @@ trait LineEmphasisMixin extends js.Object:
   val focus: js.UndefOr[DefaultEmphasisFocus] = js.undefined
   val scale: js.UndefOr[Boolean | Number] = js.undefined
 
-  val lineStyle: js.UndefOr[LineStyleOption] = js.undefined
+  val lineStyle: js.UndefOr[LineLineStyleOption] = js.undefined
   val areaStyle: js.UndefOr[AreaStyleOption[ZRColor]] = js.undefined
 

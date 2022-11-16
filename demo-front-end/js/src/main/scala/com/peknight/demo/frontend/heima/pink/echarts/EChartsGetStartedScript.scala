@@ -48,7 +48,9 @@ object EChartsGetStartedScript:
             PieDataItemOption(name = "联盟广告", value = 1048),
             PieDataItemOption(name = "视频广告", value = 300)
           ),
-          emphasis = PieEmphasisOption(PieItemStyleOption(shadowBlur = 10, shadowOffsetX = 0, shadowColor = "rgba(0,0,0,0.5)"))
+          emphasis = PieEmphasisOption(
+            itemStyle = PieItemStyleOption(shadowBlur = 10, shadowOffsetX = 0, shadowColor = "rgba(0,0,0,0.5)")
+          )
         ))
       ))
 

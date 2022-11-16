@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.component.legend
 
 import com.peknight.demo.frontend.apache.echarts.util.*
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
+import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number, clean}
 
 import scala.scalajs.js
 
@@ -72,12 +72,34 @@ trait LegendOption extends js.Object with ComponentOption with LegendStyleOption
   val tooltip: js.UndefOr[CommonTooltipOption[LegendTooltipFormatterParams]] = js.undefined
 
 object LegendOption:
-  def apply(width: js.UndefOr[Number | String] = js.undefined,
+  def apply(
+            `type`: js.UndefOr[String] = js.undefined,
+            id: js.UndefOr[OptionId] = js.undefined,
+            name: js.UndefOr[OptionName] = js.undefined,
+            z: js.UndefOr[Number] = js.undefined,
+            zlevel: js.UndefOr[Number] = js.undefined,
+            icon: js.UndefOr[String] = js.undefined,
+            inactiveColor: js.UndefOr[ColorString] = js.undefined,
+            inactiveBorderColor: js.UndefOr[ColorString] = js.undefined,
+            inactiveBorderWidth: js.UndefOr[Number | "auto"] = js.undefined,
+            formatter: js.UndefOr[String | js.Function1[String, String]] = js.undefined,
+            itemStyle: js.UndefOr[LegendItemStyleOption] = js.undefined,
+            lineStyle: js.UndefOr[LegendLineStyleOption] = js.undefined,
+            textStyle: js.UndefOr[LabelOption] = js.undefined,
+            symbolRotate: js.UndefOr[Number | "inherit"] = js.undefined,
+            width: js.UndefOr[Number | String] = js.undefined,
             height: js.UndefOr[Number | String] = js.undefined,
             top: js.UndefOr[Number | String] = js.undefined,
             right: js.UndefOr[Number | String] = js.undefined,
             bottom: js.UndefOr[Number | String] = js.undefined,
             left: js.UndefOr[Number | String] = js.undefined,
+            borderColor: js.UndefOr[ZRColor] = js.undefined,
+            borderWidth: js.UndefOr[Number] = js.undefined,
+            borderType: js.UndefOr[ZRLineType] = js.undefined,
+            borderCap: js.UndefOr[CanvasLineCap] = js.undefined,
+            borderJoin: js.UndefOr[CanvasLineJoin] = js.undefined,
+            borderDashOffset: js.UndefOr[Number] = js.undefined,
+            borderMiterLimit: js.UndefOr[Number] = js.undefined,
             show: js.UndefOr[Boolean] = js.undefined,
             orient: js.UndefOr[LayoutOrient] = js.undefined,
             align: js.UndefOr["auto" | "left" | "right"] = js.undefined,
@@ -97,12 +119,33 @@ object LegendOption:
             selectorButtonGap: js.UndefOr[Number] = js.undefined,
             data: js.UndefOr[js.Array[String | DataItem]] = js.undefined,
             tooltip: js.UndefOr[CommonTooltipOption[LegendTooltipFormatterParams]] = js.undefined): LegendOption =
+    val _type: js.UndefOr[String] = `type`
+    val _id: js.UndefOr[OptionId] = id
+    val _name: js.UndefOr[OptionName] = name
+    val _z: js.UndefOr[Number] = z
+    val _zlevel: js.UndefOr[Number] = zlevel
+    val _icon: js.UndefOr[String] = icon
+    val _inactiveColor: js.UndefOr[ColorString] = inactiveColor
+    val _inactiveBorderColor: js.UndefOr[ColorString] = inactiveBorderColor
+    val _inactiveBorderWidth: js.UndefOr[Number | "auto"] = inactiveBorderWidth
+    val _formatter: js.UndefOr[String | js.Function1[String, String]] = formatter
+    val _itemStyle: js.UndefOr[LegendItemStyleOption] = itemStyle
+    val _lineStyle: js.UndefOr[LegendLineStyleOption] = lineStyle
+    val _textStyle: js.UndefOr[LabelOption] = textStyle
+    val _symbolRotate: js.UndefOr[Number | "inherit"] = symbolRotate
     val _width: js.UndefOr[Number | String] = width
     val _height: js.UndefOr[Number | String] = height
     val _top: js.UndefOr[Number | String] = top
     val _right: js.UndefOr[Number | String] = right
     val _bottom: js.UndefOr[Number | String] = bottom
     val _left: js.UndefOr[Number | String] = left
+    val _borderColor: js.UndefOr[ZRColor] = borderColor
+    val _borderWidth: js.UndefOr[Number] = borderWidth
+    val _borderType: js.UndefOr[ZRLineType] = borderType
+    val _borderCap: js.UndefOr[CanvasLineCap] = borderCap
+    val _borderJoin: js.UndefOr[CanvasLineJoin] = borderJoin
+    val _borderDashOffset: js.UndefOr[Number] = borderDashOffset
+    val _borderMiterLimit: js.UndefOr[Number] = borderMiterLimit
     val _show: js.UndefOr[Boolean] = show
     val _orient: js.UndefOr[LayoutOrient] = orient
     val _align: js.UndefOr["auto" | "left" | "right"] = align
@@ -123,12 +166,34 @@ object LegendOption:
     val _data: js.UndefOr[js.Array[String | DataItem]] = data
     val _tooltip: js.UndefOr[CommonTooltipOption[LegendTooltipFormatterParams]] = tooltip
     val legendOption = new LegendOption:
+      override val mainType: js.UndefOr[MainType] = "legend"
+      override val `type`: js.UndefOr[Type] = _type
+      override val id: js.UndefOr[OptionId] = _id
+      override val name: js.UndefOr[NameType] = _name
+      override val z: js.UndefOr[Number] = _z
+      override val zlevel: js.UndefOr[Number] = _zlevel
+      override val icon: js.UndefOr[String] = _icon
+      override val inactiveColor: js.UndefOr[ColorString] = _inactiveColor
+      override val inactiveBorderColor: js.UndefOr[ColorString] = _inactiveBorderColor
+      override val inactiveBorderWidth: js.UndefOr[Number | "auto"] = _inactiveBorderWidth
+      override val formatter: js.UndefOr[String | js.Function1[String, String]] = _formatter
+      override val itemStyle: js.UndefOr[LegendItemStyleOption] = _itemStyle
+      override val lineStyle: js.UndefOr[LegendLineStyleOption] = _lineStyle
+      override val textStyle: js.UndefOr[LabelOption] = _textStyle
+      override val symbolRotate: js.UndefOr[Number | "inherit"] = _symbolRotate
       override val width: js.UndefOr[Number | String] = _width
       override val height: js.UndefOr[Number | String] = _height
       override val top: js.UndefOr[Number | String] = _top
       override val right: js.UndefOr[Number | String] = _right
       override val bottom: js.UndefOr[Number | String] = _bottom
       override val left: js.UndefOr[Number | String] = _left
+      override val borderColor: js.UndefOr[ZRColor] = _borderColor
+      override val borderWidth: js.UndefOr[Number] = _borderWidth
+      override val borderType: js.UndefOr[ZRLineType] = _borderType
+      override val borderCap: js.UndefOr[CanvasLineCap] = _borderCap
+      override val borderJoin: js.UndefOr[CanvasLineJoin] = _borderJoin
+      override val borderDashOffset: js.UndefOr[Number] = _borderDashOffset
+      override val borderMiterLimit: js.UndefOr[Number] = _borderMiterLimit
       override val show: js.UndefOr[Boolean] = _show
       override val orient: js.UndefOr[LayoutOrient] = _orient
       override val align: js.UndefOr["auto" | "left" | "right"] = _align

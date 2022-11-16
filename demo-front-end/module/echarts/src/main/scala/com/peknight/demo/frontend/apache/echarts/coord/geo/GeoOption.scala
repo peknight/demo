@@ -1,6 +1,155 @@
 package com.peknight.demo.frontend.apache.echarts.coord.geo
 
+import com.peknight.demo.frontend.apache.echarts.util.*
+import com.peknight.demo.frontend.apache.echarts.{Number, clean}
+import com.peknight.demo.frontend.ecomfe.zrender.animation.AnimationEasing
+
 import scala.scalajs.js
 
-// TODO
-trait GeoOption extends js.Object
+trait GeoOption extends js.Object with ComponentOption with BoxLayoutOptionMixin with AnimationOptionMixin
+  with GeoCommonOptionMixin with StatesOptionMixin[GeoStateOption, js.Any, js.Any, js.Any] with GeoStateOption:
+  type Type = String
+  type MainType = "geo"
+  type NameType = OptionName
+  val show: js.UndefOr[Boolean] = js.undefined
+  val silent: js.UndefOr[Boolean] = js.undefined
+  val regions: js.UndefOr[js.Array[RegionOption]] = js.undefined
+  val stateAnimation: js.UndefOr[AnimationOptionMixin] = js.undefined
+  val selectedMode: js.UndefOr["single" | "multiple" | Boolean] = js.undefined
+  val selectedMap: js.UndefOr[js.Dictionary[Boolean]] = js.undefined
+  val tooltip: js.UndefOr[CommonTooltipOption[GeoTooltipFormatterParams]] = js.undefined
+
+object GeoOption:
+  def apply(`type`: js.UndefOr[String] = js.undefined,
+            id: js.UndefOr[OptionId] = js.undefined,
+            name: js.UndefOr[OptionName] = js.undefined,
+            z: js.UndefOr[Number] = js.undefined,
+            zlevel: js.UndefOr[Number] = js.undefined,
+            width: js.UndefOr[Number | String] = js.undefined,
+            height: js.UndefOr[Number | String] = js.undefined,
+            top: js.UndefOr[Number | String] = js.undefined,
+            right: js.UndefOr[Number | String] = js.undefined,
+            bottom: js.UndefOr[Number | String] = js.undefined,
+            left: js.UndefOr[Number | String] = js.undefined,
+            animation: js.UndefOr[Boolean] = js.undefined,
+            animationThreshold: js.UndefOr[Number] = js.undefined,
+            animationDuration: js.UndefOr[Number | AnimationDurationCallback] = js.undefined,
+            animationEasing: js.UndefOr[AnimationEasing] = js.undefined,
+            animationDelay: js.UndefOr[Number | AnimationDelayCallback] = js.undefined,
+            animationDurationUpdate: js.UndefOr[Number | AnimationDurationCallback] = js.undefined,
+            animationEasingUpdate: js.UndefOr[AnimationEasing] = js.undefined,
+            animationDelayUpdate: js.UndefOr[Number | AnimationDelayCallback] = js.undefined,
+            roam: js.UndefOr[Boolean | "pan" | "move" | "zoom" | "scale"] = js.undefined,
+            center: js.UndefOr[js.Array[Number | String]] = js.undefined,
+            zoom: js.UndefOr[Number] = js.undefined,
+            scaleLimit: js.UndefOr[ScaleLimitMixin] = js.undefined,
+            map: js.UndefOr[String] = js.undefined,
+            aspectScale: js.UndefOr[Number] = js.undefined,
+            layoutCenter: js.UndefOr[js.Array[Number | String]] = js.undefined,
+            layoutSize: js.UndefOr[Number | String] = js.undefined,
+            boundingCoords: js.UndefOr[js.Array[js.Array[Number]]] = js.undefined,
+            nameMap: js.UndefOr[NameMap] = js.undefined,
+            nameProperty: js.UndefOr[String] = js.undefined,
+            projection: js.UndefOr[GeoProjection] = js.undefined,
+            emphasis: js.UndefOr[GeoStateOption & js.Any & StatesEmphasisOptionMixin] = js.undefined,
+            select: js.UndefOr[GeoStateOption & js.Any & StatesSelectOptionMixin] = js.undefined,
+            blur: js.UndefOr[GeoStateOption & js.Any] = js.undefined,
+            itemStyle: js.UndefOr[GeoItemStyleOption[CallbackDataParams]] = js.undefined,
+            label: js.UndefOr[GeoLabelOption] = js.undefined,
+            show: js.UndefOr[Boolean] = js.undefined,
+            silent: js.UndefOr[Boolean] = js.undefined,
+            regions: js.UndefOr[js.Array[RegionOption]] = js.undefined,
+            stateAnimation: js.UndefOr[AnimationOptionMixin] = js.undefined,
+            selectedMode: js.UndefOr["single" | "multiple" | Boolean] = js.undefined,
+            selectedMap: js.UndefOr[js.Dictionary[Boolean]] = js.undefined,
+            tooltip: js.UndefOr[CommonTooltipOption[GeoTooltipFormatterParams]] = js.undefined,
+           ): GeoOption =
+    val _type: js.UndefOr[String] = `type`
+    val _id: js.UndefOr[OptionId] = id
+    val _name: js.UndefOr[OptionName] = name
+    val _z: js.UndefOr[Number] = z
+    val _zlevel: js.UndefOr[Number] = zlevel
+    val _width: js.UndefOr[Number | String] = width
+    val _height: js.UndefOr[Number | String] = height
+    val _top: js.UndefOr[Number | String] = top
+    val _right: js.UndefOr[Number | String] = right
+    val _bottom: js.UndefOr[Number | String] = bottom
+    val _left: js.UndefOr[Number | String] = left
+    val _animation: js.UndefOr[Boolean] = animation
+    val _animationThreshold: js.UndefOr[Number] = animationThreshold
+    val _animationDuration: js.UndefOr[Number | AnimationDurationCallback] = animationDuration
+    val _animationEasing: js.UndefOr[AnimationEasing] = animationEasing
+    val _animationDelay: js.UndefOr[Number | AnimationDelayCallback] = animationDelay
+    val _animationDurationUpdate: js.UndefOr[Number | AnimationDurationCallback] = animationDurationUpdate
+    val _animationEasingUpdate: js.UndefOr[AnimationEasing] = animationEasingUpdate
+    val _animationDelayUpdate: js.UndefOr[Number | AnimationDelayCallback] = animationDelayUpdate
+    val _roam: js.UndefOr[Boolean | "pan" | "move" | "zoom" | "scale"] = roam
+    val _center: js.UndefOr[js.Array[Number | String]] = center
+    val _zoom: js.UndefOr[Number] = zoom
+    val _scaleLimit: js.UndefOr[ScaleLimitMixin] = scaleLimit
+    val _map: js.UndefOr[String] = map
+    val _aspectScale: js.UndefOr[Number] = aspectScale
+    val _layoutCenter: js.UndefOr[js.Array[Number | String]] = layoutCenter
+    val _layoutSize: js.UndefOr[Number | String] = layoutSize
+    val _boundingCoords: js.UndefOr[js.Array[js.Array[Number]]] = boundingCoords
+    val _nameMap: js.UndefOr[NameMap] = nameMap
+    val _nameProperty: js.UndefOr[String] = nameProperty
+    val _projection: js.UndefOr[GeoProjection] = projection
+    val _emphasis: js.UndefOr[GeoStateOption & js.Any & StatesEmphasisOptionMixin] = emphasis
+    val _select: js.UndefOr[GeoStateOption & js.Any & StatesSelectOptionMixin] = select
+    val _blur: js.UndefOr[GeoStateOption & js.Any] = blur
+    val _itemStyle: js.UndefOr[GeoItemStyleOption[CallbackDataParams]] = itemStyle
+    val _label: js.UndefOr[GeoLabelOption] = label
+    val _show: js.UndefOr[Boolean] = show
+    val _silent: js.UndefOr[Boolean] = silent
+    val _regions: js.UndefOr[js.Array[RegionOption]] = regions
+    val _stateAnimation: js.UndefOr[AnimationOptionMixin] = stateAnimation
+    val _selectedMode: js.UndefOr["single" | "multiple" | Boolean] = selectedMode
+    val _selectedMap: js.UndefOr[js.Dictionary[Boolean]] = selectedMap
+    val _tooltip: js.UndefOr[CommonTooltipOption[GeoTooltipFormatterParams]] = tooltip
+    val geoOption: GeoOption = new GeoOption:
+      override val mainType: js.UndefOr[MainType] = "geo"
+      override val `type`: js.UndefOr[Type] = _type
+      override val id: js.UndefOr[OptionId] = _id
+      override val name: js.UndefOr[NameType] = _name
+      override val z: js.UndefOr[Number] = _z
+      override val zlevel: js.UndefOr[Number] = _zlevel
+      override val width: js.UndefOr[Number | String] = _width
+      override val height: js.UndefOr[Number | String] = _height
+      override val top: js.UndefOr[Number | String] = _top
+      override val right: js.UndefOr[Number | String] = _right
+      override val bottom: js.UndefOr[Number | String] = _bottom
+      override val left: js.UndefOr[Number | String] = _left
+      override val animation: js.UndefOr[Boolean] = _animation
+      override val animationThreshold: js.UndefOr[Number] = _animationThreshold
+      override val animationDuration: js.UndefOr[Number | AnimationDurationCallback] = _animationDuration
+      override val animationEasing: js.UndefOr[AnimationEasing] = _animationEasing
+      override val animationDelay: js.UndefOr[Number | AnimationDelayCallback] = _animationDelay
+      override val animationDurationUpdate: js.UndefOr[Number | AnimationDurationCallback] = _animationDurationUpdate
+      override val animationEasingUpdate: js.UndefOr[AnimationEasing] = _animationEasingUpdate
+      override val animationDelayUpdate: js.UndefOr[Number | AnimationDelayCallback] = _animationDelayUpdate
+      override val roam: js.UndefOr[Boolean | "pan" | "move" | "zoom" | "scale"] = _roam
+      override val center: js.UndefOr[js.Array[Number | String]] = _center
+      override val zoom: js.UndefOr[Number] = _zoom
+      override val scaleLimit: js.UndefOr[ScaleLimitMixin] = _scaleLimit
+      override val map: js.UndefOr[String] = _map
+      override val aspectScale: js.UndefOr[Number] = _aspectScale
+      override val layoutCenter: js.UndefOr[js.Array[Number | String]] = _layoutCenter
+      override val layoutSize: js.UndefOr[Number | String] = _layoutSize
+      override val boundingCoords: js.UndefOr[js.Array[js.Array[Number]]] = _boundingCoords
+      override val nameMap: js.UndefOr[NameMap] = _nameMap
+      override val nameProperty: js.UndefOr[String] = _nameProperty
+      override val projection: js.UndefOr[GeoProjection] = _projection
+      override val emphasis: js.UndefOr[GeoStateOption & js.Any & StatesEmphasisOptionMixin] = _emphasis
+      override val select: js.UndefOr[GeoStateOption & js.Any & StatesSelectOptionMixin] = _select
+      override val blur: js.UndefOr[GeoStateOption & js.Any] = _blur
+      override val itemStyle: js.UndefOr[GeoItemStyleOption[CallbackDataParams]] = _itemStyle
+      override val label: js.UndefOr[GeoLabelOption] = _label
+      override val show: js.UndefOr[Boolean] = _show
+      override val silent: js.UndefOr[Boolean] = _silent
+      override val regions: js.UndefOr[js.Array[RegionOption]] = _regions
+      override val stateAnimation: js.UndefOr[AnimationOptionMixin] = _stateAnimation
+      override val selectedMode: js.UndefOr["single" | "multiple" | Boolean] = _selectedMode
+      override val selectedMap: js.UndefOr[js.Dictionary[Boolean]] = _selectedMap
+      override val tooltip: js.UndefOr[CommonTooltipOption[GeoTooltipFormatterParams]] = _tooltip
+    geoOption.clean

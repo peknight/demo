@@ -1,14 +1,18 @@
-package com.peknight.demo.frontend.apache.echarts.util
+package com.peknight.demo.frontend.apache.echarts.coord.geo
 
+import com.peknight.demo.frontend.apache.echarts.util.{ColorString, HorizontalAlign, ImageMixin, LabelOption, TextCommonOption, VerticalAlign, ZRFontStyle, ZRFontWeight, ZRLineType}
 import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 import com.peknight.demo.frontend.ecomfe.zrender.core.BuiltinTextPosition
 
 import scala.scalajs.js
 
-trait SeriesLabelOption extends LabelOption:
-  val formatter: js.UndefOr[String | LabelFormatterCallback[CallbackDataParams]] = js.undefined
+trait GeoLabelOption extends LabelOption:
+  type PositionType = BuiltinTextPosition | js.Array[Number | String]
+  type DistanceType = Number
+  type RotateType = Number
+  val formatter: js.UndefOr[String | js.Function1[GeoLabelFormatterDataParams, String]] = js.undefined
 
-object SeriesLabelOption:
+object GeoLabelOption:
   def apply(color: js.UndefOr[String] = js.undefined,
             fontStyle: js.UndefOr[ZRFontStyle] = js.undefined,
             fontWeight: js.UndefOr[ZRFontWeight] = js.undefined,
@@ -52,7 +56,8 @@ object SeriesLabelOption:
             precision: js.UndefOr[Number | "auto"] = js.undefined,
             valueAnimation: js.UndefOr[Boolean] = js.undefined,
             rich: js.UndefOr[TextCommonOption] = js.undefined,
-            formatter: js.UndefOr[String | LabelFormatterCallback[CallbackDataParams]] = js.undefined): SeriesLabelOption =
+            formatter: js.UndefOr[String | js.Function1[GeoLabelFormatterDataParams, String]] = js.undefined,
+           ): GeoLabelOption =
     val _color: js.UndefOr[String] = color
     val _fontStyle: js.UndefOr[ZRFontStyle] = fontStyle
     val _fontWeight: js.UndefOr[ZRFontWeight] = fontWeight
@@ -96,11 +101,8 @@ object SeriesLabelOption:
     val _precision: js.UndefOr[Number | "auto"] = precision
     val _valueAnimation: js.UndefOr[Boolean] = valueAnimation
     val _rich: js.UndefOr[TextCommonOption] = rich
-    val _formatter: js.UndefOr[String | LabelFormatterCallback[CallbackDataParams]] = formatter
-    val seriesLabelOption: SeriesLabelOption = new SeriesLabelOption:
-      type PositionType = BuiltinTextPosition | js.Array[Number | String]
-      type DistanceType = Number
-      type RotateType = Number
+    val _formatter: js.UndefOr[String | js.Function1[GeoLabelFormatterDataParams, String]] = formatter
+    val geoLabelOption: GeoLabelOption = new GeoLabelOption:
       override val color: js.UndefOr[String] = _color
       override val fontStyle: js.UndefOr[ZRFontStyle] = _fontStyle
       override val fontWeight: js.UndefOr[ZRFontWeight] = _fontWeight
@@ -144,5 +146,5 @@ object SeriesLabelOption:
       override val precision: js.UndefOr[Number | "auto"] = _precision
       override val valueAnimation: js.UndefOr[Boolean] = _valueAnimation
       override val rich: js.UndefOr[TextCommonOption] = _rich
-      override val formatter: js.UndefOr[String | LabelFormatterCallback[CallbackDataParams]] = _formatter
-    seriesLabelOption.clean
+      override val formatter: js.UndefOr[String | js.Function1[GeoLabelFormatterDataParams, String]] = _formatter
+    geoLabelOption.clean

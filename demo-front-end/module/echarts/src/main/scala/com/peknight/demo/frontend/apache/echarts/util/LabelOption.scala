@@ -6,14 +6,15 @@ import com.peknight.demo.frontend.ecomfe.zrender.core.BuiltinTextPosition
 import scala.scalajs.js
 
 trait LabelOption extends TextCommonOption:
-  type PositionType >: BuiltinTextPosition | js.Array[Number | String]
+  type PositionType <: Number | String | js.Array[Number | String] // BuiltinTextPosition | js.Array[Number | String]
+  type DistanceType >: Number
   type RotateType >: Number
   /**
    * If show label
    */
   val show: js.UndefOr[Boolean] = js.undefined
   val position: js.UndefOr[PositionType] = js.undefined
-  val distance: js.UndefOr[Number] = js.undefined
+  val distance: js.UndefOr[DistanceType] = js.undefined
   val rotate: js.UndefOr[RotateType] = js.undefined
   val offset: js.UndefOr[js.Array[Number]] = js.undefined
   /**
@@ -24,4 +25,4 @@ trait LabelOption extends TextCommonOption:
   val silent: js.UndefOr[Boolean] = js.undefined
   val precision: js.UndefOr[Number | "auto"] = js.undefined
   val valueAnimation: js.UndefOr[Boolean] = js.undefined
-  val rich: js.UndefOr[js.Dictionary[TextCommonOption]] = js.undefined
+  val rich: js.UndefOr[TextCommonOption] = js.undefined

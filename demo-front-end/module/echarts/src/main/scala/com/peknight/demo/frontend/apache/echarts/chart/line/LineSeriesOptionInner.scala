@@ -14,7 +14,7 @@ trait LineSeriesOptionInner extends js.Object
   type CoordinateSystemType = "cartesian2d" | "polar"
   type DataType = js.Array[LineDataValue | LineDataItemOption]
   val clip: js.UndefOr[Boolean] = js.undefined
-  val lineStyle: js.UndefOr[LineStyleOption] = js.undefined
+  val lineStyle: js.UndefOr[LineLineStyleOption] = js.undefined
   val areaStyle: js.UndefOr[AreaStyleOption[ZRColor] & OriginMixin] = js.undefined
   val step: js.UndefOr[false | "start" | "end" | "middle"] = js.undefined
   val smooth: js.UndefOr[Boolean | Number] = js.undefined

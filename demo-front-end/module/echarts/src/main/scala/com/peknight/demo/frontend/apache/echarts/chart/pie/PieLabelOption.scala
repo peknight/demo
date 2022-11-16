@@ -8,6 +8,7 @@ import scala.scalajs.js
 
 trait PieLabelOption extends SeriesLabelOption:
   type PositionType = BuiltinTextPosition | js.Array[Number | String] | "outer" | "inner" | "center" | "outside"
+  type DistanceType = Number
   type RotateType = Number | Boolean | "radial" | "tangential"
   val alignTo: js.UndefOr["none" | "labelLine" | "edge"] = js.undefined
   val edgeDistance: js.UndefOr[String | Number] = js.undefined
@@ -57,7 +58,7 @@ object PieLabelOption:
             silent: js.UndefOr[Boolean] = js.undefined,
             precision: js.UndefOr[Number | "auto"] = js.undefined,
             valueAnimation: js.UndefOr[Boolean] = js.undefined,
-            rich: js.UndefOr[js.Dictionary[TextCommonOption]] = js.undefined,
+            rich: js.UndefOr[TextCommonOption] = js.undefined,
             formatter: js.UndefOr[String | LabelFormatterCallback[CallbackDataParams]] = js.undefined,
             alignTo: js.UndefOr["none" | "labelLine" | "edge"] = js.undefined,
             edgeDistance: js.UndefOr[String | Number] = js.undefined,
@@ -105,7 +106,7 @@ object PieLabelOption:
     val _silent: js.UndefOr[Boolean] = silent
     val _precision: js.UndefOr[Number | "auto"] = precision
     val _valueAnimation: js.UndefOr[Boolean] = valueAnimation
-    val _rich: js.UndefOr[js.Dictionary[TextCommonOption]] = rich
+    val _rich: js.UndefOr[TextCommonOption] = rich
     val _formatter: js.UndefOr[String | LabelFormatterCallback[CallbackDataParams]] = formatter
     val _alignTo: js.UndefOr["none" | "labelLine" | "edge"] = alignTo
     val _edgeDistance: js.UndefOr[String | Number] = edgeDistance
@@ -154,7 +155,7 @@ object PieLabelOption:
       override val silent: js.UndefOr[Boolean] = _silent
       override val precision: js.UndefOr[Number | "auto"] = _precision
       override val valueAnimation: js.UndefOr[Boolean] = _valueAnimation
-      override val rich: js.UndefOr[js.Dictionary[TextCommonOption]] = _rich
+      override val rich: js.UndefOr[TextCommonOption] = _rich
       override val formatter: js.UndefOr[String | LabelFormatterCallback[CallbackDataParams]] = _formatter
       override val alignTo: js.UndefOr["none" | "labelLine" | "edge"] = _alignTo
       override val edgeDistance: js.UndefOr[String | Number] = _edgeDistance

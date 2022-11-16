@@ -2,6 +2,7 @@ package com.peknight.demo.frontend.apache.echarts
 
 import com.peknight.demo.frontend.ecomfe.zrender.core.*
 import com.peknight.demo.frontend.ecomfe.zrender.graphic.*
+import org.scalajs.dom
 
 import scala.scalajs.js
 
@@ -71,8 +72,21 @@ package object util:
   type SymbolRotateCallback[T] = js.Function2[js.Any, T, Number]
   type SymbolOffsetCallback[T] = js.Function2[js.Any, T, String | Number | js.Array[String | Number]]
 
+  // types.d.ts 781
+  type LabelFormatterCallback[T] = js.Function1[T, String]
+
   // types.d.ts 836
   type LabelLayoutOptionCallback = js.Function1[LabelLayoutOptionCallbackParams, LabelLayoutOption]
+
+  // types.d.ts 895
+  type TooltipFormatterCallback[T] =
+    // For async callback params will be an array on axis trigger.
+    // (params, asyncTicket) => String | HTMLElement | Array[HTMLElement]
+    js.Function2[T, String, String | dom.HTMLElement | js.Array[dom.HTMLElement]] |
+      // For async callback. Returned html string will be a placeholder when callback is not invoked.
+      // (params, asyncTicket, callback: (cbTicket, htmlOrDomNodes) => Unit) => String | HTMLElement | Array[HTMLElement]
+      js.Function3[T, String, js.Function2[String, String | dom.HTMLElement | js.Array[dom.HTMLElement], Unit],
+        String | dom.HTMLElement | js.Array[dom.HTMLElement]]
 
   // types.d.ts 907
   type TooltipBuiltinPosition = "inside" | "top" | "left" | "right" | "bottom"

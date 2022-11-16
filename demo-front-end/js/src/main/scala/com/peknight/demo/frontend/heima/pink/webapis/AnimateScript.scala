@@ -2,23 +2,21 @@ package com.peknight.demo.frontend.heima.pink.webapis
 
 import org.scalajs.dom
 
+import scala.scalajs.js
 import scala.scalajs.js.annotation.JSExportTopLevel
 
 object AnimateScript:
 
-  val animateTimers: collection.mutable.Map[dom.HTMLElement, Int] = collection.mutable.Map.empty[dom.HTMLElement, Int]
-
   def animate(element: dom.HTMLElement, target: Double, callback: () => Unit = () => ()): Unit =
-    animateTimers.get(element).foreach(dom.window.clearInterval)
-    val timer = dom.window.setInterval(() => {
+    element.clearTimer
+    element.setTimer(dom.window.setInterval(() => {
       val offsetLeft = element.offsetLeft
       if offsetLeft == target then
-        animateTimers.get(element).foreach(dom.window.clearInterval)
+        element.clearTimer
         callback()
       else
         element.style.left = s"${next(offsetLeft, target)}px"
-    }, 15)
-    animateTimers.put(element, timer)
+    }, 15))
 
   def scroll(target: Double, callback: () => Unit = () => ()): Unit =
     val window = dom.window
@@ -35,3 +33,10 @@ object AnimateScript:
   private[this] def next(current: Double, target: Double): Int =
     val step = (target - current) / 10
     (current + (if step > 0 then math.ceil(step) else math.floor(step))).toInt
+
+
+  extension (element: dom.HTMLElement)
+    private[this] def setTimer(timer: Int): Unit = element.asInstanceOf[js.Dynamic].timer = timer
+    private[this] def clearTimer: Unit =
+      Option(element.asInstanceOf[js.Dynamic].timer.asInstanceOf[Int]).foreach(dom.window.clearInterval)
+  end extension

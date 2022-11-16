@@ -1,7 +1,8 @@
 package com.peknight.demo.frontend.apache.echarts.chart.line
 
 import com.peknight.demo.frontend.apache.echarts.`export`.SeriesInjectedOption
-import com.peknight.demo.frontend.apache.echarts.util.{AnimationDelayCallback, AnimationDurationCallback, AnimationOption, AreaStyleOption, CallbackDataParams, ColorBy, DimensionDefinitionLoose, ItemStyleOption, LabelLayoutOption, LabelLayoutOptionCallback, LabelLineOption, OptionEncode, OptionId, OptionName, OptionSourceHeader, SamplingFunc, SeriesLabelOption, SeriesLayoutBy, StatesEmphasisOptionMixin, StatesSelectOptionMixin, SymbolCallback, SymbolOffsetCallback, SymbolRotateCallback, SymbolSizeCallback, UniversalTransitionOption, ZRColor}
+import com.peknight.demo.frontend.apache.echarts.component.marker.{MarkAreaOption, MarkLineOption, MarkPointOption}
+import com.peknight.demo.frontend.apache.echarts.util.{AnimationDelayCallback, AnimationDurationCallback, AnimationOption, AreaStyleOption, CallbackDataParams, ColorBy, DimensionDefinitionLoose, ItemStyleOption, LabelLayoutOption, LabelLayoutOptionCallback, LabelLineOption, OptionEncode, OptionId, OptionName, OptionSourceHeader, SamplingFunc, SeriesLabelOption, SeriesLayoutBy, SeriesTooltipOption, StatesEmphasisOptionMixin, StatesSelectOptionMixin, SymbolCallback, SymbolOffsetCallback, SymbolRotateCallback, SymbolSizeCallback, UniversalTransitionOption, ZRColor}
 import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 import com.peknight.demo.frontend.ecomfe.zrender.animation.AnimationEasing
 
@@ -70,7 +71,7 @@ object LineSeriesOption:
             dimensions: js.UndefOr[js.Array[DimensionDefinitionLoose]] = js.undefined,
             encode: js.UndefOr[OptionEncode] = js.undefined,
             clip: js.UndefOr[Boolean] = js.undefined,
-            lineStyle: js.UndefOr[LineStyleOption] = js.undefined,
+            lineStyle: js.UndefOr[LineLineStyleOption] = js.undefined,
             areaStyle: js.UndefOr[AreaStyleOption[ZRColor] & OriginMixin] = js.undefined,
             step: js.UndefOr[false | "start" | "end" | "middle"] = js.undefined,
             smooth: js.UndefOr[Boolean | Number] = js.undefined,
@@ -78,7 +79,11 @@ object LineSeriesOption:
             connectNulls: js.UndefOr[Boolean] = js.undefined,
             showSymbol: js.UndefOr[Boolean] = js.undefined,
             showAllSymbol: js.UndefOr["auto" | Boolean] = js.undefined,
-            triggerLineEvent: js.UndefOr[Boolean] = js.undefined): LineSeriesOption =
+            triggerLineEvent: js.UndefOr[Boolean] = js.undefined,
+            markArea: js.UndefOr[MarkAreaOption] = js.undefined,
+            markLine: js.UndefOr[MarkLineOption] = js.undefined,
+            markPoint: js.UndefOr[MarkPointOption] = js.undefined,
+            tooltip: js.UndefOr[SeriesTooltipOption] = js.undefined): LineSeriesOption =
     val _id: js.UndefOr[OptionId] = id
     val _name: js.UndefOr[OptionName] = name
     val _z: js.UndefOr[Number] = z
@@ -138,7 +143,7 @@ object LineSeriesOption:
     val _dimensions: js.UndefOr[js.Array[DimensionDefinitionLoose]] = dimensions
     val _encode: js.UndefOr[OptionEncode] = encode
     val _clip: js.UndefOr[Boolean] = clip
-    val _lineStyle: js.UndefOr[LineStyleOption] = lineStyle
+    val _lineStyle: js.UndefOr[LineLineStyleOption] = lineStyle
     val _areaStyle: js.UndefOr[AreaStyleOption[ZRColor] & OriginMixin] = areaStyle
     val _step: js.UndefOr[false | "start" | "end" | "middle"] = step
     val _smooth: js.UndefOr[Boolean | Number] = smooth
@@ -147,6 +152,10 @@ object LineSeriesOption:
     val _showSymbol: js.UndefOr[Boolean] = showSymbol
     val _showAllSymbol: js.UndefOr["auto" | Boolean] = showAllSymbol
     val _triggerLineEvent: js.UndefOr[Boolean] = triggerLineEvent
+    val _markArea: js.UndefOr[MarkAreaOption] = markArea
+    val _markLine: js.UndefOr[MarkLineOption] = markLine
+    val _markPoint: js.UndefOr[MarkPointOption] = markPoint
+    val _tooltip: js.UndefOr[SeriesTooltipOption] = tooltip
     val lineSeriesOption: LineSeriesOption = new LineSeriesOption:
       override val mainType: js.UndefOr[MainType] = "series"
       override val `type`: js.UndefOr[Type] = "line"
@@ -209,7 +218,7 @@ object LineSeriesOption:
       override val dimensions: js.UndefOr[js.Array[DimensionDefinitionLoose]] = _dimensions
       override val encode: js.UndefOr[OptionEncode] = _encode
       override val clip: js.UndefOr[Boolean] = _clip
-      override val lineStyle: js.UndefOr[LineStyleOption] = _lineStyle
+      override val lineStyle: js.UndefOr[LineLineStyleOption] = _lineStyle
       override val areaStyle: js.UndefOr[AreaStyleOption[ZRColor] & OriginMixin] = _areaStyle
       override val step: js.UndefOr[false | "start" | "end" | "middle"] = _step
       override val smooth: js.UndefOr[Boolean | Number] = _smooth
@@ -218,5 +227,9 @@ object LineSeriesOption:
       override val showSymbol: js.UndefOr[Boolean] = _showSymbol
       override val showAllSymbol: js.UndefOr["auto" | Boolean] = _showAllSymbol
       override val triggerLineEvent: js.UndefOr[Boolean] = _triggerLineEvent
+      override val markArea: js.UndefOr[MarkAreaOption] = _markArea
+      override val markLine: js.UndefOr[MarkLineOption] = _markLine
+      override val markPoint: js.UndefOr[MarkPointOption] = _markPoint
+      override val tooltip: js.UndefOr[SeriesTooltipOption] = _tooltip
     lineSeriesOption.clean
 
