@@ -7,7 +7,7 @@ import com.peknight.demo.frontend.apache.echarts.chart.lines.{LinesDataItemOptio
 import com.peknight.demo.frontend.apache.echarts.util.{CallbackDataParams, ItemStyleOption, OptionDataItemObject, SeriesLabelOption, SeriesOption}
 import com.peknight.demo.frontend.apache.echarts.chart.pie.*
 import com.peknight.demo.frontend.apache.echarts.component.tooltip.{TooltipOption, TopLevelFormatterParams}
-import com.peknight.demo.frontend.apache.echarts.coord.geo.GeoItemStyleOption
+import com.peknight.demo.frontend.apache.echarts.coord.geo.{GeoEmphasisOption, GeoItemStyleOption, GeoLabelOption, GeoOption}
 import com.peknight.demo.frontend.apache.echarts.core.ECharts
 import org.querki.jquery.*
 import org.scalajs.dom
@@ -66,6 +66,7 @@ object DataVisualizationScript:
       tooltip = TooltipOption(
         trigger = "item",
         formatter = (params: TopLevelFormatterParams, _: String, _: js.Function2[String, String | dom.HTMLElement | js.Array[dom.HTMLElement], Unit]) => {
+          dom.console.log(params)
           val cb: CallbackDataParams = params.asInstanceOf[CallbackDataParams]
           cb.seriesType match
             case "effectScatter" =>
@@ -76,8 +77,22 @@ object DataVisualizationScript:
               s"${data.fromName} > ${data.toName} <br /> ${data.value}"
             case _ => cb.name
         }
-      )
+      ),
+      geo = GeoOption(
+        map = "china",
+        emphasis = GeoEmphasisOption(
+          label = GeoLabelOption(show = true, color = "#fff"),
+          itemStyle = GeoItemStyleOption(areaColor = "#2B91B7")
+        ),
+        roam = true,
+        zoom = 1.2,
+        itemStyle = GeoItemStyleOption(areaColor = "#142957", borderColor = "#195BB9", borderWidth = 1)
+      ),
+      series = series
     )
+    dom.console.log(option)
+    geoChart.setOption(option)
+    dom.window.addEventListener("resize", _ => geoChart.resize())
   })
 
   val geoCoordMap: Map[String, js.Array[Double | Int]] = Map(

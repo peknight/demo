@@ -11,6 +11,7 @@ import scala.scalajs.js.annotation.JSGlobal
 @JSGlobal
 class ECharts extends js.Object:
   def setOption[Opt <: ECBasicOption](option: Opt, opts: js.UndefOr[SetOptionOpts] = js.undefined): Unit = js.native
+  def resize(opts: js.UndefOr[ResizeOpts] = js.undefined): Unit = js.native
 
 @js.native
 @JSGlobal("echarts")

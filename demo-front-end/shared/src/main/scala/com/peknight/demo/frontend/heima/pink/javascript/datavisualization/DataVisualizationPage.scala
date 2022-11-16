@@ -19,6 +19,7 @@ class DataVisualizationPage[Builder, Output <: FragT, FragT](val bundle: Bundle[
       script(`type` := "text/javascript", src := "/webjars/echarts/5.4.0/dist/echarts.min.js"),
       script(src := "/webjars/amfe-flexible/2.2.1/index.min.js"),
       script(`type` := "text/javascript", src := "/webjars/jquery/3.6.1/jquery.min.js"),
+      script(`type` := "text/javascript", src := "/echarts/china.js"),
       script(`type` := "text/javascript", src := "/main.js"),
       script("dataVisualization();dataVisualizationChinaMap()")
     ),

@@ -80,6 +80,7 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
       "zymedia" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/ireaderlab/zymedia").toRoutes,
       "masonry" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/jquery/pinterestgrid").toRoutes,
       "fullpage" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/jquery/fullpage").toRoutes,
+      "echarts" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/echarts").toRoutes,
       "webjars" -> webjarServiceBuilder[IO].toRoutes
     )
 
