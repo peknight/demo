@@ -2,7 +2,7 @@ package com.peknight.demo.frontend.apache.echarts.`export`
 
 import com.peknight.demo.frontend.apache.echarts.component.toolbox.{IconStyleMixin, ToolboxOption, ToolboxTooltipFormatterParams}
 import com.peknight.demo.frontend.apache.echarts.util.*
-import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number, clean}
+import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number}
 
 import scala.scalajs.js
 
@@ -71,7 +71,7 @@ object ToolboxComponentOption:
     val _textStyle: js.UndefOr[LabelOption] = textStyle
     val _tooltip: js.UndefOr[CommonTooltipOption[ToolboxTooltipFormatterParams]] = tooltip
     val _feature: js.UndefOr[ToolboxFeatureOption] = feature
-    val toolboxComponentOption = new ToolboxComponentOption:
+    new ToolboxComponentOption:
       override val mainType: js.UndefOr[MainType] = "toolbox"
       override val `type`: js.UndefOr[Type] = _type
       override val id: js.UndefOr[OptionId] = _id
@@ -104,4 +104,3 @@ object ToolboxComponentOption:
       override val textStyle: js.UndefOr[LabelOption] = _textStyle
       override val tooltip: js.UndefOr[CommonTooltipOption[ToolboxTooltipFormatterParams]] = _tooltip
       override val feature: js.UndefOr[ToolboxFeatureOption] = _feature
-    toolboxComponentOption.clean

@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.coord.geo
 
-import com.peknight.demo.frontend.apache.echarts.util.{ColorString, HorizontalAlign, ImageMixin, LabelOption, TextCommonOption, VerticalAlign, ZRFontStyle, ZRFontWeight, ZRLineType}
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
+import com.peknight.demo.frontend.apache.echarts.Number
+import com.peknight.demo.frontend.apache.echarts.util.*
 import com.peknight.demo.frontend.ecomfe.zrender.core.BuiltinTextPosition
 
 import scala.scalajs.js
@@ -102,7 +102,7 @@ object GeoLabelOption:
     val _valueAnimation: js.UndefOr[Boolean] = valueAnimation
     val _rich: js.UndefOr[TextCommonOption] = rich
     val _formatter: js.UndefOr[String | js.Function1[GeoLabelFormatterDataParams, String]] = formatter
-    val geoLabelOption: GeoLabelOption = new GeoLabelOption:
+    new GeoLabelOption:
       override val color: js.UndefOr[String] = _color
       override val fontStyle: js.UndefOr[ZRFontStyle] = _fontStyle
       override val fontWeight: js.UndefOr[ZRFontWeight] = _fontWeight
@@ -147,4 +147,3 @@ object GeoLabelOption:
       override val valueAnimation: js.UndefOr[Boolean] = _valueAnimation
       override val rich: js.UndefOr[TextCommonOption] = _rich
       override val formatter: js.UndefOr[String | js.Function1[GeoLabelFormatterDataParams, String]] = _formatter
-    geoLabelOption.clean

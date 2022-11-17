@@ -21,7 +21,7 @@ class DataVisualizationPage[Builder, Output <: FragT, FragT](val bundle: Bundle[
       script(`type` := "text/javascript", src := "/webjars/jquery/3.6.1/jquery.min.js"),
       script(`type` := "text/javascript", src := "/echarts/china.js"),
       script(`type` := "text/javascript", src := "/main.js"),
-      script("dataVisualization();dataVisualizationChinaMap()")
+      script("dataVisualization()")
     ),
     body(
       // 父容器大盒子

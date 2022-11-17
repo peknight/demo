@@ -1,6 +1,6 @@
 package com.peknight.demo.frontend.apache.echarts.util
 
-import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number, clean}
+import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number}
 
 import scala.scalajs.js
 
@@ -37,7 +37,7 @@ object ItemStyleOption:
     val _color: js.UndefOr[ZRColor | TCbParams | js.Function1[TCbParams, ZRColor]] = color
     val _opacity: js.UndefOr[Number] = opacity
     val _decal: js.UndefOr[DecalObject | "none"] = decal
-    val itemStyleOption: ItemStyleOption[TCbParams] = new ItemStyleOption[TCbParams]:
+    new ItemStyleOption[TCbParams]:
       override val shadowBlur: js.UndefOr[Number] = _shadowBlur
       override val shadowColor: js.UndefOr[ColorString] = _shadowColor
       override val shadowOffsetX: js.UndefOr[Number] = _shadowOffsetX
@@ -52,4 +52,3 @@ object ItemStyleOption:
       override val color: js.UndefOr[ZRColor | TCbParams | js.Function1[TCbParams, ZRColor]] = _color
       override val opacity: js.UndefOr[Number] = _opacity
       override val decal: js.UndefOr[DecalObject | "none"] = _decal
-    itemStyleOption.clean

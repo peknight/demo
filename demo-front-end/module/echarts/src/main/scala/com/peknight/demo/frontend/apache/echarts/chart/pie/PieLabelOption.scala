@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.chart.pie
 
-import com.peknight.demo.frontend.apache.echarts.util.{CallbackDataParams, ColorString, HorizontalAlign, ImageMixin, LabelFormatterCallback, SeriesLabelOption, TextCommonOption, VerticalAlign, ZRFontStyle, ZRFontWeight, ZRLineType}
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
+import com.peknight.demo.frontend.apache.echarts.Number
+import com.peknight.demo.frontend.apache.echarts.util.*
 import com.peknight.demo.frontend.ecomfe.zrender.core.BuiltinTextPosition
 
 import scala.scalajs.js
@@ -112,7 +112,7 @@ object PieLabelOption:
     val _edgeDistance: js.UndefOr[String | Number] = edgeDistance
     val _bleedMargin: js.UndefOr[Number] = bleedMargin
     val _distanceToLabelLine: js.UndefOr[Number] = distanceToLabelLine
-    val pieLabelOption: PieLabelOption = new PieLabelOption:
+    new PieLabelOption:
       override val color: js.UndefOr[String] = _color
       override val fontStyle: js.UndefOr[ZRFontStyle] = _fontStyle
       override val fontWeight: js.UndefOr[ZRFontWeight] = _fontWeight
@@ -161,4 +161,3 @@ object PieLabelOption:
       override val edgeDistance: js.UndefOr[String | Number] = _edgeDistance
       override val bleedMargin: js.UndefOr[Number] = _bleedMargin
       override val distanceToLabelLine: js.UndefOr[Number] = _distanceToLabelLine
-    pieLabelOption.clean

@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.coord.geo
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.util.*
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 import com.peknight.demo.frontend.ecomfe.zrender.animation.AnimationEasing
 
 import scala.scalajs.js
@@ -107,7 +107,7 @@ object GeoOption:
     val _selectedMode: js.UndefOr["single" | "multiple" | Boolean] = selectedMode
     val _selectedMap: js.UndefOr[js.Dictionary[Boolean]] = selectedMap
     val _tooltip: js.UndefOr[CommonTooltipOption[GeoTooltipFormatterParams]] = tooltip
-    val geoOption: GeoOption = new GeoOption:
+    new GeoOption:
       override val mainType: js.UndefOr[MainType] = "geo"
       override val `type`: js.UndefOr[Type] = _type
       override val id: js.UndefOr[OptionId] = _id
@@ -152,4 +152,3 @@ object GeoOption:
       override val selectedMode: js.UndefOr["single" | "multiple" | Boolean] = _selectedMode
       override val selectedMap: js.UndefOr[js.Dictionary[Boolean]] = _selectedMap
       override val tooltip: js.UndefOr[CommonTooltipOption[GeoTooltipFormatterParams]] = _tooltip
-    geoOption.clean

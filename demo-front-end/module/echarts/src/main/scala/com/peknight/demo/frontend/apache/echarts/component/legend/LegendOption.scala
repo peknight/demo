@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.component.legend
 
 import com.peknight.demo.frontend.apache.echarts.util.*
-import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number, clean}
+import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number}
 
 import scala.scalajs.js
 
@@ -165,7 +165,7 @@ object LegendOption:
     val _selectorButtonGap: js.UndefOr[Number] = selectorButtonGap
     val _data: js.UndefOr[js.Array[String | DataItem]] = data
     val _tooltip: js.UndefOr[CommonTooltipOption[LegendTooltipFormatterParams]] = tooltip
-    val legendOption = new LegendOption:
+    new LegendOption:
       override val mainType: js.UndefOr[MainType] = "legend"
       override val `type`: js.UndefOr[Type] = _type
       override val id: js.UndefOr[OptionId] = _id
@@ -213,4 +213,3 @@ object LegendOption:
       override val selectorButtonGap: js.UndefOr[Number] = _selectorButtonGap
       override val data: js.UndefOr[js.Array[String | DataItem]] = _data
       override val tooltip: js.UndefOr[CommonTooltipOption[LegendTooltipFormatterParams]] = _tooltip
-    legendOption.clean

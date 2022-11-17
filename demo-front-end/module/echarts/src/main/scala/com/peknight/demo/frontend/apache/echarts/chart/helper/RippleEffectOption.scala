@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.chart.helper
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.util.ZRColor
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 
 import scala.scalajs.js
 
@@ -29,10 +29,9 @@ object RippleEffectOption:
     val _brushType: js.UndefOr["fill" | "stroke"] = brushType
     val _color: js.UndefOr[ZRColor] = color
     val _number: js.UndefOr[Number] = number
-    val rippleEffectOption: RippleEffectOption = new RippleEffectOption:
+    new RippleEffectOption:
       override val period: js.UndefOr[Number] = _period
       override val scale: js.UndefOr[Number] = _scale
       override val brushType: js.UndefOr["fill" | "stroke"] = _brushType
       override val color: js.UndefOr[ZRColor] = _color
       override val number: js.UndefOr[Number] = _number
-    rippleEffectOption.clean

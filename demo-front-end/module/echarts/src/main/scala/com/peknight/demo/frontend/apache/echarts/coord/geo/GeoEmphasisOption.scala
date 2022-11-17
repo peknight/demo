@@ -1,6 +1,5 @@
 package com.peknight.demo.frontend.apache.echarts.coord.geo
 
-import com.peknight.demo.frontend.apache.echarts.clean
 import com.peknight.demo.frontend.apache.echarts.util.{BlurScope, CallbackDataParams, StatesEmphasisOptionMixin}
 
 import scala.scalajs.js
@@ -15,10 +14,9 @@ object GeoEmphasisOption:
     val _label: js.UndefOr[GeoLabelOption] = label
     val _blurScope: js.UndefOr[BlurScope] = blurScope
     val _disabled: js.UndefOr[Boolean] = disabled
-    val geoEmphasisOption: GeoEmphasisOption = new GeoEmphasisOption:
+    new GeoEmphasisOption:
       override val itemStyle: js.UndefOr[GeoItemStyleOption[CallbackDataParams]] = _itemStyle
       override val label: js.UndefOr[GeoLabelOption] = _label
       override val blurScope: js.UndefOr[BlurScope] = _blurScope
       override val disabled: js.UndefOr[Boolean] = _disabled
-    geoEmphasisOption.clean
 

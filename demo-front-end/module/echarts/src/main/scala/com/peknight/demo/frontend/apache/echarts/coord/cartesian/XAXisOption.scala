@@ -1,8 +1,8 @@
 package com.peknight.demo.frontend.apache.echarts.coord.cartesian
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.coord.*
 import com.peknight.demo.frontend.apache.echarts.util.*
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 import com.peknight.demo.frontend.ecomfe.zrender.animation.AnimationEasing
 
 import scala.scalajs.js
@@ -88,7 +88,7 @@ object XAXisOption:
     val _position: js.UndefOr[CartesianAxisPosition] = position
     val _offset: js.UndefOr[Number] = offset
     val _categorySortInfo: js.UndefOr[OrdinalSortInfo] = categorySortInfo
-    val categoryOption: XAXisOption = new CategoryAxisBaseOption with CartesianAxisMixin with XAXisMainTypeMixin:
+    new CategoryAxisBaseOption with CartesianAxisMixin with XAXisMainTypeMixin:
       override val mainType: js.UndefOr[MainType] = "xAxis"
       override val `type`: js.UndefOr[Type] = "category"
       override val id: js.UndefOr[OptionId] = _id
@@ -131,8 +131,7 @@ object XAXisOption:
       override val position: js.UndefOr[CartesianAxisPosition] = _position
       override val offset: js.UndefOr[Number] = _offset
       override val categorySortInfo: js.UndefOr[OrdinalSortInfo] = _categorySortInfo
-    categoryOption.clean
-    
+
   def value(id: js.UndefOr[OptionId] = js.undefined,
             name: js.UndefOr[String] = js.undefined,
             z: js.UndefOr[Number] = js.undefined,
@@ -221,7 +220,7 @@ object XAXisOption:
     val _position: js.UndefOr[CartesianAxisPosition] = position
     val _offset: js.UndefOr[Number] = offset
     val _categorySortInfo: js.UndefOr[OrdinalSortInfo] = categorySortInfo
-    val valueOption: YAXisOption = new ValueAxisBaseOption with CartesianAxisMixin with YAXisMainTypeMixin:
+    new ValueAxisBaseOption with CartesianAxisMixin with YAXisMainTypeMixin:
       override val mainType: js.UndefOr[MainType] = "yAxis"
       override val `type`: js.UndefOr[Type] = "value"
       override val id: js.UndefOr[OptionId] = _id
@@ -268,4 +267,3 @@ object XAXisOption:
       override val position: js.UndefOr[CartesianAxisPosition] = _position
       override val offset: js.UndefOr[Number] = _offset
       override val categorySortInfo: js.UndefOr[OrdinalSortInfo] = _categorySortInfo
-    valueOption.clean

@@ -1,8 +1,8 @@
 package com.peknight.demo.frontend.apache.echarts.chart.lines
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.chart.helper.LineDrawEffectOption
-import com.peknight.demo.frontend.apache.echarts.util.{CallbackDataParams, DefaultStatesMixinEmphasis, SeriesLineLabelOption, StatesEmphasisOptionMixin, StatesOptionMixin, StatesSelectOptionMixin, ZRColor}
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
+import com.peknight.demo.frontend.apache.echarts.util.*
 
 import scala.scalajs.js
 
@@ -44,7 +44,7 @@ object LinesDataItemOption:
     val _coords: js.UndefOr[LinesCoords] = coords
     val _value: js.UndefOr[LinesValue] = value
     val _effect: js.UndefOr[LineDrawEffectOption] = effect
-    val linesDataItemOption: LinesDataItemOption = new LinesDataItemOption:
+    new LinesDataItemOption:
       override val lineStyle: js.UndefOr[LinesLineStyleOption[js.Function1[CallbackDataParams, ZRColor] | ZRColor]] = _lineStyle
       override val label: js.UndefOr[SeriesLineLabelOption] = _label
       override val emphasis: js.UndefOr[LinesStateOption[CallbackDataParams] & DefaultStatesMixinEmphasis & StatesEmphasisOptionMixin] = _emphasis
@@ -58,4 +58,3 @@ object LinesDataItemOption:
       override val coords: js.UndefOr[LinesCoords] = _coords
       override val value: js.UndefOr[LinesValue] = _value
       override val effect: js.UndefOr[LineDrawEffectOption] = _effect
-    linesDataItemOption.clean

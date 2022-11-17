@@ -1,6 +1,6 @@
 package com.peknight.demo.frontend.apache.echarts.util
 
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.ecomfe.zrender.core.BuiltinTextPosition
 
 import scala.scalajs.js
@@ -97,7 +97,7 @@ object SeriesLabelOption:
     val _valueAnimation: js.UndefOr[Boolean] = valueAnimation
     val _rich: js.UndefOr[TextCommonOption] = rich
     val _formatter: js.UndefOr[String | LabelFormatterCallback[CallbackDataParams]] = formatter
-    val seriesLabelOption: SeriesLabelOption = new SeriesLabelOption:
+    new SeriesLabelOption:
       type PositionType = BuiltinTextPosition | js.Array[Number | String]
       type DistanceType = Number
       type RotateType = Number
@@ -145,4 +145,3 @@ object SeriesLabelOption:
       override val valueAnimation: js.UndefOr[Boolean] = _valueAnimation
       override val rich: js.UndefOr[TextCommonOption] = _rich
       override val formatter: js.UndefOr[String | LabelFormatterCallback[CallbackDataParams]] = _formatter
-    seriesLabelOption.clean

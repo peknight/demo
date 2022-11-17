@@ -1,5 +1,6 @@
 package com.peknight.demo.frontend.apache.echarts.`export`
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.component.axispointer.AxisPointerOption
 import com.peknight.demo.frontend.apache.echarts.component.brush.BrushOption
 import com.peknight.demo.frontend.apache.echarts.component.dataset.DatasetOption
@@ -15,7 +16,6 @@ import com.peknight.demo.frontend.apache.echarts.coord.polar.{AngleAxisOption, P
 import com.peknight.demo.frontend.apache.echarts.coord.radar.RadarOption
 import com.peknight.demo.frontend.apache.echarts.coord.single.SingleAxisOption
 import com.peknight.demo.frontend.apache.echarts.util.*
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 import com.peknight.demo.frontend.ecomfe.zrender.animation.AnimationEasing
 
 import scala.scalajs.js
@@ -181,3 +181,18 @@ object EChartsOption:
       override val graphic: js.UndefOr[GraphicComponentLooseOption | js.Array[GraphicComponentLooseOption]] = _graphic
       override val series: js.UndefOr[SeriesOption[_, _, _, _] | js.Array[SeriesOption[_, _, _, _]]] = _series
     echartsOption.clean
+    
+  extension [T <: js.Any] (t: T)
+    def clean: T = t match
+      case func: js.Function => func
+      case array if js.Array.isArray(array) =>
+        array.asInstanceOf[js.Array[js.Any]].filterNot(js.isUndefined).map(_.clean).asInstanceOf[T]
+      case obj: js.Object =>
+        val newObj: js.Object = new js.Object()
+        js.Object.keys(obj)
+          .filterNot(key => js.isUndefined(obj.asInstanceOf[js.Dynamic].selectDynamic(key)))
+          .map(key => key -> obj.asInstanceOf[js.Dynamic].selectDynamic(key).clean)
+          .foreach { case (key, value) => newObj.asInstanceOf[js.Dynamic].updateDynamic(key)(value) }
+        newObj.asInstanceOf[T]
+      case other => other
+  end extension

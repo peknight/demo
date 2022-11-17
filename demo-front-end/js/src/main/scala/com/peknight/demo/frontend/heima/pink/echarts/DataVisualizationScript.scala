@@ -1,18 +1,25 @@
 package com.peknight.demo.frontend.heima.pink.echarts
 
 import com.peknight.demo.frontend.apache.echarts.`export`.EChartsOption
+import com.peknight.demo.frontend.apache.echarts.chart.bar.{BarDataItemOption, BarEmphasisOption, BarItemStyleOption, BarSeriesOption}
 import com.peknight.demo.frontend.apache.echarts.chart.effectscatter.{EffectScatterDataItemOption, EffectScatterEmphasisOption, EffectScatterSeriesOption}
 import com.peknight.demo.frontend.apache.echarts.chart.helper.{LineDrawEffectOption, RippleEffectOption}
+import com.peknight.demo.frontend.apache.echarts.chart.line.LineSeriesOption
 import com.peknight.demo.frontend.apache.echarts.chart.lines.{LinesDataItemOption, LinesLineStyleOption, LinesSeriesOption}
-import com.peknight.demo.frontend.apache.echarts.util.{CallbackDataParams, ItemStyleOption, OptionDataItemObject, SeriesLabelOption, SeriesOption}
 import com.peknight.demo.frontend.apache.echarts.chart.pie.*
+import com.peknight.demo.frontend.apache.echarts.component.legend.LegendOption
 import com.peknight.demo.frontend.apache.echarts.component.tooltip.{TooltipOption, TopLevelFormatterParams}
+import com.peknight.demo.frontend.apache.echarts.coord.cartesian.{GridOption, XAXisOption, YAXisOption}
 import com.peknight.demo.frontend.apache.echarts.coord.geo.{GeoEmphasisOption, GeoItemStyleOption, GeoLabelOption, GeoOption}
-import com.peknight.demo.frontend.apache.echarts.core.ECharts
+import com.peknight.demo.frontend.apache.echarts.coord.{AxisLabelOption, AxisLineOption, AxisTickOption, SplitLineOption}
+import com.peknight.demo.frontend.apache.echarts.core.{ECharts, EChartsType}
+import com.peknight.demo.frontend.apache.echarts.util.*
+import com.peknight.demo.frontend.ecomfe.zrender.graphic.GradientColorStop
 import org.querki.jquery.*
 import org.scalajs.dom
 
 import scala.scalajs.js
+import scala.scalajs.js.JSConverters.*
 import scala.scalajs.js.annotation.JSExportTopLevel
 
 object DataVisualizationScript:
@@ -23,13 +30,60 @@ object DataVisualizationScript:
   def dataVisualization(): Unit = $(() => {
     $(".monitor .tabs").on("click", "a", null, (element: dom.Element) => {
       $(element).addClass("active").siblings("a").removeClass("active")
+      // 选取对应索引号的content
       $(".monitor .content").eq($(element).index()).show().siblings(".content").hide()
     })
+    // 先克隆marquee里面所有的行(row)
     $(".marquee-view .marquee").each((element: dom.Element) => {
       val rows = $(element).children().clone()
       $(element).append(rows)
     })
-    ECharts.init(dom.document.querySelector(".pie").asInstanceOf[dom.HTMLElement]).setOption(EChartsOption(
+    // 点位分布统计模块
+    val pieChart = ECharts.init(dom.document.querySelector(".pie").asInstanceOf[dom.HTMLElement])
+    pieChart.setOption(pieChartOption)
+    // 地图模块
+    val geoChart = ECharts.init(dom.document.querySelector(".geo").asInstanceOf[dom.HTMLElement])
+    geoChart.setOption(geoChartOption)
+    // 柱状图模块
+    val barChart = ECharts.init(dom.document.querySelector(".bar").asInstanceOf[dom.HTMLElement])
+    barChart.setOption(barChartOption)
+    // 销售统计模块
+    val lineChart = ECharts.init(dom.document.querySelector(".line").asInstanceOf[dom.HTMLElement])
+    lineChart.setOption(lineChartOption(SaleData.year))
+    var lineIndex = 0
+    $(".sales .caption").on("click", "a", null, (element: dom.Element) => {
+      lineIndex = $(element).index() - 1
+      $(element).addClass("active").siblings("a").removeClass("active")
+      val saleData = element.asInstanceOf[dom.HTMLElement].dataset.get("type") match
+        case Some("quarter") => SaleData.quarter
+        case Some("month") => SaleData.month
+        case Some("week") => SaleData.week
+        case _ => SaleData.year
+      lineChart.setOption(lineChartOption(saleData))
+    })
+    val as = $(".sales .caption a")
+    val lineTimerFunction: js.Function0[Any] = () => {
+      lineIndex += 1
+      if lineIndex >= 4 then lineIndex = 0
+      as.eq(lineIndex).click()
+    }
+    var lineTimer = dom.window.setInterval(lineTimerFunction, 1000)
+    $(".sales").hover(() => dom.window.clearInterval(lineTimer), () => {
+      dom.window.clearInterval(lineTimer)
+      lineTimer = dom.window.setInterval(lineTimerFunction, 1000)
+    })
+
+    dom.window.addEventListener("resize", _ => {
+      pieChart.resize()
+      geoChart.resize()
+      barChart.resize()
+      lineChart.resize()
+    })
+  })
+
+  // 点位分布统计模块
+  private[this] val pieChartOption: EChartsOption =
+    EChartsOption(
       tooltip = TooltipOption(trigger = "item", formatter = "{a} <br/>{b} : {c} ({d}%)"),
       color = js.Array("#006cff", "#60cda0", "#ed8884", "#ff9f7f", "#0096ff", "#9fe6b8", "#32c5e9", "#1d9dff"),
       series = js.Array(PieSeriesOption(
@@ -49,53 +103,104 @@ object DataVisualizationScript:
           PieDataItemOption(value = 42, name = "湖北"),
         ),
         label = PieLabelOption(fontSize = 10),
+        // 修饰引导线样式 length连接到图形的线长度 length2连接到文字的线长度
         labelLine = PieLabelLineOption(length = 6, length2 = 8)
       ))
-    ))
-  })
-
-  @JSExportTopLevel("dataVisualizationChinaMap")
-  def dataVisualizationChinaMap(): Unit = $(() => {
-    val geoChart = ECharts.init(dom.document.querySelector(".geo").asInstanceOf[dom.HTMLElement])
-    val series = js.Array(
-      convertSeries("西安", xianData, "#a6c84c") :::
-        convertSeries("西宁", xiningData, "#ffa022") :::
-        convertSeries("拉萨", lasaData, "#46bee9")*
     )
-    val option = EChartsOption(
-      tooltip = TooltipOption(
-        trigger = "item",
-        formatter = (params: TopLevelFormatterParams, _: String, _: js.Function2[String, String | dom.HTMLElement | js.Array[dom.HTMLElement], Unit]) => {
-          dom.console.log(params)
-          val cb: CallbackDataParams = params.asInstanceOf[CallbackDataParams]
-          cb.seriesType match
-            case "effectScatter" =>
-              val data: EffectScatterDataItemOption = cb.data.asInstanceOf[EffectScatterDataItemOption]
-              s"线路：${data.name} ${data.value.asInstanceOf[js.Array[Double | Int]](2)}"
-            case "lines" =>
-              val data: LinesDataItemOption = cb.data.asInstanceOf[LinesDataItemOption]
-              s"${data.fromName} > ${data.toName} <br /> ${data.value}"
-            case _ => cb.name
-        }
+  end pieChartOption
+
+  // 柱状图模块
+  private[this] val barChartOption: EChartsOption =
+    val item = BarDataItemOption(
+      name = "",
+      value = 1200,
+      itemStyle = BarItemStyleOption(color = "#254065"),
+      emphasis = BarEmphasisOption(itemStyle = BarItemStyleOption(color = "#254065")),
+      tooltip = TooltipOption(extraCssText = "opacity: 0")
+    )
+    EChartsOption(
+      color = LinearGradient(
+        0, 0, 0, 1,
+        js.Array(GradientColorStop(0, "#00fffb"), GradientColorStop(1, "#0061ce"))
       ),
-      geo = GeoOption(
-        map = "china",
-        emphasis = GeoEmphasisOption(
-          label = GeoLabelOption(show = true, color = "#fff"),
-          itemStyle = GeoItemStyleOption(areaColor = "#2B91B7")
+      tooltip = TooltipOption(trigger = "item"),
+      grid = GridOption(
+        left = "0%", right = "3%", bottom = "3%", top = "3%",
+        // 图表位置紧贴画面边缘显示刻度以及label文字 防止坐标轴标签溢出跟grid 区域有关系
+        containLabel = true,
+        // 是否显示直角坐标系网格
+        show = true,
+        // grid 四条边框的颜色
+        borderColor = "rgba(0, 240, 255, 0.3)"
+      ),
+      xAxis = XAXisOption.category(
+        data = js.Array("上海", "广州", "北京", "深圳", "合肥", "", "......", "", "杭州", "厦门", "济南", "成都", "重庆"),
+        axisTick = AxisTickOption(
+          alignWithLabel = false,
+          // 把x轴的刻度隐藏起来
+          show = false
         ),
-        roam = true,
-        zoom = 1.2,
-        itemStyle = GeoItemStyleOption(areaColor = "#142957", borderColor = "#195BB9", borderWidth = 1)
+        axisLabel = AxisLabelOption(color = "#4c9bfd"),
+        axisLine = AxisLineOption(lineStyle = LineStyleOption(color = "rgba(0, 240, 255, 0.3)"))
       ),
-      series = series
+      yAxis = YAXisOption.value(
+        axisTick = AxisTickOption(alignWithLabel = false, show = false),
+        axisLabel = AxisLabelOption(color = "#4c9bfd"),
+        axisLine = AxisLineOption(lineStyle = LineStyleOption(color = "rgba(0, 240, 255, 0.3)")),
+        splitLine = SplitLineOption(lineStyle = LineStyleOption(color = "rgba(0, 240, 255, 0.3)"))
+      ),
+      series = js.Array(BarSeriesOption(name = "直接访问", barWidth = "60%", data = js.Array(
+        2100, 1900, 1700, 1560, 1400, item, item, item, 900, 750, 600, 480, 240
+      )))
     )
-    dom.console.log(option)
-    geoChart.setOption(option)
-    dom.window.addEventListener("resize", _ => geoChart.resize())
-  })
+  end barChartOption
 
-  val geoCoordMap: Map[String, js.Array[Double | Int]] = Map(
+  // 销售统计模块
+  private[this] def lineChartOption(saleData: SaleData): EChartsOption =
+    EChartsOption(
+      color = js.Array("#00f2f1", "#ed3f35"),
+      tooltip = TooltipOption(trigger = "axis"),
+      legend = LegendOption(right = "10%", textStyle = LabelOption(color = "#4c9bfd")),
+      grid = GridOption(top = "20%", left = "3%", right = "4%", bottom = "3%", show = true, borderColor = "#012f4a",
+        containLabel = true),
+      xAxis = XAXisOption.category(
+        boundaryGap = false,
+        data = js.Array("1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"),
+        axisTick = AxisTickOption(show = false)
+      ),
+      yAxis = YAXisOption.value(
+        axisTick = AxisTickOption(show = false),
+        axisLabel = AxisLabelOption(color = "#4c9bfd"),
+        splitLine = SplitLineOption(lineStyle = LineStyleOption(color = "#012f4a"))
+      ),
+      series = js.Array(
+        // smooth: 是否让线条圆滑显示
+        LineSeriesOption(name = "预期销售额", stack = "总量", smooth = true, data = saleData.expected.toJSArray),
+        LineSeriesOption(name = "实际销售额", stack = "总量", smooth = true, data = saleData.actual.toJSArray)
+      )
+    )
+
+  private[this] case class SaleData(expected: Seq[Int], actual: Seq[Int])
+  private[this] object SaleData:
+    val year: SaleData = SaleData(
+      Seq(24, 40, 101, 134, 90, 230, 210, 230, 120, 230, 210, 120),
+      Seq(40, 64, 191, 324, 290, 330, 310, 213, 180, 200, 180, 79)
+    )
+    val quarter: SaleData = SaleData(
+      Seq(23, 75, 12, 97, 21, 67, 98, 21, 43, 64, 76, 38),
+      Seq(43, 31, 65, 23, 78, 21, 82, 64, 43, 60, 19, 34)
+    )
+    val month: SaleData = SaleData(
+      Seq(34, 87, 32, 76, 98, 12, 32, 87, 39, 36, 29, 36),
+      Seq(56, 43, 98, 21, 56, 87, 43, 12, 43, 54, 12, 98)
+    )
+    val week: SaleData = SaleData(
+      Seq(43, 73, 62, 54, 91, 54, 84, 43, 86, 43, 54, 53),
+      Seq(32, 54, 34, 87, 32, 45, 62, 68, 93, 54, 54, 24)
+    )
+  end SaleData
+
+  private[this] val geoCoordMap: Map[String, js.Array[Double | Int]] = Map(
     "上海" -> js.Array(121.4648, 31.2891),
     "东莞" -> js.Array(113.8953, 22.901),
     "东营" -> js.Array(118.7073, 37.5513),
@@ -211,31 +316,66 @@ object DataVisualizationScript:
     "青岛" -> js.Array(120.4651, 36.3373),
     "韶关" -> js.Array(113.7964, 24.7028)
   )
-  val xianData = Seq(
+  private[this] val xianData: Seq[(String, String, Int)] = Seq(
     ("西安", "北京", 100),
     ("西安", "上海", 100),
     ("西安", "广州", 100),
     ("西安", "西宁", 100),
     ("西安", "拉萨", 100)
   )
-  val xiningData = Seq(
+  private[this] val xiningData: Seq[(String, String, Int)] = Seq(
     ("西宁", "北京", 100),
     ("西宁", "上海", 100),
     ("西宁", "广州", 100),
     ("西宁", "西安", 100),
     ("西宁", "银川", 100)
   )
-  val lasaData = Seq(
+  private[this] val lasaData: Seq[(String, String, Int)] = Seq(
     ("拉萨", "北京", 100),
     ("拉萨", "潍坊", 100),
     ("拉萨", "哈尔滨", 100)
   )
-  val planePath = "path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63." +
-    "961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12." +
-    "238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12." +
-    "238-241.308L1705.06,1318.313z"
+  private[this] val planePath: String = "path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84." +
+    "662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89." +
+    "254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134." +
+    "449-92.931l12.238-241.308L1705.06,1318.313z"
 
-  def convertData(data: Seq[(String, String, Int)]): js.Array[LinesDataItemOption] = js.Array(
+  private[this] val geoChartOption: EChartsOption =
+    val series = js.Array(
+      convertSeries("西安", xianData, "#a6c84c") :::
+        convertSeries("西宁", xiningData, "#ffa022") :::
+        convertSeries("拉萨", lasaData, "#46bee9")*
+    )
+    EChartsOption(
+      tooltip = TooltipOption(
+        trigger = "item",
+        formatter = (params: TopLevelFormatterParams, _: String, _: js.Function2[String, String | dom.HTMLElement | js.Array[dom.HTMLElement], Unit]) => {
+          val cb: CallbackDataParams = params.asInstanceOf[CallbackDataParams]
+          cb.seriesType match
+            case "effectScatter" =>
+              val data: EffectScatterDataItemOption = cb.data.asInstanceOf[EffectScatterDataItemOption]
+              s"线路：${data.name} ${data.value.asInstanceOf[js.Array[Double | Int]](2)}"
+            case "lines" =>
+              val data: LinesDataItemOption = cb.data.asInstanceOf[LinesDataItemOption]
+              s"${data.fromName} > ${data.toName} <br /> ${data.value}"
+            case _ => cb.name
+        }
+      ),
+      geo = GeoOption(
+        map = "china",
+        emphasis = GeoEmphasisOption(
+          label = GeoLabelOption(show = true, color = "#fff"),
+          itemStyle = GeoItemStyleOption(areaColor = "#2B91B7")
+        ),
+        roam = true,
+        zoom = 1.2,
+        itemStyle = GeoItemStyleOption(areaColor = "#142957", borderColor = "#195BB9", borderWidth = 1)
+      ),
+      series = series
+    )
+  end geoChartOption
+
+  private[this] def convertData(data: Seq[(String, String, Int)]): js.Array[LinesDataItemOption] = js.Array(
     data.map { case (from, to, value) =>
       for
         fromCoord <- geoCoordMap.get(from)
@@ -247,7 +387,7 @@ object DataVisualizationScript:
     }*
   )
 
-  def convertSeries(city: String, data: Seq[(String, String, Int)], color: String): List[SeriesOption[_, _, _, _]] =
+  private[this] def convertSeries(city: String, data: Seq[(String, String, Int)], color: String): List[SeriesOption[_, _, _, _]] =
     val name = s"$city Top3"
     val convertedData = convertData(data)
     List(
@@ -273,11 +413,12 @@ object DataVisualizationScript:
         zlevel = 2,
         rippleEffect = RippleEffectOption(brushType = "stroke"),
         label = SeriesLabelOption(show = true, position = "right", formatter = "{b}"),
-        symbolSize = (value, _) => {
-          value.asInstanceOf[js.Array[Double | Int]](2) match
-            case d: Double => d / 8
-            case i: Int => i / 8
-        },
+        symbolSize =
+          (value, _) => {
+            value.asInstanceOf[js.Array[Double | Int]](2) match
+              case d: Double => d / 8
+              case i: Int => i / 8
+          },
         itemStyle = ItemStyleOption(color = color),
         emphasis = EffectScatterEmphasisOption(GeoItemStyleOption(areaColor = "#2B91B7")),
         data = js.Array(data.map {

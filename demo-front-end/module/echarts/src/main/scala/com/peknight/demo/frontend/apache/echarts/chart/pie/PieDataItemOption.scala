@@ -1,6 +1,5 @@
 package com.peknight.demo.frontend.apache.echarts.chart.pie
 
-import com.peknight.demo.frontend.apache.echarts.clean
 import com.peknight.demo.frontend.apache.echarts.util.*
 
 import scala.scalajs.js
@@ -36,7 +35,7 @@ object PieDataItemOption:
     val _select: js.UndefOr[PieStateOption[PieCallbackDataParams] & js.Any & StatesSelectOptionMixin] = select
     val _blur: js.UndefOr[PieStateOption[PieCallbackDataParams] & js.Any] = blur
     val _cursor: js.UndefOr[String] = cursor
-    val pieDataItemOption = new PieDataItemOption:
+    new PieDataItemOption:
       override val id: js.UndefOr[OptionId] = _id
       override val name: js.UndefOr[OptionName] = _name
       override val groupId: js.UndefOr[OptionId] = _groupId
@@ -49,4 +48,3 @@ object PieDataItemOption:
       override val select: js.UndefOr[PieStateOption[PieCallbackDataParams] & js.Any & StatesSelectOptionMixin] = _select
       override val blur: js.UndefOr[PieStateOption[PieCallbackDataParams] & js.Any] = _blur
       override val cursor: js.UndefOr[ColorString] = _cursor
-    pieDataItemOption.clean

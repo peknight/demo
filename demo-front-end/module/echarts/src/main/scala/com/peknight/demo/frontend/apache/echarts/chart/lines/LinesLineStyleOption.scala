@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.chart.lines
 
 import com.peknight.demo.frontend.apache.echarts.util.{ColorString, LineStyleOption, ZRLineType}
-import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number, clean}
+import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number}
 
 import scala.scalajs.js
 
@@ -36,7 +36,7 @@ object LinesLineStyleOption:
     val _dashOffset: js.UndefOr[Number] = dashOffset
     val _miterLimit: js.UndefOr[Number] = miterLimit
     val _curveness: js.UndefOr[Number] = curveness
-    val linesLineStyleOption: LinesLineStyleOption[TClr] = new LinesLineStyleOption[TClr]:
+    new LinesLineStyleOption[TClr]:
       override val shadowBlur: js.UndefOr[Number] = _shadowBlur
       override val shadowColor: js.UndefOr[ColorString] = _shadowColor
       override val shadowOffsetX: js.UndefOr[Number] = _shadowOffsetX
@@ -50,4 +50,3 @@ object LinesLineStyleOption:
       override val dashOffset: js.UndefOr[Number] = _dashOffset
       override val miterLimit: js.UndefOr[Number] = _miterLimit
       override val curveness: js.UndefOr[Number] = _curveness
-    linesLineStyleOption.clean

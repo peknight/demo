@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.chart.pie
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.util.{LabelLineOption, LineStyleOption, ZRColor}
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 
 import scala.scalajs.js
 
@@ -29,7 +29,7 @@ object PieLabelLineOption:
     val _minTurnAngle: js.UndefOr[Number] = minTurnAngle
     val _lineStyle: js.UndefOr[LineStyleOption[ZRColor]] = lineStyle
     val _maxSurfaceAngle: js.UndefOr[Number] = maxSurfaceAngle
-    val pieLabelLineOption: PieLabelLineOption = new PieLabelLineOption:
+    new PieLabelLineOption:
       override val show: js.UndefOr[Boolean] = _show
       override val showAbove: js.UndefOr[Boolean] = _showAbove
       override val length: js.UndefOr[Number] = _length
@@ -38,4 +38,3 @@ object PieLabelLineOption:
       override val minTurnAngle: js.UndefOr[Number] = _minTurnAngle
       override val lineStyle: js.UndefOr[LineStyleOption[ZRColor]] = _lineStyle
       override val maxSurfaceAngle: js.UndefOr[Number] = _maxSurfaceAngle
-    pieLabelLineOption.clean

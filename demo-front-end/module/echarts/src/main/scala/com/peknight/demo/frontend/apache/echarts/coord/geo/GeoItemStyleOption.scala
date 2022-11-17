@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.coord.geo
 
 import com.peknight.demo.frontend.apache.echarts.util.{ColorString, DecalObject, ItemStyleOption, ZRColor, ZRLineType}
-import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number, clean}
+import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number}
 
 import scala.scalajs.js
 
@@ -39,7 +39,7 @@ object GeoItemStyleOption:
     val _opacity: js.UndefOr[Number] = opacity
     val _decal: js.UndefOr[DecalObject | "none"] = decal
     val _areaColor: js.UndefOr[ZRColor] = areaColor
-    val geoItemStyleOption: GeoItemStyleOption[TCbParams] = new GeoItemStyleOption[TCbParams]:
+    new GeoItemStyleOption[TCbParams]:
       override val shadowBlur: js.UndefOr[Number] = _shadowBlur
       override val shadowColor: js.UndefOr[ColorString] = _shadowColor
       override val shadowOffsetX: js.UndefOr[Number] = _shadowOffsetX
@@ -55,4 +55,3 @@ object GeoItemStyleOption:
       override val opacity: js.UndefOr[Number] = _opacity
       override val decal: js.UndefOr[DecalObject | "none"] = _decal
       override val areaColor: js.UndefOr[ZRColor] = _areaColor
-    geoItemStyleOption.clean

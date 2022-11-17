@@ -1,6 +1,5 @@
 package com.peknight.demo.frontend.apache.echarts.`export`
 
-import com.peknight.demo.frontend.apache.echarts.clean
 import com.peknight.demo.frontend.apache.echarts.component.toolbox.feature.*
 import com.peknight.demo.frontend.apache.echarts.component.toolbox.{IconStyle, IconStyleMixin}
 import com.peknight.demo.frontend.apache.echarts.util.DisplayState
@@ -42,7 +41,7 @@ object ToolboxFeatureOption:
     val _magicType: js.UndefOr[ToolboxMagicTypeFeatureOption] = magicType
     val _restore: js.UndefOr[ToolboxRestoreFeatureOption] = restore
     val _saveAsImage: js.UndefOr[ToolboxSaveAsImageFeatureOption] = saveAsImage
-    val toolboxFeatureOption = new ToolboxFeatureOption:
+    new ToolboxFeatureOption:
       override val show: js.UndefOr[Boolean] = _show
       override val title: js.UndefOr[String] = _title
       override val icon: js.UndefOr[String] = _icon
@@ -56,4 +55,3 @@ object ToolboxFeatureOption:
       override val magicType: js.UndefOr[ToolboxMagicTypeFeatureOption] = _magicType
       override val restore: js.UndefOr[ToolboxRestoreFeatureOption] = _restore
       override val saveAsImage: js.UndefOr[ToolboxSaveAsImageFeatureOption] = _saveAsImage
-    toolboxFeatureOption.clean

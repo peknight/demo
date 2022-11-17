@@ -1,8 +1,8 @@
 package com.peknight.demo.frontend.apache.echarts.chart.effectscatter
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.chart.helper.DefaultEmphasisFocusScaleMixin
 import com.peknight.demo.frontend.apache.echarts.util.*
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 
 import scala.scalajs.js
 
@@ -22,11 +22,10 @@ object EffectScatterEmphasisOption:
     val _scale: js.UndefOr[Boolean | Number] = scale
     val _blurScope: js.UndefOr[BlurScope] = blurScope
     val _disabled: js.UndefOr[Boolean] = disabled
-    val effectScatterEmphasisOption: EffectScatterEmphasisOption = new EffectScatterEmphasisOption:
+    new EffectScatterEmphasisOption:
       override val itemStyle: js.UndefOr[ItemStyleOption[CallbackDataParams]] = _itemStyle
       override val label: js.UndefOr[SeriesLabelOption] = _label
       override val focus: js.UndefOr[DefaultEmphasisFocus] = _focus
       override val scale: js.UndefOr[Boolean | Number] = _scale
       override val blurScope: js.UndefOr[BlurScope] = _blurScope
       override val disabled: js.UndefOr[Boolean] = _disabled
-    effectScatterEmphasisOption.clean

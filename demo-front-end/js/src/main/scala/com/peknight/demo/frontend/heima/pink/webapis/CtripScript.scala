@@ -68,7 +68,7 @@ object CtripScript:
     val goBack = dom.document.querySelector(".go-back").asInstanceOf[dom.HTMLElement]
     val nav = dom.document.querySelector("nav").asInstanceOf[dom.HTMLElement]
     dom.window.addEventListener("scroll", _ => {
-      if (dom.window.pageYOffset >= nav.offsetTop) then goBack.style.display = "block"
+      if dom.window.pageYOffset >= nav.offsetTop then goBack.style.display = "block"
       else goBack.style.display = "none"
     })
     goBack.addEventListener("click", _ => dom.window.scroll(0, 0))

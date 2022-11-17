@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.chart.pie
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.util.{BlurScope, DefaultEmphasisFocus, StatesEmphasisOptionMixin}
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 
 import scala.scalajs.js
 
@@ -25,7 +25,7 @@ object PieEmphasisOption:
     val _scaleSize: js.UndefOr[Number] = scaleSize
     val _blurScope: js.UndefOr[BlurScope] = blurScope
     val _disabled: js.UndefOr[Boolean] = disabled
-    val pieEmphasisOption = new PieEmphasisOption:
+    new PieEmphasisOption:
       override val itemStyle: js.UndefOr[PieItemStyleOption[PieCallbackDataParams]] = _itemStyle
       override val label: js.UndefOr[PieLabelOption] = _label
       override val labelLine: js.UndefOr[PieLabelLineOption] = _labelLine
@@ -34,5 +34,4 @@ object PieEmphasisOption:
       override val scaleSize: js.UndefOr[Number] = _scaleSize
       override val blurScope: js.UndefOr[BlurScope] = _blurScope
       override val disabled: js.UndefOr[Boolean] = _disabled
-    pieEmphasisOption.clean
 

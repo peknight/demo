@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.coord.cartesian
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.util.*
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 
 import scala.scalajs.js
 
@@ -62,7 +62,7 @@ object GridOption:
     val _borderWidth: js.UndefOr[Number] = borderWidth
     val _borderColor: js.UndefOr[ZRColor] = borderColor
     val _tooltip: js.UndefOr[js.Any] = tooltip
-    val gridOption = new GridOption:
+    new GridOption:
       override val mainType: js.UndefOr[MainType] = "grid"
       override val `type`: js.UndefOr[Type] = _type
       override val id: js.UndefOr[OptionId] = _id
@@ -85,4 +85,3 @@ object GridOption:
       override val borderWidth: js.UndefOr[Number] = _borderWidth
       override val borderColor: js.UndefOr[ZRColor] = _borderColor
       override val tooltip: js.UndefOr[js.Any] = _tooltip
-    gridOption.clean

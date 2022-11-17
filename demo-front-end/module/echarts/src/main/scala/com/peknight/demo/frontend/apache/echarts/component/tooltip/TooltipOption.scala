@@ -1,8 +1,8 @@
 package com.peknight.demo.frontend.apache.echarts.component.tooltip
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.component.axispointer.AxisPointerOption
 import com.peknight.demo.frontend.apache.echarts.util.*
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 
 import scala.scalajs.js
 
@@ -111,7 +111,7 @@ object TooltipOption:
     val _appendToBody: js.UndefOr[Boolean] = appendToBody
     val _className: js.UndefOr[String] = className
     val _order: js.UndefOr[TooltipOrderMode] = order
-    val tooltipOption = new TooltipOption:
+    new TooltipOption:
       override val mainType: js.UndefOr[MainType] = "tooltip"
       override val `type`: js.UndefOr[Type] = _type
       override val id: js.UndefOr[OptionId] = _id
@@ -149,4 +149,3 @@ object TooltipOption:
       override val appendToBody: js.UndefOr[Boolean] = _appendToBody
       override val className: js.UndefOr[String] = _className
       override val order: js.UndefOr[TooltipOrderMode] = _order
-    tooltipOption.clean

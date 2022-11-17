@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.chart.helper
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.util.ColorString
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 
 import scala.scalajs.js
 
@@ -48,7 +48,7 @@ object LineDrawEffectOption:
     val _roundTrip: js.UndefOr[Boolean] = roundTrip
     val _trailLength: js.UndefOr[Number] = trailLength
     val _color: js.UndefOr[ColorString] = color
-    val lineDrawEffectOption: LineDrawEffectOption = new LineDrawEffectOption:
+    new LineDrawEffectOption:
       override val show: js.UndefOr[Boolean] = _show
       override val period: js.UndefOr[Number] = _period
       override val delay: js.UndefOr[Number | js.Function1[Number, Number]] = _delay
@@ -59,4 +59,3 @@ object LineDrawEffectOption:
       override val roundTrip: js.UndefOr[Boolean] = _roundTrip
       override val trailLength: js.UndefOr[Number] = _trailLength
       override val color: js.UndefOr[ColorString] = _color
-    lineDrawEffectOption.clean

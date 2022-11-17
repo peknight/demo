@@ -1,9 +1,9 @@
 package com.peknight.demo.frontend.apache.echarts.chart.line
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.`export`.SeriesInjectedOption
 import com.peknight.demo.frontend.apache.echarts.component.marker.{MarkAreaOption, MarkLineOption, MarkPointOption}
-import com.peknight.demo.frontend.apache.echarts.util.{AnimationDelayCallback, AnimationDurationCallback, AnimationOption, AreaStyleOption, CallbackDataParams, ColorBy, DimensionDefinitionLoose, ItemStyleOption, LabelLayoutOption, LabelLayoutOptionCallback, LabelLineOption, OptionEncode, OptionId, OptionName, OptionSourceHeader, SamplingFunc, SeriesLabelOption, SeriesLayoutBy, SeriesTooltipOption, StatesEmphasisOptionMixin, StatesSelectOptionMixin, SymbolCallback, SymbolOffsetCallback, SymbolRotateCallback, SymbolSizeCallback, UniversalTransitionOption, ZRColor}
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
+import com.peknight.demo.frontend.apache.echarts.util.*
 import com.peknight.demo.frontend.ecomfe.zrender.animation.AnimationEasing
 
 import scala.scalajs.js
@@ -156,7 +156,7 @@ object LineSeriesOption:
     val _markLine: js.UndefOr[MarkLineOption] = markLine
     val _markPoint: js.UndefOr[MarkPointOption] = markPoint
     val _tooltip: js.UndefOr[SeriesTooltipOption] = tooltip
-    val lineSeriesOption: LineSeriesOption = new LineSeriesOption:
+    new LineSeriesOption:
       override val mainType: js.UndefOr[MainType] = "series"
       override val `type`: js.UndefOr[Type] = "line"
       override val id: js.UndefOr[OptionId] = _id
@@ -231,5 +231,4 @@ object LineSeriesOption:
       override val markLine: js.UndefOr[MarkLineOption] = _markLine
       override val markPoint: js.UndefOr[MarkPointOption] = _markPoint
       override val tooltip: js.UndefOr[SeriesTooltipOption] = _tooltip
-    lineSeriesOption.clean
 

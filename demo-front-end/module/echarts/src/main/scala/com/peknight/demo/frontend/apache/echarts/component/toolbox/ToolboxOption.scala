@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.component.toolbox
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.util.*
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 
 import scala.scalajs.js
 

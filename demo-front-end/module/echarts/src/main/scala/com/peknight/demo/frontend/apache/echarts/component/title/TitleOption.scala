@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.component.title
 
 import com.peknight.demo.frontend.apache.echarts.util.*
-import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number, clean}
+import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number}
 
 import scala.scalajs.js
 
@@ -99,7 +99,7 @@ object TitleOption:
     val _subtextStyle: js.UndefOr[LabelOption] = subtextStyle
     val _triggerEvent: js.UndefOr[Boolean] = triggerEvent
     val _borderRadius: js.UndefOr[Number | js.Array[Number]] = borderRadius
-    val titleOption = new TitleOption:
+    new TitleOption:
       override val mainType: js.UndefOr[MainType] = "title"
       override val `type`: js.UndefOr[Type] = _type
       override val id: js.UndefOr[OptionId] = _id
@@ -136,4 +136,3 @@ object TitleOption:
       override val subtextStyle: js.UndefOr[LabelOption] = _subtextStyle
       override val triggerEvent: js.UndefOr[Boolean] = _triggerEvent
       override val borderRadius: js.UndefOr[Number | js.Array[Number]] = _borderRadius
-    titleOption.clean

@@ -1,7 +1,7 @@
 package com.peknight.demo.frontend.apache.echarts.chart.pie
 
 import com.peknight.demo.frontend.apache.echarts.util.{ColorString, DecalObject, ItemStyleOption, ZRColor, ZRLineType}
-import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number, clean}
+import com.peknight.demo.frontend.apache.echarts.{CanvasLineCap, CanvasLineJoin, Number}
 
 import scala.scalajs.js
 
@@ -40,7 +40,7 @@ object PieItemStyleOption:
     val _opacity: js.UndefOr[Number] = opacity
     val _decal: js.UndefOr[DecalObject | "none"] = decal
     val _borderRadius: js.UndefOr[js.Array[Number | String] | Number | String] = borderRadius
-    val pieItemStyleOption = new PieItemStyleOption[TCbParams]:
+    new PieItemStyleOption[TCbParams]:
       override val shadowBlur: js.UndefOr[Number] = _shadowBlur
       override val shadowColor: js.UndefOr[ColorString] = _shadowColor
       override val shadowOffsetX: js.UndefOr[Number] = _shadowOffsetX
@@ -56,4 +56,3 @@ object PieItemStyleOption:
       override val opacity: js.UndefOr[Number] = _opacity
       override val decal: js.UndefOr[DecalObject | "none"] = _decal
       override val borderRadius: js.UndefOr[js.Array[Number | String] | Number | String] = _borderRadius
-    pieItemStyleOption.clean

@@ -1,8 +1,8 @@
 package com.peknight.demo.frontend.apache.echarts.component.toolbox.feature
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.component.toolbox.{IconStyle, IconStyleMixin, ToolboxFeatureOption}
 import com.peknight.demo.frontend.apache.echarts.util.{DisplayState, ZRColor}
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
 
 import scala.scalajs.js
 
@@ -44,7 +44,7 @@ object ToolboxSaveAsImageFeatureOption:
     val _excludeComponents: js.UndefOr[js.Array[String]] = excludeComponents
     val _pixelRatio: js.UndefOr[Number] = pixelRatio
     val _lang: js.UndefOr[js.Array[String]] = lang
-    val toolboxSaveAsImageFeatureOption: ToolboxSaveAsImageFeatureOption = new ToolboxSaveAsImageFeatureOption:
+    new ToolboxSaveAsImageFeatureOption:
       override val show: js.UndefOr[Boolean] = _show
       override val title: js.UndefOr[String] = _title
       override val icon: js.UndefOr[String] = _icon
@@ -59,4 +59,3 @@ object ToolboxSaveAsImageFeatureOption:
       override val excludeComponents: js.UndefOr[js.Array[String]] = _excludeComponents
       override val pixelRatio: js.UndefOr[Number] = _pixelRatio
       override val lang: js.UndefOr[js.Array[String]] = _lang
-    toolboxSaveAsImageFeatureOption.clean  

@@ -1,8 +1,8 @@
 package com.peknight.demo.frontend.apache.echarts.chart.effectscatter
 
+import com.peknight.demo.frontend.apache.echarts.Number
 import com.peknight.demo.frontend.apache.echarts.chart.helper.{DefaultEmphasisFocusScaleMixin, RippleEffectOption}
-import com.peknight.demo.frontend.apache.echarts.util.{CallbackDataParams, ItemStyleOption, SeriesLabelOption, StatesEmphasisOptionMixin, StatesOptionMixin, StatesSelectOptionMixin, SymbolCallback, SymbolOffsetCallback, SymbolOptionMixin, SymbolRotateCallback, SymbolSizeCallback}
-import com.peknight.demo.frontend.apache.echarts.{Number, clean}
+import com.peknight.demo.frontend.apache.echarts.util.*
 
 import scala.scalajs.js
 
@@ -42,7 +42,7 @@ object EffectScatterDataItemOption:
     val _name: js.UndefOr[String] = name
     val _value: js.UndefOr[ScatterDataValue] = value
     val _rippleEffect: js.UndefOr[RippleEffectOption] = rippleEffect
-    val effectScatterDataItemOption: EffectScatterDataItemOption = new EffectScatterDataItemOption:
+    new EffectScatterDataItemOption:
       override val symbol: js.UndefOr[String | SymbolCallback[CallbackDataParams]] = _symbol
       override val symbolSize: js.UndefOr[Number | js.Array[Number] | SymbolSizeCallback[CallbackDataParams]] = _symbolSize
       override val symbolRotate: js.UndefOr[Number | SymbolRotateCallback[CallbackDataParams]] = _symbolRotate
@@ -56,4 +56,3 @@ object EffectScatterDataItemOption:
       override val name: js.UndefOr[String] = _name
       override val value: js.UndefOr[ScatterDataValue] = _value
       override val rippleEffect: js.UndefOr[RippleEffectOption] = _rippleEffect
-    effectScatterDataItemOption.clean

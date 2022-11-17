@@ -6,7 +6,8 @@ import scala.scalajs.js
 
 // 手工提取
 trait BaseTextStyle extends js.Object:
-  val color: js.UndefOr[String] = js.undefined
+  type ColorType >: String
+  val color: js.UndefOr[ColorType] = js.undefined
   val fontStyle: js.UndefOr[ZRFontStyle] = js.undefined
   val fontWeight: js.UndefOr[ZRFontWeight] = js.undefined
   val fontFamily: js.UndefOr[String] = js.undefined
