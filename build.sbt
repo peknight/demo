@@ -243,7 +243,7 @@ lazy val demoCiris = (project in file("demo-ciris"))
       cirisHttp4s,
       cirisRefined,
       cirisSquants,
-      cirisHocon,
+      // cirisHocon,
       circeGeneric,
       refinedCats,
     ),
@@ -659,7 +659,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       cirisCirceYaml,
       cirisRefined,
       cirisSquants,
-      cirisHocon,
+      // cirisHocon,
       circeGeneric,
       refinedCats,
       http4sScalaTags,
@@ -707,7 +707,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
 // Scala
 
 val scalaCheckVersion = "1.17.0"
-val scalaTestVersion = "3.2.12"
+val scalaTestVersion = "3.2.14"
 
 val scalaCheck = "org.scalacheck" %% "scalacheck" % scalaCheckVersion
 val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
@@ -716,18 +716,18 @@ val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
 
 val shapelessVersion = "3.2.0"
 val shapeless2Version = "2.3.10"
-val catsVersion = "2.8.0"
-val catsEffectVersion = "3.3.14"
+val catsVersion = "2.9.0"
+val catsEffectVersion = "3.4.0"
 val catsParseVersion = "0.3.8"
 val fs2Version = "3.3.0"
 val circeVersion = "0.14.3"
 val circeFs2Version = "0.14.0"
 val monocleVersion = "3.1.0"
 val log4CatsVersion = "2.5.0"
-val cirisVersion = "2.4.0"
+val cirisVersion = "3.0.0"
 val cirisHoconVersion = "1.0.1"
 val refinedCatsVersion = "0.10.1"
-val catsStmVersion = "0.11.0"
+val catsStmVersion = "0.13.2"
 val spireVersion = "0.18.0-M3"
 val squantsVersion = "1.8.3"
 val http4sVersion = "1.0.0-M32"
@@ -762,7 +762,7 @@ val cirisCirceYaml = "is.cir" %% "ciris-circe-yaml" % cirisVersion
 val cirisHttp4s = "is.cir" %% "ciris-http4s" % cirisVersion
 val cirisRefined = "is.cir" %% "ciris-refined" % cirisVersion
 val cirisSquants = "is.cir" %% "ciris-squants" % cirisVersion
-val cirisHocon = "lt.dvim.ciris-hocon" %% "ciris-hocon" % cirisHoconVersion
+// val cirisHocon = "lt.dvim.ciris-hocon" %% "ciris-hocon" % cirisHoconVersion
 val refinedCats = "eu.timepit" %% "refined-cats" % refinedCatsVersion
 val catsStm = "io.github.timwspence" %% "cats-stm" % catsStmVersion
 val spire = "org.typelevel" %% "spire" % spireVersion
@@ -790,15 +790,15 @@ val zioStreams = "dev.zio" %% "zio-streams" % zioVersion
 
 // Library
 
-val logbackVersion = "1.4.1"
+val logbackVersion = "1.4.4"
 val jansiVersion = "1.18"
-val akkaVersion = "2.6.20"
+val akkaVersion = "2.7.0"
 val apacheCommonsCodecVersion = "1.15"
 val h2Version = "2.1.214"
 val postgisJdbcVersion = "2021.1.0"
 val acme4jVersion = "2.14"
 val bouncyCastleVersion = "1.70"
-val jwtCirceVersion = "9.1.1"
+val jwtCirceVersion = "9.1.2"
 val scalaJwkVersion = "1.2.24"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
@@ -818,7 +818,7 @@ val scalaJwk = "com.chatwork" %% "scala-jwk" % scalaJwkVersion
 
 val jQueryVersion = "3.6.1"
 val flexibleVersion = "2.2.1"
-val swiperVersion = "8.3.2"
+val swiperVersion = "8.4.4"
 val bootstrapVersion = "5.2.2"
 val bootstrapIconsVersion = "1.9.1"
 val fastClickVersion = "1.0.6"

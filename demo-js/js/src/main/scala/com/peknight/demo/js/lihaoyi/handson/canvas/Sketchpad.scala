@@ -25,7 +25,7 @@ object Sketchpad:
       canvas.context2d.drawSquare(Point.colored(e.clientX - rect.left, e.clientY - rect.top, Black), 10)
     else Sync[F].unit
 
-  def program[F[_]: Async](canvas: html.Canvas): F[Unit] = Dispatcher[F].use{ dispatcher =>
+  def program[F[_]: Async](canvas: html.Canvas): F[Unit] = Dispatcher.sequential[F].use{ dispatcher =>
     given Dispatcher[F] = dispatcher
     for
       _ <- canvas.resize[F]

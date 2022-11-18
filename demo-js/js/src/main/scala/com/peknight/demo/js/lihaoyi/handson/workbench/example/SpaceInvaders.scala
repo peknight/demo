@@ -104,20 +104,21 @@ object SpaceInvaders:
       _ <- renderer.drawSquare(Point.colored(player.x - 5, player.y - 5, Blue), 10)
     yield ()
 
-  def program[F[_]: Async](canvas: html.Canvas, rate: FiniteDuration): F[Unit] = Dispatcher[F].use { dispatcher =>
-    given Dispatcher[F] = dispatcher
-    for
-      _ <- canvas.resize[F]
-      addBulletR <- Ref.of[F, Boolean](false)
-      keysDownR <- Ref.of[F, Set[Int]](Set())
-      _ <- addEventListener(KeyPress) { case e if e.keyCode == KeyCode.Space => addBulletR.update(_ => true) }
-      _ <- addEventListener(KeyDown) { e => keysDownR.update(_ + e.keyCode) }
-      _ <- addEventListener(KeyUp) { e => keysDownR.update(_ - e.keyCode) }
-      startTime <- Clock[F].monotonic
-      runtime = Runtime(Point(canvas.width / 2, canvas.height / 2), Seq(), Seq(), 1, startTime)
-      _ <- Stream.repeatEval(nextState(addBulletR, keysDownR, canvas.width, canvas.height)).through(state(runtime))
-        .evalMap(r => draw(canvas, r.player, r.enemies, r.bullets)).metered(rate).compile.drain
-    yield ()
+  def program[F[_]: Async](canvas: html.Canvas, rate: FiniteDuration): F[Unit] = Dispatcher.sequential[F].use {
+    dispatcher =>
+      given Dispatcher[F] = dispatcher
+      for
+        _ <- canvas.resize[F]
+        addBulletR <- Ref.of[F, Boolean](false)
+        keysDownR <- Ref.of[F, Set[Int]](Set())
+        _ <- addEventListener(KeyPress) { case e if e.keyCode == KeyCode.Space => addBulletR.update(_ => true) }
+        _ <- addEventListener(KeyDown) { e => keysDownR.update(_ + e.keyCode) }
+        _ <- addEventListener(KeyUp) { e => keysDownR.update(_ - e.keyCode) }
+        startTime <- Clock[F].monotonic
+        runtime = Runtime(Point(canvas.width / 2, canvas.height / 2), Seq(), Seq(), 1, startTime)
+        _ <- Stream.repeatEval(nextState(addBulletR, keysDownR, canvas.width, canvas.height)).through(state(runtime))
+          .evalMap(r => draw(canvas, r.player, r.enemies, r.bullets)).metered(rate).compile.drain
+      yield ()
   }
 
   @JSExportTopLevel("spaceInvaders")

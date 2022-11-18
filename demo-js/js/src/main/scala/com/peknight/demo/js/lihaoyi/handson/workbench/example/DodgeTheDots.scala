@@ -99,7 +99,7 @@ object DodgeTheDots:
     yield ()
 
   def program[F[_]: Async](canvas: html.Canvas, maxEnemies: Int, rate: FiniteDuration): F[Unit] =
-    Dispatcher[F].use { dispatcher =>
+    Dispatcher.sequential[F].use { dispatcher =>
       given Dispatcher[F] = dispatcher
       for
         _ <- canvas.resize

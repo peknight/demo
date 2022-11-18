@@ -24,7 +24,7 @@ object DispatcherApp extends IOApp.Simple:
     yield ()
 
   //noinspection DuplicatedCode
-  val dispatcherDemo = Dispatcher[IO].use { dispatcher =>
+  val dispatcherDemo = Dispatcher.sequential[IO].use { dispatcher =>
     for
       queue <- Queue.unbounded[IO, String]
       impureInterface <- IO.delay {

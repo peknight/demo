@@ -139,20 +139,21 @@ object FlappyBox:
       else drawLive(canvas, playerY, getHoles(frame, obstacles, canvas.width))
     }
 
-  def program[F[_]: Async](canvas: html.Canvas, rate: FiniteDuration): F[Unit] = Dispatcher[F].use { dispatcher =>
-    given Dispatcher[F] = dispatcher
-    val renderer = canvas.context2d
-    for
-      _ <- canvas.resize
-      _ <- initCanvas(renderer)
-      clickCountR <- Ref.of[F, Int](0)
-      _ <- addEventListener(Click)(_ => clickCountR.update(_ + 1))
-      startTime <- Clock[F].monotonic
-      runtime = Runtime(Random(startTime.toNanos), canvas.height / 2, 0, -50, Queue(), None, startTime)
-      _ <- Stream.repeatEval(nextState(clickCountR, canvas.width, canvas.height)).through(state(runtime))
-        .evalMap(r => draw(canvas, r.playerY, r.frame, r.obstacles, r.dead))
-        .metered(rate).compile.drain
-    yield ()
+  def program[F[_]: Async](canvas: html.Canvas, rate: FiniteDuration): F[Unit] = Dispatcher.sequential[F].use {
+    dispatcher =>
+      given Dispatcher[F] = dispatcher
+      val renderer = canvas.context2d
+      for
+        _ <- canvas.resize
+        _ <- initCanvas(renderer)
+        clickCountR <- Ref.of[F, Int](0)
+        _ <- addEventListener(Click)(_ => clickCountR.update(_ + 1))
+        startTime <- Clock[F].monotonic
+        runtime = Runtime(Random(startTime.toNanos), canvas.height / 2, 0, -50, Queue(), None, startTime)
+        _ <- Stream.repeatEval(nextState(clickCountR, canvas.width, canvas.height)).through(state(runtime))
+          .evalMap(r => draw(canvas, r.playerY, r.frame, r.obstacles, r.dead))
+          .metered(rate).compile.drain
+      yield ()
   }
 
   @JSExportTopLevel("flappyBox")

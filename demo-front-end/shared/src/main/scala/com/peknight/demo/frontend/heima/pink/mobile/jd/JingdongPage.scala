@@ -19,8 +19,8 @@ class JingdongPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, 
         link(rel := "stylesheet", href := "/css/normalize.css"),
         // 引入我们首页的css
         link(rel := "stylesheet", href := "/css/jingdong.css"),
-        link(rel := "stylesheet", href := "/webjars/swiper/8.3.2/swiper-bundle.min.css"),
-        script(src := "/webjars/swiper/8.3.2/swiper-bundle.min.js"),
+        link(rel := "stylesheet", href := "/webjars/swiper/8.4.4/swiper-bundle.min.css"),
+        script(src := "/webjars/swiper/8.4.4/swiper-bundle.min.js"),
         script(src := "/main.js"),
         script("jingdongSlider()")
       ),
