@@ -462,6 +462,7 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
       bootstrapIcons,
       fastClick,
       eCharts,
+      vue,
       logbackClassic % Runtime,
       jansi % Runtime,
     ),
@@ -686,6 +687,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       bootstrapIcons,
       fastClick,
       eCharts,
+      vue,
       logbackClassic % Runtime,
       jansi % Runtime,
       doobieScalaTest % Test,
@@ -821,6 +823,7 @@ val bootstrapVersion = "5.2.2"
 val bootstrapIconsVersion = "1.9.1"
 val fastClickVersion = "1.0.6"
 val eChartsVersion = "5.4.0"
+val vueVersion = "3.2.45"
 
 val jQuery = "org.webjars" % "jquery" % jQueryVersion
 val flexible = "org.webjars.npm" % "amfe-flexible" % flexibleVersion
@@ -829,6 +832,7 @@ val bootstrap = "org.webjars.npm" % "bootstrap" % bootstrapVersion
 val bootstrapIcons = "org.webjars.npm" % "bootstrap-icons" % bootstrapIconsVersion
 val fastClick = "org.webjars.npm" % "fastclick" % fastClickVersion
 val eCharts = "org.webjars.npm" % "echarts" % eChartsVersion
+val vue = "org.webjars.npm" % "vue" % vueVersion
 
 // Test
 
