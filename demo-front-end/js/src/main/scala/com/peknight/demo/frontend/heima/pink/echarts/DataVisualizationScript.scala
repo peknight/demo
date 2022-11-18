@@ -124,7 +124,7 @@ object DataVisualizationScript:
         radius = js.Array("10%", "70%"),
         center = js.Array("50%", "50%"),
         roseType = "area",
-        itemStyle = PieItemStyleOption(borderRadius = 5),
+        // itemStyle = PieItemStyleOption(borderRadius = 5),
         data = js.Array(
           PieDataItemOption(value = 20, name = "云南"),
           PieDataItemOption(value = 26, name = "北京"),
