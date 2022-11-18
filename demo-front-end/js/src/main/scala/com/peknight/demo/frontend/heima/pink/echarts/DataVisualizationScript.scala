@@ -7,16 +7,19 @@ import com.peknight.demo.frontend.apache.echarts.chart.helper.{LineDrawEffectOpt
 import com.peknight.demo.frontend.apache.echarts.chart.line.LineSeriesOption
 import com.peknight.demo.frontend.apache.echarts.chart.lines.{LinesDataItemOption, LinesLineStyleOption, LinesSeriesOption}
 import com.peknight.demo.frontend.apache.echarts.chart.pie.*
+import com.peknight.demo.frontend.apache.echarts.chart.rader.RadarSeriesOption
 import com.peknight.demo.frontend.apache.echarts.component.legend.LegendOption
 import com.peknight.demo.frontend.apache.echarts.component.tooltip.{TooltipOption, TopLevelFormatterParams}
 import com.peknight.demo.frontend.apache.echarts.coord.cartesian.{GridOption, XAXisOption, YAXisOption}
 import com.peknight.demo.frontend.apache.echarts.coord.geo.{GeoEmphasisOption, GeoItemStyleOption, GeoLabelOption, GeoOption}
-import com.peknight.demo.frontend.apache.echarts.coord.{AxisLabelOption, AxisLineOption, AxisTickOption, SplitLineOption}
+import com.peknight.demo.frontend.apache.echarts.coord.radar.{RadarIndicatorOption, RadarOption}
+import com.peknight.demo.frontend.apache.echarts.coord.*
 import com.peknight.demo.frontend.apache.echarts.core.{ECharts, EChartsType}
 import com.peknight.demo.frontend.apache.echarts.util.*
 import com.peknight.demo.frontend.ecomfe.zrender.graphic.GradientColorStop
 import org.querki.jquery.*
 import org.scalajs.dom
+import scalatags.Text.all.*
 
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters.*
@@ -72,12 +75,42 @@ object DataVisualizationScript:
       dom.window.clearInterval(lineTimer)
       lineTimer = dom.window.setInterval(lineTimerFunction, 1000)
     })
+    // 销售渠道模块 雷达图
+    val radarChart = ECharts.init(dom.document.querySelector(".radar").asInstanceOf[dom.HTMLElement])
+    radarChart.setOption(radarChartOption)
+    // 销售模块 饼形图 半圆形 设置方式
+    val gaugeChart = ECharts.init(dom.document.querySelector(".gauge").asInstanceOf[dom.HTMLElement])
+    gaugeChart.setOption(gaugeChartOption)
+
+    val hotDataHtml: String = hotData.map(item =>
+      li(span(item.city), span(item.sales, s(cls := (if item.flag then "icon-up" else "icon-down"))))
+    ).render
+    $(".sup").html(hotDataHtml)
+    var hotDataIndex = 0
+    $(".province .sup").on("mouseenter", "li", null, (element: dom.Element) => {
+      hotDataIndex = $(element).index()
+      renderHotData($(element))
+    })
+    val lis = $(".province .sup li")
+    lis.eq(0).mouseenter()
+    val hotDataTimerFunction: js.Function0[Any] = () => {
+      hotDataIndex += 1
+      if hotDataIndex >= 5 then hotDataIndex = 0
+      renderHotData(lis.eq(hotDataIndex))
+    }
+    var hotDataTimer = dom.window.setInterval(hotDataTimerFunction, 2000)
+    $(".province .sup").hover(() => dom.window.clearInterval(hotDataTimer), () => {
+      dom.window.clearInterval(hotDataTimer)
+      hotDataTimer = dom.window.setInterval(hotDataTimerFunction, 2000)
+    })
 
     dom.window.addEventListener("resize", _ => {
       pieChart.resize()
       geoChart.resize()
       barChart.resize()
       lineChart.resize()
+      radarChart.resize()
+      gaugeChart.resize()
     })
   })
 
@@ -199,6 +232,120 @@ object DataVisualizationScript:
       Seq(32, 54, 34, 87, 32, 45, 62, 68, 93, 54, 54, 24)
     )
   end SaleData
+
+  // 销售渠道模块 雷达图
+  private[this] val radarChartOption: EChartsOption =
+    EChartsOption(
+      tooltip = TooltipOption(show = true, position = js.Array("60%", "10%")),
+      radar = RadarOption(
+        indicator = js.Array(
+          RadarIndicatorOption(name = "机场", max = 100, color = "#4c9bfd"),
+          RadarIndicatorOption(name = "商场", max = 100, color = "#4c9bfd"),
+          RadarIndicatorOption(name = "火车站", max = 100, color = "#4c9bfd"),
+          RadarIndicatorOption(name = "汽车站", max = 100, color = "#4c9bfd"),
+          RadarIndicatorOption(name = "地铁", max = 100, color = "#4c9bfd")
+        ),
+        // 修改雷达图的大小
+        radius = "65%",
+        shape = "circle",
+        // 分割的圆圈个数
+        splitNumber = 4,
+        splitLine = SplitLineOption(lineStyle = LineStyleOption(color = "rgba(255,255,255,0.5)")),
+        splitArea = SplitAreaOption(show = false),
+        axisLine = AxisLineOption(lineStyle = LineStyleOption(color = "rgba(255,255,255,0.5)"))
+      ),
+      series = js.Array(RadarSeriesOption(
+        name = "北京",
+        // 填充区域的线条颜色
+        lineStyle = LineStyleOption(color = "#fff", width = 1, opacity = 0.5),
+        data = js.Array(js.Array(90, 19, 56, 11, 34)),
+        // 设置图形标记（拐点）
+        symbol = "circle",
+        // 设置小圆点大小
+        symbolSize = 5,
+        // 设置小圆点颜色
+        itemStyle = ItemStyleOption(color = "#fff"),
+        // 让小圆点显示数据
+        label = SeriesLabelOption(show = true, fontSize = 10),
+        areaStyle = AreaStyleOption(color = "rgba(238,197,102,0.6)")
+      ))
+    )
+
+  // 销售模块 饼形图 半圆形 设置方式
+  private[this] val gaugeChartOption: EChartsOption =
+    EChartsOption(series = js.Array(PieSeriesOption(
+      name = "销售进度",
+      radius = js.Array("130%", "150%"),
+      center = js.Array("48%", "80%"),
+      labelLine = PieLabelLineOption(show = false),
+      // 饼形图的起始角度为180，注意不是旋转角度
+      startAngle = 180,
+      // 鼠标经过不需要放大偏移图形
+      // hoverOffset = 0,
+      emphasis = PieEmphasisOption(scale = false),
+      data = js.Array(
+        PieDataItemOption(value = 100, itemStyle = PieItemStyleOption(color = LinearGradient(0, 0, 0, 1,
+          js.Array(GradientColorStop(0, "#00c9e0"), GradientColorStop(1, "#005fc1"))
+        ))),
+        PieDataItemOption(value = 100, itemStyle = PieItemStyleOption(color = "#12274d")),
+        PieDataItemOption(value = 200, itemStyle = PieItemStyleOption(color = "transparent")),
+      )
+    )))
+
+  private[this] case class HotDataItem(name: String, num: String, flag: Boolean)
+  // 城市 销售额 上升还是下降 品牌种类数据
+  private[this] case class HotData(city: String, sales: String, flag: Boolean, brands: Seq[HotDataItem])
+
+  private[this] val hotData: Vector[HotData] = Vector(
+    HotData("北京", "25,179", true, Seq(
+      HotDataItem("可爱多", "9,086", true),
+      HotDataItem("娃哈哈", "8,341", true),
+      HotDataItem("喜之郎", "7,407", false),
+      HotDataItem("八喜", "6,080", false),
+      HotDataItem("小洋人", "6,724", false),
+      HotDataItem("好多鱼", "2,170", true)
+    )),
+    HotData("河北", "23,252", false, Seq(
+      HotDataItem("可爱多", "3,457", false),
+      HotDataItem("娃哈哈", "2,124", true),
+      HotDataItem("喜之郎", "8,907", false),
+      HotDataItem("八喜", "6,080", true),
+      HotDataItem("小洋人", "1,724", false),
+      HotDataItem("好多鱼", "1,170", false)
+    )),
+    HotData("上海", "20,760", true, Seq(
+      HotDataItem("可爱多", "2,345", true),
+      HotDataItem("娃哈哈", "7,109", true),
+      HotDataItem("喜之郎", "3,701", false),
+      HotDataItem("八喜", "6,080", false),
+      HotDataItem("小洋人", "2,724", false),
+      HotDataItem("好多鱼", "2,998", true)
+    )),
+    HotData("江苏", "23,252", false, Seq(
+      HotDataItem("可爱多", "2,156", false),
+      HotDataItem("娃哈哈", "2,456", true),
+      HotDataItem("喜之郎", "9,737", true),
+      HotDataItem("八喜", "2,080", true),
+      HotDataItem("小洋人", "8,724", true),
+      HotDataItem("好多鱼", "1,770", false)
+    )),
+    HotData("山东", "20,760", true, Seq(
+      HotDataItem("可爱多", "9,567", true),
+      HotDataItem("娃哈哈", "2,345", false),
+      HotDataItem("喜之郎", "9,037", false),
+      HotDataItem("八喜", "1,080", true),
+      HotDataItem("小洋人", "4,724", false),
+      HotDataItem("好多鱼", "9,999", true)
+    ))
+  )
+
+  private[this] def renderHotData(currentEle: JQuery): Unit =
+    currentEle.addClass("active").siblings().removeClass("active")
+    val hotDataItemHtml: String = hotData(currentEle.index()).brands.map(item =>
+      li(span(item.name), span(item.num, s(cls := (if item.flag then "icon-up" else "icon-down"))))
+    ).render
+    $(".sub").html(hotDataItemHtml)
+
 
   private[this] val geoCoordMap: Map[String, js.Array[Double | Int]] = Map(
     "上海" -> js.Array(121.4648, 31.2891),
