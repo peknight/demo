@@ -53,6 +53,7 @@ lazy val demo = (project in file("."))
     demoJsModuleB,
     demoFrontEnd.jvm,
     demoFrontEnd.js,
+    demoFrontEndModuleNode,
     demoFrontEndModuleZRender,
     demoFrontEndModuleECharts,
     demoFrontEndModuleSwiper,
@@ -468,6 +469,7 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
     ),
   )
   .jsConfigure(_.dependsOn(
+    demoFrontEndModuleNode,
     demoFrontEndModuleZRender,
     demoFrontEndModuleECharts,
     demoFrontEndModuleSwiper,
@@ -478,6 +480,20 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
     libraryDependencies ++= Seq(
       "org.http4s" %%% "http4s-dom" % http4sDomVersion,
       "org.querki" %%% "jquery-facade" % jQueryFacadeVersion,
+    ),
+  )
+
+lazy val demoFrontEndModuleNode = (project in file("demo-front-end/module/node"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-front-end-module-node",
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) },
+    scalaJSUseMainModuleInitializer := true,
+    Compile / mainClass := Some("com.peknight.demo.frontend.node.NodeApp"),
+    // jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
     ),
   )
 
