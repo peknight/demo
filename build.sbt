@@ -416,17 +416,19 @@ lazy val demoJsModuleA = (project in file("demo-js/module/module-a"))
   .settings(commonSettings)
   .settings(
     name := "demo-js-module-a",
-    // scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
     ),
   )
 
 lazy val demoJsModuleB = (project in file("demo-js/module/module-b"))
-   .enablePlugins(ScalaJSPlugin)
+  .enablePlugins(ScalaJSPlugin)
+  .dependsOn(demoJsModuleA)
   .settings(commonSettings)
   .settings(
     name := "demo-js-module-b",
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
     Compile / scalaJSModuleInitializers ++= Seq(
       ModuleInitializer.mainMethod("com.peknight.demo.js.module.emitting.AppB", "main")
         .withModuleID("b")
