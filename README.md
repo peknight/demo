@@ -4,6 +4,7 @@
 
 ### Log
 
+* 2022.11.18: B站Pink老师JavaScript课程学完，准备研究研究模块化与Vue
 * 2022.10.21: B站Pink老师H5C3课程完结撒花，准备继续补补JavaScript与Scala.JS
 * 2022.10.10: 跟B站pink老师学学前端
 * 2022.10.02: 搞定OAuth2实战，准备补补前端
@@ -143,8 +144,8 @@
 
 * 前端知识学习
 * 参考: [B站黑马前端H5+CSS3](https://www.bilibili.com/video/BV14J4114768?p=1)
-* 进度: H5C3课程完成，继续JavaScript（用scalatags与scalacss重写）
-* 素材: [html+css素材](https://gitee.com/xiaoqiang001/html_css_material.git), [品优购素材](https://gitee.com/xiaoqiang001/pinyougoujingtaiyemian)
+* 进度: H5C3与JavaScript课程完成，继续搞Vue（用scalatags与scalacss重写）
+* 素材: [Pink素材](https://gitee.com/xiaoqiang001)
 
 #### demo-oauth2
 

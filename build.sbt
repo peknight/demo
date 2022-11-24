@@ -54,11 +54,13 @@ lazy val demo = (project in file("."))
     demoFrontEnd.jvm,
     demoFrontEnd.js,
     demoFrontEndModuleNode,
+    demoFrontEndModuleVue,
     demoFrontEndModuleZRender,
     demoFrontEndModuleECharts,
     demoFrontEndModuleSwiper,
     demoFrontEndModuleFastClick,
     demoFrontEndModuleZyMedia,
+    demoFrontEndModuleDemoVue,
     demoFrontEndModuleHeimamm,
     demoOAuth2.jvm,
     demoOAuth2.js,
@@ -472,11 +474,12 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
   )
   .jsConfigure(_.dependsOn(
     demoFrontEndModuleNode,
+    demoFrontEndModuleVue,
     demoFrontEndModuleZRender,
     demoFrontEndModuleECharts,
     demoFrontEndModuleSwiper,
     demoFrontEndModuleFastClick,
-    demoFrontEndModuleZyMedia
+    demoFrontEndModuleZyMedia,
   ))
   .jsSettings(
     libraryDependencies ++= Seq(
@@ -494,6 +497,17 @@ lazy val demoFrontEndModuleNode = (project in file("demo-front-end/module/node")
     scalaJSUseMainModuleInitializer := true,
     Compile / mainClass := Some("com.peknight.demo.frontend.node.NodeApp"),
     // jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+    ),
+  )
+
+lazy val demoFrontEndModuleVue = (project in file("demo-front-end/module/vue"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-front-end-module-vue",
+    scalacOptions ++= Seq("-explain"),
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
     ),
@@ -545,6 +559,18 @@ lazy val demoFrontEndModuleZyMedia = (project in file("demo-front-end/module/zym
   .settings(commonSettings)
   .settings(
     name := "demo-front-end-module-zymedia",
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
+    ),
+  )
+
+lazy val demoFrontEndModuleDemoVue = (project in file("demo-front-end/module/demo-vue"))
+  .enablePlugins(ScalaJSPlugin)
+  .dependsOn(demoFrontEndModuleVue)
+  .settings(commonSettings)
+  .settings(
+    name := "demo-front-end-module-demo-vue",
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
     ),
