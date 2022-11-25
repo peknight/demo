@@ -42,6 +42,15 @@ abstract class VuePage[Builder, Output <: FragT, FragT](val bundle: Bundle[Build
         meta(httpEquiv := "X-UA-Compatible", content := "ie=edge"),
         links.map(s => link(rel := "stylesheet", href := s)),
         styles.map(s => style(raw(s.render[String]))),
+        script(`type` := "importmap")(raw(
+          """
+            |{
+            |  "imports": {
+            |    "vue": "/webjars/vue/3.2.45/dist/vue.esm-browser.prod.js"
+            |  }
+            |}
+          """.stripMargin
+        )),
         scripts.map(s => script(src := s)),
         title(headTitle),
       ),

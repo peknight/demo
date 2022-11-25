@@ -10,9 +10,9 @@ class IntroductionPage[Builder, Output <: FragT, FragT](override val bundle: Bun
 
   override protected def headTitle: String = "快速上手 - 简介"
 
-  override protected def bodyFrag = div(id := "app")(button(attr("@click", raw = true) := "count++")("Count is: {{ count }}"))
-
   override protected def javaScriptMethod: Option[String] = Some("introduction")
+
+  override protected def bodyFrag = div(id := "app")(button(attr("@click", raw = true) := "count++")("Count is: {{ count }}"))
 
 end IntroductionPage
 object IntroductionPage:

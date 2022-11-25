@@ -10,9 +10,9 @@ class UseVuePage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
 
   override protected def headTitle: String = "快速上手 - 使用Vue"
 
-  override protected def bodyFrag = div(id := "app")("{{ message }}")
-
   override protected def javaScriptMethod: Option[String] = Some("useVue")
+
+  override protected def bodyFrag = div(id := "app")("{{ message }}")
 
 end UseVuePage
 object UseVuePage:
