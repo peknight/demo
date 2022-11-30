@@ -45,7 +45,7 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     ),
     form(action := "/greeting")(
       input(cls := "btn btn-default", `type` := "submit", value := "Greet in"), " ",
-      input(`type` := "radio", name := "language", value := "en", checked := "checked"), "English", " ",
+      input(`type` := "radio", name := "language", value := "en", checked), "English", " ",
       input(`type` := "radio", name := "language", value := "de"), "German", " ",
       input(`type` := "radio", name := "language", value := "it"), "Italian", " ",
       input(`type` := "radio", name := "language", value := "fr"), "French", " ",

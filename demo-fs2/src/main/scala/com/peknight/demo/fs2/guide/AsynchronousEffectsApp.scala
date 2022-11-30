@@ -36,7 +36,7 @@ object AsynchronousEffectsApp extends IOApp.Simple:
 
   def rows[F[_]](h: CSVHandle)(using F: Async[F]): Stream[F, Row] =
     for
-      dispatcher <- Stream.resource(Dispatcher[F])
+      dispatcher <- Stream.resource(Dispatcher.sequential[F])
       q <- Stream.eval(Queue.unbounded[F, Option[RowOrError]])
       _ <- Stream.eval { F.delay {
         def enqueue(v: Option[RowOrError]): Unit = dispatcher.unsafeRunAndForget(q.offer(v))
