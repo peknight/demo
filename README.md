@@ -4,6 +4,8 @@
 
 ### Log
 
+* 2023.01.12: 阳康准备过年，划一段时间后再继续学习FRP。
+* 2022.12.01: 过了一遍Vue.js与React.js。准备研究下Scala的FRP。
 * 2022.11.18: B站Pink老师JavaScript课程学完，准备研究研究模块化与Vue
 * 2022.10.21: B站Pink老师H5C3课程完结撒花，准备继续补补JavaScript与Scala.JS
 * 2022.10.10: 跟B站pink老师学学前端
@@ -35,7 +37,7 @@
 #### demo-cats
 
 * Cats全家桶基础，推荐用于函数式编程入门。
-* 参考: 猫书[Scala with Cats](https://underscore.io/books/scala-with-cats/)
+* 参考: 猫书[Scala with Cats](https://underscore.io/books/scala-with-cats/)，这本真是强烈推荐，学了猫书再学小红书无敌。
 * 进度: 100%，代码已迁移Scala3。
 
 #### demo-cats-effect
@@ -142,9 +144,9 @@
 
 #### demo-front-end
 
-* 前端知识学习
+* 前端知识学习，用scalatags与scalacss写前端页面，目标是能看懂JavaScript/TypeScript代码以及基于Vue.js、React.js的项目代码（但我自己只写Scala，不写js/ts）。
 * 参考: [B站黑马前端H5+CSS3](https://www.bilibili.com/video/BV14J4114768?p=1)
-* 进度: H5C3与JavaScript课程完成，继续搞Vue（用scalatags与scalacss重写）
+* 进度: H5C3与JavaScript课程完成，Vue3没找到现成好用的Scala的facade层，自己写又有点麻烦。学习了diff算法的源码，准备再学学Scala的FRP函数式响应编程（比如lihaoyi的scala.rx但它仅支持到Scala2，看看能不能自己搞一套在Scala能直接好用的。
 * 素材: [Pink素材](https://gitee.com/xiaoqiang001)
 
 #### demo-oauth2
@@ -171,6 +173,6 @@
 
 #### demo-monix
 
-* Cats全家桶，响应式编程库，等它支持Cats Effect 3.x我就开始学。不过看他们意思迁移到CE3.x是个复杂的过程，不知道要等多久，先占个坑。
+* Cats全家桶，响应式编程库，等它支持Cats Effect 3.x我就开始学。不过看他们意思迁移到CE3.x是个复杂的过程，不知道要等多久，先占个坑。（不过这也太久了吧，大半年不更新了）
 * 参考: [Monix官方文档](https://monix.io/)
 * 进度: 0%

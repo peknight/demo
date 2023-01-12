@@ -16,11 +16,11 @@ class AlibaixiuPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
         meta(name := "viewport", content := "width=device-width, initial-scale=1"),
         meta(httpEquiv := "X-UA-Compatible", content := "IE=edge"),
         title("阿里百秀"),
-        link(href := "/webjars/bootstrap/5.2.2/dist/css/bootstrap.min.css", rel := "stylesheet"),
+        link(href := "/webjars/bootstrap/5.2.3/dist/css/bootstrap.min.css", rel := "stylesheet"),
         link(href := "/webjars/bootstrap-icons/1.9.1/font/bootstrap-icons.css", rel := "stylesheet"),
         style(raw(AlibaixiuMediaStyles.render[String])),
         style(raw(AlibaixiuStyles.render[String])),
-        script(src := "/webjars/bootstrap/5.2.2/dist/js/bootstrap.bundle.min.js"),
+        script(src := "/webjars/bootstrap/5.2.3/dist/js/bootstrap.bundle.min.js"),
       ),
       body(
         div(cls := "container")(

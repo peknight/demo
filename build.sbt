@@ -758,10 +758,10 @@ val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
 
 // Functional
 
-val shapelessVersion = "3.2.0"
+val shapelessVersion = "3.3.0"
 val shapeless2Version = "2.3.10"
 val catsVersion = "2.9.0"
-val catsEffectVersion = "3.4.2"
+val catsEffectVersion = "3.4.4"
 val catsParseVersion = "0.3.8"
 val fs2Version = "3.4.0"
 val circeVersion = "0.14.3"
@@ -779,9 +779,9 @@ val http4sDomVersion = "1.0.0-M32"
 val http4sDropwizardMetricsVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M1"
 val doobieVersion = "1.0.0-RC2"
-val redis4CatsVersion = "1.2.0"
+val redis4CatsVersion = "1.3.0"
 val jawnAstVersion = "1.4.0"
-val zioVersion = "2.0.2"
+val zioVersion = "2.0.5"
 
 val shapeless = "org.typelevel" %% "shapeless3-deriving" % shapelessVersion
 val shapeless2 = "com.chuusai" %% "shapeless" % shapeless2Version
@@ -834,13 +834,13 @@ val zioStreams = "dev.zio" %% "zio-streams" % zioVersion
 
 // Library
 
-val logbackVersion = "1.4.4"
+val logbackVersion = "1.4.5"
 val jansiVersion = "1.18"
 val akkaVersion = "2.7.0"
 val apacheCommonsCodecVersion = "1.15"
 val h2Version = "2.1.214"
 val postgisJdbcVersion = "2021.1.0"
-val acme4jVersion = "2.14"
+val acme4jVersion = "2.15"
 val bouncyCastleVersion = "1.70"
 val jwtCirceVersion = "9.1.2"
 val scalaJwkVersion = "1.2.24"
@@ -863,10 +863,10 @@ val scalaJwk = "com.chatwork" %% "scala-jwk" % scalaJwkVersion
 val jQueryVersion = "3.6.1"
 val flexibleVersion = "2.2.1"
 val swiperVersion = "8.4.4"
-val bootstrapVersion = "5.2.2"
+val bootstrapVersion = "5.2.3"
 val bootstrapIconsVersion = "1.9.1"
 val fastClickVersion = "1.0.6"
-val eChartsVersion = "5.4.0"
+val eChartsVersion = "5.4.1"
 val vueVersion = "3.2.45"
 
 val jQuery = "org.webjars" % "jquery" % jQueryVersion
@@ -882,7 +882,7 @@ val vue = "org.webjars.npm" % "vue" % vueVersion
 
 val catsEffectTestingSpecsVersion = "1.4.0"
 val mUnitCatsEffectVersion = "1.0.7"
-val weaverCatsVersion = "0.8.0"
+val weaverCatsVersion = "0.8.1"
 
 val catsEffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
 val catsEffectTestingSpecs = "org.typelevel" %% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion
