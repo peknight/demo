@@ -130,6 +130,12 @@
 * 参考: [ZIO官方文档](https://zio.dev/)
 * 进度: 10%，学完了Overview部分，后续Reference、Ecosystem等部分尚未提起兴趣学
 
+#### demo-frp
+
+* Functional reactive programming
+* 参考: [Deprecating the Observer Pattern](http://infoscience.epfl.ch/record/176887/files/DeprecatingObservers2012.pdf), [ingoem/scala-react](https://github.com/ingoem/scala-react), [lihaoyi/scala.rx](https://github.com/lihaoyi/scala.rx)
+* 进度: 0%
+
 #### demo-akka
 
 * 基于Actor模型的重型框架

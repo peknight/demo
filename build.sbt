@@ -46,6 +46,7 @@ lazy val demo = (project in file("."))
     demoDoobie,
     demoRedis4Cats,
     demoZio,
+    demoFrp,
     demoAkka,
     demoJs.jvm,
     demoJs.js,
@@ -355,6 +356,14 @@ lazy val demoZio = (project in file("demo-zio"))
     libraryDependencies ++= Seq(
       zio,
       zioStreams,
+    ),
+  )
+
+lazy val demoFrp = (project in file("demo-frp"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-frp",
+    libraryDependencies ++= Seq(
     ),
   )
 
