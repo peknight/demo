@@ -5,7 +5,7 @@ import com.peknight.demo.scala.meta.mirror.philippmartini.PrettyString.{*, given
 /**
  * 参考：https://blog.philipp-martini.de/blog/magic-mirror-scala3/
  */
-object MirrorApp extends App :
+object MirrorApp extends App:
 
   prettyPrintln(User("bob", 25))
 
