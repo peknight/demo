@@ -36,7 +36,7 @@ import scala.collection.immutable.Queue
 import scala.concurrent.duration.*
 import scala.util.{Failure, Success, Try}
 
-object ProtectedResourceApp extends IOApp.Simple :
+object ProtectedResourceApp extends IOApp.Simple:
 
   //noinspection ForwardReference
   val run: IO[Unit] =

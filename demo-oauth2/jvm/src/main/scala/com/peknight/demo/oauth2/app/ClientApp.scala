@@ -30,7 +30,7 @@ import pdi.jwt.*
 import pdi.jwt.algorithms.JwtRSAAlgorithm
 import scodec.bits.Bases.Alphabets.Base64Url
 
-object ClientApp extends IOApp.Simple :
+object ClientApp extends IOApp.Simple:
 
   val run: IO[Unit] =
     for

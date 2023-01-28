@@ -41,7 +41,7 @@ import java.security.interfaces.{RSAPrivateCrtKey, RSAPublicKey}
 import scala.annotation.unused
 import scala.concurrent.duration.*
 
-object AuthorizationServerApp extends IOApp.Simple :
+object AuthorizationServerApp extends IOApp.Simple:
 
   val run: IO[Unit] =
     for
