@@ -46,8 +46,9 @@ lazy val demo = (project in file("."))
     demoDoobie,
     demoRedis4Cats,
     demoZio,
-    demoFrp,
     demoAkka,
+    demoScalaTest,
+    demoScalaCheck,
     demoJs.jvm,
     demoJs.js,
     demoJsModuleA,
@@ -359,14 +360,6 @@ lazy val demoZio = (project in file("demo-zio"))
     ),
   )
 
-lazy val demoFrp = (project in file("demo-frp"))
-  .settings(commonSettings)
-  .settings(
-    name := "demo-frp",
-    libraryDependencies ++= Seq(
-    ),
-  )
-
 lazy val demoAkka = (project in file("demo-akka"))
   .settings(commonSettings)
   .settings(
@@ -375,6 +368,29 @@ lazy val demoAkka = (project in file("demo-akka"))
       akkaActorTyped,
       logbackClassic % Runtime,
       jansi % Runtime,
+    ),
+  )
+
+lazy val demoScalaTest = (project in file("demo-scala-test"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-scala-test",
+    libraryDependencies ++= Seq(
+      scalaTest,
+    ),
+  )
+
+lazy val demoScalaCheck = (project in file("demo-scala-check"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-scala-check",
+    libraryDependencies ++= Seq(
+      scalaCheck,
+      scalaTestPlusScalaCheck,
+      scalaCheckEffect,
+      scalaCheckEffectMUnit,
+      catsEffect,
+      mUnitCatsEffect,
     ),
   )
 
@@ -692,8 +708,11 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.lihaoyi" %%% "upickle" % uPickleVersion,
       "com.github.japgolly.scalacss" %% "core" % scalaCssVersion,
-      "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % Test,
       "org.scalatest" %%% "scalatest" % scalaTestVersion % Test,
+      "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % Test,
+      "org.scalatestplus" %%% "scalacheck-1-17" % scalaTestPlusScalaCheckVersion % Test,
+      "org.typelevel" %%% "scalacheck-effect" % scalaCheckEffectVersion % Test,
+      "org.typelevel" %%% "scalacheck-effect-munit" % scalaCheckEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % catsEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion % Test,
       "org.typelevel" %%% "munit-cats-effect-3" % mUnitCatsEffectVersion % Test,
@@ -756,14 +775,6 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.querki" %%% "jquery-facade" % jQueryFacadeVersion,
     ),
   )
-
-// Scala
-
-val scalaCheckVersion = "1.17.0"
-val scalaTestVersion = "3.2.14"
-
-val scalaCheck = "org.scalacheck" %% "scalacheck" % scalaCheckVersion
-val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
 
 // Functional
 
@@ -889,10 +900,19 @@ val vue = "org.webjars.npm" % "vue" % vueVersion
 
 // Test
 
+val scalaTestVersion = "3.2.15"
+val scalaCheckVersion = "1.17.0"
+val scalaTestPlusScalaCheckVersion = "3.2.15.0"
+val scalaCheckEffectVersion = "1.0.4"
 val catsEffectTestingSpecsVersion = "1.4.0"
 val mUnitCatsEffectVersion = "1.0.7"
 val weaverCatsVersion = "0.8.1"
 
+val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
+val scalaCheck = "org.scalacheck" %% "scalacheck" % scalaCheckVersion
+val scalaTestPlusScalaCheck = "org.scalatestplus" %% "scalacheck-1-17" % scalaTestPlusScalaCheckVersion
+val scalaCheckEffect = "org.typelevel" %% "scalacheck-effect" % scalaCheckEffectVersion
+val scalaCheckEffectMUnit = "org.typelevel" %% "scalacheck-effect-munit" % scalaCheckEffectVersion
 val catsEffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
 val catsEffectTestingSpecs = "org.typelevel" %% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion
 val mUnitCatsEffect = "org.typelevel" %% "munit-cats-effect-3" % mUnitCatsEffectVersion

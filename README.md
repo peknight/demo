@@ -4,8 +4,8 @@
 
 ### Log
 
-* 2023.01.12: 阳康准备过年，划一段时间后再继续学习FRP。
-* 2022.12.01: 过了一遍Vue.js与React.js。准备研究下Scala的FRP。
+* 2023.02.03: 阳康+过年断了一段时间，研究下scalatest与scalacheck等测试库
+* 2022.12.01: 过了一遍Vue.js与React.js
 * 2022.11.18: B站Pink老师JavaScript课程学完，准备研究研究模块化与Vue
 * 2022.10.21: B站Pink老师H5C3课程完结撒花，准备继续补补JavaScript与Scala.JS
 * 2022.10.10: 跟B站pink老师学学前端
@@ -130,17 +130,23 @@
 * 参考: [ZIO官方文档](https://zio.dev/)
 * 进度: 10%，学完了Overview部分，后续Reference、Ecosystem等部分尚未提起兴趣学
 
-#### demo-frp
-
-* Functional reactive programming
-* 参考: [Deprecating the Observer Pattern](http://infoscience.epfl.ch/record/176887/files/DeprecatingObservers2012.pdf), [ingoem/scala-react](https://github.com/ingoem/scala-react), [lihaoyi/scala.rx](https://github.com/lihaoyi/scala.rx)
-* 进度: 0%
-
 #### demo-akka
 
 * 基于Actor模型的重型框架
 * 参考: [Akka官方文档](https://doc.akka.io/docs/akka/current/typed/actors.html)
 * 进度: 由于近期沉迷函数式编辑，akka学习被无限延后，进度1%。
+
+#### demo-scala-test
+
+* Scala测试库
+* 参考: [ScalaTest User Guide](https://www.scalatest.org/user_guide)
+* 进度：0%
+
+#### demo-scala-check
+
+* 基于Prop的测试库
+* 参考: [ScalaCheck User Guide](https://github.com/typelevel/scalacheck/blob/main/doc/UserGuide.md)
+* 进度：90%
 
 #### demo-js
 
@@ -176,6 +182,12 @@
 #### demo-playground
 
 增加上述模块全部的依赖项，用于自己随时测试一些代码特性，验证自己的部分想法。
+
+#### demo-frp
+
+* Functional reactive programming，响应式编程，这类库都不咋维护了或者更新较慢，先放一放。
+* 参考: [Deprecating the Observer Pattern](http://infoscience.epfl.ch/record/176887/files/DeprecatingObservers2012.pdf), [ingoem/scala-react](https://github.com/ingoem/scala-react), [lihaoyi/scala.rx](https://github.com/lihaoyi/scala.rx)
+* 进度: 0%
 
 #### demo-monix
 
