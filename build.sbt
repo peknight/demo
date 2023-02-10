@@ -386,6 +386,7 @@ lazy val demoScalaCheck = (project in file("demo-scala-check"))
     name := "demo-scala-check",
     libraryDependencies ++= Seq(
       scalaCheck,
+      scalaTest,
       scalaTestPlusScalaCheck,
       scalaCheckEffect,
       scalaCheckEffectMUnit,
