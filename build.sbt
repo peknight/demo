@@ -47,7 +47,8 @@ lazy val demo = (project in file("."))
     demoRedis4Cats,
     demoZio,
     demoAkka,
-    demoScalaTest,
+    demoScalaTest.jvm,
+    demoScalaTest.js,
     demoScalaCheck,
     demoJs.jvm,
     demoJs.js,
@@ -371,12 +372,12 @@ lazy val demoAkka = (project in file("demo-akka"))
     ),
   )
 
-lazy val demoScalaTest = (project in file("demo-scala-test"))
+lazy val demoScalaTest = (crossProject(JSPlatform, JVMPlatform) in file("demo-scala-test"))
   .settings(commonSettings)
   .settings(
     name := "demo-scala-test",
     libraryDependencies ++= Seq(
-      scalaTest,
+      "org.scalatest" %%% "scalatest" % scalaTestVersion,
     ),
   )
 
@@ -711,7 +712,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "com.github.japgolly.scalacss" %% "core" % scalaCssVersion,
       "org.scalatest" %%% "scalatest" % scalaTestVersion % Test,
       "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % Test,
-      "org.scalatestplus" %%% "scalacheck-1-17" % scalaTestPlusScalaCheckVersion % Test,
+      "org.scalatestplus" %%% "scalacheck-1-17" % scalaTestPlusVersion % Test,
       "org.typelevel" %%% "scalacheck-effect" % scalaCheckEffectVersion % Test,
       "org.typelevel" %%% "scalacheck-effect-munit" % scalaCheckEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % catsEffectVersion % Test,
@@ -903,7 +904,7 @@ val vue = "org.webjars.npm" % "vue" % vueVersion
 
 val scalaTestVersion = "3.2.15"
 val scalaCheckVersion = "1.17.0"
-val scalaTestPlusScalaCheckVersion = "3.2.15.0"
+val scalaTestPlusVersion = "3.2.15.0"
 val scalaCheckEffectVersion = "1.0.4"
 val catsEffectTestingSpecsVersion = "1.4.0"
 val mUnitCatsEffectVersion = "1.0.7"
@@ -911,7 +912,7 @@ val weaverCatsVersion = "0.8.1"
 
 val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
 val scalaCheck = "org.scalacheck" %% "scalacheck" % scalaCheckVersion
-val scalaTestPlusScalaCheck = "org.scalatestplus" %% "scalacheck-1-17" % scalaTestPlusScalaCheckVersion
+val scalaTestPlusScalaCheck = "org.scalatestplus" %% "scalacheck-1-17" % scalaTestPlusVersion
 val scalaCheckEffect = "org.typelevel" %% "scalacheck-effect" % scalaCheckEffectVersion
 val scalaCheckEffectMUnit = "org.typelevel" %% "scalacheck-effect-munit" % scalaCheckEffectVersion
 val catsEffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
