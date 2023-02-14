@@ -11,7 +11,7 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
     html(lang := "zh-CN")(
       headFrag("品优购商城",
         link(rel := "stylesheet", href := "/css/index.css"),
-        script(src := "/webjars/jquery/3.6.1/jquery.min.js"),
+        script(src := "/webjars/jquery/3.6.3/jquery.min.js"),
         script(src := "/main.js"),
         script("pinyougouIndex()"),
         script("pinyougouFocus()"),

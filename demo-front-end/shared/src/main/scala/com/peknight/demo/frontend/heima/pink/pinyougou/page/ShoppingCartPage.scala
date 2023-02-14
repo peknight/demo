@@ -13,7 +13,7 @@ class ShoppingCartPage[Builder, Output <: FragT, FragT](override val bundle: Bun
       headFrag(
         "我的购物车",
         link(rel := "stylesheet", href := "/css/cart.css"),
-        script(src := "/webjars/jquery/3.6.1/jquery.min.js"),
+        script(src := "/webjars/jquery/3.6.3/jquery.min.js"),
         script(src := "/main.js"),
         script("pinyougouCart()")
       ),
