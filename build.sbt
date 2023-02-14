@@ -144,6 +144,7 @@ lazy val demoCatsEffect = (project in file("demo-cats-effect"))
       catsEffect,
       catsEffectTestkit % Test,
       catsEffectTestingSpecs % Test,
+      catsEffectTestingScalaTest % Test,
       mUnitCatsEffect % Test,
       weaverCats % Test,
     ),
@@ -717,6 +718,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.typelevel" %%% "scalacheck-effect-munit" % scalaCheckEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % catsEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion % Test,
+      "org.typelevel" %%% "cats-effect-testing-scalatest" % catsEffectTestingScalaTestVersion % Test,
       "org.typelevel" %%% "munit-cats-effect-3" % mUnitCatsEffectVersion % Test,
       "com.disneystreaming" %%% "weaver-cats" % weaverCatsVersion % Test,
       "com.lihaoyi" %%% "utest" % uTestVersion % Test,
@@ -906,7 +908,8 @@ val scalaTestVersion = "3.2.15"
 val scalaCheckVersion = "1.17.0"
 val scalaTestPlusVersion = "3.2.15.0"
 val scalaCheckEffectVersion = "1.0.4"
-val catsEffectTestingSpecsVersion = "1.4.0"
+val catsEffectTestingSpecsVersion = "1.5.0"
+val catsEffectTestingScalaTestVersion = "1.5.0"
 val mUnitCatsEffectVersion = "1.0.7"
 val weaverCatsVersion = "0.8.1"
 
@@ -917,6 +920,7 @@ val scalaCheckEffect = "org.typelevel" %% "scalacheck-effect" % scalaCheckEffect
 val scalaCheckEffectMUnit = "org.typelevel" %% "scalacheck-effect-munit" % scalaCheckEffectVersion
 val catsEffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
 val catsEffectTestingSpecs = "org.typelevel" %% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion
+val catsEffectTestingScalaTest = "org.typelevel" %% "cats-effect-testing-scalatest" % catsEffectTestingScalaTestVersion
 val mUnitCatsEffect = "org.typelevel" %% "munit-cats-effect-3" % mUnitCatsEffectVersion
 val weaverCats = "com.disneystreaming" %% "weaver-cats" % weaverCatsVersion
 
