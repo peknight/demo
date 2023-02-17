@@ -46,8 +46,23 @@ object MonadInstances:
     def flatMap[A, B](fa: Tree[A])(f: A => Tree[B]): Tree[B] = fa match
       case Branch(left, right) => Tree.branch(flatMap(left)(f), flatMap(right)(f))
       case Leaf(leaf) => f(leaf)
-    // see: https://stackoverflow.com/questions/44504790/cats-non-tail-recursive-tailrecm-method-for-monads
-    // 把树展开了再重构
+
+    /**
+     * see: https://stackoverflow.com/questions/44504790/cats-non-tail-recursive-tailrecm-method-for-monads
+     * 把树展开了再重构
+     *
+     * ↓ Branch(Leaf(a), Branch(Branch(Leaf(b), Leaf(c)), Leaf(d))) :: Nil && Nil
+     * ↓ Leaf(a) :: Branch(Branch(Leaf(b), Leaf(c)), Leaf(d)) :: Nil && None :: Nil
+     * ↓ Branch(Branch(Leaf(b), Leaf(c)), Leaf(d)) :: Nil && Some(a) :: None :: Nil
+     * ↓ Branch(Leaf(b), Leaf(c)) :: Leaf(d) :: Nil && None :: Some(a) :: None :: Nil
+     * ↓ Leaf(b) :: Leaf(c) :: Leaf(d) :: Nil && None :: None :: Some(a) :: None :: Nil
+     * - Nil && Some(d) :: Some(c) :: Some(b) :: None :: None :: Some(a) :: None :: Nil
+     * ↑ Leaf(b) :: Leaf(c) :: Leaf(d) :: Nil && None :: None :: Some(a) :: None :: Nil
+     * ↑ Branch(Leaf(b), Leaf(c)) :: Leaf(d) :: Nil && None :: Some(a) :: None :: Nil
+     * ↑ Branch(Branch(Leaf(b), Leaf(c)), Leaf(d)) :: Nil && Some(a) :: None :: Nil
+     * ↑ Leaf(a) :: Branch(Branch(Leaf(b), Leaf(c)), Leaf(d)) :: Nil && None :: Nil
+     * ↑ Branch(Leaf(a), Branch(Branch(Leaf(b), Leaf(c)), Leaf(d))) :: Nil && Nil
+     */
     def tailRecM[A, B](a: A)(f: A => Tree[Either[A, B]]): Tree[B] =
       @tailrec
       def loop(open: List[Tree[Either[A, B]]], closed: List[Option[Tree[B]]]): List[Tree[B]] = open match
