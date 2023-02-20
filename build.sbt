@@ -133,6 +133,7 @@ lazy val demoCats = (project in file("demo-cats"))
     name := "demo-cats",
     libraryDependencies ++= Seq(
       catsCore,
+      catsLaws % Test,
     ),
   )
 
@@ -716,6 +717,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.scalatestplus" %%% "scalacheck-1-17" % scalaTestPlusVersion % Test,
       "org.typelevel" %%% "scalacheck-effect" % scalaCheckEffectVersion % Test,
       "org.typelevel" %%% "scalacheck-effect-munit" % scalaCheckEffectVersion % Test,
+      "org.typelevel" %%% "cats-laws" % catsVersion % Test,
       "org.typelevel" %%% "cats-effect-testkit" % catsEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion % Test,
       "org.typelevel" %%% "cats-effect-testing-scalatest" % catsEffectTestingScalaTestVersion % Test,
@@ -918,6 +920,7 @@ val scalaCheck = "org.scalacheck" %% "scalacheck" % scalaCheckVersion
 val scalaTestPlusScalaCheck = "org.scalatestplus" %% "scalacheck-1-17" % scalaTestPlusVersion
 val scalaCheckEffect = "org.typelevel" %% "scalacheck-effect" % scalaCheckEffectVersion
 val scalaCheckEffectMUnit = "org.typelevel" %% "scalacheck-effect-munit" % scalaCheckEffectVersion
+val catsLaws = "org.typelevel" %% "cats-laws" % catsVersion
 val catsEffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
 val catsEffectTestingSpecs = "org.typelevel" %% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion
 val catsEffectTestingScalaTest = "org.typelevel" %% "cats-effect-testing-scalatest" % catsEffectTestingScalaTestVersion
