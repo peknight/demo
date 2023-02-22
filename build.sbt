@@ -374,19 +374,19 @@ lazy val demoAkka = (project in file("demo-akka"))
     ),
   )
 
-lazy val demoScalaTest = (crossProject(JSPlatform, JVMPlatform) in file("demo-scala-test"))
+lazy val demoScalaTest = (crossProject(JSPlatform, JVMPlatform) in file("demo-scalatest"))
   .settings(commonSettings)
   .settings(
-    name := "demo-scala-test",
+    name := "demo-scalatest",
     libraryDependencies ++= Seq(
       "org.scalatest" %%% "scalatest" % scalaTestVersion,
     ),
   )
 
-lazy val demoScalaCheck = (project in file("demo-scala-check"))
+lazy val demoScalaCheck = (project in file("demo-scalacheck"))
   .settings(commonSettings)
   .settings(
-    name := "demo-scala-check",
+    name := "demo-scalacheck",
     libraryDependencies ++= Seq(
       scalaCheck,
       scalaTest,

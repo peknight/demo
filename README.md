@@ -136,13 +136,13 @@
 * 参考: [Akka官方文档](https://doc.akka.io/docs/akka/current/typed/actors.html)
 * 进度: 由于近期沉迷函数式编辑，akka学习被无限延后，进度1%。
 
-#### demo-scala-test
+#### demo-scalatest
 
 * Scala测试库
 * 参考: [ScalaTest User Guide](https://www.scalatest.org/user_guide)
 * 进度：0%
 
-#### demo-scala-check
+#### demo-scalacheck
 
 * 基于Prop的测试库
 * 参考: [ScalaCheck User Guide](https://github.com/typelevel/scalacheck/blob/main/doc/UserGuide.md)
