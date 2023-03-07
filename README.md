@@ -4,22 +4,36 @@
 
 ### Log
 
-* 2023.02.03: 阳康+过年断了一段时间，研究下scalatest与scalacheck等测试库
-* 2022.12.01: 过了一遍Vue.js与React.js
-* 2022.11.18: B站Pink老师JavaScript课程学完，准备研究研究模块化与Vue
-* 2022.10.21: B站Pink老师H5C3课程完结撒花，准备继续补补JavaScript与Scala.JS
-* 2022.10.10: 跟B站pink老师学学前端
-* 2022.10.02: 搞定OAuth2实战，准备补补前端
-* 2022.09.21: 边学边练完OAuth2前9章，搞定了https访问的问题。
-* 2022.09.05: 学习OAuth2的过程中有些样板代码需要Shapeless相关能力解决，刚学习完一波Shapeless，继续搞OAuth2。
-* 2022.08.12: 当前主要在学习OAuth2。
+###### 2023.03.07
+想搞一套错误类型库将编程过程中遇到的各种诸如参数错误、异常、业务错误等统一起来，
+然后结合Either/Validated这样的Monad/Applicative使得错误检验相关的代码可以复用；
+写着写着发现想保持错误类型的扩展性还想有个简单的api得写大量的样板代码，样板代码忍不了一点；
+今天我发现宏这玩意好像可以解决我的问题，之前学Scala一直没有宏的使用场景就学不进去，这次有应用场景了那就[学学吧](https://docs.scala-lang.org/scala3/guides/macros/macros.html)！
+###### 2023.02.03
+阳康+过年断了一段时间，研究下scalatest与scalacheck等测试库
+###### 2022.12.01
+过了一遍Vue.js与React.js
+###### 2022.11.18
+B站Pink老师JavaScript课程学完，准备研究研究模块化与Vue
+###### 2022.10.21
+B站Pink老师H5C3课程完结撒花，准备继续补补JavaScript与Scala.JS
+###### 2022.10.10
+跟B站pink老师学学前端
+###### 2022.10.02
+搞定OAuth2实战，准备补补前端
+###### 2022.09.21
+边学边练完OAuth2前9章，搞定了https访问的问题。
+###### 2022.09.05
+学习OAuth2的过程中有些样板代码需要Shapeless相关能力解决，刚学习完一波Shapeless，继续搞OAuth2。
+###### 2022.08.12
+当前主要在学习OAuth2。
 
 ### Modules
 
 #### demo-scala
 
 * Scala3学习。
-* 参考: 书[《Scala编程第五版》](https://www.artima.com/shop/programming_in_scala_5ed)、元组[Tuples bring generic programming to Scala 3](https://www.scala-lang.org/2021/02/26/tuples-bring-generic-programming-to-scala-3.html)、[Magic Mirror Scala3](https://blog.philipp-martini.de/blog/magic-mirror-scala3/)
+* 参考: 书[《Scala编程第五版》](https://www.artima.com/shop/programming_in_scala_5ed)、元组[Tuples bring generic programming to Scala 3](https://www.scala-lang.org/2021/02/26/tuples-bring-generic-programming-to-scala-3.html)、宏[Scala3 Macros](https://docs.scala-lang.org/scala3/guides/macros/macros.html)、[Magic Mirror Scala3](https://blog.philipp-martini.de/blog/magic-mirror-scala3/)
 * 进度: 100%，一些特别基础的代码没跟着写。
 
 #### demo-shapeless
