@@ -33,7 +33,7 @@ B站Pink老师H5C3课程完结撒花，准备继续补补JavaScript与Scala.JS
 #### demo-scala
 
 * Scala3学习。
-* 参考: 书[《Scala编程第五版》](https://www.artima.com/shop/programming_in_scala_5ed)、元组[Tuples bring generic programming to Scala 3](https://www.scala-lang.org/2021/02/26/tuples-bring-generic-programming-to-scala-3.html)、宏[Scala3 Macros](https://docs.scala-lang.org/scala3/guides/macros/macros.html)、[Magic Mirror Scala3](https://blog.philipp-martini.de/blog/magic-mirror-scala3/)
+* 参考: 书[《Scala编程第五版》](https://www.artima.com/shop/programming_in_scala_5ed)、元组[Tuples bring generic programming to Scala 3](https://www.scala-lang.org/2021/02/26/tuples-bring-generic-programming-to-scala-3.html)、宏[Scala3 Macros](https://docs.scala-lang.org/scala3/guides/macros/macros.html)、[Macros](https://docs.scala-lang.org/scala3/reference/metaprogramming/macros.html)、[Magic Mirror Scala3](https://blog.philipp-martini.de/blog/magic-mirror-scala3/)
 * 进度: 100%，一些特别基础的代码没跟着写。
 
 #### demo-shapeless
