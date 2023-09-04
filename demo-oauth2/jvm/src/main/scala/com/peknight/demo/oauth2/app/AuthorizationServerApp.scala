@@ -1,7 +1,7 @@
 package com.peknight.demo.oauth2.app
 
 import cats.data.Validated.{Invalid, Valid}
-import cats.data.{Chain, NonEmptyList, OptionT, Validated}
+import cats.data.{NonEmptyList, OptionT, Validated}
 import cats.effect.std.Random
 import cats.effect.{IO, IOApp, Ref}
 import cats.syntax.either.*
@@ -20,9 +20,9 @@ import com.peknight.demo.oauth2.random.*
 import com.peknight.demo.oauth2.repository.*
 import fs2.Stream
 import fs2.text.base64
+import io.circe.JsonObject
 import io.circe.generic.auto.*
 import io.circe.syntax.*
-import io.circe.{Json, JsonObject}
 import org.http4s.*
 import org.http4s.circe.*
 import org.http4s.dsl.io.*
@@ -32,13 +32,12 @@ import org.typelevel.ci.*
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
-import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim, JwtHeader}
+import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtHeader}
 import scodec.bits.Bases.Alphabets.Base64Url
 
 import java.math.BigInteger
 import java.security.*
 import java.security.interfaces.{RSAPrivateCrtKey, RSAPublicKey}
-import scala.annotation.unused
 import scala.concurrent.duration.*
 
 object AuthorizationServerApp extends IOApp.Simple:
@@ -56,7 +55,7 @@ object AuthorizationServerApp extends IOApp.Simple:
       _ <- clearRecord
       _ <- insertRecord(OAuthTokenRecord("oauth-client-1".some, None, "j2r3oj32r23rmasd98uhjrk2o3i".some,
         Set("foo", "bar").some, None, None)).timeout(5.seconds)
-      _ <- start[IO](serverPort)(service(random, usePop, requestsR, codesR, clientsR).orNotFound)
+      _ <- start[IO](serverPort)(service(random, usePop, requestsR, codesR, clientsR))
       _ <- info"OAuth Authorization Server is listening at https://$serverHost:$serverPort"
       _ <- IO.never
     yield ()

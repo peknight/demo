@@ -18,7 +18,7 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 @JSExportTopLevel("FutureWeather")
 object FutureWeather:
 
-  def url(city: String) = s"http://api.openweathermap.org/data/2.5/find?mode=json&q=$city&appid=${OpenWeatherAppid.appid}"
+  def url(city: String) = s"https://api.openweathermap.org/data/2.5/find?mode=json&q=$city&appid=${OpenWeatherAppid.appid}"
 
   def request(names: Seq[String]): Future[Seq[(String, Double)]] =
     val responses = for name <- names yield

@@ -15,7 +15,7 @@ class SinaDropdownPage[Builder, Output <: FragT, FragT](override val bundle: Bun
 
   override def styles: Seq[StyleSheet.Base] = Seq(Styles)
 
-  override def scripts: Seq[String] = Seq("/webjars/jquery/3.6.4/jquery.min.js")
+  override def scripts: Seq[String] = Seq("/webjars/jquery/3.7.1/jquery.min.js")
   override def headTitle: String = "新浪下拉菜单"
   override def javaScriptMethod: Option[String] = Some("sinaDropdown")
   override def bodyFrag = ul(cls := "nav")(List.fill(4)(li(

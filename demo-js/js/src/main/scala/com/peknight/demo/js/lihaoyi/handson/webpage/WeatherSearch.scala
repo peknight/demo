@@ -20,7 +20,7 @@ object WeatherSearch:
     import js.Thenable.Implicits.*
     import scala.concurrent.ExecutionContext.Implicits.global
     // Define object OpenWeatherAppid { val appid = "#your appid here#" }
-    val searchUrl = s"http://api.openweathermap.org/data/2.5/find?type=like&mode=json&q=$query&appid=${OpenWeatherAppid.appid}"
+    val searchUrl = s"https://api.openweathermap.org/data/2.5/find?type=like&mode=json&q=$query&appid=${OpenWeatherAppid.appid}"
     for
       response <- dom.fetch(searchUrl) if query == box.value
       text <- response.text()

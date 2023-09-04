@@ -35,12 +35,14 @@ object Migration:
     monoid: Monoid[Added],
     prepend: Prepend.Aux[Added, Common, Unaligned],
     align: Align[Unaligned, Tuple.Zip[BLabels, BRepr]]
-  ): Migration[A, B] = (a: A) => bMirror.fromProduct(
-    align(prepend(monoid.empty, inter(summonValuesAsTuple[ALabels].zip(Tuple.fromProductTyped(a))))).map[GetValue] {
-      [T] => (t: T) => t match
-        case (_, value) => value.asInstanceOf[GetValue[T]]
-    }
-  )
+  ): Migration[A, B] =
+    new Migration[A, B]:
+      def apply(a: A): B = bMirror.fromProduct(
+        align(prepend(monoid.empty, inter(summonValuesAsTuple[ALabels].zip(Tuple.fromProductTyped(a))))).map[GetValue] {
+          [T] => (t: T) => t match
+            case (_, value) => value.asInstanceOf[GetValue[T]]
+        }
+      )
 
   given Monoid[EmptyTuple] = Monoid.instance(EmptyTuple, (_, _) => EmptyTuple)
 

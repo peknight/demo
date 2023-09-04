@@ -32,7 +32,7 @@ object ConnectingApp extends IOApp.Simple:
 
   val valuesList = program3a.replicateA(5)
 
-  val interpreter = KleisliInterpreter[IO].ConnectionInterpreter
+  val interpreter = KleisliInterpreter[IO](LogHandler.noop).ConnectionInterpreter
 
   val kleisli = program1.foldMap(interpreter)
 

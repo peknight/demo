@@ -15,7 +15,7 @@ object Weather1:
     import js.Thenable.Implicits.*
     import scala.concurrent.ExecutionContext.Implicits.global
     // Define object OpenWeatherAppid { val appid = "#your appid here#" }
-    val url = s"http://api.openweathermap.org/data/2.5/weather?q=Singapore&appid=${OpenWeatherAppid.appid}"
+    val url = s"https://api.openweathermap.org/data/2.5/weather?q=Singapore&appid=${OpenWeatherAppid.appid}"
     for
       response <- dom.fetch(url)
       text <- response.text()

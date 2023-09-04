@@ -26,7 +26,7 @@ abstract class JQueryPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Bu
         meta(httpEquiv := "X-UA-Compatible", content := "ie=edge"),
         links.map(s => link(rel := "stylesheet", href := s)),
         styles.map(s => style(raw(s.render[String]))),
-        script(`type` := "text/javascript", src := "/webjars/jquery/3.6.4/jquery.min.js"),
+        script(`type` := "text/javascript", src := "/webjars/jquery/3.7.1/jquery.min.js"),
         script(`type` := "text/javascript", src := "/main.js"),
         scripts.map(s => script(src := s)),
         title(headTitle),

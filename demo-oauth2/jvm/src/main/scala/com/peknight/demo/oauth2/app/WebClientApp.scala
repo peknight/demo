@@ -23,10 +23,10 @@ object WebClientApp extends IOApp.Simple:
       _ <- IO.never
     yield ()
 
-  val service: HttpApp[IO] = HttpRoutes.of[IO] {
+  val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
       case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-        StaticFile.fromPath(file.Path(s"./demo-oauth2/js/target/scala-3.2.1/demo-oauth2-opt/$path"), Some(req))
+        StaticFile.fromPath(file.Path(s"./demo-oauth2/js/target/scala-3.3.0/demo-oauth2-opt/$path"), Some(req))
           .getOrElseF(NotFound())
       case GET -> _ => Ok(ClientPage.Text.webIndex)
-    }.orNotFound
+    }
 

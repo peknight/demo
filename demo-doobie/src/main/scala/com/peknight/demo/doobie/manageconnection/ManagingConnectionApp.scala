@@ -1,12 +1,9 @@
 package com.peknight.demo.doobie.manageconnection
 
 import cats.effect.*
-import cats.implicits.*
 import com.peknight.demo.doobie.xa
 import doobie.*
 import doobie.free.connection.unit
-import doobie.hikari.*
-import doobie.implicits.*
 import doobie.util.transactor.Strategy
 
 import java.sql.Connection
@@ -20,7 +17,7 @@ object ManagingConnectionApp:
     yield Transactor.fromDataSource[IO](ds, ce)
 
   // A Transactor[IO] wrapping the given `Connection`
-  def transactor(c: Connection): Transactor[IO] = Transactor.fromConnection[IO](c)
+  def transactor(c: Connection): Transactor[IO] = Transactor.fromConnection[IO](c, logHandler = None)
 
   // 定制transactor，如测试时的sql都要回滚，那么可以这样设置
   val testXa = Transactor.after.set(xa, HC.rollback)

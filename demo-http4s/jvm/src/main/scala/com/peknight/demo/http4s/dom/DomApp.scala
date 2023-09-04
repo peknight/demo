@@ -17,7 +17,7 @@ object DomApp extends IOApp.Simple:
   val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(page)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-http4s/js/target/scala-3.2.1/demo-http4s-opt/$path"), Some(req))
+      StaticFile.fromPath(file.Path(s"./demo-http4s/js/target/scala-3.3.0/demo-http4s-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
 

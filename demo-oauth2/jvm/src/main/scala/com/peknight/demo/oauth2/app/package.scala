@@ -31,8 +31,9 @@ import org.http4s.dsl.io.*
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.headers.*
-import org.http4s.server.Server
+import org.http4s.server.{Router, Server}
 import org.http4s.server.middleware.Logger as MiddlewareLogger
+import org.http4s.server.staticcontent.webjarServiceBuilder
 import org.typelevel.ci.CIString
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.syntax.*
@@ -79,7 +80,12 @@ package object app:
   val usePopConfig: ConfigValue[Effect, Boolean] =
     env("USE_POP").as[Boolean].default(false)
 
-  def start[F[_]: Async](port: Port)(httpApp: HttpApp[F]): F[(Server, F[Unit])] =
+  private[this] def httpApp[F[_] : Async](routes: HttpRoutes[F]): HttpApp[F] = Router(
+    "/" -> routes,
+    "/webjars" -> webjarServiceBuilder[F].toRoutes
+  ).orNotFound
+
+  def start[F[_]: Async](port: Port)(routes: HttpRoutes[F]): F[(Server, F[Unit])] =
     for
       storePassword <- storePasswordConfig.load[F]
       keyPassword <- keyPasswordConfig.load[F]
@@ -91,7 +97,7 @@ package object app:
         .withHostOption(None)
         .withPort(port)
         .withTLS(tlsContext)
-        .withHttpApp(MiddlewareLogger.httpApp(true, true)(httpApp))
+        .withHttpApp(MiddlewareLogger.httpApp(true, true)(httpApp(routes)))
         .build.allocated
     yield res
 

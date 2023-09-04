@@ -1,12 +1,19 @@
 package com.peknight.demo
 
 import _root_.doobie.*
-import _root_.doobie.implicits.*
 import cats.effect.IO
 
 package object doobie:
 
-  val xa = Transactor.fromDriverManager[IO](
-    "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "doobie"
-  )
+  val xa = transactorWithLogHandler(None)
 
+  def transactorWithLogHandler(logHandler: Option[LogHandler[IO]]) = Transactor.fromDriverManager[IO]
+    .apply(
+      driver = "org.postgresql.Driver",
+      url = "jdbc:postgresql:world",
+      user = "postgres",
+      password = "doobie",
+      logHandler = logHandler
+    )
+
+end doobie

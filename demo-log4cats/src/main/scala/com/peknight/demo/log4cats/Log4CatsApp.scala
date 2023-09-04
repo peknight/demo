@@ -4,9 +4,9 @@ import cats.Applicative
 import cats.effect.*
 import cats.effect.std.Console
 import cats.implicits.*
-import org.typelevel.log4cats.slf4j.{Slf4jFactory, Slf4jLogger, loggerFactoryforSync}
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
-import org.typelevel.log4cats.{Logger, LoggerFactory, SelfAwareStructuredLogger}
+import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
 
 object Log4CatsApp extends IOApp.Simple:
 
@@ -42,14 +42,13 @@ object Log4CatsApp extends IOApp.Simple:
       }
     yield ()
 
+  // 已过时
   // create our LoggerFactory
   // given LoggerFactory[IO] = Slf4jFactory[IO]
   // 依赖org.typelevel.log4cats.slf4j.loggerFactoryforSync
-  val ioLogger: SelfAwareStructuredLogger[IO] = LoggerFactory[IO].getLogger
-
+  // val ioLogger: SelfAwareStructuredLogger[IO] = LoggerFactory[IO].getLogger
   // or
-  def anyFSyncLogger[F[_]: Sync]: SelfAwareStructuredLogger[F] = Slf4jFactory[F].getLogger
-
+  // def anyFSyncLogger[F[_]: Sync]: SelfAwareStructuredLogger[F] = Slf4jFactory[F].getLogger
 
   val run =
     for
@@ -60,7 +59,7 @@ object Log4CatsApp extends IOApp.Simple:
       _ <- passForEasierUse[IO]
       _ <- logLaconicSyntax[IO].recoverWith(_ => IO.unit)
       // we summon LoggerFactory instance, and create logger
-      _ <- ioLogger.info("logging in IO!"): IO[Unit]
-      _ <- new LoggerUsingService[IO].use("foo")
+      // _ <- ioLogger.info("logging in IO!"): IO[Unit]
+      _ <- new LoggerUsingService(logger).use("foo")
     yield ()
 

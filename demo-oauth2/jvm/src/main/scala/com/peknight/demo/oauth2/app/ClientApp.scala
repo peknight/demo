@@ -20,7 +20,6 @@ import org.http4s.client.dsl.io.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.*
 import org.http4s.scalatags.scalatagsEncoder
-import org.http4s.syntax.literals.uri
 import org.http4s.{client as _, *}
 import org.typelevel.ci.*
 import org.typelevel.log4cats.Logger
@@ -28,7 +27,6 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.typelevel.log4cats.syntax.*
 import pdi.jwt.*
 import pdi.jwt.algorithms.JwtRSAAlgorithm
-import scodec.bits.Bases.Alphabets.Base64Url
 
 object ClientApp extends IOApp.Simple:
 
@@ -63,7 +61,7 @@ object ClientApp extends IOApp.Simple:
 
   def service(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache],
               stateR: Ref[IO, Option[String]], codeVerifierR: Ref[IO, Option[String]], nonceR: Ref[IO, Option[String]],
-              random: Random[IO])(using Logger[IO]): HttpApp[IO] =
+              random: Random[IO])(using Logger[IO]): HttpRoutes[IO] =
     HttpRoutes.of[IO] {
       case GET -> Root => index(clientR, oauthTokenCacheR)
       case GET -> Root / "authorize" => authorize(clientR, stateR, codeVerifierR, nonceR, random)
@@ -91,7 +89,7 @@ object ClientApp extends IOApp.Simple:
       case GET -> Root / "read_client" => readClient(clientR)
       case req @ POST -> Root / "update_client" => updateClient(req, clientR, oauthTokenCacheR)
       case GET -> Root / "unregister_client" => unregisterClient(clientR, oauthTokenCacheR)
-    }.orNotFound
+    }
 
   private[this] def index(clientR: Ref[IO, Option[ClientInfo]], oauthTokenCacheR: Ref[IO, OAuthTokenCache])
   : IO[Response[IO]] =

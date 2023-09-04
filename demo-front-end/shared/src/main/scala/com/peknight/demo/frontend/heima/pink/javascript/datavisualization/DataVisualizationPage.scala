@@ -16,9 +16,9 @@ class DataVisualizationPage[Builder, Output <: FragT, FragT](val bundle: Bundle[
       link(rel := "stylesheet", href := "/css/data-visualization-media.css"),
       link(rel := "stylesheet", href := "/css/data-visualization-keyframes.css"),
       link(rel := "stylesheet", href := "/css/data-visualization.css"),
-      script(`type` := "text/javascript", src := "/webjars/echarts/5.4.2/dist/echarts.min.js"),
+      script(`type` := "text/javascript", src := "/webjars/echarts/5.4.3/dist/echarts.min.js"),
       script(src := "/webjars/amfe-flexible/2.2.1/index.min.js"),
-      script(`type` := "text/javascript", src := "/webjars/jquery/3.6.4/jquery.min.js"),
+      script(`type` := "text/javascript", src := "/webjars/jquery/3.7.1/jquery.min.js"),
       script(`type` := "text/javascript", src := "/echarts/china.js"),
       script(`type` := "text/javascript", src := "/main.js"),
       script("dataVisualization()")

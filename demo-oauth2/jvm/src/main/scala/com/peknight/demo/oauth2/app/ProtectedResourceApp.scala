@@ -1,9 +1,7 @@
 package com.peknight.demo.oauth2.app
 
-import cats.Functor
 import cats.data.OptionT
 import cats.effect.{IO, IOApp, Ref}
-import cats.syntax.functor.*
 import cats.syntax.option.*
 import com.comcast.ip4s.*
 import com.peknight.demo.oauth2.common.Mapper.*
@@ -11,10 +9,6 @@ import com.peknight.demo.oauth2.constant.*
 import com.peknight.demo.oauth2.data.*
 import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.page.ProtectedResourcePage
-import com.peknight.demo.oauth2.random.*
-import com.peknight.demo.oauth2.repository.getRecordByAccessToken
-import fs2.Stream
-import fs2.text.{hex, utf8}
 import io.circe.Json
 import io.circe.generic.auto.*
 import io.circe.syntax.*
@@ -34,7 +28,7 @@ import pdi.jwt.algorithms.JwtRSAAlgorithm
 
 import scala.collection.immutable.Queue
 import scala.concurrent.duration.*
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 object ProtectedResourceApp extends IOApp.Simple:
 
@@ -46,7 +40,7 @@ object ProtectedResourceApp extends IOApp.Simple:
       logger <- Slf4jLogger.create[IO]
       given Logger[IO] = logger
       serverPort = port"8002"
-      _ <- start[IO](serverPort)(corsPolicy(service(usePop, savedWordsR)).orNotFound)
+      _ <- start[IO](serverPort)(corsPolicy(service(usePop, savedWordsR)))
       _ <- info"OAuth Resource Server is listening at https://$serverHost:$serverPort"
       _ <- IO.never
     yield ()

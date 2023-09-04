@@ -643,6 +643,11 @@ lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth
       jwtCirce,
       ciris,
       log4CatsSlf4j,
+      bootstrap,
+      "org.webjars.npm" % "bootstrap" % "3.3.5",
+      jQuery,
+      html5Shiv,
+      respondJs,
       logbackClassic % Runtime,
       jansi % Runtime,
     ),
@@ -786,17 +791,17 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
 
 val shapelessVersion = "3.3.0"
 val shapeless2Version = "2.3.10"
-val catsVersion = "2.9.0"
-val catsEffectVersion = "3.5.0"
-val catsParseVersion = "0.3.9"
-val fs2Version = "3.7.0"
-val circeVersion = "0.14.5"
+val catsVersion = "2.10.0"
+val catsEffectVersion = "3.5.1"
+val catsParseVersion = "0.3.10"
+val fs2Version = "3.9.1"
+val circeVersion = "0.14.6"
 val circeFs2Version = "0.14.1"
 val monocleVersion = "3.2.0"
-val log4CatsVersion = "2.5.0"
+val log4CatsVersion = "2.6.0"
 val cirisVersion = "3.2.0"
 val cirisHoconVersion = "1.1.0"
-val refinedCatsVersion = "0.10.3"
+val refinedCatsVersion = "0.11.0"
 val catsStmVersion = "0.13.4"
 val spireVersion = "0.18.0"
 val squantsVersion = "1.8.3"
@@ -804,10 +809,10 @@ val http4sVersion = "1.0.0-M32"
 val http4sDomVersion = "1.0.0-M32"
 val http4sDropwizardMetricsVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M1"
-val doobieVersion = "1.0.0-RC2"
-val redis4CatsVersion = "1.4.1"
-val jawnAstVersion = "1.5.0"
-val zioVersion = "2.0.15"
+val doobieVersion = "1.0.0-RC4"
+val redis4CatsVersion = "1.4.3"
+val jawnAstVersion = "1.5.1"
+val zioVersion = "2.0.16"
 
 val shapeless = "org.typelevel" %% "shapeless3-deriving" % shapelessVersion
 val shapeless2 = "com.chuusai" %% "shapeless" % shapeless2Version
@@ -860,15 +865,16 @@ val zioStreams = "dev.zio" %% "zio-streams" % zioVersion
 
 // Library
 
-val logbackVersion = "1.4.8"
+val logbackVersion = "1.4.11"
 val jansiVersion = "1.18"
-val akkaVersion = "2.7.0"
-val apacheCommonsCodecVersion = "1.15"
-val h2Version = "2.1.214"
+val akkaVersion = "2.8.4"
+val apacheCommonsCodecVersion = "1.16.0"
+val h2Version = "2.2.222"
 val postgisJdbcVersion = "2021.1.0"
-val acme4jVersion = "2.16"
+val acme4jClientVersion = "3.0.0"
+val acme4jUtilsVersion = "2.16"
 val bouncyCastleVersion = "1.70"
-val jwtCirceVersion = "9.3.0"
+val jwtCirceVersion = "9.4.3"
 val scalaJwkVersion = "1.2.24"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
@@ -878,22 +884,24 @@ val apacheCommonsCodec = "commons-codec" % "commons-codec" % apacheCommonsCodecV
 val h2 = "com.h2database" % "h2" % h2Version
 val postgisJdbc = "net.postgis" % "postgis-jdbc" % postgisJdbcVersion
 val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
-val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jVersion
-val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jVersion
+val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jClientVersion
+val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jUtilsVersion
 val bouncyCastle = "org.bouncycastle" % "bcprov-jdk15on" % bouncyCastleVersion
 val jwtCirce = "com.github.jwt-scala" %% "jwt-circe" % jwtCirceVersion
 val scalaJwk = "com.chatwork" %% "scala-jwk" % scalaJwkVersion
 
 // Webjars
 
-val jQueryVersion = "3.6.4"
+val jQueryVersion = "3.7.1"
 val flexibleVersion = "2.2.1"
-val swiperVersion = "8.4.4"
-val bootstrapVersion = "5.3.0"
+val swiperVersion = "9.4.1"
+val bootstrapVersion = "5.3.1"
 val bootstrapIconsVersion = "1.10.5"
 val fastClickVersion = "1.0.6"
-val eChartsVersion = "5.4.2"
+val eChartsVersion = "5.4.3"
 val vueVersion = "3.3.4"
+val html5ShivVersion = "3.7.2"
+val respondJsVersion = "1.4.2"
 
 val jQuery = "org.webjars" % "jquery" % jQueryVersion
 val flexible = "org.webjars.npm" % "amfe-flexible" % flexibleVersion
@@ -903,6 +911,8 @@ val bootstrapIcons = "org.webjars.npm" % "bootstrap-icons" % bootstrapIconsVersi
 val fastClick = "org.webjars.npm" % "fastclick" % fastClickVersion
 val eCharts = "org.webjars.npm" % "echarts" % eChartsVersion
 val vue = "org.webjars.npm" % "vue" % vueVersion
+val html5Shiv = "org.webjars.bower" % "html5shiv" % html5ShivVersion
+val respondJs = "org.webjars.npm" % "respond.js" % respondJsVersion
 
 // Test
 
@@ -931,7 +941,7 @@ val weaverCats = "com.disneystreaming" %% "weaver-cats" % weaverCatsVersion
 
 val scalaJsDomVersion = "2.6.0"
 val scalaTagsVersion = "0.12.0"
-val uPickleVersion = "3.1.0"
+val uPickleVersion = "3.1.2"
 val uTestVersion = "0.8.1"
 val scalaCssVersion = "1.0.0"
 val jQueryFacadeVersion = "2.1"
