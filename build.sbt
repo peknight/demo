@@ -143,6 +143,7 @@ lazy val demoCatsEffect = (project in file("demo-cats-effect"))
     name := "demo-cats-effect",
     libraryDependencies ++= Seq(
       catsEffect,
+      catsEffectCps,
       catsEffectTestkit % Test,
       catsEffectTestingSpecs % Test,
       catsEffectTestingScalaTest % Test,
@@ -692,6 +693,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.typelevel" %%% "cats-core" % catsVersion,
       "org.typelevel" %%% "alleycats-core" % catsVersion,
       "org.typelevel" %%% "cats-effect" % catsEffectVersion,
+      "org.typelevel" %%% "cats-effect-cps" % catsEffectCpsVersion,
       "org.typelevel" %%% "cats-parse" % catsParseVersion,
       "co.fs2" %%% "fs2-core" % fs2Version,
       "co.fs2" %%% "fs2-io" % fs2Version,
@@ -735,15 +737,14 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
     libraryDependencies ++= Seq(
       circeFs2,
       fs2ReactiveStreams,
-      akkaActorTyped,
       log4CatsSlf4j,
       ciris,
       cirisCirce,
       cirisCirceYaml,
+      // cirisHttp4s,
       cirisRefined,
       cirisSquants,
       // cirisHocon,
-      circeGeneric,
       refinedCats,
       http4sScalaTags,
       http4sPrometheusMetrics,
@@ -757,12 +758,13 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       redis4CatsEffects,
       redis4CatsStreams,
       redis4CatsLog4Cats,
+      akkaActorTyped,
+      apacheCommonsCodec,
+      acme4jClient,
+      acme4jUtils,
       bouncyCastle,
       jwtCirce,
       scalaJwk,
-      acme4jClient,
-      acme4jUtils,
-      apacheCommonsCodec,
       jQuery,
       flexible,
       swiper,
@@ -771,6 +773,8 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       fastClick,
       eCharts,
       vue,
+      html5Shiv,
+      respondJs,
       logbackClassic % Runtime,
       jansi % Runtime,
       doobieScalaTest % Test,
@@ -793,6 +797,7 @@ val shapelessVersion = "3.3.0"
 val shapeless2Version = "2.3.10"
 val catsVersion = "2.10.0"
 val catsEffectVersion = "3.5.1"
+val catsEffectCpsVersion = "0.4.0"
 val catsParseVersion = "0.3.10"
 val fs2Version = "3.9.1"
 val circeVersion = "0.14.6"
@@ -819,6 +824,7 @@ val shapeless2 = "com.chuusai" %% "shapeless" % shapeless2Version
 val catsCore = "org.typelevel" %% "cats-core" % catsVersion
 val alleyCatsCore = "org.typelevel" %% "alleycats-core" % catsVersion
 val catsEffect = "org.typelevel" %% "cats-effect" % catsEffectVersion withSources() withJavadoc()
+val catsEffectCps = "org.typelevel" %% "cats-effect-cps" % catsEffectCpsVersion
 val catsParse = "org.typelevel" %% "cats-parse" % catsParseVersion
 val fs2Core = "co.fs2" %% "fs2-core" % fs2Version
 val fs2IO = "co.fs2" %% "fs2-io" % fs2Version
@@ -882,7 +888,7 @@ val jansi = "org.fusesource.jansi" % "jansi" % jansiVersion
 val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
 val apacheCommonsCodec = "commons-codec" % "commons-codec" % apacheCommonsCodecVersion
 val h2 = "com.h2database" % "h2" % h2Version
-val postgisJdbc = "net.postgis" % "postgis-jdbc" % postgisJdbcVersion
+// val postgisJdbc = "net.postgis" % "postgis-jdbc" % postgisJdbcVersion
 val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
 val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jClientVersion
 val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jUtilsVersion
