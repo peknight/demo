@@ -19,32 +19,32 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
   import bundle.all.*
 
   def index(client: Option[ClientInfo], oauthTokenCache: OAuthTokenCache): Frag = jumbotron(
-    p("Access token value: ", span(cls := "label label-danger")(oauthTokenCache.accessToken.getOrElse("NONE"))),
-    p("Scope value: ", span(cls := "label label-danger")(oauthTokenCache.scope.map(_.mkString(" ")).getOrElse("NONE"))),
-    p("Refresh token value: ", span(cls := "label label-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
-    p("Access token key value: ", span(cls := "label label-danger")(oauthTokenCache.key
+    p("Access token value: ", span(cls := "badge bg-danger")(oauthTokenCache.accessToken.getOrElse("NONE"))),
+    p("Scope value: ", span(cls := "badge bg-danger")(oauthTokenCache.scope.map(_.mkString(" ")).getOrElse("NONE"))),
+    p("Refresh token value: ", span(cls := "badge bg-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
+    p("Access token key value: ", span(cls := "badge bg-danger")(oauthTokenCache.key
       .map(_.asJson.deepDropNullValues.noSpaces).getOrElse("NONE"))),
-    p("Client ID: ", span(cls := "label label-danger")(client.map(_.id).getOrElse("None"))),
-    p("Client Secret: ", span(cls := "label label-danger")(client.flatMap(_.secret).getOrElse("None"))),
-    p("Registration access token: ", span(cls := "label label-danger")(client.flatMap(_.registrationAccessToken).getOrElse("None"))),
-    p("Client configuration management endpoint: ", span(cls := "label label-danger")(
+    p("Client ID: ", span(cls := "badge bg-danger")(client.map(_.id).getOrElse("None"))),
+    p("Client Secret: ", span(cls := "badge bg-danger")(client.flatMap(_.secret).getOrElse("None"))),
+    p("Registration access token: ", span(cls := "badge bg-danger")(client.flatMap(_.registrationAccessToken).getOrElse("None"))),
+    p("Client configuration management endpoint: ", span(cls := "badge bg-danger")(
       client.flatMap(_.registrationClientUri).map(_.toString).getOrElse("None"))
     ),
-    a(cls := "btn btn-default", href := "/authorize")("Get OAuth Token"), " ",
-    a(cls := "btn btn-default", href := "/client_credentials")("Client Credentials"), " ",
-    a(cls := "btn btn-default", href := "/username_password")("Username Password"), " ",
-    a(cls := "btn btn-default", href := "/refresh")("Refresh Access Token"), " ",
-    a(cls := "btn btn-default", href := "/fetch_resource")("Get Protected Resource"), " ",
-    a(cls := "btn btn-default", href := "/words")("Access the Words API"), " ",
-    a(cls := "btn btn-default", href := "/produce")("Access the Produce API"), " ",
-    a(cls := "btn btn-default", href := "/favorites")("Access the Favorites API"), " ",
-    a(cls := "btn btn-default", href := "/revoke")("Revoke Access Token Page"), " ",
-    a(cls := "btn btn-default", href := "/userinfo")("Access User Info"), " ",
+    a(cls := "btn btn-outline-dark", href := "/authorize")("Get OAuth Token"), " ",
+    a(cls := "btn btn-outline-dark", href := "/client_credentials")("Client Credentials"), " ",
+    a(cls := "btn btn-outline-dark", href := "/username_password")("Username Password"), " ",
+    a(cls := "btn btn-outline-dark", href := "/refresh")("Refresh Access Token"), " ",
+    a(cls := "btn btn-outline-dark", href := "/fetch_resource")("Get Protected Resource"), " ",
+    a(cls := "btn btn-outline-dark", href := "/words")("Access the Words API"), " ",
+    a(cls := "btn btn-outline-dark", href := "/produce")("Access the Produce API"), " ",
+    a(cls := "btn btn-outline-dark", href := "/favorites")("Access the Favorites API"), " ",
+    a(cls := "btn btn-outline-dark", href := "/revoke")("Revoke Access Token Page"), " ",
+    a(cls := "btn btn-outline-dark", href := "/userinfo")("Access User Info"), " ",
     form(action := "/revoke", cls := "form", method := POST.name)(
-      input(`type` := "submit", cls := "btn btn-default", value := "Revoke Access Token")
+      input(`type` := "submit", cls := "btn btn-outline-dark", value := "Revoke Access Token")
     ),
     form(action := "/greeting")(
-      input(cls := "btn btn-default", `type` := "submit", value := "Greet in"), " ",
+      input(cls := "btn btn-outline-dark", `type` := "submit", value := "Greet in"), " ",
       input(`type` := "radio", name := "language", value := "en", checked), "English", " ",
       input(`type` := "radio", name := "language", value := "de"), "German", " ",
       input(`type` := "radio", name := "language", value := "it"), "Italian", " ",
@@ -53,25 +53,25 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     ),
     client.flatMap(_.registrationAccessToken).fold[Frag]("") { _ => frag(
       hr,
-      a(cls := "btn btn-default", href := "/read_client")("Read Client Information"),
+      a(cls := "btn btn-outline-dark", href := "/read_client")("Read Client Information"),
       form(method := POST.name, action := "/update_client")(
         label(`for` := "client_name")("New Client Name"), " ",
         input(`type` := "text", name := "client_name", value := client.flatMap(_.name).getOrElse("")),
-        button(`type` := "submit", cls := "btn btn-default")("Update Client Registration")
+        button(`type` := "submit", cls := "btn btn-outline-dark")("Update Client Registration")
       ),
-      a(cls := "btn btn-default", href := "/unregister_client")("Unregister Client")
+      a(cls := "btn btn-outline-dark", href := "/unregister_client")("Unregister Client")
     )}
   )
 
   val webIndex: Frag = skeleton(
-    div(cls := "jumbotron")(
-      p("Scope value: ", span(cls := s"label label-danger $oauthScopeValueCls")),
-      p("Access token value: ", span(cls := s"label label-danger $oauthAccessTokenCls")),
-      button(cls := s"btn btn-default $oauthAuthorizeCls", `type` := "button")("Get OAuth Token"), " ",
-      button(cls := s"btn btn-default $oauthFetchResourceCls", `type` := "button")("Get Protected Resource"), " ",
-      button(cls := s"btn btn-default $oauthGreetingCls", `type` := "button")("Greeting")
+    div(cls := "bg-body-tertiary p-5 rounded")(
+      p("Scope value: ", span(cls := s"badge bg-danger $oauthScopeValueCls")),
+      p("Access token value: ", span(cls := s"badge bg-danger $oauthAccessTokenCls")),
+      button(cls := s"btn btn-outline-dark $oauthAuthorizeCls", `type` := "button")("Get OAuth Token"), " ",
+      button(cls := s"btn btn-outline-dark $oauthFetchResourceCls", `type` := "button")("Get Protected Resource"), " ",
+      button(cls := s"btn btn-outline-dark $oauthGreetingCls", `type` := "button")("Greeting")
     ),
-    div(cls := "jumbotron")(
+    div(cls := "bg-body-tertiary p-5 rounded")(
       h2("Data from protected resource:"),
       pre(span(cls := oauthProtectedResourceCls))
     )
@@ -87,8 +87,8 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
         div(cls := "well")(
           h3("Read the current value"),
           result match {
-            case Get => p(span(cls := "label label-success")("Success"))
-            case NoGet => p(span(cls := "label label-danger")("Failure"))
+            case Get => p(span(cls := "badge bg-success")("Success"))
+            case NoGet => p(span(cls := "badge bg-danger")("Failure"))
             case _ => ""
           },
           p(if words.nonEmpty then s"Words: ${words.mkString(" ")}" else ""),
@@ -100,8 +100,8 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
         div(cls := "well")(
           h3("Add a word to the list"),
           result match {
-            case Add => p(span(cls := "label label-success")("Success"))
-            case NoAdd => p(span(cls := "label label-danger")("Failure"))
+            case Add => p(span(cls := "badge bg-success")("Success"))
+            case NoAdd => p(span(cls := "badge bg-danger")("Failure"))
             case _ => ""
           },
           form(cls := "form", action := "/add_word", method := GET.name)(
@@ -114,8 +114,8 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
         div(cls := "well")(
           h3("Remove the last word from the list"),
           result match {
-            case Rm => p(span(cls := "label label-success")("Success"))
-            case NoRm => p(span(cls := "label label-danger")("Failure"))
+            case Rm => p(span(cls := "badge bg-success")("Success"))
+            case NoRm => p(span(cls := "badge bg-danger")("Failure"))
             case _ => ""
           },
           a(cls := "btn btn-danger", href := "/delete_word")("DELETE the last word")
@@ -126,14 +126,14 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
 
   def produce(scope: Set[String], data: ProduceData): Frag = jumbotron(
     h2("Produce API"),
-    p("Current scope:", span(cls := "label label-info")(scope.mkString(" "))),
+    p("Current scope:", span(cls := "badge bg-info")(scope.mkString(" "))),
     p("Fruits:"),
     ul(data.fruit.map(li(_))),
     p("Veggies:"),
     ul(data.veggies.map(li(_))),
     p("Meats:"),
     ul(data.meats.map(li(_))),
-    a(href := "/produce", cls := "btn btn-default")("Get Produce")
+    a(href := "/produce", cls := "btn btn-outline-dark")("Get Produce")
   )
 
   def favorites(data: UserFavoritesData): Frag = jumbotron(
@@ -145,36 +145,36 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     ul(data.favorites.foods.map(li(_))),
     p("Music:"),
     ul(data.favorites.music.map(li(_))),
-    a(href := "/favorites", cls := "btn btn-default")("Get Favorites")
+    a(href := "/favorites", cls := "btn btn-outline-dark")("Get Favorites")
   )
 
   def protectedResource(accessToken: String): Frag = jumbotron(
-    "Access token value: ", span(cls := "label label-danger")(accessToken),
-    a(cls := "btn btn-default", href := "/call_resource")("Get Protected Resource")
+    "Access token value: ", span(cls := "badge bg-danger")(accessToken),
+    a(cls := "btn btn-outline-dark", href := "/call_resource")("Get Protected Resource")
   )
 
   def revoke(oauthTokenCache: OAuthTokenCache): Frag = jumbotron(
-    p("Access token value: ", span(cls := "label label-danger")(oauthTokenCache.accessToken.getOrElse("NONE"))),
-    p("Scope value: ", span(cls := "label label-danger")(oauthTokenCache.scope.map(_.mkString(" ")).getOrElse("NONE"))),
-    p("Refresh token value: ", span(cls := "label label-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
+    p("Access token value: ", span(cls := "badge bg-danger")(oauthTokenCache.accessToken.getOrElse("NONE"))),
+    p("Scope value: ", span(cls := "badge bg-danger")(oauthTokenCache.scope.map(_.mkString(" ")).getOrElse("NONE"))),
+    p("Refresh token value: ", span(cls := "badge bg-danger")(oauthTokenCache.refreshToken.getOrElse("NONE"))),
     form(action := "/revoke", cls := "form", method := POST.name)(
-      a(cls := "btn btn-default", href := "/authorize")("Get OAuth Token"), " ",
-      input(`type` := "submit", cls := "btn btn-default", value := "Revoke OAuthToken")
+      a(cls := "btn btn-outline-dark", href := "/authorize")("Get OAuth Token"), " ",
+      input(`type` := "submit", cls := "btn btn-outline-dark", value := "Revoke OAuthToken")
     )
   )
 
   def userInfo(userInfo: Option[UserInfo], idToken: Option[IdToken])(using labelling: Labelling[UserInfo]): Frag =
     jumbotron(
-      p("Logged in user subject ", span(cls := "label label-info")(idToken.flatMap(_.subject).getOrElse("None")),
-        " from issuer ", span(cls := "label label-warning")(idToken.flatMap(_.issuer).getOrElse("None")), "."),
-      p("User information: ", userInfo.fold[Frag](span(cls := "label label-danger")("NOT FETCHED"))(user => ul(
+      p("Logged in user subject ", span(cls := "badge bg-info")(idToken.flatMap(_.subject).getOrElse("None")),
+        " from issuer ", span(cls := "badge bg-warning")(idToken.flatMap(_.issuer).getOrElse("None")), "."),
+      p("User information: ", userInfo.fold[Frag](span(cls := "badge bg-danger")("NOT FETCHED"))(user => ul(
         labelling.elemLabels.zip(Tuple.fromProductTyped(user).productIterator).map[Frag] {
           case (label, Some(value)) => li(b(camelToSnake(label)), s": $value")
           case _ => ""
         }
       ))),
-      a(cls := "btn btn-default", href := "/authorize")("Log In"),
-      a(cls := "btn btn-default", href := "/userinfo")("Get User Information")
+      a(cls := "btn btn-outline-dark", href := "/authorize")("Log In"),
+      a(cls := "btn btn-outline-dark", href := "/userinfo")("Get User Information")
     )
 
   val usernamePassword: Frag = jumbotron(

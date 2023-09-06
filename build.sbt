@@ -645,7 +645,6 @@ lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth
       ciris,
       log4CatsSlf4j,
       bootstrap,
-      "org.webjars.npm" % "bootstrap" % "3.3.5",
       jQuery,
       html5Shiv,
       respondJs,
