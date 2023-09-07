@@ -3,7 +3,7 @@ package com.peknight.demo.http4s.httpclient
 import cats.*
 import cats.effect.*
 import cats.implicits.*
-import com.codahale.metrics.SharedMetricRegistries
+// import com.codahale.metrics.SharedMetricRegistries
 import com.peknight.demo.http4s.logEmberServer
 import io.circe.generic.auto.*
 import org.http4s.*
@@ -15,7 +15,7 @@ import org.http4s.dsl.io.*
 import org.http4s.ember.client.*
 import org.http4s.headers.*
 import org.http4s.implicits.*
-import org.http4s.metrics.dropwizard.Dropwizard
+// import org.http4s.metrics.dropwizard.Dropwizard
 import org.http4s.metrics.prometheus.Prometheus
 import org.typelevel.ci.CIString
 
@@ -85,11 +85,11 @@ object HttpClientApp extends IOApp.Simple:
       .map(_.withHeaders(Header.Raw(CIString("X-Test-Response"), "test")))
   }
 
-  val registry = SharedMetricRegistries.getOrCreate("default")
+  // val registry = SharedMetricRegistries.getOrCreate("default")
 
   val requestMethodClassifier = (r: Request[IO]) => Some(r.method.toString.toLowerCase)
 
-  val meteredClient = Metrics[IO](Dropwizard(registry, "prefix"), requestMethodClassifier)(httpClient)
+  // val meteredClient = Metrics[IO](Dropwizard(registry, "prefix"), requestMethodClassifier)(httpClient)
 
   val prefixedClient: Resource[IO, Client[IO]] =
     for

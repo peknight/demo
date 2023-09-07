@@ -237,7 +237,6 @@ lazy val demoLog4Cats = (project in file("demo-log4cats"))
     libraryDependencies ++= Seq(
       log4CatsSlf4j,
       logbackClassic % Runtime,
-      jansi % Runtime,
     ),
   )
 
@@ -304,11 +303,10 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
     libraryDependencies ++= Seq(
       http4sScalaTags,
       http4sPrometheusMetrics,
-      http4sDropwizardMetrics,
+      // http4sDropwizardMetrics,
       http4sJdkHttpClient,
       jQuery,
       logbackClassic % Runtime,
-      jansi % Runtime,
     ),
   )
   .jsSettings(
@@ -331,7 +329,6 @@ lazy val demoDoobie = (project in file("demo-doobie"))
       circeGeneric,
       circeParser,
       logbackClassic % Runtime,
-      jansi % Runtime,
       doobieScalaTest % Test,
       h2 % Test,
     ),
@@ -350,7 +347,6 @@ lazy val demoRedis4Cats = (project in file("demo-redis4cats"))
       circeParser,
       log4CatsSlf4j,
       logbackClassic % Runtime,
-      jansi % Runtime,
     ),
   )
 
@@ -371,7 +367,6 @@ lazy val demoAkka = (project in file("demo-akka"))
     libraryDependencies ++= Seq(
       akkaActorTyped,
       logbackClassic % Runtime,
-      jansi % Runtime,
     ),
   )
 
@@ -428,7 +423,6 @@ lazy val demoJs = (crossProject(JSPlatform, JVMPlatform) in file("demo-js"))
       ciris,
       log4CatsSlf4j,
       logbackClassic % Runtime,
-      jansi % Runtime,
     ),
   )
   .jsSettings(
@@ -499,7 +493,6 @@ lazy val demoFrontEnd = (crossProject(JSPlatform, JVMPlatform) in file("demo-fro
       eCharts,
       vue,
       logbackClassic % Runtime,
-      jansi % Runtime,
     ),
   )
   .jsConfigure(_.dependsOn(
@@ -649,7 +642,6 @@ lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth
       html5Shiv,
       respondJs,
       logbackClassic % Runtime,
-      jansi % Runtime,
     ),
   )
   .jsSettings(
@@ -747,7 +739,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       refinedCats,
       http4sScalaTags,
       http4sPrometheusMetrics,
-      http4sDropwizardMetrics,
+      // http4sDropwizardMetrics,
       http4sJdkHttpClient,
       doobieCore,
       doobieH2,
@@ -775,7 +767,6 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       html5Shiv,
       respondJs,
       logbackClassic % Runtime,
-      jansi % Runtime,
       doobieScalaTest % Test,
       h2 % Test,
     ),
@@ -809,10 +800,12 @@ val refinedCatsVersion = "0.11.0"
 val catsStmVersion = "0.13.4"
 val spireVersion = "0.18.0"
 val squantsVersion = "1.8.3"
-val http4sVersion = "1.0.0-M32"
-val http4sDomVersion = "1.0.0-M32"
+val http4sVersion = "1.0.0-M34"
+val http4sDomVersion = "1.0.0-M34"
+val http4sScalaTagsVersion = "1.0.0-M34"
+val http4sPrometheusMetricsVersion = "1.0.0-M34"
 val http4sDropwizardMetricsVersion = "1.0.0-M32"
-val http4sJdkHttpClientVersion = "1.0.0-M1"
+val http4sJdkHttpClientVersion = "1.0.0-M3"
 val doobieVersion = "1.0.0-RC4"
 val redis4CatsVersion = "1.4.3"
 val jawnAstVersion = "1.5.1"
@@ -851,8 +844,8 @@ val http4sDsl = "org.http4s" %% "http4s-dsl" % http4sVersion
 val http4sEmberServer = "org.http4s" %% "http4s-ember-server" % http4sVersion
 val http4sEmberClient = "org.http4s" %% "http4s-ember-client" % http4sVersion
 val http4sCirce = "org.http4s" %% "http4s-circe" % http4sVersion
-val http4sScalaTags = "org.http4s" %% "http4s-scalatags" % http4sVersion
-val http4sPrometheusMetrics = "org.http4s" %% "http4s-prometheus-metrics" % http4sVersion
+val http4sScalaTags = "org.http4s" %% "http4s-scalatags" % http4sScalaTagsVersion
+val http4sPrometheusMetrics = "org.http4s" %% "http4s-prometheus-metrics" % http4sPrometheusMetricsVersion
 val http4sDropwizardMetrics = "org.http4s" %% "http4s-dropwizard-metrics" % http4sDropwizardMetricsVersion
 val http4sJdkHttpClient = "org.http4s" %% "http4s-jdk-http-client" % http4sJdkHttpClientVersion
 val doobieCore = "org.tpolecat" %% "doobie-core" % doobieVersion
@@ -871,7 +864,7 @@ val zioStreams = "dev.zio" %% "zio-streams" % zioVersion
 // Library
 
 val logbackVersion = "1.4.11"
-val jansiVersion = "1.18"
+// val jansiVersion = "1.18"
 val akkaVersion = "2.8.4"
 val apacheCommonsCodecVersion = "1.16.0"
 val h2Version = "2.2.222"
@@ -883,7 +876,7 @@ val jwtCirceVersion = "9.4.3"
 val scalaJwkVersion = "1.2.24"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
-val jansi = "org.fusesource.jansi" % "jansi" % jansiVersion
+// val jansi = "org.fusesource.jansi" % "jansi" % jansiVersion
 val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
 val apacheCommonsCodec = "commons-codec" % "commons-codec" % apacheCommonsCodecVersion
 val h2 = "com.h2database" % "h2" % h2Version

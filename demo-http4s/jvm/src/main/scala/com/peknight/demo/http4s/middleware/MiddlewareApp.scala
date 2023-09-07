@@ -3,12 +3,12 @@ package com.peknight.demo.http4s.middleware
 import cats.data.Kleisli
 import cats.effect.*
 import cats.syntax.all.*
-import com.codahale.metrics.SharedMetricRegistries
+// import com.codahale.metrics.SharedMetricRegistries
 import com.peknight.demo.http4s.runLogEmberServer
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.implicits.*
-import org.http4s.metrics.dropwizard.Dropwizard
+// import org.http4s.metrics.dropwizard.Dropwizard
 import org.http4s.metrics.prometheus.{Prometheus, PrometheusExportService}
 import org.http4s.server.middleware.{Metrics, RequestId}
 import org.http4s.server.{Middleware, Router}
@@ -59,9 +59,9 @@ object MiddlewareApp extends IOApp.Simple:
   val aggregateService = apiService <+> MyMiddle(service, "SomeKey" -> "SomeValue")
   val apiRequest = Request[IO](Method.GET, uri"/api")
 
-  val registry = SharedMetricRegistries.getOrCreate("default")
+  // val registry = SharedMetricRegistries.getOrCreate("default")
 
-  val meteredRoutes = Metrics[IO](Dropwizard(registry, "server"))(apiService)
+  // val meteredRoutes = Metrics[IO](Dropwizard(registry, "server"))(apiService)
 
   val prometheusMeteredRouter: Resource[IO, HttpRoutes[IO]] =
     for
@@ -103,6 +103,7 @@ object MiddlewareApp extends IOApp.Simple:
       requestIdResp <- responseIO
       _ <- IO.println(requestIdResp.headers)
       _ <- IO.println(requestIdResp.attributes.lookup(RequestId.requestIdAttrKey))
-      _ <- runLogEmberServer[IO]((aggregateService <+> meteredRoutes).orNotFound)
+      // _ <- runLogEmberServer[IO]((aggregateService <+> meteredRoutes).orNotFound)
+      _ <- runLogEmberServer[IO]((aggregateService).orNotFound)
     yield ()
 
