@@ -37,8 +37,6 @@ object HttpClientApp extends IOApp.Simple:
     client.expect[String]("http://localhost:8080/hello/Tom")
   }
 
-  // 不知道文档里定义这个池子是干啥的 也不用
-  val blockingPool = Executors.newFixedThreadPool(5)
   val httpClient: Client[IO] = JavaNetClientBuilder[IO].create
 
   val helloJames = httpClient.expect[String]("http://localhost:8080/hello/James")
@@ -118,6 +116,13 @@ object HttpClientApp extends IOApp.Simple:
   )
   val authResponse = httpClient.expect[AuthResponse](postRequest)
 
+  val endpoint = uri"http://localhost:8080/hello/Ember"
+
+  val endpointResponse = httpClient.get[Either[String, String]](endpoint) {
+    case Status.Successful(r) => r.attemptAs[String].leftMap(_.message).value
+    case r => r.as[String].map(b => Left(s"Request failed with status ${r.status.code} and body $b"))
+  }
+
   val run =
     for
       allocatedServer <- server.allocated
@@ -137,5 +142,9 @@ object HttpClientApp extends IOApp.Simple:
       _ <- IO.println(f1(10))
       _ <- IO.println(f2(10))
       resp1 <- httpClient.expect[String](uri"https://cdn.peknight.com/")
+      _ <- IO.println(resp1)
       resp2 <- httpClient.expect[String](request)
+      _ <- IO.println(resp2)
+      resp3 <- endpointResponse
+      _ <- IO.println(resp3)
     yield ()

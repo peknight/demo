@@ -38,7 +38,7 @@ object MiddlewareApp extends IOApp.Simple:
   val goodRequest = Request[IO](Method.GET, uri"/")
   val badRequest = Request[IO](Method.GET, uri"/bad")
 
-  val wrappedService = myMiddle(service, "SomeKey" -> "SomeValue")
+  val modifiedService = myMiddle(service, "SomeKey" -> "SomeValue")
 
   // 如果想要中间件在多处复用，也可以将中间件定义为object使用apply方法
   object MyMiddle:
@@ -56,7 +56,12 @@ object MiddlewareApp extends IOApp.Simple:
     case GET -> Root / "api" => Ok()
   }
 
-  val aggregateService = apiService <+> MyMiddle(service, "SomeKey" -> "SomeValue")
+  val anotherService = HttpRoutes.of[IO] {
+    case GET -> Root / "another" => Ok()
+  }
+
+  val aggregateService = apiService <+> MyMiddle(service <+> anotherService, "SomeKey" -> "SomeValue")
+
   val apiRequest = Request[IO](Method.GET, uri"/api")
 
   // val registry = SharedMetricRegistries.getOrCreate("default")
@@ -88,9 +93,9 @@ object MiddlewareApp extends IOApp.Simple:
       _ <- IO.println(goodResp)
       badResp <- service.orNotFound(badRequest)
       _ <- IO.println(badResp)
-      wrappedGoodResp <- wrappedService.orNotFound(goodRequest)
+      wrappedGoodResp <- modifiedService.orNotFound(goodRequest)
       _ <- IO.println(wrappedGoodResp)
-      wrappedBadResp <- wrappedService.orNotFound(badRequest)
+      wrappedBadResp <- modifiedService.orNotFound(badRequest)
       _ <- IO.println(wrappedBadResp)
       newGoodResp <- newService.orNotFound(goodRequest)
       _ <- IO.println(newGoodResp)
