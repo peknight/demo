@@ -2,8 +2,8 @@ import org.scalajs.linker.interface.ModuleInitializer
 
 ThisBuild / version := "0.1-SNAPSHOT"
 
-val scala3Version = "3.3.0"
-val scala2Version = "2.13.11"
+val scala3Version = "3.3.1"
+val scala2Version = "2.13.12"
 
 ThisBuild / scalaVersion := scala3Version
 
@@ -789,7 +789,7 @@ val catsVersion = "2.10.0"
 val catsEffectVersion = "3.5.1"
 val catsEffectCpsVersion = "0.4.0"
 val catsParseVersion = "0.3.10"
-val fs2Version = "3.9.1"
+val fs2Version = "3.9.2"
 val circeVersion = "0.14.6"
 val circeFs2Version = "0.14.1"
 val monocleVersion = "3.2.0"
