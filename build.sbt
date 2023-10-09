@@ -45,6 +45,7 @@ lazy val demo = (project in file("."))
     demoHttp4s.js,
     demoDoobie,
     demoRedis4Cats,
+    demoNeo4j,
     demoZio,
     demoAkka,
     demoScalaTest.jvm,
@@ -347,6 +348,15 @@ lazy val demoRedis4Cats = (project in file("demo-redis4cats"))
       circeParser,
       log4CatsSlf4j,
       logbackClassic % Runtime,
+    ),
+  )
+
+lazy val demoNeo4j = (project in file("demo-neo4j"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-neo4j",
+    libraryDependencies ++= Seq(
+      neotypesCatsEffect,
     ),
   )
 
@@ -808,6 +818,7 @@ val http4sDropwizardMetricsVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M3"
 val doobieVersion = "1.0.0-RC4"
 val redis4CatsVersion = "1.4.3"
+val neotypesCatsEffectVersion = "1.0.0-M3"
 val jawnAstVersion = "1.5.1"
 val zioVersion = "2.0.16"
 
@@ -857,6 +868,7 @@ val doobieScalaTest = "org.tpolecat" %% "doobie-scalatest" % doobieVersion
 val redis4CatsEffects = "dev.profunktor" %% "redis4cats-effects" % redis4CatsVersion
 val redis4CatsStreams = "dev.profunktor" %% "redis4cats-streams" % redis4CatsVersion
 val redis4CatsLog4Cats = "dev.profunktor" %% "redis4cats-log4cats" % redis4CatsVersion
+val neotypesCatsEffect = "io.github.neotypes" %% "neotypes-cats-effect" % neotypesCatsEffectVersion
 val jawnAst = "org.typelevel" %% "jawn-ast" % jawnAstVersion
 val zio = "dev.zio" %% "zio" % zioVersion
 val zioStreams = "dev.zio" %% "zio-streams" % zioVersion

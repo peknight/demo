@@ -4,11 +4,8 @@
 
 ### Log
 
-###### 2023.03.07
-想搞一套错误类型库将编程过程中遇到的各种诸如参数错误、异常、业务错误等统一起来，
-然后结合Either/Validated这样的Monad/Applicative使得错误检验相关的代码可以复用；
-写着写着发现想保持错误类型的扩展性还想有个简单的api得写大量的样板代码，样板代码忍不了一点；
-今天我发现宏这玩意好像可以解决我的问题，之前学Scala一直没有宏的使用场景就学不进去，这次有应用场景了那就[学学吧](https://docs.scala-lang.org/scala3/guides/macros/macros.html)！
+###### 2023.10.09
+学习neo4j与neotypes
 ###### 2023.02.03
 阳康+过年断了一段时间，研究下scalatest与scalacheck等测试库
 ###### 2022.12.01
@@ -137,6 +134,12 @@ B站Pink老师H5C3课程完结撒花，准备继续补补JavaScript与Scala.JS
 * Cats全家桶的Redis操作库。
 * 参考: [Redis4Cats官方文档](https://redis4cats.profunktor.dev/)
 * 进度: 100%
+
+#### demo-neo4j
+
+* neo4j与neotypes学习。
+* 参考: [neotypes](https://neotypes.github.io/neotypes/), [小猫爱学图灵诸葛老师-Neo4j教程天花版](https://www.bilibili.com/video/BV1sG411s7zV)
+* 进度: 1%
 
 #### demo-zio
 
