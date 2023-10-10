@@ -357,6 +357,10 @@ lazy val demoNeo4j = (project in file("demo-neo4j"))
     name := "demo-neo4j",
     libraryDependencies ++= Seq(
       neotypesCatsEffect,
+      neotypesFs2Stream,
+      neotypesGeneric,
+      fs2Core,
+      neo4jJavaDriver,
     ),
   )
 
@@ -818,7 +822,7 @@ val http4sDropwizardMetricsVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M3"
 val doobieVersion = "1.0.0-RC4"
 val redis4CatsVersion = "1.4.3"
-val neotypesCatsEffectVersion = "1.0.0-M3"
+val neotypesVersion = "1.0.0-M3"
 val jawnAstVersion = "1.5.1"
 val zioVersion = "2.0.16"
 
@@ -868,7 +872,9 @@ val doobieScalaTest = "org.tpolecat" %% "doobie-scalatest" % doobieVersion
 val redis4CatsEffects = "dev.profunktor" %% "redis4cats-effects" % redis4CatsVersion
 val redis4CatsStreams = "dev.profunktor" %% "redis4cats-streams" % redis4CatsVersion
 val redis4CatsLog4Cats = "dev.profunktor" %% "redis4cats-log4cats" % redis4CatsVersion
-val neotypesCatsEffect = "io.github.neotypes" %% "neotypes-cats-effect" % neotypesCatsEffectVersion
+val neotypesCatsEffect = "io.github.neotypes" %% "neotypes-cats-effect" % neotypesVersion
+val neotypesFs2Stream = "io.github.neotypes" %% "neotypes-fs2-stream" % neotypesVersion
+val neotypesGeneric = "io.github.neotypes" %% "neotypes-generic" % neotypesVersion
 val jawnAst = "org.typelevel" %% "jawn-ast" % jawnAstVersion
 val zio = "dev.zio" %% "zio" % zioVersion
 val zioStreams = "dev.zio" %% "zio-streams" % zioVersion
@@ -881,6 +887,7 @@ val akkaVersion = "2.8.4"
 val apacheCommonsCodecVersion = "1.16.0"
 val h2Version = "2.2.222"
 val postgisJdbcVersion = "2021.1.0"
+val neo4jVersion = "5.13.0"
 val acme4jClientVersion = "3.0.0"
 val acme4jUtilsVersion = "2.16"
 val bouncyCastleVersion = "1.70"
@@ -893,6 +900,7 @@ val akkaActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
 val apacheCommonsCodec = "commons-codec" % "commons-codec" % apacheCommonsCodecVersion
 val h2 = "com.h2database" % "h2" % h2Version
 // val postgisJdbc = "net.postgis" % "postgis-jdbc" % postgisJdbcVersion
+val neo4jJavaDriver = "org.neo4j.driver" % "neo4j-java-driver" % neo4jVersion
 val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
 val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jClientVersion
 val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jUtilsVersion
