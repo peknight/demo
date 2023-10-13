@@ -139,7 +139,7 @@ B站Pink老师H5C3课程完结撒花，准备继续补补JavaScript与Scala.JS
 
 * neo4j与neotypes学习。
 * 参考: [neotypes](https://neotypes.github.io/neotypes/), [小猫爱学图灵诸葛老师-Neo4j教程天花版](https://www.bilibili.com/video/BV1sG411s7zV)
-* 进度: 1%
+* 进度: 100%
 
 #### demo-zio
 
