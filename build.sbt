@@ -46,6 +46,7 @@ lazy val demo = (project in file("."))
     demoDoobie,
     demoRedis4Cats,
     demoNeo4j,
+    demoNebula,
     demoZio,
     demoAkka,
     demoScalaTest.jvm,
@@ -361,6 +362,14 @@ lazy val demoNeo4j = (project in file("demo-neo4j"))
       neotypesGeneric,
       fs2Core,
       neo4jJavaDriver,
+    ),
+  )
+
+lazy val demoNebula = (project in file("demo-nebula"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-nebula",
+    libraryDependencies ++= Seq(
     ),
   )
 

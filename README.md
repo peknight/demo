@@ -4,6 +4,8 @@
 
 ### Log
 
+###### 2023.10.16
+对比了一下，好像nebula比neo4j更适合我，学下nebula
 ###### 2023.10.09
 学习neo4j与neotypes
 ###### 2023.02.03
@@ -137,9 +139,15 @@ B站Pink老师H5C3课程完结撒花，准备继续补补JavaScript与Scala.JS
 
 #### demo-neo4j
 
-* neo4j与neotypes学习。
-* 参考: [neotypes](https://neotypes.github.io/neotypes/), [小猫爱学图灵诸葛老师-Neo4j教程天花版](https://www.bilibili.com/video/BV1sG411s7zV)
+* neo4j与neotypes学习，社区版只能单机总觉得不长久，已转去学习nebula。
+* 参考: [neotypes](https://neotypes.github.io/neotypes/)
 * 进度: 100%
+
+#### demo-nebula
+
+* nebula学习，国产开源分布式图数据库
+* 参考: [NebulaGraph Database 手册](https://docs.nebula-graph.com.cn/3.6.0/), [zio-nebula](https://github.com/nebula-contrib/zio-nebula)(暂时没找到CE的封装，先参考下ZIO的封装)
+* 进度: 1%
 
 #### demo-zio
 
@@ -208,6 +216,6 @@ B站Pink老师H5C3课程完结撒花，准备继续补补JavaScript与Scala.JS
 
 #### demo-monix
 
-* Cats全家桶，响应式编程库，等它支持Cats Effect 3.x我就开始学。不过看他们意思迁移到CE3.x是个复杂的过程，不知道要等多久，先占个坑。（不过这也太久了吧，大半年不更新了）
+* Cats全家桶，响应式编程库，等它支持Cats Effect 3.x我就开始学。不过看他们意思迁移到CE3.x是个复杂的过程，不知道要等多久，先占个坑。（不过这也太久了吧，一年半不更新了）
 * 参考: [Monix官方文档](https://monix.io/)
 * 进度: 0%
