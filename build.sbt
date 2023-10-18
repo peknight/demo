@@ -371,6 +371,8 @@ lazy val demoNebula = (project in file("demo-nebula"))
     name := "demo-nebula",
     libraryDependencies ++= Seq(
       nebulaClient,
+      circeParser,
+      logbackClassic % Runtime,
     ),
   )
 
