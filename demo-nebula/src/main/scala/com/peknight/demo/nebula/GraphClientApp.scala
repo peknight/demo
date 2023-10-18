@@ -2,23 +2,23 @@ package com.peknight.demo.nebula
 
 import com.vesoft.nebula.{Date, Value}
 import com.vesoft.nebula.client.graph.NebulaPoolConfig
-import com.vesoft.nebula.client.graph.data.{HostAddress, ResultSet}
+import com.vesoft.nebula.client.graph.data.{CASignedSSLParam, HostAddress, ResultSet, SSLParam, SelfSignedSSLParam}
 import com.vesoft.nebula.client.graph.net.{NebulaPool, Session}
 
 import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters.*
 
-object NebulaApp:
+object GraphClientApp:
 
-
+  val hostAddress: HostAddress = new HostAddress("127.0.0.1", 9669)
+  val addresses: java.util.List[HostAddress] = List(hostAddress).asJava
 
   def main(args: Array[String]): Unit =
     val pool: NebulaPool = new NebulaPool
     try
       val nebulaPoolConfig: NebulaPoolConfig = new NebulaPoolConfig
       nebulaPoolConfig.setMaxConnSize(100)
-      val hostAddress: HostAddress = new HostAddress("127.0.0.1", 9669)
-      val initResult: Boolean = pool.init(List(hostAddress).asJava, nebulaPoolConfig)
+      val initResult: Boolean = pool.init(addresses, nebulaPoolConfig)
       if !initResult then
         println("pool init failed.")
       else
@@ -30,6 +30,8 @@ object NebulaApp:
         demo4(session)
         demo5(session)
         demo6(session)
+        demo7()
+        demo8()
     catch
       case e: Exception => e.printStackTrace()
   end main
@@ -94,6 +96,20 @@ object NebulaApp:
     val queryForJson = "YIELD 1"
     demoJson(session, queryForJson)
 
+  def demo7(): Unit =
+    demoSsl(new CASignedSSLParam(
+      "demo-nebula/src/main/resources/ssl/casigned.pem",
+      "demo-nebula/src/main/resources/ssl/casigned.crt",
+      "demo-nebula/src/main/resources/ssl/casigned.key"
+    ))
+
+  def demo8(): Unit =
+    demoSsl(new SelfSignedSSLParam(
+      "demo-nebula/src/main/resources/ssl/selfsigned.pem",
+      "demo-nebula/src/main/resources/ssl/selfsigned.key",
+      "vesoft"
+    ))
+
   def demo(session: Session, stmt: String): Unit =
     printResult(stmt, session.execute(stmt))
 
@@ -129,12 +145,22 @@ object NebulaApp:
           case _ => println(resp)
       case Left(e) => println(s"parse error: $e")
 
+  def demoSsl(sslParam: SSLParam): Unit =
+    val nebulaSslPoolConfig: NebulaPoolConfig = new NebulaPoolConfig
+    nebulaSslPoolConfig.setMaxConnSize(100)
+    nebulaSslPoolConfig.setEnableSsl(true)
+    nebulaSslPoolConfig.setSslParam(sslParam)
+    val sslPool: NebulaPool = new NebulaPool
+    sslPool.init(addresses, nebulaSslPoolConfig)
+    val queryForJson = "YIELD 1"
+    val sslSession = sslPool.getSession("root", "", false)
+    demoJson(sslSession, queryForJson)
+
   def printResult(schema: String, resp: ResultSet): Unit =
     if !resp.isSucceeded then
       println(s"Execute: $schema, failed: ${resp.getErrorMessage}")
       System.exit(1)
     else
-      println(resp)
       val keys = resp.keys().asScala.map(k => String.format("%15s |", k)).mkString
       val values = List.tabulate(resp.rowsSize())(resp.rowValues).map(record => record.values().asScala.map {
         case value if value.isLong => String.format("%15s |", value.asLong())
@@ -153,6 +179,4 @@ object NebulaApp:
       }.mkString).mkString("\n")
       println(s"$keys\n$values")
 
-
-
-end NebulaApp
+end GraphClientApp
