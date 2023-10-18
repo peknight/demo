@@ -47,7 +47,7 @@ origin.txt
 destination.txt
 celsius.txt
 database.nosql
-*.keystore
-*.crt
-*.key
-*.p12
+letsencrypt.keystore
+letsencrypt.crt
+letsencrypt.key
+letsencrypt.p12
