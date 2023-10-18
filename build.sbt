@@ -370,6 +370,7 @@ lazy val demoNebula = (project in file("demo-nebula"))
   .settings(
     name := "demo-nebula",
     libraryDependencies ++= Seq(
+      nebulaClient,
     ),
   )
 
@@ -897,6 +898,7 @@ val apacheCommonsCodecVersion = "1.16.0"
 val h2Version = "2.2.222"
 val postgisJdbcVersion = "2021.1.0"
 val neo4jVersion = "5.13.0"
+val nebulaClientVersion = "3.6.1"
 val acme4jClientVersion = "3.0.0"
 val acme4jUtilsVersion = "2.16"
 val bouncyCastleVersion = "1.70"
@@ -910,6 +912,7 @@ val apacheCommonsCodec = "commons-codec" % "commons-codec" % apacheCommonsCodecV
 val h2 = "com.h2database" % "h2" % h2Version
 // val postgisJdbc = "net.postgis" % "postgis-jdbc" % postgisJdbcVersion
 val neo4jJavaDriver = "org.neo4j.driver" % "neo4j-java-driver" % neo4jVersion
+val nebulaClient = "com.vesoft" % "client" % nebulaClientVersion
 val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
 val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jClientVersion
 val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jUtilsVersion
