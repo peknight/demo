@@ -685,6 +685,11 @@ lazy val demoAcme4j = (project in file("demo-acme4j"))
     libraryDependencies ++= Seq(
       acme4jClient,
       acme4jUtils,
+      acme4jExample,
+      fs2Core,
+      fs2IO,
+      log4CatsSlf4j,
+      logbackClassic % Runtime,
     ),
   )
 
@@ -775,10 +780,16 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       redis4CatsEffects,
       redis4CatsStreams,
       redis4CatsLog4Cats,
+      neotypesCatsEffect,
+      neotypesFs2Stream,
+      neotypesGeneric,
+      neo4jJavaDriver,
+      nebulaClient,
       akkaActorTyped,
       apacheCommonsCodec,
       acme4jClient,
       acme4jUtils,
+      acme4jExample,
       bouncyCastle,
       jwtCirce,
       scalaJwk,
@@ -901,7 +912,7 @@ val h2Version = "2.2.222"
 val postgisJdbcVersion = "2021.1.0"
 val neo4jVersion = "5.13.0"
 val nebulaClientVersion = "3.6.1"
-val acme4jClientVersion = "3.0.0"
+val acme4jClientVersion = "3.1.0"
 val acme4jUtilsVersion = "2.16"
 val bouncyCastleVersion = "1.70"
 val jwtCirceVersion = "9.4.3"
@@ -918,6 +929,7 @@ val nebulaClient = "com.vesoft" % "client" % nebulaClientVersion
 val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
 val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jClientVersion
 val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jUtilsVersion
+val acme4jExample = "org.shredzone.acme4j" % "acme4j-example" % acme4jClientVersion exclude("org.slf4j", "slf4j-simple")
 val bouncyCastle = "org.bouncycastle" % "bcprov-jdk15on" % bouncyCastleVersion
 val jwtCirce = "com.github.jwt-scala" %% "jwt-circe" % jwtCirceVersion
 val scalaJwk = "com.chatwork" %% "scala-jwk" % scalaJwkVersion

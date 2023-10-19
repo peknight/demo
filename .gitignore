@@ -52,3 +52,7 @@ letsencrypt.keystore
 letsencrypt.crt
 letsencrypt.key
 letsencrypt.p12
+user.key
+domain.key
+domain.csr
+domain-chain.crt
