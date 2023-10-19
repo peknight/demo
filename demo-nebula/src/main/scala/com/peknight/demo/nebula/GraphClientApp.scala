@@ -98,15 +98,15 @@ object GraphClientApp:
 
   def demo7(): Unit =
     demoSsl(new CASignedSSLParam(
-      "demo-nebula/src/main/resources/ssl/casigned.pem",
-      "demo-nebula/src/main/resources/ssl/casigned.crt",
-      "demo-nebula/src/main/resources/ssl/casigned.key"
+      "demo-nebula/ssl/casigned.pem",
+      "demo-nebula/ssl/casigned.crt",
+      "demo-nebula/ssl/casigned.key"
     ))
 
   def demo8(): Unit =
     demoSsl(new SelfSignedSSLParam(
-      "demo-nebula/src/main/resources/ssl/selfsigned.pem",
-      "demo-nebula/src/main/resources/ssl/selfsigned.key",
+      "demo-nebula/ssl/selfsigned.pem",
+      "demo-nebula/ssl/selfsigned.key",
       "vesoft"
     ))
 
@@ -177,6 +177,13 @@ object GraphClientApp:
         case value if value.isSet => String.format("%15s |", value.asSet())
         case value if value.isMap => String.format("%15s |", value.asMap())
       }.mkString).mkString("\n")
-      println(s"$keys\n$values")
+      if keys.isEmpty && values.isEmpty then
+        println("<empty>")
+      else if keys.isEmpty then
+        println(values)
+      else if values.isEmpty then
+        println(keys)
+      else
+        println(s"$keys\n$values")
 
 end GraphClientApp
