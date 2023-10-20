@@ -685,7 +685,6 @@ lazy val demoAcme4j = (project in file("demo-acme4j"))
     libraryDependencies ++= Seq(
       acme4jClient,
       acme4jUtils,
-      acme4jExample,
       fs2Core,
       fs2IO,
       log4CatsSlf4j,
@@ -789,7 +788,6 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       apacheCommonsCodec,
       acme4jClient,
       acme4jUtils,
-      acme4jExample,
       bouncyCastle,
       jwtCirce,
       scalaJwk,
@@ -929,7 +927,6 @@ val nebulaClient = "com.vesoft" % "client" % nebulaClientVersion
 val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
 val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jClientVersion
 val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jUtilsVersion
-val acme4jExample = "org.shredzone.acme4j" % "acme4j-example" % acme4jClientVersion exclude("org.slf4j", "slf4j-simple")
 val bouncyCastle = "org.bouncycastle" % "bcprov-jdk15on" % bouncyCastleVersion
 val jwtCirce = "com.github.jwt-scala" %% "jwt-circe" % jwtCirceVersion
 val scalaJwk = "com.chatwork" %% "scala-jwk" % scalaJwkVersion
