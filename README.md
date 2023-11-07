@@ -5,7 +5,7 @@
 ### Log
 
 ###### 2023.10.31
-关注下[tyrian](https://tyrian.indigoengine.io/)-[Github](https://github.com/PurpleKingdomGames/tyrian)与[Laminar](https://laminar.dev/)-[Github](https://github.com/raquo/Laminar)
+关注下[tyrian](https://tyrian.indigoengine.io/)-[Github](https://github.com/PurpleKingdomGames/tyrian)、[Laminar](https://laminar.dev/)-[Github](https://github.com/raquo/Laminar)、[Natchez](https://typelevel.org/natchez/index.html)-[Github](https://github.com/typelevel/natchez)
 ###### 2023.10.16
 对比了一下，好像nebula比neo4j更适合我，学下nebula
 ###### 2023.10.09
