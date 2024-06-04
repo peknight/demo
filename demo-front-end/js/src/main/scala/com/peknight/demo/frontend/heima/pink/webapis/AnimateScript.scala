@@ -30,13 +30,13 @@ object AnimateScript:
     }, 15)
     timer
 
-  private[this] def next(current: Double, target: Double): Int =
+  private def next(current: Double, target: Double): Int =
     val step = (target - current) / 10
     (current + (if step > 0 then math.ceil(step) else math.floor(step))).toInt
 
 
   extension (element: dom.HTMLElement)
-    private[this] def setTimer(timer: Int): Unit = element.asInstanceOf[js.Dynamic].timer = timer
-    private[this] def clearTimer: Unit =
+    private def setTimer(timer: Int): Unit = element.asInstanceOf[js.Dynamic].timer = timer
+    private def clearTimer: Unit =
       Option(element.asInstanceOf[js.Dynamic].timer.asInstanceOf[Int]).foreach(dom.window.clearInterval)
   end extension

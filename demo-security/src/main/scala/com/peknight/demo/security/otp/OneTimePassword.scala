@@ -10,7 +10,7 @@ import scala.annotation.tailrec
 /**
  * @see https://github.com/google/google-authenticator-android/blob/master/java/com/google/android/apps/authenticator/otp/PasscodeGenerator.java
  */
-class OneTimePassword(private[this] val signer: Signer, private[this] val codeLength: Int):
+class OneTimePassword(private val signer: Signer, private val codeLength: Int):
   assert(0 <= codeLength && codeLength <= MAX_PASSCODE_LENGTH,
     s"PassCodeLength must be between 1 and ${MAX_PASSCODE_LENGTH} digits.")
 
@@ -39,7 +39,7 @@ class OneTimePassword(private[this] val signer: Signer, private[this] val codeLe
     go(startInterval)
   end verifyTimeoutCode
 
-  private[this] def challengeToBytes(state: Long, challenge: Option[Seq[Byte]] = None): Seq[Byte] =
+  private def challengeToBytes(state: Long, challenge: Option[Seq[Byte]] = None): Seq[Byte] =
     challenge.map {
       challengeBytes => {
         val challengeLength = challengeBytes.length
@@ -53,19 +53,19 @@ class OneTimePassword(private[this] val signer: Signer, private[this] val codeLe
     }
   end challengeToBytes
 
-  private[this] def truncate(hash: Seq[Byte], codeLength: Int): String =
+  private def truncate(hash: Seq[Byte], codeLength: Int): String =
     val offset = hash.last & 0xF
     val truncatedHash = hashToInt(hash, offset) & 0x7FFFFFFF
     val pinValue = truncatedHash % DIGITS_POWER(codeLength)
     padOutput(pinValue, codeLength)
 
-  private[this] def hashToInt(hash: Seq[Byte], offset: Int): Int =
+  private def hashToInt(hash: Seq[Byte], offset: Int): Int =
     ((hash(offset) & 0xFF) << 24) |
       ((hash(offset + 1) & 0xFF) << 16) |
       ((hash(offset + 2) & 0xFF) << 8) |
       (hash(offset + 3) & 0xFF)
 
-  private[this] def padOutput(value: Int, codeLength: Int): String =
+  private def padOutput(value: Int, codeLength: Int): String =
     val str = value.toString
     val padLength = codeLength - str.length
     if padLength > 0 then "0".repeat(padLength) + str

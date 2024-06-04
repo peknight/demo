@@ -17,7 +17,7 @@ import org.typelevel.log4cats.Logger
 
 object PinyougouApp extends DemoFrontEndHttp4sApp:
 
-  private[this] val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => renderHtml(IndexPage.Text.index)
     case GET -> Root / "index.html" => renderHtml(IndexPage.Text.index)
     case GET -> Root / "list.html" => renderHtml(ListPage.Text.list)
@@ -26,11 +26,11 @@ object PinyougouApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "cart.html" => renderHtml(ShoppingCartPage.Text.cart)
     case GET -> Root / "jingdong" => renderHtml(JingdongPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.3.0/demo-front-end-opt/$path"), Some(req))
+      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.4.2/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
 
-  private[this] val resourceRoutes: HttpRoutes[IO] =
+  private val resourceRoutes: HttpRoutes[IO] =
     Router(
       "/" -> (resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/pinyougou").toRoutes <+>
         resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/mobile").toRoutes),
@@ -38,7 +38,7 @@ object PinyougouApp extends DemoFrontEndHttp4sApp:
       "webjars" -> webjarServiceBuilder[IO].toRoutes
     )
 
-  private[this] val cssRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private val cssRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "base.css" => renderCss(BaseStyles)
     case GET -> Root / "fonts.css" => renderCss(FontsStyles)
     case GET -> Root / "common.css" => renderCss(CommonStyles)

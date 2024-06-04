@@ -166,20 +166,20 @@ end Random
 
 object Random:
 
-  private[this] val multiplier: Long = 0x5DEECE66DL
-  private[this] val addend: Long = 0xBL
-  private[this] val mask: Long = (1L << 48) - 1
-  private[this] val doubleUnit: Double = 1.0 / (1L << 53)
-  private[this] val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+  private val multiplier: Long = 0x5DEECE66DL
+  private val addend: Long = 0xBL
+  private val mask: Long = (1L << 48) - 1
+  private val doubleUnit: Double = 1.0 / (1L << 53)
+  private val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
-  private[this] case class LinearCongruentialRandom(seed: Long) extends Random:
+  private case class LinearCongruentialRandom(seed: Long) extends Random:
     def next(bits: Int): (Random, Int) =
       val nextSeed = (seed * multiplier + addend) & mask
       val nextRandom = LinearCongruentialRandom(nextSeed)
       val n = (nextSeed >>> (48 - bits)).toInt
       (nextRandom, n)
 
-  private[this] def initialScramble(seed: Long): Long = (seed ^ multiplier) & mask
+  private def initialScramble(seed: Long): Long = (seed ^ multiplier) & mask
 
   def apply(seed: Long): Random = LinearCongruentialRandom(initialScramble(seed))
 

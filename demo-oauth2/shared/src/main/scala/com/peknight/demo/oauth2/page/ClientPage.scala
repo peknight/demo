@@ -186,10 +186,10 @@ class ClientPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     )
   )
 
-  private[this] def jumbotron(jumbotron: Modifier*): Frag =
+  private def jumbotron(jumbotron: Modifier*): Frag =
     super.jumbotron("Client", "primary", c"#223")(jumbotron)
 
-  private[this] def skeleton(main: Modifier*)(scriptSrc: Option[Uri]): Frag =
+  private def skeleton(main: Modifier*)(scriptSrc: Option[Uri]): Frag =
     super.skeleton("Client", "primary", c"#223")(main)(scriptSrc)
 
 end ClientPage

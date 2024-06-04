@@ -48,7 +48,7 @@ object ProtectedResourceApp extends IOApp.Simple:
   given EntityDecoder[IO, Resource] = jsonOf[IO, Resource]
   given EntityDecoder[IO, ResourceScope] = jsonOf[IO, ResourceScope]
 
-  private[this] val corsPolicy: CORSPolicy = CORS.policy
+  private val corsPolicy: CORSPolicy = CORS.policy
     .withAllowOriginHost(Set(Origin.Host(
       Uri.Scheme.https,
       Uri.RegName.fromHostname(host"local.peknight.com"),
@@ -72,7 +72,7 @@ object ProtectedResourceApp extends IOApp.Simple:
     case req @ (GET | POST) -> Root / "userinfo" => userInfoEndpoint(req, protectedResourceAddr)
   }
 
-  private[this] def getResource(usePop: Boolean, req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
+  private def getResource(usePop: Boolean, req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
     if usePop then
       requirePop(req)(record => Ok(ResourceScope(resource, record.scope).asJson))
     else
@@ -80,8 +80,8 @@ object ProtectedResourceApp extends IOApp.Simple:
         record => Ok(ResourceScope(resource, record.scope).asJson)
       )
 
-  private[this] def getWords(req: Request[IO], savedWordsR: Ref[IO, Queue[String]])
-                            (using Logger[IO]): IO[Response[IO]] =
+  private def getWords(req: Request[IO], savedWordsR: Ref[IO, Queue[String]])
+                      (using Logger[IO]): IO[Response[IO]] =
     requireAccessTokenScope(req, "read") {
       for
         savedWords <- savedWordsR.get
@@ -90,8 +90,7 @@ object ProtectedResourceApp extends IOApp.Simple:
       yield resp
     }
 
-  private[this] def postWords(req: Request[IO], savedWordsR: Ref[IO, Queue[String]])
-                             (using Logger[IO]): IO[Response[IO]] =
+  private def postWords(req: Request[IO], savedWordsR: Ref[IO, Queue[String]])(using Logger[IO]): IO[Response[IO]] =
     requireAccessTokenScope(req, "write") {
       for
         body <- req.as[UrlForm]
@@ -100,11 +99,10 @@ object ProtectedResourceApp extends IOApp.Simple:
       yield resp
     }
 
-  private[this] def deleteWords(req: Request[IO], savedWordsR: Ref[IO, Queue[String]])
-                               (using Logger[IO]): IO[Response[IO]] =
+  private def deleteWords(req: Request[IO], savedWordsR: Ref[IO, Queue[String]])(using Logger[IO]): IO[Response[IO]] =
     requireAccessTokenScope(req, "delete")(savedWordsR.update(_.init) *> NoContent())
 
-  private[this] def produce(req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
+  private def produce(req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
     requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
       val fruit =
         if record.scope.exists(_.contains("fruit")) then Seq("apple", "banana", "kiwi")
@@ -119,7 +117,7 @@ object ProtectedResourceApp extends IOApp.Simple:
       info"Sending produce: $produce" *> Ok(produce.asJson)
     }
 
-  private[this] def favorites(req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
+  private def favorites(req: Request[IO])(using Logger[IO]): IO[Response[IO]] =
     requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
       record.user match
         case Some("alice") => Ok(UserFavoritesData("Alice", aliceFavorites).asJson)
@@ -127,7 +125,7 @@ object ProtectedResourceApp extends IOApp.Simple:
         case _ => Ok(UserFavoritesData("Unknown", FavoritesData.empty).asJson)
     }
 
-  private[this] def helloWorld(req: Request[IO], language: Option[String])(using Logger[IO]): IO[Response[IO]] =
+  private def helloWorld(req: Request[IO], language: Option[String])(using Logger[IO]): IO[Response[IO]] =
     requireAccessToken(req, protectedResourceAddr)(introspect) { _ =>
       val greeting = language match
         case Some("en") => "Hello World"
@@ -148,8 +146,8 @@ object ProtectedResourceApp extends IOApp.Simple:
       )
     }
 
-  private[this] def requirePop(req: Request[IO])(handleOAuthTokenRecord: OAuthTokenRecord => IO[Response[IO]])
-                              (using Logger[IO]): IO[Response[IO]] =
+  private def requirePop(req: Request[IO])(handleOAuthTokenRecord: OAuthTokenRecord => IO[Response[IO]])
+                        (using Logger[IO]): IO[Response[IO]] =
     val oauthTokenRecord =
       for
         inToken <- OptionT(req.headers.get[Authorization] match
@@ -189,7 +187,7 @@ object ProtectedResourceApp extends IOApp.Simple:
       yield record
     handleOAuthTokenRecordOptionT(oauthTokenRecord, protectedResourceAddr)(handleOAuthTokenRecord)
 
-  private[this] def introspect(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
+  private def introspect(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
     val req: Request[IO] = POST(
       UrlForm(
         "token" -> accessToken
@@ -209,19 +207,19 @@ object ProtectedResourceApp extends IOApp.Simple:
     }{ _ => IO.pure(None) }
 
   //noinspection ScalaUnusedSymbol
-  private[this] def checkUnsafeJwt(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
+  private def checkUnsafeJwt(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
     checkJwt[OAuthTokenRecord](IO(JwtCirce.decodeJson(accessToken)), protectedResourceIndex.toString, None)
 
   //noinspection ScalaUnusedSymbol
-  private[this] def checkHS256Jwt(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
+  private def checkHS256Jwt(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
     checkJwt[OAuthTokenRecord](IO(JwtCirce.decodeJson(accessToken, toHex(sharedTokenSecret), Seq(JwtAlgorithm.HS256))),
       protectedResourceIndex.toString, None)
 
   //noinspection ScalaUnusedSymbol
-  private[this] def checkRS256Jwt(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
+  private def checkRS256Jwt(accessToken: String)(using Logger[IO]): IO[Option[OAuthTokenRecord]] =
     checkJwt[OAuthTokenRecord](jwtRS256Decode(accessToken), protectedResourceIndex.toString, None)
-  private[this] def requireAccessTokenScope(req: Request[IO], scope: String)(pass: => IO[Response[IO]])
-                                           (using Logger[IO]): IO[Response[IO]] =
+  private def requireAccessTokenScope(req: Request[IO], scope: String)(pass: => IO[Response[IO]])
+                                     (using Logger[IO]): IO[Response[IO]] =
     requireAccessToken(req, protectedResourceAddr)(introspect) { record =>
       if record.scope.exists(_.contains(scope)) then pass
       else
@@ -230,4 +228,4 @@ object ProtectedResourceApp extends IOApp.Simple:
           scopeKey -> scope
         ))))
     }
-
+end ProtectedResourceApp

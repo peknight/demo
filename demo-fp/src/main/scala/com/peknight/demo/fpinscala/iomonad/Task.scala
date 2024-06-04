@@ -48,7 +48,7 @@ object Task extends Monad[Task]:
 
   def unit[A](a: => A): Task[A] = Task(Suspend(Par.lazyUnit(Try(a))))
 
-  override def flatMap[A, B](a: Task[A])(f: A => Task[B]): Task[B] = a flatMap f
+  override def flatMap[A, B](a: Task[A])(f: A => Task[B]): Task[B] = a.flatMap(f)
 
   def fail[A](e: Throwable): Task[A] = Task(Return(Left(e)))
   def now[A](a: A): Task[A] = Task(Return(Right(a)))
@@ -58,7 +58,7 @@ object Task extends Monad[Task]:
   def delay[A](a: => A): Task[A] = more(now(a))
 
   def fork[A](a: Task[A]): Task[A] = Task {
-    Suspend { Par.lazyUnit(()) } flatMap (_ => a.get)
+    Suspend { Par.lazyUnit(()) }.flatMap(_ => a.get)
   }
 
   def forkUnit[A](a: => A): Task[A] = fork(now(a))

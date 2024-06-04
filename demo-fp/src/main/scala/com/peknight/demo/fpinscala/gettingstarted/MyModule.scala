@@ -53,7 +53,7 @@ object MyModule:
     println(lessThan(10, 20))
 
     val f = (x: Double) => math.Pi / 2 - x
-    val sin = math.sin _
+    val sin = math.sin
     val cos = f andThen sin
     println(cos(math.Pi / 2))
     val cosV2 = sin compose f

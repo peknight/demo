@@ -13,13 +13,13 @@ object Spiral extends App:
       def verticalBar = elem('|', 1, sp.height)
       def horizontalBar = elem('-', sp.width, 1)
       if direction == 0 then
-        (corner beside horizontalBar) above (sp beside space)
+        corner.beside(horizontalBar).above(sp.beside(space))
       else if direction == 1 then
-        (sp above space) beside (corner above verticalBar)
+        sp.above(space).beside(corner.above(verticalBar))
       else if direction == 2 then
-        (space beside sp) above (horizontalBar beside corner)
+        space.beside(sp).above(horizontalBar.beside(corner))
       else
-        (verticalBar above corner) beside (space above sp)
+        verticalBar.above(corner).beside(space.above(sp))
 
   println(spiral(6, 0))
   println(spiral(11, 0))

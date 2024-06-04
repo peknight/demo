@@ -35,7 +35,7 @@ package object security:
     _.pull.scanChunks(Chunk.empty[I])((acc, hd) => (hd, f(acc)))
       .flatMap[F, O, Unit](acc => Pull.output(last(acc)).void).stream
 
-  private[this] def evalScanChunksOptPull[F[_], F2[x] >: F[x], I, I2 >: I, O, S](acc: S, s: Stream[F, I])
+  private def evalScanChunksOptPull[F[_], F2[x] >: F[x], I, I2 >: I, O, S](acc: S, s: Stream[F, I])
       (f: S => Option[Chunk[I2] => F2[(S, Chunk[O])]]): Pull[F2, O, S] =
     f(acc) match
       case None => Pull.pure(acc)

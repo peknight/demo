@@ -2,8 +2,8 @@ import org.scalajs.linker.interface.ModuleInitializer
 
 ThisBuild / version := "0.1-SNAPSHOT"
 
-val scala3Version = "3.3.1"
-val scala2Version = "2.13.12"
+val scala3Version = "3.4.2"
+val scala2Version = "2.13.14"
 
 ThisBuild / scalaVersion := scala3Version
 
@@ -188,6 +188,9 @@ lazy val demoFs2GrpcProtobuf = (project in file("demo-fs2-grpc/protobuf"))
   .settings(commonSettings)
   .settings(
     name := "demo-fs2-grpc-protobuf",
+    scalacOptions --= Seq(
+      "-Xfatal-warnings",
+    )
   )
 
 lazy val demoFs2GrpcClient = (project in file("demo-fs2-grpc/client"))
@@ -749,7 +752,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.typelevel" %%% "cats-effect-testkit" % catsEffectVersion % Test,
       "org.typelevel" %%% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion % Test,
       "org.typelevel" %%% "cats-effect-testing-scalatest" % catsEffectTestingScalaTestVersion % Test,
-      "org.typelevel" %%% "munit-cats-effect-3" % mUnitCatsEffectVersion % Test,
+      "org.typelevel" %%% "munit-cats-effect" % mUnitCatsEffectVersion % Test,
       "com.disneystreaming" %%% "weaver-cats" % weaverCatsVersion % Test,
       "com.lihaoyi" %%% "utest" % uTestVersion % Test,
     ),
@@ -818,34 +821,34 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
 
 // Functional
 
-val shapelessVersion = "3.3.0"
-val shapeless2Version = "2.3.10"
-val catsVersion = "2.10.0"
-val catsEffectVersion = "3.5.1"
+val shapelessVersion = "3.4.1"
+val shapeless2Version = "2.3.12"
+val catsVersion = "2.12.0"
+val catsEffectVersion = "3.5.4"
 val catsEffectCpsVersion = "0.4.0"
-val catsParseVersion = "0.3.10"
-val fs2Version = "3.9.2"
-val circeVersion = "0.14.6"
+val catsParseVersion = "0.3.7" // "1.0.0"
+val fs2Version = "3.10.2"
+val circeVersion = "0.14.7"
 val circeFs2Version = "0.14.1"
 val monocleVersion = "3.2.0"
-val log4CatsVersion = "2.6.0"
-val cirisVersion = "3.2.0"
-val cirisHoconVersion = "1.1.0"
-val refinedCatsVersion = "0.11.0"
-val catsStmVersion = "0.13.4"
+val log4CatsVersion = "2.7.0"
+val cirisVersion = "3.6.0"
+val cirisHoconVersion = "1.2.0"
+val refinedCatsVersion = "0.11.2"
+val catsStmVersion = "0.13.5"
 val spireVersion = "0.18.0"
 val squantsVersion = "1.8.3"
-val http4sVersion = "1.0.0-M34"
-val http4sDomVersion = "1.0.0-M34"
-val http4sScalaTagsVersion = "1.0.0-M34"
-val http4sPrometheusMetricsVersion = "1.0.0-M34"
+val http4sVersion = "1.0.0-M34" // 1.0.0-M41
+val http4sDomVersion = "1.0.0-M34" // 1.0.0-M36 -> 1.0.0-M36
+val http4sScalaTagsVersion = "1.0.0-M34" // 1.0.0-M35 -> 1.0.0-M35, 1.0.0-M38 -> 1.0.0-M38
+val http4sPrometheusMetricsVersion = "1.0.0-M34" // 1.0.0-M35 -> 1.0.0-M35, 1.0.0-M38 -> 1.0.0-M38
 val http4sDropwizardMetricsVersion = "1.0.0-M32"
-val http4sJdkHttpClientVersion = "1.0.0-M3"
-val doobieVersion = "1.0.0-RC4"
-val redis4CatsVersion = "1.4.3"
-val neotypesVersion = "1.0.0-M3"
-val jawnAstVersion = "1.5.1"
-val zioVersion = "2.0.16"
+val http4sJdkHttpClientVersion = "1.0.0-M3" // 1.0.0-M4 -> M35, 1.0.0-M5 -> 1.0.0-M36, 1.0.0-M6 & 1.0.0-M7 -> 1.0.0-M37, 1.0.0-M8 -> 1.0.0-M38, 1.0.0-M9 -> 1.0.0-M39
+val doobieVersion = "1.0.0-RC5"
+val redis4CatsVersion = "1.7.0"
+val neotypesVersion = "1.0.0"
+val jawnAstVersion = "1.6.0"
+val zioVersion = "2.1.1"
 
 val shapeless = "org.typelevel" %% "shapeless3-deriving" % shapelessVersion
 val shapeless2 = "com.chuusai" %% "shapeless" % shapeless2Version
@@ -902,18 +905,18 @@ val zioStreams = "dev.zio" %% "zio-streams" % zioVersion
 
 // Library
 
-val logbackVersion = "1.4.11"
+val logbackVersion = "1.5.6"
 // val jansiVersion = "1.18"
-val akkaVersion = "2.8.4"
-val apacheCommonsCodecVersion = "1.16.0"
-val h2Version = "2.2.222"
-val postgisJdbcVersion = "2021.1.0"
-val neo4jVersion = "5.13.0"
-val nebulaClientVersion = "3.6.1"
-val acme4jClientVersion = "3.1.0"
+val akkaVersion = "2.8.5"
+val apacheCommonsCodecVersion = "1.17.0"
+val h2Version = "2.2.224"
+val postgisJdbcVersion = "2023.1.0"
+val neo4jVersion = "5.20.0"
+val nebulaClientVersion = "3.8.0"
+val acme4jClientVersion = "3.3.0"
 val acme4jUtilsVersion = "2.16"
-val bouncyCastleVersion = "1.70"
-val jwtCirceVersion = "9.4.3"
+val bouncyCastleVersion = "1.78.1"
+val jwtCirceVersion = "10.0.1"
 val scalaJwkVersion = "1.2.24"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
@@ -927,7 +930,7 @@ val nebulaClient = "com.vesoft" % "client" % nebulaClientVersion
 val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
 val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jClientVersion
 val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jUtilsVersion
-val bouncyCastle = "org.bouncycastle" % "bcprov-jdk15on" % bouncyCastleVersion
+val bouncyCastle = "org.bouncycastle" % "bcprov-jdk18on" % bouncyCastleVersion
 val jwtCirce = "com.github.jwt-scala" %% "jwt-circe" % jwtCirceVersion
 val scalaJwk = "com.chatwork" %% "scala-jwk" % scalaJwkVersion
 
@@ -935,12 +938,12 @@ val scalaJwk = "com.chatwork" %% "scala-jwk" % scalaJwkVersion
 
 val jQueryVersion = "3.7.1"
 val flexibleVersion = "2.2.1"
-val swiperVersion = "9.4.1"
-val bootstrapVersion = "5.3.1"
-val bootstrapIconsVersion = "1.10.5"
+val swiperVersion = "11.0.5" // "9.4.1"
+val bootstrapVersion = "5.3.3" // "5.3.1"
+val bootstrapIconsVersion = "1.11.3" // "1.10.5"
 val fastClickVersion = "1.0.6"
-val eChartsVersion = "5.4.3"
-val vueVersion = "3.3.4"
+val eChartsVersion = "5.4.3" // "5.5.0"
+val vueVersion = "3.4.27" // "3.3.4"
 val html5ShivVersion = "3.7.2"
 val respondJsVersion = "1.4.2"
 
@@ -957,14 +960,14 @@ val respondJs = "org.webjars.npm" % "respond.js" % respondJsVersion
 
 // Test
 
-val scalaTestVersion = "3.2.16"
-val scalaCheckVersion = "1.17.0"
-val scalaTestPlusVersion = "3.2.16.0"
+val scalaTestVersion = "3.2.18"
+val scalaCheckVersion = "1.18.0"
+val scalaTestPlusVersion = "3.2.18.0"
 val scalaCheckEffectVersion = "1.0.4"
 val catsEffectTestingSpecsVersion = "1.5.0"
 val catsEffectTestingScalaTestVersion = "1.5.0"
-val mUnitCatsEffectVersion = "1.0.7"
-val weaverCatsVersion = "0.8.3"
+val mUnitCatsEffectVersion = "2.0.0"
+val weaverCatsVersion = "0.8.4"
 
 val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
 val scalaCheck = "org.scalacheck" %% "scalacheck" % scalaCheckVersion
@@ -975,14 +978,14 @@ val catsLaws = "org.typelevel" %% "cats-laws" % catsVersion
 val catsEffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
 val catsEffectTestingSpecs = "org.typelevel" %% "cats-effect-testing-specs2" % catsEffectTestingSpecsVersion
 val catsEffectTestingScalaTest = "org.typelevel" %% "cats-effect-testing-scalatest" % catsEffectTestingScalaTestVersion
-val mUnitCatsEffect = "org.typelevel" %% "munit-cats-effect-3" % mUnitCatsEffectVersion
+val mUnitCatsEffect = "org.typelevel" %% "munit-cats-effect" % mUnitCatsEffectVersion
 val weaverCats = "com.disneystreaming" %% "weaver-cats" % weaverCatsVersion
 
 // Scala JS
 
-val scalaJsDomVersion = "2.6.0"
-val scalaTagsVersion = "0.12.0"
-val uPickleVersion = "3.1.2"
-val uTestVersion = "0.8.1"
+val scalaJsDomVersion = "2.8.0"
+val scalaTagsVersion = "0.13.1"
+val uPickleVersion = "3.3.1"
+val uTestVersion = "0.8.3"
 val scalaCssVersion = "1.0.0"
 val jQueryFacadeVersion = "2.1"

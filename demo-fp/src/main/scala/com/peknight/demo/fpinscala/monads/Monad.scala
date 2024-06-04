@@ -121,7 +121,7 @@ object Monad:
 
   val genMonad = new Monad[Gen]:
     def unit[A](a: => A): Gen[A] = Gen.unit(a)
-    override def flatMap[A, B](ma: Gen[A])(f: A => Gen[B]): Gen[B] = ma flatMap f
+    override def flatMap[A, B](ma: Gen[A])(f: A => Gen[B]): Gen[B] = ma.flatMap(f)
 
   // Exercise 11.1
 
@@ -129,7 +129,7 @@ object Monad:
     def unit[A](a: => A): Par[A] = Par.unit(a)
     override def flatMap[A, B](ma: Par[A])(f: A => Par[B]): Par[B] = Par.flatMap(ma)(f)
 
-  def parserMonad[Parser[+_]](p: Parsers[Parser]): Monad[Parser] = new Monad:
+  def parserMonad[Parser[+_]](p: Parsers[Parser]): Monad[Parser] = new Monad[Parser]:
     def unit[A](a: => A): Parser[A] = p.succeed(a)
     override def flatMap[A, B](fa: Parser[A])(f: A => Parser[B]): Parser[B] = p.flatMap(fa)(f)
 
@@ -152,20 +152,21 @@ object Monad:
 
      val monad = new Monad[StateS]:
        def unit[A](a: => A): State[S, A] = State.unit(a)
-       override def flatMap[A, B](st: State[S, A])(f: A => State[S, B]): State[S, B] = st flatMap f
+       override def flatMap[A, B](st: State[S, A])(f: A => State[S, B]): State[S, B] = st.flatMap(f)
   end StateMonads
 
   // type lambda kind projector: Monad[State[S, *]]
   def stateMonad[S] = new Monad[[T] =>> State[S, T]]:
     def unit[A](a: => A): State[S, A] = State.unit(a)
-    override def flatMap[A, B](st: State[S, A])(f: A => State[S, B]): State[S, B] = st flatMap f
+    override def flatMap[A, B](st: State[S, A])(f: A => State[S, B]): State[S, B] = st.flatMap(f)
 
   // Exercise 12.20
 
-  def composeM[G[_], H[_]](using G: Monad[G], H: Monad[H], T: Traverse[H]): Monad[[T] =>> G[H[T]]] = new Monad:
-    def unit[A](a: => A): G[H[A]] = G.unit(H.unit(a))
-    override def flatMap[A, B](mna: G[H[A]])(f: A => G[H[B]]): G[H[B]] =
-      G.flatMap(mna)(na => G.map(T.traverse(na)(f))(H.join))
+  def composeM[G[_], H[_]](using G: Monad[G], H: Monad[H], T: Traverse[H]): Monad[[T] =>> G[H[T]]] =
+    new Monad[[T] =>> G[H[T]]]:
+      def unit[A](a: => A): G[H[A]] = G.unit(H.unit(a))
+      override def flatMap[A, B](mna: G[H[A]])(f: A => G[H[B]]): G[H[B]] =
+        G.flatMap(mna)(na => G.map(T.traverse(na)(f))(H.join))
 
   case class OptionT[M[_], A](value: M[Option[A]])(using M: Monad[M]):
     def flatMap[B](f: A => OptionT[M, B]): OptionT[M, B] = OptionT(M.flatMap(value) {

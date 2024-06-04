@@ -93,12 +93,12 @@ object TestingApp extends App:
     ))
 
   // Exercise 8.17
-  val forkProp = Prop.forAllPar(pint2)(i => equal(Par.fork(i), i)) tag "fork"
+  val forkProp = Prop.forAllPar(pint2)(i => equal(Par.fork(i), i)).tag("fork")
 
   val isEven = (i: Int) => i % 2 == 0
   val takeWhileProp = Prop.forAll(Gen.listOf(smallInt))(ns => ns.takeWhile(isEven).forall(isEven))
 
-  def genStringIntFn(g: Gen[Int]): Gen[String => Int] = g map (i => s => i)
+  def genStringIntFn(g: Gen[Int]): Gen[String => Int] = g.map(i => s => i)
 
   def genStringFn[A](g: Gen[A]): Gen[String => A] = Gen {
     State { (rng: RNG) =>

@@ -127,9 +127,9 @@ sealed trait Stream[+A] derives CanEqual:
   def tails: Stream[Stream[A]] = unfold(this) {
     case s @ Cons(_, t) => Some((s, t()))
     case Empty => None
-  } append Stream(empty)
+  }.append(Stream(empty))
 
-  def hasSubsequence[B](sub: Stream[B])(using CanEqual[A, B]): Boolean = tails exists (_ startsWith sub)
+  def hasSubsequence[B](sub: Stream[B])(using CanEqual[A, B]): Boolean = tails.exists(_.startsWith(sub))
 
   // Exercise 5.16
   def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = foldRight((z, Stream(z)))((a, p0) => {

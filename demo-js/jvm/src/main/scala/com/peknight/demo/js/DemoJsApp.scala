@@ -31,7 +31,7 @@ object DemoJsApp extends IOApp.Simple:
   given CanEqual[Path, Path] = CanEqual.derived
   given CanEqual[Method, Method] = CanEqual.derived
 
-  private[this] val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(DemoJsPage.Text.index)
     case GET -> Root / "tutorial" => Ok(DemoJsPage.Text.tutorial)
     case GET -> Root / "alert" => Ok(DemoJsPage.Text.alertDemo)
@@ -59,11 +59,11 @@ object DemoJsApp extends IOApp.Simple:
     case GET -> Root / "weather-search" => Ok(DemoJsPage.Text.weatherSearchDemo)
     case GET -> Root / "future-weather" => Ok(DemoJsPage.Text.futureWeatherDemo)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-js/js/target/scala-3.3.0/demo-js-opt/$path"), Some(req))
+      StaticFile.fromPath(file.Path(s"./demo-js/js/target/scala-3.4.2/demo-js-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
 
-  private[this] def echoRoutes[F[_]: Monad: Logger](builder: WebSocketBuilder[F]): HttpRoutes[F] = HttpRoutes.of[F] {
+  private def echoRoutes[F[_]: Monad: Logger](builder: WebSocketBuilder[F]): HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root =>
       val process: Pipe[F, WebSocketFrame, WebSocketFrame] = _.evalMap { frame =>
         info"WebSocket Received: $frame".map(_ => frame)
@@ -71,14 +71,14 @@ object DemoJsApp extends IOApp.Simple:
       builder.build(process)
   }
 
-  private[this] def echoApp[F[_]: Async: Logger](builder: WebSocketBuilder[F]): HttpApp[F] = echoRoutes(builder).orNotFound
+  private def echoApp[F[_]: Async: Logger](builder: WebSocketBuilder[F]): HttpApp[F] = echoRoutes(builder).orNotFound
 
-  private[this] val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
+  private val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
     env("STORE_PASSWORD").default("123456").secret
-  private[this] val keyPasswordConfig: ConfigValue[Effect, Secret[String]] =
+  private val keyPasswordConfig: ConfigValue[Effect, Secret[String]] =
     env("KEY_PASSWORD").default("123456").secret
 
-  private[this] def start[F[_]: Async](port: Port)(f: EmberServerBuilder[F] => EmberServerBuilder[F])
+  private def start[F[_]: Async](port: Port)(f: EmberServerBuilder[F] => EmberServerBuilder[F])
   : F[(Server, F[Unit])] =
     for
       storePassword <- storePasswordConfig.load[F]

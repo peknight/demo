@@ -19,6 +19,6 @@ object Machine:
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] =
     for
       // 精(tuo1)髓(fa4)的modify _ compose
-      _ <- sequence(inputs.map(modify[Machine] _ compose update))
+      _ <- sequence(inputs.map(modify[Machine] compose update))
       s <- get
     yield (s.coins, s.candies)

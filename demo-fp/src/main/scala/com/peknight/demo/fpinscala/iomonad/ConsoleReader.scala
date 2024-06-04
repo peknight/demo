@@ -9,4 +9,4 @@ case class ConsoleReader[A](run: String => A):
 object ConsoleReader:
   given monad: Monad[ConsoleReader] with
     def unit[A](a: => A) = ConsoleReader(_ => a)
-    override def flatMap[A, B](ra: ConsoleReader[A])(f: A => ConsoleReader[B]) = ra flatMap f
+    override def flatMap[A, B](ra: ConsoleReader[A])(f: A => ConsoleReader[B]) = ra.flatMap(f)

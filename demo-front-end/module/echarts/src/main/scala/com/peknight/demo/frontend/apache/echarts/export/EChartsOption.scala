@@ -47,7 +47,7 @@ trait EChartsOption extends ECBasicOption:
   val dataZoom: js.UndefOr[DataZoomComponentOption | js.Array[DataZoomComponentOption]] = js.undefined
   val visualMap: js.UndefOr[VisualMapComponentOption | js.Array[VisualMapComponentOption]] = js.undefined
   val graphic: js.UndefOr[GraphicComponentLooseOption | js.Array[GraphicComponentLooseOption]] = js.undefined
-  val series: js.UndefOr[SeriesOption[_, _, _, _] | js.Array[SeriesOption[_, _, _, _]]] = js.undefined
+  val series: js.UndefOr[SeriesOption[?, ?, ?, ?] | js.Array[SeriesOption[?, ?, ?, ?]]] = js.undefined
 
 object EChartsOption:
   def apply(baseOption: js.UndefOr[EChartsOption] = js.undefined,
@@ -92,7 +92,7 @@ object EChartsOption:
             dataZoom: js.UndefOr[DataZoomComponentOption | js.Array[DataZoomComponentOption]] = js.undefined,
             visualMap: js.UndefOr[VisualMapComponentOption | js.Array[VisualMapComponentOption]] = js.undefined,
             graphic: js.UndefOr[GraphicComponentLooseOption | js.Array[GraphicComponentLooseOption]] = js.undefined,
-            series: js.UndefOr[SeriesOption[_, _, _, _] | js.Array[SeriesOption[_, _, _, _]]] = js.undefined): EChartsOption =
+            series: js.UndefOr[SeriesOption[?, ?, ?, ?] | js.Array[SeriesOption[?, ?, ?, ?]]] = js.undefined): EChartsOption =
     val _baseOption: js.UndefOr[EChartsOption] = baseOption
     val _options: js.UndefOr[js.Array[EChartsOption]] = options
     val _media: js.UndefOr[js.Array[MediaUnit]] = media
@@ -135,7 +135,7 @@ object EChartsOption:
     val _dataZoom: js.UndefOr[DataZoomComponentOption | js.Array[DataZoomComponentOption]] = dataZoom
     val _visualMap: js.UndefOr[VisualMapComponentOption | js.Array[VisualMapComponentOption]] = visualMap
     val _graphic: js.UndefOr[GraphicComponentLooseOption | js.Array[GraphicComponentLooseOption]] = graphic
-    val _series: js.UndefOr[SeriesOption[_, _, _, _] | js.Array[SeriesOption[_, _, _, _]]] = series
+    val _series: js.UndefOr[SeriesOption[?, ?, ?, ?] | js.Array[SeriesOption[?, ?, ?, ?]]] = series
     val echartsOption = new EChartsOption:
       override val baseOption: js.UndefOr[BaseOptionType] = _baseOption
       override val options: js.UndefOr[OptionsType] = _options
@@ -179,7 +179,7 @@ object EChartsOption:
       override val dataZoom: js.UndefOr[DataZoomComponentOption | js.Array[DataZoomComponentOption]] = _dataZoom
       override val visualMap: js.UndefOr[VisualMapComponentOption | js.Array[VisualMapComponentOption]] = _visualMap
       override val graphic: js.UndefOr[GraphicComponentLooseOption | js.Array[GraphicComponentLooseOption]] = _graphic
-      override val series: js.UndefOr[SeriesOption[_, _, _, _] | js.Array[SeriesOption[_, _, _, _]]] = _series
+      override val series: js.UndefOr[SeriesOption[?, ?, ?, ?] | js.Array[SeriesOption[?, ?, ?, ?]]] = _series
     echartsOption.clean
     
   extension [T <: js.Any] (t: T)

@@ -17,7 +17,7 @@ case class Gen[+A](sample: State[RNG, A]):
   // Exercise 8.10
   def unsized: SGen[A] = SGen(_ => this)
 
-  def **[B](g: Gen[B]): Gen[(A, B)] = (this map2 g)((_, _))
+  def **[B](g: Gen[B]): Gen[(A, B)] = this.map2(g)((_, _))
 
 end Gen
 

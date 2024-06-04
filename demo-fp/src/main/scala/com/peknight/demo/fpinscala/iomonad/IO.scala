@@ -50,12 +50,12 @@ object IO extends Monad[IO]:
        * y.flatMap(a => FlatMap(g(a), f))
        * FlatMap(y, a => FlatMap(g(a), f))
        */
-      case FlatMap(y, g) => run(y flatMap (a => g(a) flatMap f))
+      case FlatMap(y, g) => run(y.flatMap(a => g(a).flatMap(f)))
 
   def unit[A](a: => A): IO[A] = Suspend(() => a)
   // new IO[A] { def run = a }
 
-  override def flatMap[A, B](fa: IO[A])(f: A => IO[B]) = fa flatMap f
+  override def flatMap[A, B](fa: IO[A])(f: A => IO[B]) = fa.flatMap(f)
 
   def apply[A](a: => A): IO[A] = unit(a)
 

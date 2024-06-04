@@ -14,7 +14,7 @@ object FromExprInstances:
   given FromExpr[StringContext] with
     def unapply(x: Expr[StringContext])(using Quotes): Option[StringContext] =
       x match
-        case '{ new StringContext(${Varargs(Exprs(args))}: _*) } => Some(StringContext(args: _*))
-        case '{ StringContext(${Varargs(Exprs(args))}: _*) } => Some(StringContext(args: _*))
+        case '{ new StringContext(${Varargs(Exprs(args))}*) } => Some(StringContext(args*))
+        case '{ StringContext(${Varargs(Exprs(args))}*) } => Some(StringContext(args*))
         case _ => None
   end given

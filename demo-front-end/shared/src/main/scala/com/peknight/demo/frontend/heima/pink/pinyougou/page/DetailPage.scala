@@ -24,7 +24,7 @@ class DetailPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     )
 
   // 详情页内容部分
-  private[this] def detailContainerFrag: Modifier =
+  private def detailContainerFrag: Modifier =
     div(cls := "de-container w")(
       crumbFrag,
       productIntroFrag,
@@ -32,20 +32,20 @@ class DetailPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     )
 
   // 面包屑导航
-  private[this] val crumbFrag: Modifier =
+  private val crumbFrag: Modifier =
     div(cls := "crumb-wrap")(
       Seq("手机、数码、通讯", "手机", "Apple苹果", "iPhone 6S Plus系类").map(s => a(href := "#")(s)).sep[Frag]("〉")
     )
 
   // 产品介绍模块
-  private[this] def productIntroFrag: Modifier =
+  private def productIntroFrag: Modifier =
     div(cls := "product-intro clearfix")(
       previewFrag,
       itemInfoFrag,
     )
 
   // 预览区域
-  private[this] val previewFrag: Modifier =
+  private val previewFrag: Modifier =
     div(cls := "preview-wrap fl")(
       div(cls := "preview-img")(
         img(src := "/uploads/s3.png"),
@@ -64,7 +64,7 @@ class DetailPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
     )
 
   // 产品详细信息
-  private[this] def itemInfoFrag: Modifier =
+  private def itemInfoFrag: Modifier =
     div(cls := "item-info-wrap fr")(
       div(cls := "sku-name")("Apple iPhone 6s (A1700) 64G玫瑰金色 移动通信电信4G手机"),
       div(cls := "news")("推荐选择下方[移动优惠购]，手机套餐齐搞定，不用换号，每月还有花费返"),
@@ -92,7 +92,7 @@ class DetailPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
       )
     )
 
-  private[this] def toAnchors(texts: List[String]): Modifier =
+  private def toAnchors(texts: List[String]): Modifier =
     texts match
       case head :: tail => modifier(
         a(href := "javascript:;", cls := "current")(head), " ",
@@ -101,7 +101,7 @@ class DetailPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bu
       case _ => modifier()
 
   // 产品细节模块
-  private[this] def productDetailFrag: Modifier =
+  private def productDetailFrag: Modifier =
     div(cls := "product-detail clearfix")(
       div(cls := "aside fl")(
         div(cls := "tab-list")(ul(li(cls := "first-tab")("相关分类"), li(cls := "second-tab current")("推荐品牌"))),

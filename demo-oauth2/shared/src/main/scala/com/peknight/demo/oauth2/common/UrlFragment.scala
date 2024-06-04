@@ -24,7 +24,7 @@ object UrlFragment:
     def toFragment(keyMapper: String => String): String = flatten.map { case (keys, value) =>
       s"${keyMapper(keys.head)}${keys.tail.map(key => s"[${keyMapper(key)}]").mkString}=$value"
     }.mkString("&")
-    private[this] def flatten: ListMap[NonEmptyList[String], String] = value.flatMap {
+    private def flatten: ListMap[NonEmptyList[String], String] = value.flatMap {
       case (key, UrlFragmentValue(value)) => ListMap(NonEmptyList.one(key) -> value)
       case (key, obj: UrlFragmentObject) => obj.flatten.map { case (tailKey, value) => (key :: tailKey, value) }
       case (_, UrlFragmentNone) => ListMap.empty[NonEmptyList[String], String]

@@ -19,9 +19,9 @@ class Cafe:
   def buyCoffees(cc: CreditCard, n: Int): (List[Coffee], Charge) =
     val purchases: List[(Coffee, Charge)] = List.fill(n)(buyCoffeeV3(cc))
     val (coffees, charges) = purchases.unzip
-    (coffees, charges.reduce(_ combine _))
+    (coffees, charges.reduce(_.combine(_)))
 
   def coalesce(charges: List[Charge]): List[Charge] =
-    charges.groupBy(_.cc).values.map(_.reduce(_ combine _)).toList
+    charges.groupBy(_.cc).values.map(_.reduce(_.combine(_))).toList
 
 end Cafe

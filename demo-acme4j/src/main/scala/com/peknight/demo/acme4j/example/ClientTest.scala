@@ -29,30 +29,30 @@ import scala.util.Try
 object ClientTest extends IOApp:
 
   // File name to the User Key Pair
-  private[this] val userKeyFile: String = "demo-acme4j/src/main/resources/user.key"
+  private val userKeyFile: String = "demo-acme4j/src/main/resources/user.key"
   // File name of the Domain Key Pair
-  private[this] val domainKeyFile: String = "demo-acme4j/src/main/resources/domain.key"
+  private val domainKeyFile: String = "demo-acme4j/src/main/resources/domain.key"
   // File name of the CSR
-  private[this] val domainCsrFile: String = "demo-acme4j/src/main/resources/domain.csr"
+  private val domainCsrFile: String = "demo-acme4j/src/main/resources/domain.csr"
   // File name of the signed certificate
-  private[this] val domainChainFile: String = "demo-acme4j/src/main/resources/domain-chain.crt"
-  private[this] enum ChallengeType derives CanEqual:
+  private val domainChainFile: String = "demo-acme4j/src/main/resources/domain-chain.crt"
+  private enum ChallengeType derives CanEqual:
     case HTTP, DNS
   end ChallengeType
 
   //Challenge type to be used
-  private[this] val challengeType: ChallengeType = ChallengeType.HTTP
+  private val challengeType: ChallengeType = ChallengeType.HTTP
 
   // RSA key size of generated key pairs
-  private[this] val keySize: Int = 2048
+  private val keySize: Int = 2048
 
-  private[this] def attempt[F[_] : Sync, A](a: => A): EitherT[F, Throwable, A] =
+  private def attempt[F[_] : Sync, A](a: => A): EitherT[F, Throwable, A] =
     EitherT(Sync[F].blocking(Try(a).toEither))
 
-  private[this] def attemptEither[F[_] : Sync, A](a: => Either[Throwable, A]): EitherT[F, Throwable, A] =
+  private def attemptEither[F[_] : Sync, A](a: => Either[Throwable, A]): EitherT[F, Throwable, A] =
     EitherT(Sync[F].blocking(Try(a).toEither.flatten))
 
-  private[this] def use[F[_]: Sync, A <: Closeable, B](acquire: => A)(f: A => EitherT[F, Throwable, B])
+  private def use[F[_]: Sync, A <: Closeable, B](acquire: => A)(f: A => EitherT[F, Throwable, B])
   : EitherT[F, Throwable, B] =
     Resource.fromAutoCloseable[[T] =>> EitherT[F, Throwable, T], A](attempt(acquire)).use(f)
 
@@ -111,7 +111,7 @@ object ClientTest extends IOApp:
    *
    * @return User's {@link KeyPair}.
    */
-  private[this] def loadOrCreateUserKeyPair[F[_]: Sync]: EitherT[F, Throwable, KeyPair] =
+  private def loadOrCreateUserKeyPair[F[_]: Sync]: EitherT[F, Throwable, KeyPair] =
     loadOrCreateKeyPair(userKeyFile)
 
   /**
@@ -120,10 +120,10 @@ object ClientTest extends IOApp:
    *
    * @return Domain {@link KeyPair}.
    */
-  private[this] def loadOrCreateDomainKeyPair[F[_]: Sync]: EitherT[F, Throwable, KeyPair] =
+  private def loadOrCreateDomainKeyPair[F[_]: Sync]: EitherT[F, Throwable, KeyPair] =
     loadOrCreateKeyPair(domainKeyFile)
 
-  private[this] def loadOrCreateKeyPair[F[_]: Sync](keyFile: String): EitherT[F, Throwable, KeyPair] =
+  private def loadOrCreateKeyPair[F[_]: Sync](keyFile: String): EitherT[F, Throwable, KeyPair] =
     for
       file <- attempt(File(keyFile))
       exists <- attempt(file.exists())
@@ -153,7 +153,7 @@ object ClientTest extends IOApp:
    * {@link Session} to bind with
    * @return {@link Account}
    */
-  private[this] def findOrRegisterAccount[F[_]: Sync: Logger](session: Session, accountKey: KeyPair)
+  private def findOrRegisterAccount[F[_]: Sync: Logger](session: Session, accountKey: KeyPair)
   : EitherT[F, Throwable, Account] =
     for
       // Ask the user to accept to TOS, if server provides us with a link
@@ -172,7 +172,7 @@ object ClientTest extends IOApp:
    * @param auth
    * {@link Authorization} to perform
    */
-  private[this] def authorize[F[_]: Async: Logger](auth: Authorization): EitherT[F, Throwable, Unit] =
+  private def authorize[F[_]: Async: Logger](auth: Authorization): EitherT[F, Throwable, Unit] =
     attempt[F, String](auth.getIdentifier.getDomain)
       .flatMap(domain => info"Authorization for domain $domain".lift)
       .flatMap(_ => attempt(auth.getStatus))
@@ -212,7 +212,7 @@ object ClientTest extends IOApp:
           }
       }
 
-  private[this] def waitForComplete[F[_]: Async: Logger](statusT: EitherT[F, Throwable, Status],
+  private def waitForComplete[F[_]: Async: Logger](statusT: EitherT[F, Throwable, Status],
                                                          errorT: EitherT[F, Throwable, String],
                                                          updateT: EitherT[F, Throwable, Unit], label: String)
   : EitherT[F, Throwable, Unit] =
@@ -247,7 +247,7 @@ object ClientTest extends IOApp:
    * {@link Authorization} to find the challenge in
    * @return {@link Challenge} to verify
    */
-  private[this] def httpChallenge[F[_]: Sync: Logger](auth: Authorization): EitherT[F, Throwable, Challenge] =
+  private def httpChallenge[F[_]: Sync: Logger](auth: Authorization): EitherT[F, Throwable, Challenge] =
     for
       challenge <- attemptEither(auth.findChallenge(classOf[Http01Challenge]).toScala
         .toRight[Throwable](AcmeException(s"Found no ${Http01Challenge.TYPE} challenge, don't know what to do...")))
@@ -282,7 +282,7 @@ object ClientTest extends IOApp:
    * {@link Authorization} to find the challenge in
    * @return {@link Challenge} to verify
    */
-  private[this] def dnsChallenge[F[_]: Sync: Logger](auth: Authorization): EitherT[F, Throwable, Challenge] =
+  private def dnsChallenge[F[_]: Sync: Logger](auth: Authorization): EitherT[F, Throwable, Challenge] =
     for
       challenge <- attemptEither(auth.findChallenge(Dns01Challenge.TYPE).toScala
         .map(_.asInstanceOf[Dns01Challenge])
@@ -300,7 +300,7 @@ object ClientTest extends IOApp:
       _ <- acceptChallenge(message)
     yield challenge
 
-  private[this] def acceptChallenge[F[_]: Sync](message: String): EitherT[F, Throwable, Unit] =
+  private def acceptChallenge[F[_]: Sync](message: String): EitherT[F, Throwable, Unit] =
     okCancelOption(message, "Prepare Challenge", "User cancelled the challenge")
 
   /**
@@ -310,7 +310,7 @@ object ClientTest extends IOApp:
    * @param message
    * Instructions to be shown in the dialog
    */
-  private[this] def completeChallenge[F[_]: Sync](message: String): EitherT[F, Throwable, Unit] =
+  private def completeChallenge[F[_]: Sync](message: String): EitherT[F, Throwable, Unit] =
     attempt(JOptionPane.showMessageDialog(null, message, "Complete Challenge",
       JOptionPane.INFORMATION_MESSAGE))
 
@@ -321,14 +321,14 @@ object ClientTest extends IOApp:
    * @param agreement
    * {@link URI} of the Terms of Service
    */
-  private[this] def acceptAgreement[F[_]: Sync](agreement: URI): EitherT[F, Throwable, Unit] =
+  private def acceptAgreement[F[_]: Sync](agreement: URI): EitherT[F, Throwable, Unit] =
     okCancelOption(
       s"Do you accept the Terms of Service?\n\n$agreement",
       "Accept ToS",
       "User did not accept Terms of Service"
     )
 
-  private[this] def okCancelOption[F[_]: Sync](message: String, title: String, errorMessage: String)
+  private def okCancelOption[F[_]: Sync](message: String, title: String, errorMessage: String)
   : EitherT[F, Throwable, Unit] =
     for
       option <- attempt(JOptionPane.showConfirmDialog(null, message, title,

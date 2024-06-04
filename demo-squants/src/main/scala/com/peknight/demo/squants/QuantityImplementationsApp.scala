@@ -9,8 +9,8 @@ object QuantityImplementationsApp extends App:
   object Length extends Dimension[Length]:
     def name: String = "Length"
     def units: Set[UnitOfMeasure[Length]] = Set(Meters, Yards)
-    def primaryUnit: UnitOfMeasure[Length] with PrimaryUnit = Meters
-    def siUnit: UnitOfMeasure[Length] with SiUnit = Meters
+    def primaryUnit: UnitOfMeasure[Length] & PrimaryUnit = Meters
+    def siUnit: UnitOfMeasure[Length] & SiUnit = Meters
   trait LengthUnit extends UnitOfMeasure[Length] with UnitConverter:
     def apply[A](n: A)(using num: Numeric[A]) = new Length(num.toDouble(n), this)
   object Meters extends LengthUnit with PrimaryUnit with SiBaseUnit:

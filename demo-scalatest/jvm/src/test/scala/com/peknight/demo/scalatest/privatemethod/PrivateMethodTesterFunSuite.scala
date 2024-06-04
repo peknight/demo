@@ -6,8 +6,8 @@ import org.scalatest.matchers.should.Matchers.*
 
 class PrivateMethodTesterFunSuite extends AnyFunSuite with PrivateMethodTester:
   class PrivateMethodObject:
-    private[this] def decorateToStringValue(i: Int): String = s"$i!"
-    private[this] def privateParameterlessMethod: Int = 16
+    private def decorateToStringValue(i: Int): String = s"$i!"
+    private def privateParameterlessMethod: Int = 16
   end PrivateMethodObject
 
   val decorateToStringValue = PrivateMethod[String](Symbol("decorateToStringValue"))

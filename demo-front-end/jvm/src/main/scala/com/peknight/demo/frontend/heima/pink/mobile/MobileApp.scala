@@ -36,7 +36,7 @@ import scala.concurrent.duration.*
 
 object MobileApp extends DemoFrontEndHttp4sApp:
 
-  private[this] val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "viewport" => renderHtml(ViewportPage.Text.viewportPage)
     case GET -> Root / "image2x" => renderHtml(Image2XPage.Text.image2xPage)
     case GET -> Root / "special" => renderHtml(SpecialPage.Text.specialPage)
@@ -61,17 +61,17 @@ object MobileApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "bilibili" => renderHtml(BilibiliPage.Text.index)
     case GET -> Root / "bootstrap-carousel" => renderHtml(BootstrapCarouselPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.3.0/demo-front-end-opt/$path"), Some(req))
+      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.4.2/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
 
-  private[this] val resourceRoutes: HttpRoutes[IO] =
+  private val resourceRoutes: HttpRoutes[IO] =
     Router(
       "/" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/mobile").toRoutes,
       "webjars" -> webjarServiceBuilder[IO].toRoutes
     )
 
-  private[this] val cssRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private val cssRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "normalize.css" => renderCss(NormalizeStyles)
     case GET -> Root / "jingdong.css" => renderCss(JingdongStyles)
     case GET -> Root / "ctrip.css" => renderCss(CtripStyles)
@@ -84,9 +84,9 @@ object MobileApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "heimamm-media.css" => renderCss(HeimammMediaStyles)
   }
 
-  private[this] val jsRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private val jsRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case req @ GET -> Root / "heimamm" / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-front-end/module/heimamm/target/scala-3.3.0/demo-front-end-module-heimamm-opt/$path"), Some(req))
+      StaticFile.fromPath(file.Path(s"./demo-front-end/module/heimamm/target/scala-3.4.2/demo-front-end-module-heimamm-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
 

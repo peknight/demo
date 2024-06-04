@@ -7,9 +7,9 @@ object MutableObjectsApp extends App:
   probe("sum", sum)
   probe("carry", carry)
   halfAdder(input1, input2, sum, carry)
-  input1 setSignal true
+  input1.setSignal(true)
   run()
-  input2 setSignal true
+  input2.setSignal(true)
   run()
 
 

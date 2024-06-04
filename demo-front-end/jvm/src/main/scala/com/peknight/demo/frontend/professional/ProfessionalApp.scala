@@ -25,12 +25,12 @@ import scala.concurrent.duration.*
 
 object ProfessionalApp extends DemoFrontEndHttp4sApp:
 
-  private[this] val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "rich-text-iframe" => Ok(RichTextPage.Text.iframeIndex)
     case GET -> Root / "rich-text-blank.htm" => Ok(RichTextPage.Text.blank)
     case GET -> Root / "rich-text-contenteditable" => Ok(RichTextPage.Text.contentEditableIndex)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.3.0/demo-front-end-opt/$path"), Some(req))
+      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.4.2/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
 

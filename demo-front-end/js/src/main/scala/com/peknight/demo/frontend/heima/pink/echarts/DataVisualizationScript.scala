@@ -115,7 +115,7 @@ object DataVisualizationScript:
   })
 
   // 点位分布统计模块
-  private[this] val pieChartOption: EChartsOption =
+  private val pieChartOption: EChartsOption =
     EChartsOption(
       tooltip = TooltipOption(trigger = "item", formatter = "{a} <br/>{b} : {c} ({d}%)"),
       color = js.Array("#006cff", "#60cda0", "#ed8884", "#ff9f7f", "#0096ff", "#9fe6b8", "#32c5e9", "#1d9dff"),
@@ -143,7 +143,7 @@ object DataVisualizationScript:
   end pieChartOption
 
   // 柱状图模块
-  private[this] val barChartOption: EChartsOption =
+  private val barChartOption: EChartsOption =
     val item = BarDataItemOption(
       name = "",
       value = 1200,
@@ -189,7 +189,7 @@ object DataVisualizationScript:
   end barChartOption
 
   // 销售统计模块
-  private[this] def lineChartOption(saleData: SaleData): EChartsOption =
+  private def lineChartOption(saleData: SaleData): EChartsOption =
     EChartsOption(
       color = js.Array("#00f2f1", "#ed3f35"),
       tooltip = TooltipOption(trigger = "axis"),
@@ -213,8 +213,8 @@ object DataVisualizationScript:
       )
     )
 
-  private[this] case class SaleData(expected: Seq[Int], actual: Seq[Int])
-  private[this] object SaleData:
+  private case class SaleData(expected: Seq[Int], actual: Seq[Int])
+  private object SaleData:
     val year: SaleData = SaleData(
       Seq(24, 40, 101, 134, 90, 230, 210, 230, 120, 230, 210, 120),
       Seq(40, 64, 191, 324, 290, 330, 310, 213, 180, 200, 180, 79)
@@ -234,7 +234,7 @@ object DataVisualizationScript:
   end SaleData
 
   // 销售渠道模块 雷达图
-  private[this] val radarChartOption: EChartsOption =
+  private val radarChartOption: EChartsOption =
     EChartsOption(
       tooltip = TooltipOption(show = true, position = js.Array("60%", "10%")),
       radar = RadarOption(
@@ -272,7 +272,7 @@ object DataVisualizationScript:
     )
 
   // 销售模块 饼形图 半圆形 设置方式
-  private[this] val gaugeChartOption: EChartsOption =
+  private val gaugeChartOption: EChartsOption =
     EChartsOption(series = js.Array(PieSeriesOption(
       name = "销售进度",
       radius = js.Array("130%", "150%"),
@@ -292,11 +292,11 @@ object DataVisualizationScript:
       )
     )))
 
-  private[this] case class HotDataItem(name: String, num: String, flag: Boolean)
+  private case class HotDataItem(name: String, num: String, flag: Boolean)
   // 城市 销售额 上升还是下降 品牌种类数据
-  private[this] case class HotData(city: String, sales: String, flag: Boolean, brands: Seq[HotDataItem])
+  private case class HotData(city: String, sales: String, flag: Boolean, brands: Seq[HotDataItem])
 
-  private[this] val hotData: Vector[HotData] = Vector(
+  private val hotData: Vector[HotData] = Vector(
     HotData("北京", "25,179", true, Seq(
       HotDataItem("可爱多", "9,086", true),
       HotDataItem("娃哈哈", "8,341", true),
@@ -339,7 +339,7 @@ object DataVisualizationScript:
     ))
   )
 
-  private[this] def renderHotData(currentEle: JQuery): Unit =
+  private def renderHotData(currentEle: JQuery): Unit =
     currentEle.addClass("active").siblings().removeClass("active")
     val hotDataItemHtml: String = hotData(currentEle.index()).brands.map(item =>
       li(span(item.name), span(item.num, s(cls := (if item.flag then "icon-up" else "icon-down"))))
@@ -347,7 +347,7 @@ object DataVisualizationScript:
     $(".sub").html(hotDataItemHtml)
 
 
-  private[this] val geoCoordMap: Map[String, js.Array[Double | Int]] = Map(
+  private val geoCoordMap: Map[String, js.Array[Double | Int]] = Map(
     "上海" -> js.Array(121.4648, 31.2891),
     "东莞" -> js.Array(113.8953, 22.901),
     "东营" -> js.Array(118.7073, 37.5513),
@@ -463,31 +463,31 @@ object DataVisualizationScript:
     "青岛" -> js.Array(120.4651, 36.3373),
     "韶关" -> js.Array(113.7964, 24.7028)
   )
-  private[this] val xianData: Seq[(String, String, Int)] = Seq(
+  private val xianData: Seq[(String, String, Int)] = Seq(
     ("西安", "北京", 100),
     ("西安", "上海", 100),
     ("西安", "广州", 100),
     ("西安", "西宁", 100),
     ("西安", "拉萨", 100)
   )
-  private[this] val xiningData: Seq[(String, String, Int)] = Seq(
+  private val xiningData: Seq[(String, String, Int)] = Seq(
     ("西宁", "北京", 100),
     ("西宁", "上海", 100),
     ("西宁", "广州", 100),
     ("西宁", "西安", 100),
     ("西宁", "银川", 100)
   )
-  private[this] val lasaData: Seq[(String, String, Int)] = Seq(
+  private val lasaData: Seq[(String, String, Int)] = Seq(
     ("拉萨", "北京", 100),
     ("拉萨", "潍坊", 100),
     ("拉萨", "哈尔滨", 100)
   )
-  private[this] val planePath: String = "path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84." +
+  private val planePath: String = "path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84." +
     "662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89." +
     "254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134." +
     "449-92.931l12.238-241.308L1705.06,1318.313z"
 
-  private[this] val geoChartOption: EChartsOption =
+  private val geoChartOption: EChartsOption =
     val series = js.Array(
       convertSeries("西安", xianData, "#a6c84c") :::
         convertSeries("西宁", xiningData, "#ffa022") :::
@@ -522,7 +522,7 @@ object DataVisualizationScript:
     )
   end geoChartOption
 
-  private[this] def convertData(data: Seq[(String, String, Int)]): js.Array[LinesDataItemOption] = js.Array(
+  private def convertData(data: Seq[(String, String, Int)]): js.Array[LinesDataItemOption] = js.Array(
     data.map { case (from, to, value) =>
       for
         fromCoord <- geoCoordMap.get(from)
@@ -534,7 +534,7 @@ object DataVisualizationScript:
     }*
   )
 
-  private[this] def convertSeries(city: String, data: Seq[(String, String, Int)], color: String): List[SeriesOption[_, _, _, _]] =
+  private def convertSeries(city: String, data: Seq[(String, String, Int)], color: String): List[SeriesOption[?, ?, ?, ?]] =
     val name = s"$city Top3"
     val convertedData = convertData(data)
     List(

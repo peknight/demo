@@ -4,7 +4,7 @@ case class SGen[+A](forSize: Int => Gen[A]):
   // Exercise 8.11
   def apply(n: Int): Gen[A] = forSize(n)
 
-  def map[B](f: A => B): SGen[B] = SGen { forSize(_) map f }
+  def map[B](f: A => B): SGen[B] = SGen { forSize(_).map(f) }
 
   def flatMap[B](f: A => SGen[B]): SGen[B] =
     val g2: Int => Gen[B] = n => forSize(n) flatMap { f(_).forSize(n) }

@@ -34,7 +34,7 @@ object KleisliApp extends App:
     str => str.count(_ == char) == 1
   )
 
-  val checkUsername: Check[String, String] = checkPred(longerThan(3) and alphanumeric)
+  val checkUsername: Check[String, String] = checkPred(longerThan(3).and(alphanumeric))
 
   val splitEmail: Check[String, (String, String)] = check { _.split('@') match
     case Array(name, domain) => Right((name, domain))
@@ -43,7 +43,7 @@ object KleisliApp extends App:
 
   val checkLeft: Check[String, String] = checkPred(longerThan(0))
 
-  val checkRight: Check[String, String] = checkPred(longerThan(3) and contains('.'))
+  val checkRight: Check[String, String] = checkPred(longerThan(3).and(contains('.')))
 
   val joinEmail: Check[(String, String), String] = check {
     case (l, r) => (checkLeft(l), checkRight(r)).mapN(_ + "@" + _)

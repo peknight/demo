@@ -64,7 +64,7 @@ object FoldableApp extends App:
 
   println(Foldable[List].foldMap(List(1, 2, 3))(_.toString))
 
-  println((Foldable[List] compose Foldable[Vector]).combineAll(List(Vector(1, 2, 3), Vector(4, 5, 6))))
+  println(Foldable[List].compose(using Foldable[Vector]).combineAll(List(Vector(1, 2, 3), Vector(4, 5, 6))))
 
 
   println(List(1, 2, 3).combineAll)

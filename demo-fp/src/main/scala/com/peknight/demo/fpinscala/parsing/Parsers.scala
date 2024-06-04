@@ -78,7 +78,7 @@ trait Parsers[Parser[+_]]:
    */
   def skipR[A](p: Parser[A], p2: => Parser[Any]): Parser[A] = map2(p, slice(p2))((a, _) => a)
 
-  def opt[A](p: Parser[A]): Parser[Option[A]] = p.map(Some(_)) or succeed(None)
+  def opt[A](p: Parser[A]): Parser[Option[A]] = p.map(Some(_)).or(succeed(None))
 
   /** Parser which consumes zero or more whitespace characters. */
   def whitespace: Parser[String] = "\\s*".r
@@ -103,13 +103,13 @@ trait Parsers[Parser[+_]]:
   def doubleString: Parser[String] = token("[-+]?([0-9]*\\.)?[0-9]+([eE][-+]?[0-9]+)?".r)
 
   /** Floating point literals, converted to a Double */
-  def double: Parser[Double] = doubleString map (_.toDouble) label "double literal"
+  def double: Parser[Double] = doubleString.map(_.toDouble).label("double literal")
 
   /** Attempts p and strips trailing whitespace, usually used for the tokens of a grammar */
   def token[A](p: Parser[A]): Parser[A] = attempt(p) <* whitespace
 
   /** Zero or more repetitions of p, separated by p2, whose results are ignored. */
-  def sep[A](p: Parser[A], p2: Parser[Any]): Parser[List[A]] = sep1(p, p2) or succeed(List.empty[A])
+  def sep[A](p: Parser[A], p2: Parser[Any]): Parser[List[A]] = sep1(p, p2).or(succeed(List.empty[A]))
 
   /** One or more repetitions of p, separated by p2, whose results are ignored. */
   def sep1[A](p: Parser[A], p2: Parser[Any]): Parser[List[A]] = map2(p, many(p2 *> p))(_ :: _)

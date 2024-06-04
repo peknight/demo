@@ -28,12 +28,12 @@ object PatternMatching:
       body match
         case '{ sum() } => Expr(0)
         case '{ sum($n) } => n
-        case '{ sum(${Varargs(args)}: _*) } => sumExpr(args)
+        case '{ sum(${Varargs(args)}*) } => sumExpr(args)
         case body => body
 
     private def sumExpr(args1: Seq[Expr[Int]])(using Quotes): Expr[Int] =
       def flatSumArgs(arg: Expr[Int]): Seq[Expr[Int]] = arg match
-        case '{ sum(${ Varargs(subArgs) }: _*) } => subArgs.flatMap(flatSumArgs)
+        case '{ sum(${ Varargs(subArgs) }*) } => subArgs.flatMap(flatSumArgs)
         case arg => Seq(arg)
       val args2 = args1.flatMap(flatSumArgs)
       val staticSum: Int = args2.map(_.value.getOrElse(0)).sum
@@ -58,7 +58,7 @@ object PatternMatching:
                 report.error(s"could not find implicit for ${Type.show[Show[tp]]}", arg); '{???}
         }
         val newArgsExpr = Varargs(argShowedExprs)
-        '{ $sc.s($newArgsExpr: _*) }
+        '{ $sc.s($newArgsExpr*) }
       case _ =>
         // `new StringContext(...).showMeExpr(args: _*)` not an explicit `showMeExpr"..."`
         report.error(s"Args must be explicit", argsExpr)

@@ -27,7 +27,7 @@ object ZIOApp extends ZIOAppDefault:
     yield (user, team)
   ).unsome
 
-  def run: ZIO[Any with ZIOAppArgs with Scope, Any, Any] =
+  def run: ZIO[Any & ZIOAppArgs & Scope, Any, Any] =
     for
       s1Res <- s1
       _ <- Console.printLine(s1Res)

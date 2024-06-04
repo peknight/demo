@@ -82,7 +82,7 @@ object PinyougouScript:
       })
     })
 
-  private[this] def circleChange(circles: dom.HTMLCollection[dom.Element], circleIndex: Int): Unit =
+  private def circleChange(circles: dom.HTMLCollection[dom.Element], circleIndex: Int): Unit =
     circles.foreach(_.classList.remove("current"))
     circles(circleIndex).classList.add("current")
 

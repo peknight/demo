@@ -28,11 +28,11 @@ object AesApp extends IOApp.Simple:
 
     object ECB:
       // 由于原生不支持流操作，只能手动padding后使用NoPadding
-      private[this] val noPaddingTransformation = "AES/ECB/NoPadding"
+      private val noPaddingTransformation = "AES/ECB/NoPadding"
 
       object PKCS5Padding:
 
-        private[this] val pkcs5PaddingTransformation = "AES/ECB/PKCS5Padding"
+        private val pkcs5PaddingTransformation = "AES/ECB/PKCS5Padding"
 
         // 加密
         def encrypt[F[_]: Sync](key: => SecretKey): Pipe[F, Byte, Byte] =
@@ -50,7 +50,7 @@ object AesApp extends IOApp.Simple:
             crypto(pkcs5PaddingTransformation, Cipher.DECRYPT_MODE, key)
           }
 
-        private[this] def crypto[F[_]: Sync](transformation: String, opmode: Int, key: SecretKey)
+        private def crypto[F[_]: Sync](transformation: String, opmode: Int, key: SecretKey)
         : Chunk[Byte] => F[Chunk[Byte]] =
           input => Sync[F].delay {
             val cipher: Cipher = Cipher.getInstance(transformation)
@@ -78,12 +78,12 @@ object AesApp extends IOApp.Simple:
     object CBC:
 
       // 由于原生不支持流操作，只能手动padding后使用NoPadding
-      private[this] val noPaddingTransformation = "AES/CBC/NoPadding"
+      private val noPaddingTransformation = "AES/CBC/NoPadding"
 
       object PKCS5Padding:
-        private[this] val pkcs5PaddingTransformation = "AES/CBC/PKCS5Padding"
+        private val pkcs5PaddingTransformation = "AES/CBC/PKCS5Padding"
 
-        private[this] def crypto[F[_]: Sync](transformation: String, opmode: Int, key: SecretKey)
+        private def crypto[F[_]: Sync](transformation: String, opmode: Int, key: SecretKey)
         : (IvParameterSpec, Chunk[Byte]) => F[Chunk[Byte]] =
           (ivps, input) => Sync[F].delay {
             val cipher: Cipher = Cipher.getInstance(transformation)
@@ -91,16 +91,16 @@ object AesApp extends IOApp.Simple:
             Chunk.array(cipher.doFinal(input.toArray))
           }
 
-        private[this] def ivpsOutput(ivpsChunk: Chunk[Byte], outputChunk: Chunk[Byte]): (IvParameterSpec, Chunk[Byte]) =
+        private def ivpsOutput(ivpsChunk: Chunk[Byte], outputChunk: Chunk[Byte]): (IvParameterSpec, Chunk[Byte]) =
           val nextIv: Array[Byte] = ivpsChunk.takeRight(blockSize).toArray
           (new IvParameterSpec(nextIv), outputChunk)
 
-        private[this] def encrypt[F[_]: Sync](transformation: String, key: SecretKey)
+        private def encrypt[F[_]: Sync](transformation: String, key: SecretKey)
         : (IvParameterSpec, Chunk[Byte]) => F[(IvParameterSpec, Chunk[Byte])] =
           (ivps, input) => crypto(transformation, Cipher.ENCRYPT_MODE, key).apply(ivps, input)
             .map(output => ivpsOutput(output, output))
 
-        private[this] def decrypt[F[_]: Sync](transformation: String, key: SecretKey)
+        private def decrypt[F[_]: Sync](transformation: String, key: SecretKey)
         : (IvParameterSpec, Chunk[Byte]) => F[(IvParameterSpec, Chunk[Byte])] =
           (ivps, input) => crypto(transformation, Cipher.DECRYPT_MODE, key).apply(ivps, input)
             .map(output => ivpsOutput(input, output))
@@ -129,7 +129,7 @@ object AesApp extends IOApp.Simple:
         def javaDecrypt(key: Array[Byte], iv: Array[Byte], input: Array[Byte]): Array[Byte] =
           javaCrypto(key, iv, input, Cipher.DECRYPT_MODE)
 
-        private[this] def javaCrypto(key: Array[Byte], iv: Array[Byte], input: Array[Byte], opmode: Int): Array[Byte] =
+        private def javaCrypto(key: Array[Byte], iv: Array[Byte], input: Array[Byte], opmode: Int): Array[Byte] =
           val cipher: Cipher = Cipher.getInstance(pkcs5PaddingTransformation)
           val keySpec: SecretKey = new SecretKeySpec(key, aesAlgo)
           val ivps: IvParameterSpec = new IvParameterSpec(iv)

@@ -16,7 +16,7 @@ class TaobaoHighQualityApparelPage[Builder, Output <: FragT, FragT](override val
   override def headTitle: String = "淘宝精品服饰案例"
   override def javaScriptMethod: Option[String] = Some("taobaoApparel")
 
-  private[this] val linksAndImages: (Seq[Frag], Seq[Frag]) =
+  private val linksAndImages: (Seq[Frag], Seq[Frag]) =
     Seq("女靴", "雪地靴", "冬裙", "呢大衣", "毛衣", "棉服", "女裤", "羽绒服", "牛仔裤").map[(Frag, Frag)](s => (
       li(a(href := "#")(s)),
       div(a(href := "#")(img(src := s"/jquery/images/$s.jpg", width := 200, height := 250)))

@@ -12,10 +12,10 @@ trait EasyDerive[TC[_]]:
   final def apply[A](using tc: TC[A]): TC[A] = tc
 
   case class CaseClassElement[A, B](label: String, typeclass: TC[B], getValue: A => B, idx: Int)
-  case class CaseClassType[A](label: String, elements: List[CaseClassElement[A, _]], fromElements: List[Any] => A)
+  case class CaseClassType[A](label: String, elements: List[CaseClassElement[A, ?]], fromElements: List[Any] => A)
 
   case class SealedElement[A, B](label: String, typeclass: TC[B], idx: Int, cast: A => B)
-  case class SealedType[A](label: String, elements: List[SealedElement[A, _]], getElement: A => SealedElement[A, _])
+  case class SealedType[A](label: String, elements: List[SealedElement[A, ?]], getElement: A => SealedElement[A, ?])
 
   inline def getInstances[A <: Tuple]: List[TC[Any]] = inline erasedValue[A] match
     case _: EmptyTuple => Nil

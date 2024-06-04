@@ -5,5 +5,5 @@ object ExportsApp extends App:
   println(x + 1)
   println(x - 1)
   println(x / 3)
-  println(x shl 1)
-  println(x shr 1)
+  println(x.shl(1))
+  println(x.shr(1))

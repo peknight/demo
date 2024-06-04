@@ -89,7 +89,7 @@ class AuthorizationServerPage[Builder, Output <: FragT, FragT](override val bund
     )
   end approve
 
-  private[this] def skeleton(jumbotron: Modifier*): Frag =
+  private def skeleton(jumbotron: Modifier*): Frag =
     super.jumbotron("Authorization Server", "danger", c"#322")(jumbotron)
 
 end AuthorizationServerPage

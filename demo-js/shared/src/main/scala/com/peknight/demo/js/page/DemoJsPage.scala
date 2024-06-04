@@ -7,7 +7,7 @@ class DemoJsPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, Ou
   import bundle.all.{style as inlineStyle, title as _, *}
   import bundle.tags2.{nav, style, title}
 
-  private[this] def skeleton(headTitle: String)(bodyFrag: Modifier*): Frag =
+  private def skeleton(headTitle: String)(bodyFrag: Modifier*): Frag =
     html(
       head(
         meta(charset := "UTF-8"),
@@ -19,16 +19,16 @@ class DemoJsPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, Ou
       )
     )
 
-  private[this] def domSkeleton(headTitle: String)(bodyFrag: Modifier*): Frag =
+  private def domSkeleton(headTitle: String)(bodyFrag: Modifier*): Frag =
     skeleton(s"Scala.JS Demo: $headTitle")(bodyFrag)
 
-  private[this] def canvasSkeleton(headTitle: String, func: String, width: Int, height: Int): Frag =
+  private def canvasSkeleton(headTitle: String, func: String, width: Int, height: Int): Frag =
     skeleton(s"Hands on Scala.JS Canvas Demo: $headTitle")(
       div(canvas(inlineStyle := s"width: ${width}px; height: ${height}px;", id := "hands_on_canvas")),
       script(s"${func}(document.getElementById('hands_on_canvas'))")
     )
 
-  private[this] def webpageSkeleton(headTitle: String, func: String): Frag =
+  private def webpageSkeleton(headTitle: String, func: String): Frag =
     skeleton(s"Hands on Scala.JS Webpage Demo: $headTitle")(
       div(id := "hands_on_webpage"),
       script(s"${func}(document.getElementById('hands_on_webpage'))")

@@ -12,7 +12,7 @@ import scala.concurrent.duration.*
 
 package object repository:
 
-  private[this] val databaseNoSqlPath: Path = Path("demo-oauth2/database.nosql")
+  private val databaseNoSqlPath: Path = Path("demo-oauth2/database.nosql")
 
   val clearRecord: IO[Unit] = Stream[IO, Byte]().through(Files[IO].writeAll(databaseNoSqlPath)).compile.drain
 
@@ -24,10 +24,10 @@ package object repository:
       .compile.drain
       .timeout(5.seconds)
 
-  private[this] val tokenRecordStream: Stream[IO, OAuthTokenRecord] =
+  private val tokenRecordStream: Stream[IO, OAuthTokenRecord] =
     Files[IO].readAll(databaseNoSqlPath).through(byteStreamParser).through(decoder[IO, OAuthTokenRecord])
 
-  private[this] def findTokenRecord(p: OAuthTokenRecord => Boolean): IO[Option[OAuthTokenRecord]] =
+  private def findTokenRecord(p: OAuthTokenRecord => Boolean): IO[Option[OAuthTokenRecord]] =
     tokenRecordStream.filter(p).pull.take(1).void.stream.compile.toList.map(_.headOption)
 
   def getRecordByRefreshToken(refreshToken: String): IO[Option[OAuthTokenRecord]] = findTokenRecord {

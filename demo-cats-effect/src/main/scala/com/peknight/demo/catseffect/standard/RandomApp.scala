@@ -12,6 +12,6 @@ object RandomApp extends IOApp.Simple:
   val run =
     for
       random <- Random.scalaUtilRandom[IO]
-      die <- dieRoll[IO](summon[Functor[IO]], random)
+      die <- dieRoll[IO](using summon[Functor[IO]], random)
       _ <- IO.println(die)
     yield ()

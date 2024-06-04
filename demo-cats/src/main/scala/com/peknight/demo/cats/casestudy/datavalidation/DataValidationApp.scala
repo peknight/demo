@@ -16,7 +16,7 @@ object DataValidationApp extends App:
     else List("Must be < -2").asLeft
   }
 
-  val checkF: CheckF[List[String], Int] = aCheckF and bCheckF
+  val checkF: CheckF[List[String], Int] = aCheckF.and(bCheckF)
 
   println(checkF(5))
   println(checkF(0))
@@ -31,7 +31,7 @@ object DataValidationApp extends App:
     else List("Must be < -2").invalid
   }
 
-  val check: OldCheck[List[String], Int] = a and b
+  val check: OldCheck[List[String], Int] = a.and(b)
 
   println(check(5))
   println(check(0))

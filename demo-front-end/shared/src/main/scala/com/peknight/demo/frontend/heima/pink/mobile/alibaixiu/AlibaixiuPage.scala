@@ -7,7 +7,7 @@ class AlibaixiuPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
   import bundle.all.{title as inlineTitle, style as inlineStyle, *}
   import bundle.tags2.{nav, section, style, title}
 
-  private[this] val carouselId = "alibaixiu-carousel"
+  private val carouselId = "alibaixiu-carousel"
 
   val index: Frag =
     html(lang := "zh-CN")(
@@ -16,11 +16,11 @@ class AlibaixiuPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder,
         meta(name := "viewport", content := "width=device-width, initial-scale=1"),
         meta(httpEquiv := "X-UA-Compatible", content := "IE=edge"),
         title("阿里百秀"),
-        link(href := "/webjars/bootstrap/5.3.1/dist/css/bootstrap.min.css", rel := "stylesheet"),
-        link(href := "/webjars/bootstrap-icons/1.10.5/font/bootstrap-icons.css", rel := "stylesheet"),
+        link(href := "/webjars/bootstrap/5.3.3/dist/css/bootstrap.min.css", rel := "stylesheet"),
+        link(href := "/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.css", rel := "stylesheet"),
         style(raw(AlibaixiuMediaStyles.render[String])),
         style(raw(AlibaixiuStyles.render[String])),
-        script(src := "/webjars/bootstrap/5.3.1/dist/js/bootstrap.bundle.min.js"),
+        script(src := "/webjars/bootstrap/5.3.3/dist/js/bootstrap.bundle.min.js"),
       ),
       body(
         div(cls := "container")(

@@ -11,7 +11,7 @@ trait GradientColorStop extends js.Object:
 
 object GradientColorStop:
   def apply(offset: js.UndefOr[Number] = js.undefined, color: js.UndefOr[String] = js.undefined): GradientColorStop =
-    val gradientColorStop: js.Object with js.Dynamic = js.Dynamic.literal()
+    val gradientColorStop: js.Object & js.Dynamic = js.Dynamic.literal()
     offset.foreach(o => gradientColorStop.offset = o.asInstanceOf[js.Any])
     color.foreach(gradientColorStop.color = _)
     gradientColorStop.asInstanceOf[GradientColorStop]

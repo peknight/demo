@@ -99,7 +99,7 @@ object Async:
   class Channel[T](init: (T => Unit) => Unit):
     init(update)
 
-    private[this] var value: Promise[T] = null
+    private var value: Promise[T] = null
 
     def apply(): Future[T] =
       value = Promise[T]()

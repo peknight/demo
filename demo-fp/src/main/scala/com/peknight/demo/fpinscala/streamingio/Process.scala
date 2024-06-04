@@ -17,7 +17,7 @@ trait Process[F[_], O]:
 
   def map[O2](f: O => O2): Process[F, O2] = this match
     case Await(req, recv) => Await(req, recv andThen (_.map(f)))
-    case Emit(h, t) => Try { Emit(f(h), t map f)}
+    case Emit(h, t) => Try { Emit(f(h), t.map(f))}
     case Halt(err) => Halt(err)
 
   def ++(p: => Process[F, O]): Process[F, O] = this.onHalt {

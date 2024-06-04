@@ -20,10 +20,10 @@ class ListPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Buil
     )
 
   // 列表页的秒杀模块
-  private[this] val secondKillFrag: Modifier =
+  private val secondKillFrag: Modifier =
     div(cls := "sk")(img(src := "/uploads/secKill_03.png"))
 
-  private[this] val listNavFrag: Modifier =
+  private val listNavFrag: Modifier =
     modifier(
       div(cls := "sk-list")(ul(Seq("品优秒杀", "即将售罄", "超值低价").map(s => li(a(href := "#")(s))))),
       div(cls := "sk-con")(ul(Seq(
@@ -35,7 +35,7 @@ class ListPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Buil
     )
 
   // 列表页主体部分
-  private[this] val secKillContainerFrag: Modifier =
+  private val secKillContainerFrag: Modifier =
     div(cls := "w sk-container")(
       div(cls := "sk-hd")(img(src := "/uploads/bg_03.png")),
       div(cls := "sk-bd")(ul(cls := "clearfix")(List.fill(9)(li(

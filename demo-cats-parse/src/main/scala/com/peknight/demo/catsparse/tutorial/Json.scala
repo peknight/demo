@@ -4,8 +4,8 @@ import cats.parse.{Numbers, Parser0, Parser as P}
 import org.typelevel.jawn.ast.*
 
 object Json:
-  private[this] val whitespace: P[Unit] = P.charIn(" \t\r\n").void
-  private[this] val whitespaces0: Parser0[Unit] = whitespace.rep0.void
+  private val whitespace: P[Unit] = P.charIn(" \t\r\n").void
+  private val whitespaces0: Parser0[Unit] = whitespace.rep0.void
 
 
   val parser: P[JValue] = P.recursive[JValue] { recurse =>

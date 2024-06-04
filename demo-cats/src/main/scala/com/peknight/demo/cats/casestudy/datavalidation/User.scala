@@ -33,7 +33,7 @@ object User:
     str => str.count(_ == char) == 1
   )
 
-  val checkUsername: Check[Errors, String, String] = Check(longerThan(3) and alphanumeric)
+  val checkUsername: Check[Errors, String, String] = Check(longerThan(3).and(alphanumeric))
 
   val splitEmail: Check[Errors, String, (String, String)] = Check { _.split('@') match
     case Array(name, domain) => (name, domain).validNel[String]
@@ -42,10 +42,10 @@ object User:
 
   val checkLeft: Check[Errors, String, String] = Check(longerThan(0))
 
-  val checkRight: Check[Errors, String, String] = Check(longerThan(3) and contains('.'))
+  val checkRight: Check[Errors, String, String] = Check(longerThan(3).and(contains('.')))
 
   val joinEmail: Check[Errors, (String, String), String] = Check { case (l, r) =>
     (checkLeft(l), checkRight(r)).mapN(_ + "@" + _)
   }
 
-  val checkEmail: Check[Errors, String, String] = splitEmail andThen joinEmail
+  val checkEmail: Check[Errors, String, String] = splitEmail.andThen(joinEmail)

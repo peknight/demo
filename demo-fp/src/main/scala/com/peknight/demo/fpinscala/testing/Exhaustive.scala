@@ -154,10 +154,10 @@ object Exhaustive:
 
     def forAllPar3[A](g: Gen[A])(f: A => Par[Boolean]): Prop = forAll(S ** g) { case s ** a => f(a)(s).get }
 
-    val pint = Gen.choose(0,10) map Par.unit
+    val pint = Gen.choose(0,10).map(Par.unit)
     val p4 = forAllPar(pint)(n => equal(Par.map(n)(y => y), n))
 
-    val forkProp = Prop.forAllPar(pint2)(i => equal(Par.fork(i), i)) tag "fork"
+    val forkProp = Prop.forAllPar(pint2)(i => equal(Par.fork(i), i)).tag("fork")
 
   end Prop
 
@@ -188,14 +188,14 @@ object Exhaustive:
 
     def unsized = Unsized(this)
 
-    def **[B](g: Gen[B]): Gen[(A, B)] = (this map2 g)((_, _))
+    def **[B](g: Gen[B]): Gen[(A, B)] = this.map2(g)((_, _))
   end Gen
 
   object Gen:
 
     type Domain[+A] = Stream[Option[A]]
 
-    def bounded[A](a: Stream[A]): Domain[A] = a map (Some(_))
+    def bounded[A](a: Stream[A]): Domain[A] = a.map(Some(_))
     def unbounded: Domain[Nothing] = Stream(None)
 
     def unit[A](a: => A): Gen[A] = Gen(State.unit(a), bounded(Stream(a)))
@@ -328,10 +328,10 @@ object Exhaustive:
     def interleave[A](b: Stream[Boolean], s1: Stream[A], s2: Stream[A]): Stream[A] =
       b.headOption map { hd =>
         if hd then s1 match
-          case Cons(h, t) => Stream.cons(h(), interleave(b drop 1, t(), s2))
+          case Cons(h, t) => Stream.cons(h(), interleave(b.drop(1), t(), s2))
           case _ => s2
         else s2 match
-          case Cons(h, t) => Stream.cons(h(), interleave(b drop 1, s1, t()))
+          case Cons(h, t) => Stream.cons(h(), interleave(b.drop(1), s1, t()))
           case _ => s1
       } getOrElse Stream.empty
 
@@ -378,7 +378,7 @@ object Exhaustive:
         )
       )
 
-    def genStringIntFn(g: Gen[Int]): Gen[String => Int] = g map (i => s => i)
+    def genStringIntFn(g: Gen[Int]): Gen[String => Int] = g.map(i => s => i)
 
   end Gen
 
@@ -393,12 +393,12 @@ object Exhaustive:
 
   trait SGen[+A]:
     def map[B](f: A => B): SGen[B] = this match
-      case Sized(g) => Sized(g andThen (_ map f))
-      case Unsized(g) => Unsized(g map f)
+      case Sized(g) => Sized(g.andThen(_.map(f)))
+      case Unsized(g) => Unsized(g.map(f))
 
     def flatMap[B](f: A => Gen[B]): SGen[B] = this match
-      case  Sized(g) => Sized(g andThen (_ flatMap f))
-      case Unsized(g) => Unsized(g flatMap f)
+      case  Sized(g) => Sized(g.andThen(_.flatMap(f)))
+      case Unsized(g) => Unsized(g.flatMap(f))
 
     def **[B](s2: SGen[B]): SGen[(A, B)] = (this, s2) match
       case (Sized(g), Sized(g2)) => Sized(n => g(n) ** g2(n))

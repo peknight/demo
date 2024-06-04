@@ -34,7 +34,7 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
     )
 
   // 首页专有的模块 main
-  private[this] val mainFrag: Modifier =
+  private val mainFrag: Modifier =
     div(cls := "w")(div(cls := "main")(
       div(cls := "focus fl")(
         a(href := "javascript:;", cls := "arrow-l")("‹"),
@@ -69,7 +69,7 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
     ))
 
   // 推荐模块
-  private[this] val recommendFrag: Modifier =
+  private val recommendFrag: Modifier =
     div(cls := "w recom")(
       div(cls := "recom-hd")(
         img(attr("data-lazy-src") := "/images/clock.png"),
@@ -81,7 +81,7 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
     )
 
   // 猜你喜欢模块
-  private[this] val likeFrag: Modifier =
+  private val likeFrag: Modifier =
     div(cls := "w like")(
       div(cls := "like-hd")(
         h3(cls := "fl")("猜你喜欢"),
@@ -107,7 +107,7 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
     )
 
   // 楼层区域制作
-  private[this] def floorFrag: Modifier =
+  private def floorFrag: Modifier =
     div(cls := "floor")(
       // 1楼家用电器楼层
       floorChildFrag("appliance", "家用电器", Seq(
@@ -125,7 +125,7 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
       )),
     )
 
-  private[this] def floorChildFrag(className: String, floorTitle: String, tabList: Seq[String]): Modifier =
+  private def floorChildFrag(className: String, floorTitle: String, tabList: Seq[String]): Modifier =
     div(cls := s"w $className")(
       div(cls := "box-hd")(
         h3(floorTitle),
@@ -159,12 +159,12 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
     )
 
   // 商标
-  private[this] val brandFrag: Modifier =
+  private val brandFrag: Modifier =
     div(cls := "w")(div(cls := "brand")(ul(
       Seq("21", "03", "05", "07", "09", "11", "13", "15", "17", "19").map(s => li(img(attr("data-lazy-src") := s"/uploads/brand_$s.png")))
     )))
 
-  private[this] val sidebarFrag: Modifier =
+  private val sidebarFrag: Modifier =
     div(cls := "sidebar")(
       div(cls := "right-bar"),
       div(cls := "middle")(
@@ -178,7 +178,7 @@ class IndexPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[Bui
       )
     )
 
-  private[this] val fixedToolFrag: Modifier =
+  private val fixedToolFrag: Modifier =
     div(cls := "fixed-tool")(ul(
       li(cls := "current")("家用电器"),
       Seq("手机通讯", "电脑办公", "精品家具").map(li(_))

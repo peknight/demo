@@ -16,16 +16,16 @@ import scalacss.ProdDefaults.*
 
 object Css3App extends DemoFrontEndHttp4sApp:
 
-  private[this] val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "transform2d" => renderHtml(Transform2DPage.Text.transform2D)
     case GET -> Root / "animation" => renderHtml(AnimationPage.Text.animation)
     case GET -> Root / "transform3d" => renderHtml(Transform3DPage.Text.transform3D)
   }
 
-  private[this] val resourceRoutes: HttpRoutes[IO] =
+  private val resourceRoutes: HttpRoutes[IO] =
     resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/css3").toRoutes
 
-  private[this] val cssRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private val cssRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "animation.css" => renderCss(AnimationStyles)
     case GET -> Root / "transform3d.css" => renderCss(Transform3DStyles)
   }

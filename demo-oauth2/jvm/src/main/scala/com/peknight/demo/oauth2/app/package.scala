@@ -73,14 +73,14 @@ package object app:
   end given
 
   val serverHost = host"local.peknight.com"
-  private[this] val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
+  private val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
     env("STORE_PASSWORD").default("123456").secret
-  private[this] val keyPasswordConfig: ConfigValue[Effect, Secret[String]] =
+  private val keyPasswordConfig: ConfigValue[Effect, Secret[String]] =
     env("KEY_PASSWORD").default("123456").secret
   val usePopConfig: ConfigValue[Effect, Boolean] =
     env("USE_POP").as[Boolean].default(false)
 
-  private[this] def httpApp[F[_] : Async](routes: HttpRoutes[F]): HttpApp[F] = Router(
+  private def httpApp[F[_] : Async](routes: HttpRoutes[F]): HttpApp[F] = Router(
     "/" -> routes,
     "/webjars" -> webjarServiceBuilder[F].toRoutes
   ).orNotFound
@@ -198,7 +198,7 @@ package object app:
         }
     }
 
-  private[this] def rsaPublicKey(rsaKey: RsaKey): IO[PublicKey] =
+  private def rsaPublicKey(rsaKey: RsaKey): IO[PublicKey] =
     for
       modulus <- decodeToBigInt(rsaKey.n)
       exponent <- decodeToBigInt(rsaKey.e)

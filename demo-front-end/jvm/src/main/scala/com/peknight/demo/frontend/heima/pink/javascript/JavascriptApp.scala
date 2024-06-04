@@ -28,7 +28,7 @@ import scala.concurrent.duration.*
 
 object JavascriptApp extends DemoFrontEndHttp4sApp:
 
-  private[this] val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "jdpwd" => renderHtml(JingdongPasswordPage.Text.index)
     case GET -> Root / "close-qr" => renderHtml(CloseTaobaoQRCodePage.Text.index)
     case GET -> Root / "sprite-loop" => renderHtml(SpriteLoopPage.Text.index)
@@ -70,11 +70,11 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "echarts-get-started" => renderHtml(EChartsGetStartedPage.Text.index)
     case GET -> Root / "data-visualization" => renderHtml(DataVisualizationPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.3.0/demo-front-end-opt/$path"), Some(req))
+      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.4.2/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
 
-  private[this] val resourceRoutes: HttpRoutes[IO] =
+  private val resourceRoutes: HttpRoutes[IO] =
     Router(
       "/" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/heima/pink/javascript").toRoutes,
       "zymedia" -> resourceServiceBuilder[IO]("/com/peknight/demo/frontend/ireaderlab/zymedia").toRoutes,
@@ -84,7 +84,7 @@ object JavascriptApp extends DemoFrontEndHttp4sApp:
       "webjars" -> webjarServiceBuilder[IO].toRoutes
     )
 
-  private[this] val cssRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private val cssRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "data-visualization-fonts.css" => renderCss(DataVisualizationFontsStyles)
     case GET -> Root / "data-visualization-media.css" => renderCss(DataVisualizationMediaStyles)
     case GET -> Root / "data-visualization-keyframes.css" => renderCss(DataVisualizationKeyFrameStyles)

@@ -34,15 +34,15 @@ trait DemoFrontEndHttp4sApp extends IOApp.Simple:
   protected def renderCss(styleSheet: StyleSheet.Base): IO[Response[IO]] =
     renderCss(styleSheet.render[String])
 
-  private[this] def renderCss(styleSheet: String): IO[Response[IO]] =
+  private def renderCss(styleSheet: String): IO[Response[IO]] =
     Ok(styleSheet).map(_.withContentType(`Content-Type`(MediaType.text.css, `UTF-8`)))
 
-  private[this] val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
+  private val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
     env("STORE_PASSWORD").default("123456").secret
-  private[this] val keyPasswordConfig: ConfigValue[Effect, Secret[String]] =
+  private val keyPasswordConfig: ConfigValue[Effect, Secret[String]] =
     env("KEY_PASSWORD").default("123456").secret
 
-  private[this] def start[F[_]: Async](httpApp: HttpApp[F]): F[(Server, F[Unit])] =
+  private def start[F[_]: Async](httpApp: HttpApp[F]): F[(Server, F[Unit])] =
     for
       storePassword <- storePasswordConfig.load[F]
       keyPassword <- keyPasswordConfig.load[F]

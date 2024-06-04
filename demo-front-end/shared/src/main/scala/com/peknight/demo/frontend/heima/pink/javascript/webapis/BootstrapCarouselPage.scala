@@ -13,11 +13,11 @@ class BootstrapCarouselPage[Builder, Output <: FragT, FragT](override val bundle
   import bundle.all.{title as inlineTitle, style as _, *}
   import bundle.tags2.{nav, section, style, title}
 
-  override def links: Seq[String] = Seq("/webjars/bootstrap/5.3.1/dist/css/bootstrap.min.css")
+  override def links: Seq[String] = Seq("/webjars/bootstrap/5.3.3/dist/css/bootstrap.min.css")
   override def styles: Seq[StyleSheet.Base] = Seq(Styles)
-  override def scripts: Seq[String] = Seq("/webjars/bootstrap/5.3.1/dist/js/bootstrap.bundle.min.js")
+  override def scripts: Seq[String] = Seq("/webjars/bootstrap/5.3.3/dist/js/bootstrap.bundle.min.js")
   override def headTitle: String = "bootstrap轮播图"
-  private[this] val focusId: String = "focus-carousel"
+  private val focusId: String = "focus-carousel"
   override def bodyFrag = div(cls := "focus")(
     div(id := focusId, cls := "carousel slide", attr("data-bs-ride") := "carousel", attr("data-bs-interval") := 2000)(
       div(cls := "carousel-indicators")(

@@ -60,9 +60,9 @@ object ApplicativeApp extends App:
 
   val header: Parser[Parser[Row]] = token(
     "#" *> (
-      headerParser(tempHeader, dateHeader)((temp, date) => Row(date, temp)) or
-        headerParser(dateHeader, tempHeader)(Row.apply)
-      )
+      headerParser(tempHeader, dateHeader)((temp, date) => Row(date, temp))
+        .or(headerParser(dateHeader, tempHeader)(Row.apply))
+    )
   )
 
   val rowsParser2: Parser[List[Row]] =

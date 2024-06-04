@@ -14,11 +14,11 @@ import scalacss.ProdDefaults.*
 
 object GoatApp extends DemoFrontEndHttp4sApp:
 
-  private[this] val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private val htmlRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => renderHtml(LoginPage.Text.login)
   }
 
-  private[this] val resourceRoutes: HttpRoutes[IO] =
+  private val resourceRoutes: HttpRoutes[IO] =
     resourceServiceBuilder[IO]("/com/peknight/demo/frontend/goat/login/").toRoutes
 
   def routes(using Logger[IO]): HttpRoutes[IO] = htmlRoutes <+> resourceRoutes

@@ -20,7 +20,7 @@ object Async:
 
   //noinspection DuplicatedCode
   @tailrec def step[A](async: Async[A]): Async[A] = async match
-    case FlatMap(FlatMap(x, f), g) => step(x flatMap (a => f(a) flatMap g))
+    case FlatMap(FlatMap(x, f), g) => step(x.flatMap(a => f(a).flatMap(g)))
     case FlatMap(Return(x), f) => step(f(x))
     case _ => async
 

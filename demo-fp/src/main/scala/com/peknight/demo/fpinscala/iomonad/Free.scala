@@ -33,13 +33,13 @@ object Free:
     case FlatMap(x, f) => x match
       case Return(a) => runTrampoline(f(a))
       case Suspend(s) => runTrampoline(f(s()))
-      case FlatMap(y, g) => runTrampoline(y flatMap (a => g(a) flatMap f))
+      case FlatMap(y, g) => runTrampoline(y.flatMap(a => g(a).flatMap(f)))
 
   // Exercise 13.3
 
   //noinspection DuplicatedCode
   @tailrec def step[F[_], A](free: Free[F, A]): Free[F, A] = free match
-    case FlatMap(FlatMap(x, f), g) => step(x flatMap (a => f(a) flatMap g))
+    case FlatMap(FlatMap(x, f), g) => step(x.flatMap(a => f(a).flatMap(g)))
     case FlatMap(Return(x), f) => step(f(x))
     case _ => free
 

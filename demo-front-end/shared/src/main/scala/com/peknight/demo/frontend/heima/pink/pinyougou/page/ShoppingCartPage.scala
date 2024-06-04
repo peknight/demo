@@ -51,13 +51,13 @@ class ShoppingCartPage[Builder, Output <: FragT, FragT](override val bundle: Bun
       )
     )
 
-  private[this] val cartItems: Seq[CartItem] = Seq(
+  private val cartItems: Seq[CartItem] = Seq(
     CartItem("【5本26.8元】经典儿童文学彩图青少版八十天环游地球中学生语言教学大纲", "p1", 12.60, 1, true),
     CartItem("【2000张贴纸】贴纸书 3-6岁 贴画儿童 贴画书全套12册 贴画 贴纸儿童 汽", "p2", 24.80, 1, false),
     CartItem("唐诗三百首+成语故事全2册 一年级课外书 精装注音儿童版 小学生二三年级课外阅读书籍", "p3", 29.80, 1, false),
   )
 
-  private[this] def cartItem(item: CartItem): Modifier =
+  private def cartItem(item: CartItem): Modifier =
     div(cls := s"cart-item${if item.checked then " check-cart-item" else ""}")(
       div(cls := "p-checkbox")(
         input(`type` := "checkbox", if item.checked then checked := true else modifier(), cls := "j-checkbox")

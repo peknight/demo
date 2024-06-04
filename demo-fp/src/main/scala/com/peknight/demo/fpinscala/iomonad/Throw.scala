@@ -57,8 +57,8 @@ object Throw extends Monad[Throw]:
   override def flatMap[A, B](a: Throw[A])(f: A => Throw[B]): Throw[B] = a match
     case Done(a) => f(a)
     case More(thunk) =>
-      try thunk() flatMap f
+      try thunk().flatMap(f)
       catch case Call(a0, g) =>
-        more { defer(a0)(g.asInstanceOf[Any => Throw[A]].andThen(_ flatMap f)) }
+        more { defer(a0)(g.asInstanceOf[Any => Throw[A]].andThen(_.flatMap(f))) }
 
 end Throw

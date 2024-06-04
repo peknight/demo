@@ -22,7 +22,7 @@ class RegisterPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[
       )
     )
 
-  private[this] val registerHeadFrag: Modifier =
+  private val registerHeadFrag: Modifier =
     head(
       metaFrag,
       title("个人注册"),
@@ -35,7 +35,7 @@ class RegisterPage[Builder, Output <: FragT, FragT](override val bundle: Bundle[
       link(rel := "stylesheet", href := "/css/register.css"),
     )
 
-  private[this] val registerAreaFrag: Modifier =
+  private val registerAreaFrag: Modifier =
     div(cls := "register-area")(
       h3("注册新用户", div(cls := "login")("我有账号，去", a(href := "#")("登录"))),
       div(cls := "reg-form")(form(action := "")(ul(

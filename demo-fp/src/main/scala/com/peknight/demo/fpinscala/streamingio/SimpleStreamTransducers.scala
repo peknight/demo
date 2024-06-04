@@ -65,18 +65,18 @@ object SimpleStreamTransducers:
 
     def map[O2](f: O => O2): Process[I, O2] = this match
       case Halt() => Halt[I, O2]()
-      case Emit(h, t) => Emit(f(h), t map f)
-      case Await(recv) => Await(recv andThen (_ map f))
+      case Emit(h, t) => Emit(f(h), t.map(f))
+      case Await(recv) => Await(recv.andThen(_.map(f)))
 
     def ++(p: => Process[I, O]): Process[I, O] = this match
       case Halt() => p
       case Emit(h, t) => Emit(h, t ++ p)
-      case Await(recv) => Await(recv andThen (_ ++ p))
+      case Await(recv) => Await(recv.andThen(_ ++ p))
 
     def flatMap[O2](f: O => Process[I, O2]): Process[I, O2] = this match
       case Halt() => Halt[I, O2]()
       case Emit(h, t) => f(h) ++ t.flatMap(f)
-      case Await(recv) => Await(recv andThen (_ flatMap f))
+      case Await(recv) => Await(recv.andThen(_.flatMap(f)))
 
     // Exercise 15.6
     def zipWithIndex: Process[I, (O, Int)] = zip(count.map(_ - 1))
@@ -180,16 +180,16 @@ object SimpleStreamTransducers:
       case (d: Double, (sum: Double, count: Int)) => ((sum + d) / (count + 1), (sum + d, count + 1))
     }
 
-    def mean2 = (sum zip count) |> lift { case (s, n) => s / n }
+    def mean2 = sum.zip(count) |> lift { case (s, n) => s / n }
 
     def loop[S, I, O](z: S)(f: (I, S) => (O, S)): Process[I, O] = await { (i: I) =>
       f(i, z) match
         case (o, s2) => emit(o, loop(s2)(f))
     }
 
-    def monad[I]: Monad[[A] =>> Process[I, A]] = new Monad:
+    def monad[I]: Monad[[A] =>> Process[I, A]] = new Monad[[A] =>> Process[I, A]]:
       def unit[O](o: => O): Process[I, O] = Emit(o)
-      override def flatMap[O, O2](p: Process[I, O])(f: O => Process[I, O2]): Process[I, O2] = p flatMap f
+      override def flatMap[O, O2](p: Process[I, O])(f: O => Process[I, O2]): Process[I, O2] = p.flatMap(f)
 
     given toMonadic[I, O]: Conversion[Process[I, O], Monadic[[A] =>> Process[I, A], O]] = monad[I].toMonadic(_)
 

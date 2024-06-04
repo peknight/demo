@@ -12,7 +12,7 @@ sealed trait Option[+A] derives CanEqual:
     case Some(a) => f(a)
     case None => None
 
-  def flatMapViaGetOrElse[B](f: A => Option[B]): Option[B] = map(f) getOrElse None
+  def flatMapViaGetOrElse[B](f: A => Option[B]): Option[B] = map(f).getOrElse(None)
 
   def getOrElse[B >: A](default: => B): B = this match
     case Some(a) => a
@@ -22,7 +22,7 @@ sealed trait Option[+A] derives CanEqual:
     case oa @ Some(_) => oa
     case None => ob
 
-  def orElseViaGetOrElse[B >: A](ob: => Option[B]): Option[B] = this map (Some(_)) getOrElse ob
+  def orElseViaGetOrElse[B >: A](ob: => Option[B]): Option[B] = this.map(Some(_)).getOrElse(ob)
 
   def filter(f: A => Boolean): Option[A] = this match
     case Some(a) if f(a)=> this
@@ -40,7 +40,7 @@ object Option:
   def some[A](get: A): Option[A] = Some(get)
   def none[A]: Option[A] = None
 
-  def lift[A, B](f: A => B): Option[A] => Option[B] = _ map f
+  def lift[A, B](f: A => B): Option[A] => Option[B] = _.map(f)
 
   def Try[A](a: => A): Option[A] = try Some(a) catch case e: Exception => None
 
@@ -60,7 +60,7 @@ object Option:
 
   def sequence[A](a: List[Option[A]]): Option[List[A]] = a match
     case Nil => Some(Nil)
-    case h :: t => h flatMap (hh => sequence(t) map (hh :: _))
+    case h :: t => h.flatMap(hh => sequence(t).map(hh :: _))
 
   def sequenceViaFoldRightAndMap2[A](a: List[Option[A]]): Option[List[A]] =
     a.foldRight[Option[List[A]]](Some(Nil))((x, y) => map2(x, y)(_ :: _))
