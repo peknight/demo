@@ -20,7 +20,6 @@ import com.peknight.demo.oauth2.random.*
 import com.peknight.demo.oauth2.repository.*
 import fs2.Stream
 import fs2.text.base64
-import io.circe.JsonObject
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.http4s.*
@@ -427,13 +426,14 @@ object AuthorizationServerApp extends IOApp.Simple:
         cache.authorizationEndpointRequest.codeChallengeMethod.fold {
           info"Unknown code challenge method None" *> BadRequest(ErrorInfo("invalid_request").asJson)
         }{ codeChallengeMethod =>
-          val challenge = codeChallengeMethod match
-            case CodeChallengeMethod.Plain => codeVerifier
-            case CodeChallengeMethod.S256 => codeVerifier.map(getCodeChallenge)
-          challenge.filter(_ == codeChallenge).fold {
+          val challenge: IO[Option[String]] = codeChallengeMethod match
+            case CodeChallengeMethod.Plain => IO(codeVerifier)
+            case CodeChallengeMethod.S256 => codeVerifier.fold(IO(None))(getCodeChallenge(_).map(Some.apply))
+
+          challenge.flatMap(challenge => challenge.filter(_ == codeChallenge).fold {
             info"Code challenge did not match, expected $codeChallenge got ${challenge.getOrElse("None")}" *>
               BadRequest(ErrorInfo("invalid_request").asJson)
-          }(_ => pass)
+          }(_ => pass))
         }
       }
     }

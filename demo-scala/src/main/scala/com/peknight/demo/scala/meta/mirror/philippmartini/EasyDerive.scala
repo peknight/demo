@@ -29,10 +29,12 @@ trait EasyDerive[TC[_]]:
 
   def deriveSealed[A](sealedType: SealedType[A]): TC[A]
 
-  class InnerProduct(productArity0: Int, productElement0: Int => Any) extends Product:
-    override def productArity: Int = productArity0
-    override def productElement(n: Int): Any = productElement0(n)
-    override def canEqual(that: Any): Boolean = false
+  def instance(productArity0: Int, productElement0: Int => Any): Product =
+    new Product:
+      def productArity: Int = productArity0
+      def productElement(n: Int): Any = productElement0(n)
+      def canEqual(that: Any): Boolean = false
+  end instance
 
   inline given derived[A](using m: Mirror.Of[A]): TC[A] =
     val label = constValue[m.MirroredLabel]
@@ -52,7 +54,7 @@ trait EasyDerive[TC[_]]:
             (x: Any) => x.asInstanceOf[Product].productElement(idx), idx)
         }
         val fromElements: List[Any] => A = elements =>
-          val product: Product = new InnerProduct(caseClassElements.size, elements.apply)
+          val product: Product = instance(caseClassElements.size, elements.apply)
           p.fromProduct(product)
         deriveCaseClass(CaseClassType[A](label, caseClassElements, fromElements))
 

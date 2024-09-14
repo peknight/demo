@@ -1,34 +1,43 @@
 package com.peknight.demo.security.hash
 
-import cats.effect.{IO, IOApp}
+import cats.effect.{IO, IOApp, Sync}
+import fs2.hashing.HashAlgorithm.{MD5, Named, SHA1}
+import fs2.hashing.{HashAlgorithm, Hashing}
 import fs2.text.{hex, utf8}
-import fs2.{Pipe, Pure, Stream, hash}
+import fs2.{Pipe, Pure, Stream}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 
-import java.security.{MessageDigest, Security}
+import java.security.Security
 
 object HashApp extends IOApp.Simple:
 
-  val md5: Pipe[Pure, String, String] = in => in.through(utf8.encode).through(hash.md5).through(hex.encode)
-  val sha1: Pipe[Pure, String, String] = in => in.through(utf8.encode).through(hash.sha1).through(hex.encode)
+  def pipe[F[_]: Sync](algorithm: HashAlgorithm): Pipe[F, String, String] =
+    in => in.through(utf8.encode)
+      .through(Hashing.forSync[F].hash(algorithm))
+      .through(_.mapChunks(_.flatMap(_.bytes)))
+      .through(hex.encode)
+
+  def md5[F[_]: Sync]: Pipe[F, String, String] = pipe[F](MD5)
+  def sha1[F[_]: Sync]: Pipe[F, String, String] = pipe[F](SHA1)
+  def ripeMD160[F[_]: Sync]: Pipe[F, String, String] = pipe[F](Named("RipeMD160"))
+
+  def go(stream: Stream[Pure, String])(pipe: Pipe[IO, String, String]): IO[Unit] =
+    stream.covary[IO].through(pipe).compile.toList.flatMap(list => IO.println(list.mkString("")))
 
   val initBouncyCastle: IO[Int] = IO(Security.addProvider(new BouncyCastleProvider()))
-  val ripeMD160: Pipe[Pure, String, String] = in =>
-    in.through(utf8.encode).through(hash.digest(MessageDigest.getInstance("RipeMD160"))).through(hex.encode)
 
   val run: IO[Unit] =
     for
-      _ <- IO.println(Stream("Hello").append(Stream("World")).through(md5).toList.mkString(""))
-      _ <- IO.println(Stream("hello123").through(md5).toList.mkString(""))
-      _ <- IO.println(Stream("12345678").through(md5).toList.mkString(""))
-      _ <- IO.println(Stream("passw0rd").through(md5).toList.mkString(""))
-      _ <- IO.println(Stream("19700101").through(md5).toList.mkString(""))
-      _ <- IO.println(Stream("20201231").through(md5).toList.mkString(""))
-      _ <- IO.println(Stream("H1r0a", "hello123").through(md5).toList.mkString(""))
-      _ <- IO.println(Stream("7$p2w", "12345678").through(md5).toList.mkString(""))
-      _ <- IO.println(Stream("z5Sk9", "passw0rd").through(md5).toList.mkString(""))
-      _ <- IO.println(Stream("Hello").append(Stream("World")).through(sha1).toList.mkString(""))
+      _ <- go(Stream("Hello").append(Stream("World")))(md5)
+      _ <- go(Stream("hello123"))(md5)
+      _ <- go(Stream("12345678"))(md5)
+      _ <- go(Stream("passw0rd"))(md5)
+      _ <- go(Stream("19700101"))(md5)
+      _ <- go(Stream("20201231"))(md5)
+      _ <- go(Stream("H1r0a", "hello123"))(md5)
+      _ <- go(Stream("7$p2w", "12345678"))(md5)
+      _ <- go(Stream("z5Sk9", "passw0rd"))(md5)
+      _ <- go(Stream("Hello").append(Stream("World")))(sha1)
       _ <- initBouncyCastle
-      _ <- IO.println(Stream("HelloWorld").through(ripeMD160).toList.mkString(""))
+      _ <- go(Stream("HelloWorld"))(ripeMD160)
     yield ()
-

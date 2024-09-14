@@ -24,6 +24,8 @@ trait UrlFragmentDecoder[A]:
 
 object UrlFragmentDecoder:
 
+  def instance[A](f: UrlFragment => ValidatedNel[String, A]): UrlFragmentDecoder[A] = f(_)
+
   def apply[A](using decoder: UrlFragmentDecoder[A]): UrlFragmentDecoder[A] = decoder
 
   extension (fragment: String)
@@ -150,7 +152,7 @@ object UrlFragmentDecoder:
 
   inline def urlFragmentDecoderSum[A](using inst: => K0.CoproductInstances[UrlFragmentDecoder, A], mirror: Mirror.SumOf[A])
   : UrlFragmentDecoder[A] =
-    (fragment: UrlFragment) =>
+    instance[A] { (fragment: UrlFragment) =>
       val failure = NonEmptyList.one(s"Can not parse $fragment").asLeft[A]
       val size = constValue[Size[mirror.MirroredElemTypes]]
       (0 until size)
@@ -158,24 +160,28 @@ object UrlFragmentDecoder:
           either.orElse(inst.erasedInject(ordinal)(identity).asInstanceOf[UrlFragmentDecoder[A]].decode(fragment).toEither)
         }
         .toValidated
+    }
 
   inline def urlFragmentDecoderProduct[A](
     using
     inst: => K0.ProductInstances[UrlFragmentDecoder, A],
     mirror: Mirror.ProductOf[A]
-  ): UrlFragmentDecoder[A] = (fragment: UrlFragment) => fragment match
-      case UrlFragmentObject(listMap) =>
+  ): UrlFragmentDecoder[A] =
+    instance[A] {
+      case fragment @ UrlFragmentObject(listMap) =>
         val ((_, es), option) = inst.unfold(
           (summonValuesAsArray[mirror.MirroredElemLabels, String].toList, List(s"Can not parse $fragment"))
-        ){ [T] => (acc: (List[String], List[String]), decoder: UrlFragmentDecoder[T]) =>
-          val (labels, errors) = acc
-          decoder.decode(listMap.getOrElse(labels.head, UrlFragmentNone)) match
-            case Valid(a) => ((labels.tail, errors), Some(a))
-            case Invalid(e) =>
-              ((labels.tail, s"Can not parse field ${labels.head}" :: e.toList ::: errors), None)
+        ) {
+          [T] => (acc: (List[String], List[String]), decoder: UrlFragmentDecoder[T]) =>
+            val (labels, errors) = acc
+            decoder.decode(listMap.getOrElse(labels.head, UrlFragmentNone)) match
+              case Valid(a) => ((labels.tail, errors), Some(a))
+              case Invalid(e) =>
+                ((labels.tail, s"Can not parse field ${labels.head}" :: e.toList ::: errors), None)
         }
         option.toValid(NonEmptyList.fromListUnsafe(es))
       case fragment => s"Can not parse $fragment".invalidNel[A]
+    }
 
   inline given derived[A](using gen: K0.Generic[A]): UrlFragmentDecoder[A] =
     gen.derive(urlFragmentDecoderProduct, urlFragmentDecoderSum)

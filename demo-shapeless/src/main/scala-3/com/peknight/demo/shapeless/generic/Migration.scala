@@ -1,6 +1,6 @@
 package com.peknight.demo.shapeless.generic
 
-import cats.{Id, Monoid}
+import cats.Monoid
 import com.peknight.demo.shapeless.generic.*
 
 import scala.compiletime.constValue
@@ -10,6 +10,8 @@ trait Migration[A, B]:
 end Migration
 
 object Migration:
+
+  def instance[A, B](f: A => B): Migration[A, B] = (a: A) => f(a)
 
   extension [A] (a: A)
     def migrateTo[B](using mapper: Migration[A, B]): B = mapper.apply(a)
@@ -36,13 +38,14 @@ object Migration:
     prepend: Prepend.Aux[Added, Common, Unaligned],
     align: Align[Unaligned, Tuple.Zip[BLabels, BRepr]]
   ): Migration[A, B] =
-    new Migration[A, B]:
-      def apply(a: A): B = bMirror.fromProduct(
+    instance{ a =>
+      bMirror.fromProduct(
         align(prepend(monoid.empty, inter(summonValuesAsTuple[ALabels].zip(Tuple.fromProductTyped(a))))).map[GetValue] {
           [T] => (t: T) => t match
             case (_, value) => value.asInstanceOf[GetValue[T]]
         }
       )
+    }
 
   given Monoid[EmptyTuple] = Monoid.instance(EmptyTuple, (_, _) => EmptyTuple)
 

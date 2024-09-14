@@ -19,12 +19,17 @@ object Random:
   given Random[Boolean] with
     def get: Boolean = scala.util.Random.nextBoolean()
 
-  inline given randomSum[A](using inst: => K0.CoproductInstances[Random, A], mirror: Mirror.SumOf[A]): Random[A] =
+  def instance[A](get0: => A): Random[A] =
     new Random[A]:
-      def get: A =
-        val length = constValue[Size[mirror.MirroredElemTypes]]
-        val choose = scala.util.Random.nextInt(length)
-        inst.inject(choose)([t] => (random: Random[t]) => random.get).asInstanceOf[A]
+      def get: A = get0
+  end instance
+
+  inline given randomSum[A](using inst: => K0.CoproductInstances[Random, A], mirror: Mirror.SumOf[A]): Random[A] =
+    instance[A] {
+      val length = constValue[Size[mirror.MirroredElemTypes]]
+      val choose = scala.util.Random.nextInt(length)
+      inst.inject(choose)([t] => (random: Random[t]) => random.get).asInstanceOf[A]
+    }
 
   given randomProduct[A](using inst: => K0.ProductInstances[Random, A], mirror: Mirror.ProductOf[A]): Random[A] with
     def get: A =

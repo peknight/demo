@@ -107,7 +107,7 @@ object ClientApp extends IOApp.Simple:
         state <- randomString[IO](random, 32)
         codeVerifier <- randomString[IO](random, 80)
         _ <- codeVerifierR.set(codeVerifier.some)
-        codeChallenge = getCodeChallenge(codeVerifier)
+        codeChallenge <- getCodeChallenge(codeVerifier)
         _ <- info"Generated code verifier $codeVerifier and challenge $codeChallenge"
         _ <- stateR.set(Some(state))
         nonce <- randomString[IO](random, 32)

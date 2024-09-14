@@ -15,7 +15,8 @@ import com.peknight.demo.oauth2.data.*
 import com.peknight.demo.oauth2.domain.*
 import com.peknight.demo.oauth2.repository.getRecordByAccessToken
 import fs2.Stream
-import fs2.hash.sha256
+import fs2.hashing.HashAlgorithm.SHA256
+import fs2.hashing.Hashing
 import fs2.io.file
 import fs2.io.net.Network
 import fs2.text.{base64, hex, utf8}
@@ -38,7 +39,7 @@ import org.typelevel.ci.CIString
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.syntax.*
 import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim, JwtHeader}
-import scodec.bits.Bases.Alphabets.Base64Url
+import scodec.bits.Bases.Alphabets.{Base64Url, Base64UrlNoPad}
 
 import java.security.*
 import java.security.spec.{RSAPrivateKeySpec, RSAPublicKeySpec}
@@ -224,12 +225,14 @@ package object app:
       case Some(`Content-Type`(mediaType, _)) if mediaType.subType == "json" => req.as[Json].map(jsonF)
       case _ => req.as[UrlForm].map(formF)
 
-  def getCodeChallenge(codeVerifier: String): String =
+  def getCodeChallenge(codeVerifier: String): IO[String] =
     Stream(codeVerifier)
       .through(utf8.encode)
-      .through(sha256)
-      .through(base64.encodeWithAlphabet(Base64Url))
-      .toList.mkString.replaceAll("=", "")
+      .covary[IO]
+      .through(Hashing.forSync[IO].hash(SHA256))
+      .through(_.mapChunks(_.flatMap(_.bytes)))
+      .through(base64.encodeWithAlphabet(Base64UrlNoPad))
+      .compile.toList.map(_.mkString)
 
   def decodeToBigInt(base64UrlEncoded: String): IO[BigInt] =
     Stream(base64UrlEncoded)

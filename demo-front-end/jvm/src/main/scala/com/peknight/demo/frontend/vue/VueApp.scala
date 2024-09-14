@@ -37,8 +37,8 @@ object VueApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "use-vue" => renderHtml(UseVuePage.Text.index)
     case GET -> Root / "use-vue-esm" => renderHtml(UseVuePage.Text.esm)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.4.2/demo-front-end-opt/$path"), Some(req))
-        .orElse(StaticFile.fromPath(file.Path(s"./demo-front-end/module/demo-vue/target/scala-3.4.2/demo-front-end-module-demo-vue-opt/$path"), Some(req)))
+      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.5.0/demo-front-end-opt/$path"), Some(req))
+        .orElse(StaticFile.fromPath(file.Path(s"./demo-front-end/module/demo-vue/target/scala-3.5.0/demo-front-end-module-demo-vue-opt/$path"), Some(req)))
         .getOrElseF(NotFound())
   }
 
