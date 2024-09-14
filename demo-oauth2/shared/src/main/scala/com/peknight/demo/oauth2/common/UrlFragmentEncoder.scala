@@ -104,7 +104,7 @@ object UrlFragmentEncoder:
     def encode(value: AuthScheme): UrlFragmentValue = fromToString(value)
 
   def urlFragmentEncoderSum[A](using inst: => K0.CoproductInstances[UrlFragmentEncoder, A]): UrlFragmentEncoder[A] =
-    (value: A) => inst.ordinal(value).asInstanceOf[UrlFragmentEncoder[A]].encode(value)
+    (value: A) => inst.erasedMap(value)((i, _) => i.asInstanceOf[UrlFragmentEncoder[A]].encode(value)).asInstanceOf
 
   def urlFragmentEncoderProduct[A](using inst: => K0.ProductInstances[UrlFragmentEncoder, A], labelling: Labelling[A])
   : UrlFragmentEncoder[A] = (value: A) => UrlFragmentObject(ListMap.from(labelling.elemLabels.zip(

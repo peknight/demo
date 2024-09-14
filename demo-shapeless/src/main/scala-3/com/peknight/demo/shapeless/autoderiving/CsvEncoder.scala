@@ -12,7 +12,8 @@ object CsvEncoder:
   def instance[A](func: A => List[String]): CsvEncoder[A] = func(_)
 
   given csvEncoderSum[A](using inst: => K0.CoproductInstances[CsvEncoder, A]): CsvEncoder[A] with
-    def encode(value: A): List[String] = inst.ordinal(value).asInstanceOf[CsvEncoder[A]].encode(value)
+    def encode(value: A): List[String] =
+      inst.erasedMap(value)((i, _) => i.asInstanceOf[CsvEncoder[A]].encode(value)).asInstanceOf
 
   given csvEncoderProduct[A](using inst: => K0.ProductInstances[CsvEncoder, A]): CsvEncoder[A] with
     def encode(value: A): List[String] = inst.foldRight[List[String]](value)(Nil)(

@@ -11,8 +11,10 @@ import org.typelevel.ci.CIString
 import shapeless3.deriving.*
 
 import java.util.UUID
+import scala.Tuple.Size
 import scala.collection.IterableFactory
 import scala.collection.immutable.*
+import scala.compiletime.constValue
 import scala.concurrent.duration.Duration
 import scala.deriving.Mirror
 import scala.util.Try
@@ -146,12 +148,16 @@ object UrlFragmentDecoder:
   given UrlFragmentDecoder[AuthScheme] with
     def decode(fragment: UrlFragment): ValidatedNel[String, AuthScheme] = parseValue(fragment)(CIString.apply)
 
-  def urlFragmentDecoderSum[A](using inst: => K0.CoproductInstances[UrlFragmentDecoder, A]): UrlFragmentDecoder[A] =
+  inline def urlFragmentDecoderSum[A](using inst: => K0.CoproductInstances[UrlFragmentDecoder, A], mirror: Mirror.SumOf[A])
+  : UrlFragmentDecoder[A] =
     (fragment: UrlFragment) =>
       val failure = NonEmptyList.one(s"Can not parse $fragment").asLeft[A]
-      inst.is.foldLeft(failure) { (either, decoder) =>
-        either.orElse(decoder.asInstanceOf[UrlFragmentDecoder[A]].decode(fragment).toEither)
-      }.toValidated
+      val size = constValue[Size[mirror.MirroredElemTypes]]
+      (0 until size)
+        .foldLeft(failure) { (either, ordinal) =>
+          either.orElse(inst.erasedInject(ordinal)(identity).asInstanceOf[UrlFragmentDecoder[A]].decode(fragment).toEither)
+        }
+        .toValidated
 
   inline def urlFragmentDecoderProduct[A](
     using

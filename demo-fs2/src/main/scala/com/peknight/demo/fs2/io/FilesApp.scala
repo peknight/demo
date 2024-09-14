@@ -1,15 +1,18 @@
 package com.peknight.demo.fs2.io
 
-import cats.effect.Concurrent
+import cats.effect.{Async, Concurrent}
 import cats.implicits.{catsSyntaxApplicativeError, toFunctorOps}
+import fs2.hashing.HashAlgorithm.SHA256
 import fs2.io.file.{Files, Path}
-import fs2.{hash, text}
+import fs2.text
+import fs2.hashing.Hashing
 
 object FilesApp:
-  def writeDigest[F[_]: Files: Concurrent](path: Path): F[Path] =
+  def writeDigest[F[_]: Files: Async](path: Path): F[Path] =
     val target = Path(path.toString + ".sha256")
     Files[F].readAll(path)
-      .through(hash.sha256)
+      .through(Hashing.forSync[F].hash(SHA256))
+      .through(_.mapChunks(_.flatMap(_.bytes)))
       .through(text.hex.encode)
       .through(text.utf8.encode)
       .through(Files[F].writeAll(target))

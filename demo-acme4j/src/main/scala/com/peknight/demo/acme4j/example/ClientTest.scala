@@ -90,7 +90,7 @@ object ClientTest extends IOApp:
       _ <- attempt(order.execute(domainKeyPair))
       // Wait for the order to complete
       _ <- waitForComplete(attempt(order.getStatus), attempt(order.getError.toScala.fold("unknown")(_.toString)),
-        attempt(order.update()), "Order")
+        attempt(order.fetch()), "Order")
       // Get the certificate
       certificate <- attempt(order.getCertificate)
       _ <- info"Success! The certificate for domains $domains has been generated!".lift
@@ -194,7 +194,7 @@ object ClientTest extends IOApp:
               // Poll for the challenge to complete
               case _ => attempt(challenge.trigger()).flatMap(_ => waitForComplete(statusT,
                 attempt(challenge.getError.toScala.fold("unknown")(_.toString)),
-                attempt(challenge.update()),
+                attempt(challenge.fetch()),
                 "Challenge"
               )).flatMap(_ => statusT).flatMap {
                 // All reattempts are used up and there is still no valid authorization?

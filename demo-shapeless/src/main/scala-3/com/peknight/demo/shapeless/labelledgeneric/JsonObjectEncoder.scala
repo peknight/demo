@@ -16,7 +16,8 @@ object JsonObjectEncoder:
   given jsonObjectEncoderSum[A](using inst: => K0.CoproductInstances[JsonEncoder, A], labelling: Labelling[A],
                                 mirror: Mirror.SumOf[A]): JsonObjectEncoder[A] with
     def encode(value: A): JsonObject = JsonObject(List(
-      labelling.elemLabels(mirror.ordinal(value)) -> inst.ordinal(value).asInstanceOf[JsonEncoder[A]].encode(value)
+      labelling.elemLabels(mirror.ordinal(value)) ->
+        inst.erasedMap(value)((i, _) => i.asInstanceOf[JsonEncoder[A]].encode(value)).asInstanceOf
     ))
 
   given jsonObjectEncoderProduct[A](using inst: => K0.ProductInstances[JsonEncoder, A], labelling: Labelling[A])
