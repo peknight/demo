@@ -3,8 +3,8 @@ import org.scalajs.linker.interface.ModuleInitializer
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 // https://www.scala-lang.org/
-val scala3Version = "3.5.0"
-val scala2Version = "2.13.14"
+val scala3Version = "3.6.2"
+val scala2Version = "2.13.15"
 
 ThisBuild / scalaVersion := scala3Version
 
@@ -40,12 +40,14 @@ lazy val demo = (project in file("."))
     demoLog4Cats,
     demoCiris,
     demoCatsStm,
+    demoCatsMtl,
     demoSpire,
     demoSquants,
     demoHttp4s.jvm,
     demoHttp4s.js,
     demoDoobie,
     demoRedis4Cats,
+    demoNatchez,
     demoNeo4j,
     demoNebula,
     demoZio,
@@ -272,6 +274,15 @@ lazy val demoCatsStm = (project in file("demo-cats-stm"))
     ),
   )
 
+lazy val demoCatsMtl = (project in file("demo-cats-mtl"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-cats-mtl",
+    libraryDependencies ++= Seq(
+      catsMtl,
+    ),
+  )
+
 lazy val demoSpire = (project in file("demo-spire"))
   .settings(commonSettings)
   .settings(
@@ -353,6 +364,18 @@ lazy val demoRedis4Cats = (project in file("demo-redis4cats"))
       circeParser,
       log4CatsSlf4j,
       logbackClassic % Runtime,
+    ),
+  )
+
+lazy val demoNatchez = (project in file("demo-natchez"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-natchez",
+    libraryDependencies ++= Seq(
+      natchezCore,
+      http4sDsl,
+      http4sEmberServer,
+      http4sEmberClient,
     ),
   )
 
@@ -721,6 +744,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.typelevel" %%% "cats-effect" % catsEffectVersion,
       "org.typelevel" %%% "cats-effect-cps" % catsEffectCpsVersion,
       "org.typelevel" %%% "cats-parse" % catsParseVersion,
+      "org.typelevel" %%% "cats-mtl" % catsMtlVersion,
       "co.fs2" %%% "fs2-core" % fs2Version,
       "co.fs2" %%% "fs2-io" % fs2Version,
       "co.fs2" %%% "fs2-scodec" % fs2Version,
@@ -739,6 +763,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.http4s" %%% "http4s-server" % http4sVersion,
       "org.http4s" %%% "http4s-client" % http4sVersion,
       "org.http4s" %%% "http4s-circe" % http4sVersion,
+      "org.tpolecat" %%% "natchez-core" % natchezVersion,
       "org.typelevel" %%% "jawn-ast" % jawnAstVersion,
       "dev.zio" %%% "zio" % zioVersion,
       "dev.zio" %%% "zio-streams" % zioVersion,
@@ -827,34 +852,36 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
 val shapelessVersion = "3.4.3"
 val shapeless2Version = "2.3.12"
 val catsVersion = "2.12.0"
-val catsEffectVersion = "3.5.4"
+val catsEffectVersion = "3.5.7"
 val catsEffectCpsVersion = "0.4.0"
-val catsParseVersion = "0.3.10" // "1.0.0"
+val catsParseVersion = "0.3.10" // "1.1.0"
+val catsMtlVersion = "1.5.0"
 val fs2Version = "3.11.0"
 val circeVersion = "0.14.10"
 val circeFs2Version = "0.14.1"
 val monocleVersion = "3.3.0"
 val log4CatsVersion = "2.7.0"
-val cirisVersion = "3.6.0"
-val cirisHoconVersion = "1.2.0"
-val refinedCatsVersion = "0.11.2"
+val cirisVersion = "3.7.0"
+val cirisHoconVersion = "1.3.0"
+val refinedCatsVersion = "0.11.3"
 // https://mvnrepository.com/artifact/io.github.timwspence/cats-stm
 val catsStmVersion = "0.13.5"
 val spireVersion = "0.18.0"
 val squantsVersion = "1.8.3"
-val http4sVersion = "1.0.0-M34" // 1.0.0-M41
+val http4sVersion = "1.0.0-M34" // 1.0.0-M44
 val http4sDomVersion = "1.0.0-M34" // 1.0.0-M36 -> 1.0.0-M36
 val http4sScalaTagsVersion = "1.0.0-M34" // 1.0.0-M35 -> 1.0.0-M35, 1.0.0-M38 -> 1.0.0-M38
 // https://mvnrepository.com/artifact/org.http4s/http4s-prometheus-metrics
 val http4sPrometheusMetricsVersion = "1.0.0-M34" // 1.0.0-M35 -> 1.0.0-M35, 1.0.0-M38 -> 1.0.0-M38
 // https://mvnrepository.com/artifact/org.http4s/http4s-dropwizard-metrics
 val http4sDropwizardMetricsVersion = "1.0.0-M32"
-val http4sJdkHttpClientVersion = "1.0.0-M3" // 1.0.0-M4 -> M35, 1.0.0-M5 -> 1.0.0-M36, 1.0.0-M6 & 1.0.0-M7 -> 1.0.0-M37, 1.0.0-M8 -> 1.0.0-M38, 1.0.0-M9 -> 1.0.0-M39
-val doobieVersion = "1.0.0-RC5"
-val redis4CatsVersion = "1.7.1"
-val neotypesVersion = "1.1.0"
+val http4sJdkHttpClientVersion = "1.0.0-M3" // 1.0.0-M4 -> M35, 1.0.0-M5 -> 1.0.0-M36, 1.0.0-M6 & 1.0.0-M7 -> 1.0.0-M37, 1.0.0-M8 -> 1.0.0-M38, 1.0.0-M9 -> 1.0.0-M39 1.0.0-M10 -> 1.0.0-M44
+val doobieVersion = "1.0.0-RC6"
+val redis4CatsVersion = "1.7.2"
+val natchezVersion = "0.3.7"
+val neotypesVersion = "1.2.0"
 val jawnAstVersion = "1.6.0"
-val zioVersion = "2.1.9"
+val zioVersion = "2.1.14"
 
 val shapeless = "org.typelevel" %% "shapeless3-deriving" % shapelessVersion
 val shapeless2 = "com.chuusai" %% "shapeless" % shapeless2Version
@@ -883,6 +910,7 @@ val cirisSquants = "is.cir" %% "ciris-squants" % cirisVersion
 // val cirisHocon = "lt.dvim.ciris-hocon" %% "ciris-hocon" % cirisHoconVersion
 val refinedCats = "eu.timepit" %% "refined-cats" % refinedCatsVersion
 val catsStm = "io.github.timwspence" %% "cats-stm" % catsStmVersion
+val catsMtl = "org.typelevel" %% "cats-mtl" % catsMtlVersion
 val spire = "org.typelevel" %% "spire" % spireVersion
 val squants = "org.typelevel" %% "squants" % squantsVersion
 val http4sDsl = "org.http4s" %% "http4s-dsl" % http4sVersion
@@ -902,6 +930,7 @@ val doobieScalaTest = "org.tpolecat" %% "doobie-scalatest" % doobieVersion
 val redis4CatsEffects = "dev.profunktor" %% "redis4cats-effects" % redis4CatsVersion
 val redis4CatsStreams = "dev.profunktor" %% "redis4cats-streams" % redis4CatsVersion
 val redis4CatsLog4Cats = "dev.profunktor" %% "redis4cats-log4cats" % redis4CatsVersion
+val natchezCore = "org.tpolecat" %% "natchez-core" % natchezVersion
 val neotypesCatsEffect = "io.github.neotypes" %% "neotypes-cats-effect" % neotypesVersion
 val neotypesFs2Stream = "io.github.neotypes" %% "neotypes-fs2-stream" % neotypesVersion
 val neotypesGeneric = "io.github.neotypes" %% "neotypes-generic" % neotypesVersion
@@ -911,17 +940,18 @@ val zioStreams = "dev.zio" %% "zio-streams" % zioVersion
 
 // Library
 
-val logbackVersion = "1.5.8"
+val logbackVersion = "1.5.16"
 // val jansiVersion = "1.18"
-val akkaVersion = "2.8.6"
-val apacheCommonsCodecVersion = "1.17.1"
+val akkaVersion = "2.8.8"
+val apacheCommonsCodecVersion = "1.17.2"
 val h2Version = "2.3.232"
 val postgisJdbcVersion = "2024.1.0"
-val neo4jVersion = "5.23.0"
-val nebulaClientVersion = "3.8.3"
+val neo4jVersion = "5.26.0"
+// https://mvnrepository.com/artifact/com.vesoft/client
+val nebulaClientVersion = "3.8.4"
 val acme4jClientVersion = "3.4.0"
 val acme4jUtilsVersion = "2.16"
-val bouncyCastleVersion = "1.78.1"
+val bouncyCastleVersion = "1.79"
 val jwtCirceVersion = "10.0.1"
 val scalaJwkVersion = "1.2.24"
 
@@ -938,6 +968,7 @@ val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jClientVersio
 val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jUtilsVersion
 val bouncyCastle = "org.bouncycastle" % "bcprov-jdk18on" % bouncyCastleVersion
 val jwtCirce = "com.github.jwt-scala" %% "jwt-circe" % jwtCirceVersion
+// https://mvnrepository.com/artifact/com.chatwork/scala-jwk
 val scalaJwk = "com.chatwork" %% "scala-jwk" % scalaJwkVersion
 
 // Webjars
@@ -950,8 +981,8 @@ val bootstrapVersion = "5.3.3"
 val bootstrapIconsVersion = "1.11.3"
 val fastClickVersion = "1.0.6"
 val eChartsVersion = "5.5.1" // "5.4.3"
-val vueVersion = "3.5.4" // "3.4.27"
-val html5ShivVersion = "3.7.2"
+val vueVersion = "3.5.13" // "3.5.4"
+val html5ShivVersion = "3.7.3-1"
 val respondJsVersion = "1.4.2"
 
 val jQuery = "org.webjars" % "jquery" % jQueryVersion
@@ -962,17 +993,18 @@ val bootstrapIcons = "org.webjars.npm" % "bootstrap-icons" % bootstrapIconsVersi
 val fastClick = "org.webjars.npm" % "fastclick" % fastClickVersion
 val eCharts = "org.webjars.npm" % "echarts" % eChartsVersion
 val vue = "org.webjars.npm" % "vue" % vueVersion
-val html5Shiv = "org.webjars.bower" % "html5shiv" % html5ShivVersion
+val html5Shiv = "org.webjars" % "html5shiv" % html5ShivVersion
 val respondJs = "org.webjars.npm" % "respond.js" % respondJsVersion
 
 // Test
 
 val scalaTestVersion = "3.2.19"
-val scalaCheckVersion = "1.18.0"
+val scalaCheckVersion = "1.18.1"
+// https://mvnrepository.com/artifact/org.scalatestplus/scalacheck-1-18
 val scalaTestPlusVersion = "3.2.19.0"
 val scalaCheckEffectVersion = "1.0.4"
-val catsEffectTestingSpecsVersion = "1.5.0"
-val catsEffectTestingScalaTestVersion = "1.5.0"
+val catsEffectTestingSpecsVersion = "1.6.0"
+val catsEffectTestingScalaTestVersion = "1.6.0"
 val mUnitCatsEffectVersion = "2.0.0"
 val weaverCatsVersion = "0.8.4"
 
@@ -992,7 +1024,7 @@ val weaverCats = "com.disneystreaming" %% "weaver-cats" % weaverCatsVersion
 
 val scalaJsDomVersion = "2.8.0"
 val scalaTagsVersion = "0.13.1"
-val uPickleVersion = "4.0.1"
+val uPickleVersion = "4.0.2"
 val uTestVersion = "0.8.4"
 val scalaCssVersion = "1.0.0"
 val jQueryFacadeVersion = "2.1"

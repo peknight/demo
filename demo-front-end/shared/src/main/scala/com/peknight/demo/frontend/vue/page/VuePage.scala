@@ -23,7 +23,7 @@ abstract class VuePage[Builder, Output <: FragT, FragT](val bundle: Bundle[Build
         meta(httpEquiv := "X-UA-Compatible", content := "ie=edge"),
         links.map(s => link(rel := "stylesheet", href := s)),
         styles.map(s => style(raw(s.render[String]))),
-        script(`type` := "text/javascript", src := "/webjars/vue/3.5.4/dist/vue.global.prod.js"),
+        script(`type` := "text/javascript", src := "/webjars/vue/3.5.13/dist/vue.global.prod.js"),
         script(`type` := "text/javascript", src := "/main.js"),
         scripts.map(s => script(src := s)),
         title(headTitle),
@@ -46,7 +46,7 @@ abstract class VuePage[Builder, Output <: FragT, FragT](val bundle: Bundle[Build
           """
             |{
             |  "imports": {
-            |    "vue": "/webjars/vue/3.5.4/dist/vue.esm-browser.prod.js"
+            |    "vue": "/webjars/vue/3.5.13/dist/vue.esm-browser.prod.js"
             |  }
             |}
           """.stripMargin

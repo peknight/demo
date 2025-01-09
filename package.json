@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "jsdom": "^25.0.0",
+    "jsdom": "^25.0.1",
     "snabbdom": "^3.6.2",
-    "vue": "^3.5.4"
+    "vue": "^3.5.13"
   },
   "private": true,
   "version": "0.0.0",
