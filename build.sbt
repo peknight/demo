@@ -375,9 +375,12 @@ lazy val demoNatchez = (project in file("demo-natchez"))
     name := "demo-natchez",
     libraryDependencies ++= Seq(
       natchezMtl,
+      natchezLog,
       http4sDsl,
       http4sEmberServer,
       http4sEmberClient,
+      log4CatsSlf4j,
+      logbackClassic % Runtime,
     ),
   )
 
@@ -767,6 +770,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.http4s" %%% "http4s-client" % http4sVersion,
       "org.http4s" %%% "http4s-circe" % http4sVersion,
       "org.tpolecat" %%% "natchez-mtl" % natchezVersion,
+      "org.tpolecat" %%% "natchez-log" % natchezVersion,
       "org.typelevel" %%% "jawn-ast" % jawnAstVersion,
       "dev.zio" %%% "zio" % zioVersion,
       "dev.zio" %%% "zio-streams" % zioVersion,
@@ -935,6 +939,7 @@ val redis4CatsEffects = "dev.profunktor" %% "redis4cats-effects" % redis4CatsVer
 val redis4CatsStreams = "dev.profunktor" %% "redis4cats-streams" % redis4CatsVersion
 val redis4CatsLog4Cats = "dev.profunktor" %% "redis4cats-log4cats" % redis4CatsVersion
 val natchezMtl = "org.tpolecat" %% "natchez-mtl" % natchezVersion
+val natchezLog = "org.tpolecat" %% "natchez-log" % natchezVersion
 val neotypesCatsEffect = "io.github.neotypes" %% "neotypes-cats-effect" % neotypesVersion
 val neotypesFs2Stream = "io.github.neotypes" %% "neotypes-fs2-stream" % neotypesVersion
 val neotypesGeneric = "io.github.neotypes" %% "neotypes-generic" % neotypesVersion
