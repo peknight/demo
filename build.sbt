@@ -88,7 +88,7 @@ lazy val demoScala = (project in file("demo-scala"))
   .settings(
     name := "demo-scala",
     libraryDependencies ++= Seq(
-      scalaTest % Test,
+      scalaTestFlatSpec % Test,
     ),
   )
 
@@ -149,6 +149,8 @@ lazy val demoCatsEffect = (project in file("demo-cats-effect"))
     libraryDependencies ++= Seq(
       catsEffect,
       catsEffectCps,
+      scalaTestFlatSpec % Test,
+      scalaTestShouldMatchers % Test,
       catsEffectTestkit % Test,
       catsEffectTestingSpecs % Test,
       catsEffectTestingScalaTest % Test,
@@ -372,7 +374,7 @@ lazy val demoNatchez = (project in file("demo-natchez"))
   .settings(
     name := "demo-natchez",
     libraryDependencies ++= Seq(
-      natchezCore,
+      natchezMtl,
       http4sDsl,
       http4sEmberServer,
       http4sEmberClient,
@@ -428,7 +430,8 @@ lazy val demoScalaTest = (crossProject(JSPlatform, JVMPlatform) in file("demo-sc
   .settings(
     name := "demo-scalatest",
     libraryDependencies ++= Seq(
-      "org.scalatest" %%% "scalatest" % scalaTestVersion,
+      "org.scalatest" %%% "scalatest-flatspec" % scalaTestVersion,
+      "org.scalatest" %%% "scalatest-shouldmatchers" % scalaTestVersion,
     ),
   )
 
@@ -438,7 +441,7 @@ lazy val demoScalaCheck = (project in file("demo-scalacheck"))
     name := "demo-scalacheck",
     libraryDependencies ++= Seq(
       scalaCheck,
-      scalaTest,
+      scalaTestFlatSpec,
       scalaTestPlusScalaCheck,
       scalaCheckEffect,
       scalaCheckEffectMUnit,
@@ -763,14 +766,15 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.http4s" %%% "http4s-server" % http4sVersion,
       "org.http4s" %%% "http4s-client" % http4sVersion,
       "org.http4s" %%% "http4s-circe" % http4sVersion,
-      "org.tpolecat" %%% "natchez-core" % natchezVersion,
+      "org.tpolecat" %%% "natchez-mtl" % natchezVersion,
       "org.typelevel" %%% "jawn-ast" % jawnAstVersion,
       "dev.zio" %%% "zio" % zioVersion,
       "dev.zio" %%% "zio-streams" % zioVersion,
       "com.lihaoyi" %%% "scalatags" % scalaTagsVersion,
       "com.lihaoyi" %%% "upickle" % uPickleVersion,
       "com.github.japgolly.scalacss" %% "core" % scalaCssVersion,
-      "org.scalatest" %%% "scalatest" % scalaTestVersion % Test,
+      "org.scalatest" %%% "scalatest-flatspec" % scalaTestVersion % Test,
+      "org.scalatest" %%% "scalatest-shouldmatchers" % scalaTestVersion % Test,
       "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % Test,
       "org.scalatestplus" %%% "scalacheck-1-18" % scalaTestPlusVersion % Test,
       "org.typelevel" %%% "scalacheck-effect" % scalaCheckEffectVersion % Test,
@@ -930,7 +934,7 @@ val doobieScalaTest = "org.tpolecat" %% "doobie-scalatest" % doobieVersion
 val redis4CatsEffects = "dev.profunktor" %% "redis4cats-effects" % redis4CatsVersion
 val redis4CatsStreams = "dev.profunktor" %% "redis4cats-streams" % redis4CatsVersion
 val redis4CatsLog4Cats = "dev.profunktor" %% "redis4cats-log4cats" % redis4CatsVersion
-val natchezCore = "org.tpolecat" %% "natchez-core" % natchezVersion
+val natchezMtl = "org.tpolecat" %% "natchez-mtl" % natchezVersion
 val neotypesCatsEffect = "io.github.neotypes" %% "neotypes-cats-effect" % neotypesVersion
 val neotypesFs2Stream = "io.github.neotypes" %% "neotypes-fs2-stream" % neotypesVersion
 val neotypesGeneric = "io.github.neotypes" %% "neotypes-generic" % neotypesVersion
@@ -1008,7 +1012,8 @@ val catsEffectTestingScalaTestVersion = "1.6.0"
 val mUnitCatsEffectVersion = "2.0.0"
 val weaverCatsVersion = "0.8.4"
 
-val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
+val scalaTestFlatSpec = "org.scalatest" %% "scalatest-flatspec" % scalaTestVersion
+val scalaTestShouldMatchers = "org.scalatest" %% "scalatest-shouldmatchers" % scalaTestVersion
 val scalaCheck = "org.scalacheck" %% "scalacheck" % scalaCheckVersion
 val scalaTestPlusScalaCheck = "org.scalatestplus" %% "scalacheck-1-18" % scalaTestPlusVersion
 val scalaCheckEffect = "org.typelevel" %% "scalacheck-effect" % scalaCheckEffectVersion
