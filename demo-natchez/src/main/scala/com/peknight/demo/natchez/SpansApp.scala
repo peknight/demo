@@ -14,7 +14,7 @@ object SpansApp extends IOApp.Simple:
       yield
         ()
     }
-  def wibble[F[_]: Trace: Monad](name: String, age: Int): F[Unit] =
+  def wibble[F[_]: {Monad, Trace}](name: String, age: Int): F[Unit] =
     Trace[F].span("wibble") {
       for
         _ <- Trace[F].put("name" -> name, "age" -> age)

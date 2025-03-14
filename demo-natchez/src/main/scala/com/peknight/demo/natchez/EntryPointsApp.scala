@@ -11,7 +11,9 @@ object EntryPointsApp extends IOApp.Simple:
 
   def routes(ep: EntryPoint[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root / "hello" / name =>
-      ep.root("hello").use { span => span.put("the-name" -> name) *> Ok(s"Hello, $name.")}
+      ep.root("hello").use { span =>
+        span.put("the-name" -> name) *> Ok(s"Hello, $name.")
+      }
   }
 
   def continuedRoutes(ep: EntryPoint[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
