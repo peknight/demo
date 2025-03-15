@@ -7,7 +7,7 @@ import cats.syntax.all.*
 object ProducerConsumerQueue extends IOApp:
 
   //noinspection DuplicatedCode
-  def producer[F[_]: Async: Console](id: Int, counterR: Ref[F, Int], queue: Queue[F, Int]): F[Unit] =
+  def producer[F[_]: {Async, Console}](id: Int, counterR: Ref[F, Int], queue: Queue[F, Int]): F[Unit] =
     for
       i <- counterR.getAndUpdate(_ + 1)
       _ <- queue.offer(i)
@@ -16,7 +16,7 @@ object ProducerConsumerQueue extends IOApp:
     yield ()
 
   //noinspection DuplicatedCode
-  def consumer[F[_]: Async: Console](id: Int, queue: Queue[F, Int]): F[Unit] =
+  def consumer[F[_]: {Async, Console}](id: Int, queue: Queue[F, Int]): F[Unit] =
     for
       i <- queue.take
       _ <- if i % 10000 == 0 then Console[F].println(s"Consumer $id has reached $i items") else Async[F].unit

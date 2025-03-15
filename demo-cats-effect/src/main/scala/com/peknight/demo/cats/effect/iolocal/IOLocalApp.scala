@@ -15,13 +15,13 @@ object IOLocalApp extends IOApp.Simple:
   def update(name: String, local: IOLocal[Int], f: Int => Int): IO[Unit] =
     local.update(f) >> local.get.flatMap(current => IO.println(s"$name: $current"))
 
-  def service[F[_]: Sync: Console: TraceIdScope]: F[String] =
+  def service[F[_]: {Sync, Console, TraceIdScope}]: F[String] =
     for
       traceId <- TraceId.gen[F]
       result <- TraceIdScope[F].scope(traceId).use(_ => callRemote[F])
     yield result
 
-  def callRemote[F[_]: Monad: Console: TraceIdScope]: F[String] =
+  def callRemote[F[_]: {Monad, Console, TraceIdScope}]: F[String] =
     for
       traceId <- TraceIdScope[F].get
       result <- Console[F].println(s"Processing request. TraceId: $traceId")

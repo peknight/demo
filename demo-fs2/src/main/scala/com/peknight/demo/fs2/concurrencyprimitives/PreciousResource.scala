@@ -7,7 +7,7 @@ import fs2.Stream
 
 import scala.concurrent.duration.DurationInt
 
-class PreciousResource[F[_]: Temporal: Console](name: String, s: Semaphore[F]):
+class PreciousResource[F[_]: {Temporal, Console}](name: String, s: Semaphore[F]):
   def use: Stream[F, Unit] =
     for
       _ <- Stream.eval(s.available.flatMap(a => Console[F].println(s"$name >> Availability: $a")))

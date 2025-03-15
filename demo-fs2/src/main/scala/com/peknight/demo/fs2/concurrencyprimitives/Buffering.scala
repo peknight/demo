@@ -4,7 +4,7 @@ import cats.effect.Concurrent
 import cats.effect.std.{Console, Queue}
 import fs2.Stream
 
-class Buffering[F[_]: Concurrent: Console](q1: Queue[F, Int], q2: Queue[F, Int]):
+class Buffering[F[_]: {Concurrent, Console}](q1: Queue[F, Int], q2: Queue[F, Int]):
   def start: Stream[F, Unit] = Stream(
     Stream.range(0, 1000).covary[F].foreach(q1.offer),
     Stream.repeatEval(q1.take).foreach(q2.offer),

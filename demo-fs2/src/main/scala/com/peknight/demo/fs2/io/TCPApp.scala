@@ -20,7 +20,7 @@ object TCPApp extends IOApp.Simple:
 
   def socketResource[F[_]: Network](address: SocketAddress[Host]) = Network[F].client(address)
 
-  def clientV1[F[_]: MonadCancelThrow: Console: Network]: F[Unit] =
+  def clientV1[F[_]: {MonadCancelThrow, Console, Network}]: F[Unit] =
     socketResource[F](socketAddress).use { socket =>
       socket.write(Chunk.array("Hello, world!".getBytes)) >>
         socket.read(8192).flatMap { response =>
@@ -28,10 +28,10 @@ object TCPApp extends IOApp.Simple:
         }
     }
 
-  def socketStream[F[_]: MonadCancelThrow: Network](address: SocketAddress[Host]) =
+  def socketStream[F[_]: {MonadCancelThrow, Network}](address: SocketAddress[Host]) =
     Stream.resource(socketResource[F](address))
 
-  def clientV2[F[_]: MonadCancelThrow: Console: Network]: Stream[F, Unit] =
+  def clientV2[F[_]: {MonadCancelThrow, Console, Network}]: Stream[F, Unit] =
     socketStream[F](socketAddress).flatMap { socket =>
       Stream("Hello, world!").through(text.utf8.encode).through(socket.writes) ++
         socket.reads.through(text.utf8.decode).foreach { response => Console[F].println(s"Response: $response") }
@@ -50,18 +50,18 @@ object TCPApp extends IOApp.Simple:
       .head
       .foreach { response => Console[F].println(s"Response: $response") }
 
-  def clientV3[F[_]: MonadCancelThrow: Console: Network]: Stream[F, Unit] =
+  def clientV3[F[_]: {MonadCancelThrow, Console, Network}]: Stream[F, Unit] =
     socketStream[F](socketAddress).flatMap { socket => socketWrites(socket) ++ socketReads(socket) }
 
-  def connect[F[_]: Temporal: Network](address: SocketAddress[Host]): Stream[F, Socket[F]] =
+  def connect[F[_]: {Temporal, Network}](address: SocketAddress[Host]): Stream[F, Socket[F]] =
     socketStream(address).handleErrorWith {
       case _: ConnectException => connect(address).delayBy(5.seconds)
     }
 
-  def client[F[_]: Temporal: Console: Network]: Stream[F, Unit] =
+  def client[F[_]: {Temporal, Console, Network}]: Stream[F, Unit] =
     connect(socketAddress).flatMap { socket => socketWrites(socket) ++ socketReads(socket) }
 
-  def echoServer[F[_]: Concurrent: Network]: F[Unit] = Network[F].server(port = Some(port"5555")).map { client =>
+  def echoServer[F[_]: {Concurrent, Network}]: F[Unit] = Network[F].server(port = Some(port"5555")).map { client =>
     client.reads
       .through(text.utf8.decode)
       .through(text.lines)

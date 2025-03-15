@@ -18,7 +18,7 @@ object ClientApp extends IOApp.Simple:
       .usePlaintext()
       .resource[F]
 
-  def runProgram[F[_]: Console: Monad](stub: GreeterFs2Grpc[F, Metadata]): F[Unit] =
+  def runProgram[F[_]: {Console, Monad}](stub: GreeterFs2Grpc[F, Metadata]): F[Unit] =
     for
       reply <- stub.sayHello(HelloRequest("John Doe"), new Metadata())
       _ <- Console[F].println(reply.message)

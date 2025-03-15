@@ -11,7 +11,7 @@ object MyThing:
   // 并不是纯函数，但是大多数人都这么搞
   given logger[F[_]: Sync]: Logger[F] = Slf4jLogger.getLogger[F]
 
-  def doSomething[F[_]: Sync: Console]: F[Unit] =
+  def doSomething[F[_]: {Sync, Console}]: F[Unit] =
     Logger[F].info("Logging Start Something") *>
       Console[F].println("I could be doing anything").attempt.flatMap {
         case Left(e) => Logger[F].error(e)("Something Went Wrong")

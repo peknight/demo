@@ -12,7 +12,7 @@ import fs2.{RaiseThrowable, Stream}
  */
 object Base64App extends IOApp.Simple:
 
-  def demo[F[_]: Concurrent: RaiseThrowable: Console](input: Int*): F[Unit] =
+  def demo[F[_]: {Concurrent, RaiseThrowable, Console}](input: Int*): F[Unit] =
     val b64encodedStream = Stream(input*).map(_.toByte).through(base64.encode)
     val b64decodedStream = b64encodedStream.covary[F].through(base64.decode)
     for

@@ -63,7 +63,7 @@ object DemoJsApp extends IOApp.Simple:
         .getOrElseF(NotFound())
   }
 
-  private def echoRoutes[F[_]: Monad: Logger](builder: WebSocketBuilder[F]): HttpRoutes[F] = HttpRoutes.of[F] {
+  private def echoRoutes[F[_]: {Monad, Logger}](builder: WebSocketBuilder[F]): HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root =>
       val process: Pipe[F, WebSocketFrame, WebSocketFrame] = _.evalMap { frame =>
         info"WebSocket Received: $frame".map(_ => frame)
@@ -71,7 +71,7 @@ object DemoJsApp extends IOApp.Simple:
       builder.build(process)
   }
 
-  private def echoApp[F[_]: Async: Logger](builder: WebSocketBuilder[F]): HttpApp[F] = echoRoutes(builder).orNotFound
+  private def echoApp[F[_]: {Async, Logger}](builder: WebSocketBuilder[F]): HttpApp[F] = echoRoutes(builder).orNotFound
 
   private val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
     env("STORE_PASSWORD").default("123456").secret

@@ -69,7 +69,7 @@ object ClientTest extends IOApp:
    * @param domains
    * Domains to get a common certificate for
    */
-  def fetchCertificate[F[_]: Async: Logger](domains: List[String]): EitherT[F, Throwable, Unit] =
+  def fetchCertificate[F[_]: {Async, Logger}](domains: List[String]): EitherT[F, Throwable, Unit] =
     for
       // Load the user key file. If there is no key file, create a new one.
       userKeyPair <- loadOrCreateUserKeyPair
@@ -153,7 +153,7 @@ object ClientTest extends IOApp:
    * {@link Session} to bind with
    * @return {@link Account}
    */
-  private def findOrRegisterAccount[F[_]: Sync: Logger](session: Session, accountKey: KeyPair)
+  private def findOrRegisterAccount[F[_]: {Sync, Logger}](session: Session, accountKey: KeyPair)
   : EitherT[F, Throwable, Account] =
     for
       // Ask the user to accept to TOS, if server provides us with a link
@@ -172,7 +172,7 @@ object ClientTest extends IOApp:
    * @param auth
    * {@link Authorization} to perform
    */
-  private def authorize[F[_]: Async: Logger](auth: Authorization): EitherT[F, Throwable, Unit] =
+  private def authorize[F[_]: {Async, Logger}](auth: Authorization): EitherT[F, Throwable, Unit] =
     attempt[F, String](auth.getIdentifier.getDomain)
       .flatMap(domain => info"Authorization for domain $domain".lift)
       .flatMap(_ => attempt(auth.getStatus))
@@ -212,7 +212,7 @@ object ClientTest extends IOApp:
           }
       }
 
-  private def waitForComplete[F[_]: Async: Logger](statusT: EitherT[F, Throwable, Status],
+  private def waitForComplete[F[_]: {Async, Logger}](statusT: EitherT[F, Throwable, Status],
                                                          errorT: EitherT[F, Throwable, String],
                                                          updateT: EitherT[F, Throwable, Unit], label: String)
   : EitherT[F, Throwable, Unit] =
@@ -247,7 +247,7 @@ object ClientTest extends IOApp:
    * {@link Authorization} to find the challenge in
    * @return {@link Challenge} to verify
    */
-  private def httpChallenge[F[_]: Sync: Logger](auth: Authorization): EitherT[F, Throwable, Challenge] =
+  private def httpChallenge[F[_]: {Sync, Logger}](auth: Authorization): EitherT[F, Throwable, Challenge] =
     for
       challenge <- attemptEither(auth.findChallenge(classOf[Http01Challenge]).toScala
         .toRight[Throwable](AcmeException(s"Found no ${Http01Challenge.TYPE} challenge, don't know what to do...")))
@@ -282,7 +282,7 @@ object ClientTest extends IOApp:
    * {@link Authorization} to find the challenge in
    * @return {@link Challenge} to verify
    */
-  private def dnsChallenge[F[_]: Sync: Logger](auth: Authorization): EitherT[F, Throwable, Challenge] =
+  private def dnsChallenge[F[_]: {Sync, Logger}](auth: Authorization): EitherT[F, Throwable, Challenge] =
     for
       challenge <- attemptEither(auth.findChallenge(Dns01Challenge.TYPE).toScala
         .map(_.asInstanceOf[Dns01Challenge])

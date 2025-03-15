@@ -83,7 +83,7 @@ object SpaceInvaders:
     val enemies = handleEnemies(waveEnemies, bullets, runtime.previousTime, currentTime, height)
     Runtime(player, enemies, bullets, wave, currentTime)
 
-  def nextState[F[_]: Clock: Monad](addBulletR: Ref[F, Boolean], keysDownR: Ref[F, Set[Int]], width: Int, height: Int)
+  def nextState[F[_]: {Clock, Monad}](addBulletR: Ref[F, Boolean], keysDownR: Ref[F, Set[Int]], width: Int, height: Int)
   : F[State[Runtime, Runtime]] =
     for
       addBullet <- addBulletR.getAndSet(false)

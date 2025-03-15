@@ -6,7 +6,7 @@ import cats.syntax.all.*
 
 object ProducerConsumer extends IOApp:
 
-  def consumer[F[_]: Async: Console](id: Int, stateR: Ref[F, State[F, Int]]): F[Unit] =
+  def consumer[F[_]: {Async, Console}](id: Int, stateR: Ref[F, State[F, Int]]): F[Unit] =
     val take: F[Int] = Deferred[F, Int].flatMap { taker =>
       stateR.modify {
         case State(queue, takers) if queue.nonEmpty =>
@@ -21,7 +21,7 @@ object ProducerConsumer extends IOApp:
       _ <- consumer(id, stateR)
     yield ()
 
-  def producer[F[_]: Sync: Console](id: Int, counterR: Ref[F, Int], stateR: Ref[F, State[F, Int]]): F[Unit] =
+  def producer[F[_]: {Sync, Console}](id: Int, counterR: Ref[F, Int], stateR: Ref[F, State[F, Int]]): F[Unit] =
     def offer(i: Int): F[Unit] = stateR.modify {
       case State(queue, takers) if takers.nonEmpty =>
         val (taker, rest) = takers.dequeue

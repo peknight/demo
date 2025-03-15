@@ -10,7 +10,7 @@ object UniqueApp extends IOApp.Simple:
 
   def token[F[_] : Unique]: F[Unique.Token] = Unique[F].unique
 
-  def tokenCheck[F[_]: Monad: Unique] =
+  def tokenCheck[F[_]: {Monad, Unique}] =
     (token[F], token[F]).mapN { (x, y) => x === y }
 
   val run: IO[Unit] =

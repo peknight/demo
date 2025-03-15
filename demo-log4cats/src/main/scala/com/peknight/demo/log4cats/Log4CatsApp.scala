@@ -11,7 +11,7 @@ import org.typelevel.log4cats.{Logger, SelfAwareStructuredLogger}
 object Log4CatsApp extends IOApp.Simple:
 
   // 这样写才是纯函数，但是不那么方便
-  def safelyDoThings[F[_]: Sync: Console]: F[Unit] =
+  def safelyDoThings[F[_]: {Sync, Console}]: F[Unit] =
     for
       logger <- Slf4jLogger.create[F]
       _ <- logger.info("Logging at start of safelyDoThings")
@@ -21,7 +21,7 @@ object Log4CatsApp extends IOApp.Simple:
       _ <- logger.info("Logging at end of safelyDoThings")
     yield something
 
-  def passForEasierUse[F[_]: Sync: Logger: Console] =
+  def passForEasierUse[F[_]: {Sync, Logger, Console}] =
     for
       _ <- Logger[F].info("Logging at start of passForEasierUse")
       something <- Console[F].println("I could do anything").onError {
@@ -33,7 +33,7 @@ object Log4CatsApp extends IOApp.Simple:
   def successComputation[F[_]: Applicative]: F[Int] = Applicative[F].pure(1)
   def errorComputation[F[_]: Sync]: F[Unit] = Sync[F].raiseError[Unit](new Throwable("Sorry!"))
 
-  def logLaconicSyntax[F[_]: Sync: Logger] =
+  def logLaconicSyntax[F[_]: {Sync, Logger}] =
     for
       result1 <- successComputation[F]
       _ <- info"First result is $result1"

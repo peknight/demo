@@ -7,7 +7,7 @@ import cats.implicits.toFunctorOps
 
 object RandomApp extends IOApp.Simple:
 
-  def dieRoll[F[_]: Functor: Random]: F[Int] = Random[F].betweenInt(0, 6).map(_ + 1)
+  def dieRoll[F[_]: {Functor, Random}]: F[Int] = Random[F].betweenInt(0, 6).map(_ + 1)
 
   val run =
     for

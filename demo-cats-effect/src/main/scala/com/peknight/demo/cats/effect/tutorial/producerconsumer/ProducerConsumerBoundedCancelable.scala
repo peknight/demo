@@ -8,7 +8,7 @@ import cats.syntax.all.*
 object ProducerConsumerBoundedCancelable extends IOApp:
 
   //noinspection DuplicatedCode
-  def consumer[F[_]: Async: Console](id: Int, stateR: Ref[F, BoundedState[F, Int]]): F[Unit] =
+  def consumer[F[_]: {Async, Console}](id: Int, stateR: Ref[F, BoundedState[F, Int]]): F[Unit] =
     val take: F[Int] = Deferred[F, Int].flatMap { taker =>
       Async[F].uncancelable { poll =>
         stateR.modify {
@@ -35,7 +35,7 @@ object ProducerConsumerBoundedCancelable extends IOApp:
     yield ()
 
   //noinspection DuplicatedCode
-  def producer[F[_]: Async: Console](id: Int, counterR: Ref[F, Int], stateR: Ref[F, BoundedState[F, Int]]): F[Unit] =
+  def producer[F[_]: {Async, Console}](id: Int, counterR: Ref[F, Int], stateR: Ref[F, BoundedState[F, Int]]): F[Unit] =
     def offer(i: Int): F[Unit] = Deferred[F, Unit].flatMap[Unit] { offerer =>
       Async[F].uncancelable { poll =>
         stateR.modify {

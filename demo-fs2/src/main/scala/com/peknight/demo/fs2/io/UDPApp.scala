@@ -28,13 +28,13 @@ object UDPApp extends IOApp.Simple:
         Console[F].println(s"Response: $response")
       }
 
-  def client[F[_]: Concurrent: Console: Network]: F[Unit] = {
+  def client[F[_]: {Concurrent, Console, Network}]: F[Unit] = {
     Stream.resource(Network[F].openDatagramSocket()).flatMap { socket =>
         socketWrites(socket) ++ socketReads(socket)
     }.compile.drain
   }
 
-  def echoServer[F[_]: Concurrent: Network]: F[Unit] =
+  def echoServer[F[_]: {Concurrent, Network}]: F[Unit] =
     Stream.resource(Network[F].openDatagramSocket(port = Some(port"5555"))).flatMap {
       socket => socket.reads.through(socket.writes)
     }.compile.drain

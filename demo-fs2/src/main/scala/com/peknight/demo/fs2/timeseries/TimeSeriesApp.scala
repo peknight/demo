@@ -15,10 +15,10 @@ object TimeSeriesApp extends IOApp.Simple:
   def withBitrateV1[F[_]](input: Stream[F, TimeStamped[ByteVector]]): Stream[F, TimeStamped[Either[Long, ByteVector]]] =
     TimeStamped.withPerSecondRate[ByteVector, Long](_.size * 8).toPipe(input)
 
-  def withReceivedBitrateV1[F[_]: Functor: Clock](input: Stream[F, Byte]): Stream[F, TimeStamped[Either[Long, ByteVector]]] =
+  def withReceivedBitrateV1[F[_]: {Functor, Clock}](input: Stream[F, Byte]): Stream[F, TimeStamped[Either[Long, ByteVector]]] =
     input.chunks.evalMap(c => TimeStamped.realTime(c.toByteVector)).through(withBitrateV1)
 
-  def withAverageBitrate[F[_]: Functor: Clock](input: Stream[F, Byte]): Stream[F, TimeStamped[Either[Long, ByteVector]]] =
+  def withAverageBitrate[F[_]: {Functor, Clock}](input: Stream[F, Byte]): Stream[F, TimeStamped[Either[Long, ByteVector]]] =
     withReceivedBitrateV1(input).mapAccumulate(Queue.empty[Long]) {
       case (q, tsv @ TimeStamped(_, Right(_))) => (q, tsv)
       case (q, TimeStamped(t, Left(sample))) =>
@@ -28,7 +28,7 @@ object TimeSeriesApp extends IOApp.Simple:
         (q2, TimeStamped(t, Left(average)))
     }.map(_._2)
 
-  def measureAverageBitrateV1[F[_]: Functor: Clock](store: Ref[F, Long], input: Stream[F, Byte]): Stream[F, Byte] =
+  def measureAverageBitrateV1[F[_]: {Functor, Clock}](store: Ref[F, Long], input: Stream[F, Byte]): Stream[F, Byte] =
     withAverageBitrate(input).flatMap {
       case TimeStamped(_, Left(bitrate)) => Stream.exec(store.set(bitrate))
       case TimeStamped(_, Right(bytes)) => Stream.chunk(Chunk.byteVector(bytes))

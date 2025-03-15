@@ -28,14 +28,14 @@ object TLSApp:
         Console[F].println(s"Response: $response")
       }
 
-  def client[F[_]: MonadCancelThrow: Console: Network](tlsContext: TLSContext[F]): Stream[F, Unit] =
+  def client[F[_]: {MonadCancelThrow, Console, Network}](tlsContext: TLSContext[F]): Stream[F, Unit] =
     Stream.resource(Network[F].client(SocketAddress(host"localhost", port"5555"))).flatMap { underlyingSocket =>
       Stream.resource(tlsContext.client(underlyingSocket)).flatMap { socket =>
           socketWrites(socket) ++ socketReads(socket)
       }
     }
 
-  def tlsClientWithSni[F[_]: MonadCancelThrow: Network](tlsContext: TLSContext[F],
+  def tlsClientWithSni[F[_]: {MonadCancelThrow, Network}](tlsContext: TLSContext[F],
                                                         address: SocketAddress[Host]): Resource[F, TLSSocket[F]] =
     Network[F].client(address).flatMap { underlyingSocket =>
       tlsContext.clientBuilder(underlyingSocket)
@@ -46,7 +46,7 @@ object TLSApp:
         .build
     }
 
-  def debug[F[_]: MonadCancelThrow: Network](tlsContext: TLSContext[F], address: SocketAddress[Host]): F[String] =
+  def debug[F[_]: {MonadCancelThrow, Network}](tlsContext: TLSContext[F], address: SocketAddress[Host]): F[String] =
     Network[F].client(address).use { underlyingSocket =>
       tlsContext.clientBuilder(underlyingSocket)
         .withParameters(TLSParameters(serverNames = Some(List(new SNIHostName(address.host.toString)))))

@@ -72,7 +72,7 @@ object DodgeTheDots:
       currentTime)
     Runtime(nextRandom, player, lastEnemies, lastDeath, nextStartTime, currentTime)
 
-  def nextState[F[_]: Clock: Monad](playerR: Ref[F, Point[Double]], maxEnemies: Int, width: Int, height: Int)
+  def nextState[F[_]: {Monad, Clock}](playerR: Ref[F, Point[Double]], maxEnemies: Int, width: Int, height: Int)
   : F[State[Runtime, Runtime]] =
     for
       player <- playerR.get

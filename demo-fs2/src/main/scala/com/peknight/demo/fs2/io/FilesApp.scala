@@ -8,7 +8,7 @@ import fs2.text
 import fs2.hashing.Hashing
 
 object FilesApp:
-  def writeDigest[F[_]: Files: Async](path: Path): F[Path] =
+  def writeDigest[F[_]: {Files, Async}](path: Path): F[Path] =
     val target = Path(path.toString + ".sha256")
     Files[F].readAll(path)
       .through(Hashing.forSync[F].hash(SHA256))
@@ -20,10 +20,10 @@ object FilesApp:
       .drain
       .as(target)
 
-  def totalBytes[F[_]: Files: Concurrent](path: Path): F[Long] =
+  def totalBytes[F[_]: {Files, Concurrent}](path: Path): F[Long] =
     Files[F].walk(path).evalMap(p => Files[F].size(p).handleError(_ => 0L)).compile.foldMonoid
 
-  def scalaLineCount[F[_]: Files: Concurrent](path: Path): F[Long] =
+  def scalaLineCount[F[_]: {Files, Concurrent}](path: Path): F[Long] =
     Files[F].walk(path).filter(_.extName == ".scala").flatMap { p =>
       Files[F].readAll(p).through(text.utf8.decode).through(text.lines).as(1L)
     }.compile.foldMonoid

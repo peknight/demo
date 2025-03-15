@@ -100,7 +100,7 @@ object FlappyBox:
     val dead = checkDead(playerY, holes, currentTime, width, height)
     Runtime(random, playerY, playerV, frame, obstacles, dead, currentTime)
 
-  def nextState[F[_]: Clock: Monad](clickCountR: Ref[F, Int], width: Int, height: Int): F[State[Runtime, Runtime]] =
+  def nextState[F[_]: {Clock, Monad}](clickCountR: Ref[F, Int], width: Int, height: Int): F[State[Runtime, Runtime]] =
     for
       clickCount <- clickCountR.getAndSet(0)
       currentTime <- Clock[F].monotonic
