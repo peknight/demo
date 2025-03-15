@@ -1,7 +1,8 @@
 package com.peknight.demo.natchez
 
 import cats.effect.{IO, IOApp}
-import natchez.{EntryPoint, Kernel}
+import natchez.{EntryPoint, Kernel, Trace}
+import com.peknight.demo.natchez.SpansApp.wibble
 import org.http4s.dsl.io.*
 import org.http4s.{HttpRoutes, Method}
 
@@ -22,6 +23,14 @@ object EntryPointsApp extends IOApp.Simple:
       ep.continueOrElseRoot("hello", k).use { span =>
         span.put("the-name" -> name) *> Ok(s"Hello, $name.")
       }
+    case req @ GET -> Root / "wibble" =>
+      for
+        trace <- Trace.ioTraceForEntryPoint(ep)
+        given Trace[IO] = trace
+        _ <- wibble[IO]("pek", 18)
+        res <- Ok(s"Hello, wibble")
+      yield
+        res
   }
 
   val run: IO[Unit] =
