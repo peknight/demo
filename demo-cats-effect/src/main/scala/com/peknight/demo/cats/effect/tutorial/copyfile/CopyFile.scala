@@ -3,7 +3,7 @@ package com.peknight.demo.cats.effect.tutorial.copyfile
 import cats.effect.*
 import cats.syntax.all.*
 
-import java.io.*
+import java.io.{IO as _, *}
 
 object CopyFile extends IOApp:
 

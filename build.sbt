@@ -72,7 +72,6 @@ lazy val demo = (project in file("."))
     demoFrontEndModuleHeimamm,
     demoOAuth2.jvm,
     demoOAuth2.js,
-    demoAcme4j,
     demoSecurity,
     demoPlayground.jvm,
     demoPlayground.js,
@@ -712,20 +711,6 @@ lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth
     ),
   )
 
-lazy val demoAcme4j = (project in file("demo-acme4j"))
-  .settings(commonSettings)
-  .settings(
-    name := "demo-acme4j",
-    libraryDependencies ++= Seq(
-      acme4jClient,
-      acme4jUtils,
-      fs2Core,
-      fs2IO,
-      log4CatsSlf4j,
-      logbackClassic % Runtime,
-    ),
-  )
-
 lazy val demoSecurity = (project in file("demo-security"))
   .settings(commonSettings)
   .settings(
@@ -824,8 +809,6 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       nebulaClient,
       akkaActorTyped,
       apacheCommonsCodec,
-      acme4jClient,
-      acme4jUtils,
       bouncyCastle,
       jwtCirce,
       scalaJwk,
@@ -958,8 +941,6 @@ val postgisJdbcVersion = "2024.1.0"
 val neo4jVersion = "5.26.0"
 // https://mvnrepository.com/artifact/com.vesoft/client
 val nebulaClientVersion = "3.8.4"
-val acme4jClientVersion = "3.4.0"
-val acme4jUtilsVersion = "2.16"
 val bouncyCastleVersion = "1.79"
 val jwtCirceVersion = "10.0.1"
 val scalaJwkVersion = "1.2.24"
@@ -973,8 +954,6 @@ val h2 = "com.h2database" % "h2" % h2Version
 val neo4jJavaDriver = "org.neo4j.driver" % "neo4j-java-driver" % neo4jVersion
 val nebulaClient = "com.vesoft" % "client" % nebulaClientVersion
 val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion
-val acme4jClient = "org.shredzone.acme4j" % "acme4j-client" % acme4jClientVersion
-val acme4jUtils = "org.shredzone.acme4j" % "acme4j-utils" % acme4jUtilsVersion
 val bouncyCastle = "org.bouncycastle" % "bcprov-jdk18on" % bouncyCastleVersion
 val jwtCirce = "com.github.jwt-scala" %% "jwt-circe" % jwtCirceVersion
 // https://mvnrepository.com/artifact/com.chatwork/scala-jwk

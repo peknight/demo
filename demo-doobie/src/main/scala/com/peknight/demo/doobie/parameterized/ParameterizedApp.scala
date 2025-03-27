@@ -8,6 +8,7 @@ import com.peknight.demo.doobie.selecting.Country
 import com.peknight.demo.doobie.xa
 import doobie.*
 import doobie.implicits.*
+import doobie.util.log.{LoggingInfo, Parameters}
 import fs2.Stream
 
 object ParameterizedApp extends IOApp.Simple:
@@ -43,7 +44,18 @@ object ParameterizedApp extends IOApp.Simple:
   """
 
   def proc(range: Range): Stream[ConnectionIO, Country] =
-    HC.stream[Country](q, HPS.set((range.min, range.max)), 512)
+    val params = (range.min, range.max)
+    HC.stream[Country](
+      create = FC.prepareStatement(q),
+      prep = HPS.set(params),
+      exec = FPS.executeQuery,
+      chunkSize = 512,
+      loggingInfo = LoggingInfo(
+        sql = q,
+        params = Parameters.NonBatch(Write[(Int, Int)].toList(params)),
+        label = "fetch_country_in_population_range"
+      )
+    )
 
   // Set parameters as (String, Boolean) starting at index 1 (default)
   HPS.set(("foo", true))

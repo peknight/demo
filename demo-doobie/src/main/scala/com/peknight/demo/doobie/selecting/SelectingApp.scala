@@ -1,12 +1,12 @@
 package com.peknight.demo.doobie.selecting
 
 import cats.*
-import cats.data.*
 import cats.effect.*
 import cats.implicits.*
 import com.peknight.demo.doobie.xa
 import doobie.*
 import doobie.implicits.*
+import doobie.util.log.{LoggingInfo, Parameters}
 import fs2.Stream
 
 object SelectingApp extends IOApp.Simple:
@@ -35,10 +35,17 @@ object SelectingApp extends IOApp.Simple:
       .transact(xa)    // Stream[IO, Country2]
 
   // sql"..." 实际上是下面这种写法的一种语法糖
+  val sql = "select code, name, population, gnp from country"
   val proc = HC.stream[(Code, Country2)](
-    "select code, name, population, gnp from country", // statement
-    ().pure[PreparedStatementIO],                      // prep (none) 设置查询参数，本节sql没参数，所以是个Unit
-    512                                                // chunk size
+    create = FC.prepareStatement(sql), // Create prepared statement
+    prep = FPS.unit, // prepare steps (none)
+    exec = FPS.executeQuery, // execute the query
+    chunkSize = 512, // chunk size
+    loggingInfo = LoggingInfo(
+      sql = sql,
+      params = Parameters.NonBatch(List.empty), // No parameters
+      label = "unlabeled"
+    )
   )
 
   val run =

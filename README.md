@@ -194,12 +194,6 @@ B站Pink老师H5C3课程完结撒花，准备继续补补JavaScript与Scala.JS
 * 参考: 书[《OAuth2实战》](https://www.manning.com/books/oauth-2-in-action)、[代码](https://github.com/oauthinaction/oauth-in-action-code)
 * 进度: 100%，原生客户端实现部分跳过，书中代码由node.js实现，我在练习中用Scala重新实现（大量使用http4s，页面使用ScalaTags及ScalaCss构建）。
 
-#### demo-acme4j
-
-* Let's Encrypt证书管理
-* 参考: [Acme4j官方文档](https://shredzone.org/maven/acme4j/index.html)
-* 进度: 0%，刚提起兴趣，没正式开学。
-
 #### demo-security
 
 * 研究一下编解码、摘要、加解密相关的知识
