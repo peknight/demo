@@ -45,6 +45,8 @@ lazy val demo = (project in file("."))
     demoSquants,
     demoHttp4s.jvm,
     demoHttp4s.js,
+    demoSttp.jvm,
+    demoSttp.js,
     demoDoobie,
     demoRedis4Cats,
     demoNatchez,
@@ -330,6 +332,22 @@ lazy val demoHttp4s = (crossProject(JSPlatform, JVMPlatform) in file("demo-http4
   .jsSettings(
     libraryDependencies ++= Seq(
       "org.http4s" %%% "http4s-dom" % http4sDomVersion,
+    ),
+  )
+
+lazy val demoSttp = (crossProject(JSPlatform, JVMPlatform) in file("demo-sttp"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-sttp",
+    libraryDependencies ++= Seq(
+      "com.softwaremill.sttp.client4" %% "core" % sttpVersion,
+      "com.softwaremill.sttp.client4" %% "upickle" % sttpVersion,
+      "com.softwaremill.sttp.client4" %% "slf4j-backend" % sttpVersion,
+    ),
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      logbackClassic % Runtime,
     ),
   )
 
@@ -754,6 +772,9 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.http4s" %%% "http4s-server" % http4sVersion,
       "org.http4s" %%% "http4s-client" % http4sVersion,
       "org.http4s" %%% "http4s-circe" % http4sVersion,
+      "com.softwaremill.sttp.client4" %% "core" % sttpVersion,
+      "com.softwaremill.sttp.client4" %% "upickle" % sttpVersion,
+      "com.softwaremill.sttp.client4" %% "slf4j-backend" % sttpVersion,
       "org.tpolecat" %%% "natchez-mtl" % natchezVersion,
       "org.tpolecat" %%% "natchez-log" % natchezVersion,
       "org.typelevel" %%% "jawn-ast" % jawnAstVersion,
@@ -867,6 +888,7 @@ val http4sPrometheusMetricsVersion = "1.0.0-M34" // 1.0.0-M35 -> 1.0.0-M35, 1.0.
 // https://mvnrepository.com/artifact/org.http4s/http4s-dropwizard-metrics
 val http4sDropwizardMetricsVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M3" // 1.0.0-M4 -> M35, 1.0.0-M5 -> 1.0.0-M36, 1.0.0-M6 & 1.0.0-M7 -> 1.0.0-M37, 1.0.0-M8 -> 1.0.0-M38, 1.0.0-M9 -> 1.0.0-M39 1.0.0-M10 -> 1.0.0-M44
+val sttpVersion = "4.0.2"
 val doobieVersion = "1.0.0-RC6"
 val redis4CatsVersion = "1.7.2"
 val natchezVersion = "0.3.7"
