@@ -47,6 +47,8 @@ lazy val demo = (project in file("."))
     demoHttp4s.js,
     demoSttp.jvm,
     demoSttp.js,
+    demoTapir.jvm,
+    demoTapir.js,
     demoDoobie,
     demoRedis4Cats,
     demoNatchez,
@@ -90,6 +92,9 @@ lazy val demoScala = (project in file("demo-scala"))
     name := "demo-scala",
     libraryDependencies ++= Seq(
       scalaTestFlatSpec % Test,
+      scalaTestFeatureSpec % Test,
+      scalaTestFunSuite % Test,
+      scalaTestShouldMatchers % Test,
     ),
   )
 
@@ -340,14 +345,23 @@ lazy val demoSttp = (crossProject(JSPlatform, JVMPlatform) in file("demo-sttp"))
   .settings(
     name := "demo-sttp",
     libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.client4" %% "core" % sttpVersion,
-      "com.softwaremill.sttp.client4" %% "upickle" % sttpVersion,
-      "com.softwaremill.sttp.client4" %% "slf4j-backend" % sttpVersion,
+      "com.softwaremill.sttp.client4" %%% "core" % sttpVersion,
+      "com.softwaremill.sttp.client4" %%% "upickle" % sttpVersion,
     ),
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
+      sttpSlf4jBackend,
       logbackClassic % Runtime,
+    ),
+  )
+
+lazy val demoTapir = (crossProject(JSPlatform, JVMPlatform) in file("demo-tapir"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-tapir",
+    libraryDependencies ++= Seq(
+      "com.softwaremill.sttp.tapir" %%% "tapir-core" % tapirVersion,
     ),
   )
 
@@ -772,9 +786,9 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.http4s" %%% "http4s-server" % http4sVersion,
       "org.http4s" %%% "http4s-client" % http4sVersion,
       "org.http4s" %%% "http4s-circe" % http4sVersion,
-      "com.softwaremill.sttp.client4" %% "core" % sttpVersion,
-      "com.softwaremill.sttp.client4" %% "upickle" % sttpVersion,
-      "com.softwaremill.sttp.client4" %% "slf4j-backend" % sttpVersion,
+      "com.softwaremill.sttp.client4" %%% "core" % sttpVersion,
+      "com.softwaremill.sttp.client4" %%% "upickle" % sttpVersion,
+      "com.softwaremill.sttp.tapir" %%% "tapir-core" % tapirVersion,
       "org.tpolecat" %%% "natchez-mtl" % natchezVersion,
       "org.tpolecat" %%% "natchez-log" % natchezVersion,
       "org.typelevel" %%% "jawn-ast" % jawnAstVersion,
@@ -815,6 +829,7 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       http4sPrometheusMetrics,
       // http4sDropwizardMetrics,
       http4sJdkHttpClient,
+      sttpSlf4jBackend,
       doobieCore,
       doobieH2,
       doobieHikari,
@@ -888,7 +903,8 @@ val http4sPrometheusMetricsVersion = "1.0.0-M34" // 1.0.0-M35 -> 1.0.0-M35, 1.0.
 // https://mvnrepository.com/artifact/org.http4s/http4s-dropwizard-metrics
 val http4sDropwizardMetricsVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M3" // 1.0.0-M4 -> M35, 1.0.0-M5 -> 1.0.0-M36, 1.0.0-M6 & 1.0.0-M7 -> 1.0.0-M37, 1.0.0-M8 -> 1.0.0-M38, 1.0.0-M9 -> 1.0.0-M39 1.0.0-M10 -> 1.0.0-M44
-val sttpVersion = "4.0.2"
+val sttpVersion = "4.0.3"
+val tapirVersion = "1.11.25"
 val doobieVersion = "1.0.0-RC6"
 val redis4CatsVersion = "1.7.2"
 val natchezVersion = "0.3.7"
@@ -934,6 +950,7 @@ val http4sScalaTags = "org.http4s" %% "http4s-scalatags" % http4sScalaTagsVersio
 val http4sPrometheusMetrics = "org.http4s" %% "http4s-prometheus-metrics" % http4sPrometheusMetricsVersion
 val http4sDropwizardMetrics = "org.http4s" %% "http4s-dropwizard-metrics" % http4sDropwizardMetricsVersion
 val http4sJdkHttpClient = "org.http4s" %% "http4s-jdk-http-client" % http4sJdkHttpClientVersion
+val sttpSlf4jBackend = "com.softwaremill.sttp.client4" %% "slf4j-backend" % sttpVersion
 val doobieCore = "org.tpolecat" %% "doobie-core" % doobieVersion
 val doobieH2 = "org.tpolecat" %% "doobie-h2" % doobieVersion
 val doobieHikari = "org.tpolecat" %% "doobie-hikari" % doobieVersion
@@ -1019,6 +1036,8 @@ val mUnitCatsEffectVersion = "2.0.0"
 val weaverCatsVersion = "0.8.4"
 
 val scalaTestFlatSpec = "org.scalatest" %% "scalatest-flatspec" % scalaTestVersion
+val scalaTestFeatureSpec = "org.scalatest" %% "scalatest-featurespec" % scalaTestVersion
+val scalaTestFunSuite = "org.scalatest" %% "scalatest-funsuite" % scalaTestVersion
 val scalaTestShouldMatchers = "org.scalatest" %% "scalatest-shouldmatchers" % scalaTestVersion
 val scalaCheck = "org.scalacheck" %% "scalacheck" % scalaCheckVersion
 val scalaTestPlusScalaCheck = "org.scalatestplus" %% "scalacheck-1-18" % scalaTestPlusVersion
