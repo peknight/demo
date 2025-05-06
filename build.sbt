@@ -74,6 +74,8 @@ lazy val demo = (project in file("."))
     demoFrontEndModuleZyMedia,
     demoFrontEndModuleDemoVue,
     demoFrontEndModuleHeimamm,
+    demoTyrian.jvm,
+    demoTyrian.js,
     demoOAuth2.jvm,
     demoOAuth2.js,
     demoSecurity,
@@ -703,6 +705,20 @@ lazy val demoFrontEndModuleHeimamm = (project in file("demo-front-end/module/hei
     ),
   )
 
+lazy val demoTyrian = (crossProject(JSPlatform, JVMPlatform) in file("demo-tyrian"))
+  .settings(commonSettings)
+  .settings(
+    name := "demo-tyrian",
+    libraryDependencies ++= Seq(
+    ),
+  )
+  .jsSettings(
+    libraryDependencies ++= Seq(
+      "io.indigoengine" %%% "tyrian-io" % tyrianVersion,
+      "io.indigoengine" %%% "tyrian-indigo-bridge" % tyrianIndigoBridgeVersion,
+    )
+  )
+
 lazy val demoOAuth2 = (crossProject(JSPlatform, JVMPlatform) in file("demo-oauth2"))
   .settings(commonSettings)
   .settings(
@@ -870,6 +886,8 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
       "org.scala-js" %%% "scalajs-dom" % scalaJsDomVersion,
       "org.http4s" %%% "http4s-dom" % http4sDomVersion,
       "org.querki" %%% "jquery-facade" % jQueryFacadeVersion,
+      "io.indigoengine" %%% "tyrian-io" % tyrianVersion,
+      "io.indigoengine" %%% "tyrian-indigo-bridge" % tyrianIndigoBridgeVersion,
     ),
   )
 
@@ -1058,3 +1076,5 @@ val uPickleVersion = "4.0.2"
 val uTestVersion = "0.8.4"
 val scalaCssVersion = "1.0.0"
 val jQueryFacadeVersion = "2.1"
+val tyrianVersion = "0.13.0"
+val tyrianIndigoBridgeVersion = "0.20.0"
