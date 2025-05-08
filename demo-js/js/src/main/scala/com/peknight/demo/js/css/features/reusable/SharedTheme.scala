@@ -2,7 +2,7 @@ package com.peknight.demo.js.css.features.reusable
 
 import scalacss.DevDefaults.*
 
-class SharedTheme(using r: StyleSheet.Register) extends StyleSheet.Inline()(r):
+class SharedTheme(using r: StyleSheet.Register) extends StyleSheet.Inline()(using r):
   import dsl.*
   val button = style(
     padding(0.5.ex, 2.ex),

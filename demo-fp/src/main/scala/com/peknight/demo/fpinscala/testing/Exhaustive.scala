@@ -391,7 +391,7 @@ object Exhaustive:
 
   given unsized[A]: Conversion[Gen[A], SGen[A]] = (g: Gen[A]) => Unsized(g)
 
-  trait SGen[+A]:
+  sealed trait SGen[+A]:
     def map[B](f: A => B): SGen[B] = this match
       case Sized(g) => Sized(g.andThen(_.map(f)))
       case Unsized(g) => Unsized(g.map(f))

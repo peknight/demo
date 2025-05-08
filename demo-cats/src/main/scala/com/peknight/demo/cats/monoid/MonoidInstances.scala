@@ -26,8 +26,8 @@ object MonoidInstances:
     def combine(a: Set[A], b: Set[A]) = a union b
     def empty = Set.empty[A]
 
-  val intSetMonoid = Monoid[Set[Int]](setUnionMonoid)
-  val strSetMonoid = Monoid[Set[String]](setUnionMonoid)
+  val intSetMonoid = Monoid[Set[Int]](using setUnionMonoid)
+  val strSetMonoid = Monoid[Set[String]](using setUnionMonoid)
 
   given symDiffMonoid[A]: Monoid[Set[A]] with
     def combine(a: Set[A], b: Set[A]): Set[A] = (a diff b) union (b diff a)

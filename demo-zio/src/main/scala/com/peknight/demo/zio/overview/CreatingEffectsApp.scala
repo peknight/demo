@@ -66,7 +66,7 @@ object CreatingEffectsApp:
 
   // Blocking Synchronous Code
   def download(url: String): Task[String] = ZIO.attempt {
-    Source.fromURL(url)(Codec.UTF8).mkString
+    Source.fromURL(url)(using Codec.UTF8).mkString
   }
 
   def safeDownload(url: String): Task[String] = ZIO.blocking(download(url))

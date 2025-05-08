@@ -16,7 +16,7 @@ object CustomClockApp extends IOApp.Simple:
       _ <- IO.println(s"endTime: $endTime")
       customJwt <- IO(Jwt(endTime))
       _ <- IO.println(s"customJwt: $customJwt")
-      claim <- IO(JwtClaim().issuedNow(startTime).expiresIn(10)(startTime))
+      claim <- IO(JwtClaim().issuedNow(using startTime).expiresIn(10)(using startTime))
       _ <- IO.println(s"claim: $claim")
       encoded <- IO(customJwt.encode(claim, "key", JwtAlgorithm.HS256))
       _ <- IO.println(s"encoded: $encoded")

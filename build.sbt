@@ -3,8 +3,8 @@ import org.scalajs.linker.interface.ModuleInitializer
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 // https://www.scala-lang.org/
-val scala3Version = "3.6.2"
-val scala2Version = "2.13.15"
+val scala3Version = "3.7.0"
+val scala2Version = "2.13.16"
 
 ThisBuild / scalaVersion := scala3Version
 
@@ -876,19 +876,19 @@ lazy val demoPlayground = (crossProject(JSPlatform, JVMPlatform) in file("demo-p
 // Functional
 
 // https://mvnrepository.com/artifact/org.typelevel/shapeless3-deriving
-val shapelessVersion = "3.4.3"
-val shapeless2Version = "2.3.12"
-val catsVersion = "2.12.0"
-val catsEffectVersion = "3.5.7"
+val shapelessVersion = "3.5.0"
+val shapeless2Version = "2.3.13"
+val catsVersion = "2.13.0"
+val catsEffectVersion = "3.6.1"
 val catsEffectCpsVersion = "0.4.0"
 val catsParseVersion = "0.3.10" // "1.1.0"
 val catsMtlVersion = "1.5.0"
-val fs2Version = "3.11.0"
-val circeVersion = "0.14.10"
+val fs2Version = "3.12.0"
+val circeVersion = "0.14.13"
 val circeFs2Version = "0.14.1"
 val monocleVersion = "3.3.0"
 val log4CatsVersion = "2.7.0"
-val cirisVersion = "3.7.0"
+val cirisVersion = "3.8.0"
 val cirisHoconVersion = "1.3.0"
 val refinedCatsVersion = "0.11.3"
 // https://mvnrepository.com/artifact/io.github.timwspence/cats-stm
@@ -905,12 +905,12 @@ val http4sDropwizardMetricsVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M3" // 1.0.0-M4 -> M35, 1.0.0-M5 -> 1.0.0-M36, 1.0.0-M6 & 1.0.0-M7 -> 1.0.0-M37, 1.0.0-M8 -> 1.0.0-M38, 1.0.0-M9 -> 1.0.0-M39 1.0.0-M10 -> 1.0.0-M44
 val sttpVersion = "4.0.3"
 val tapirVersion = "1.11.25"
-val doobieVersion = "1.0.0-RC6"
+val doobieVersion = "1.0.0-RC9"
 val redis4CatsVersion = "1.7.2"
-val natchezVersion = "0.3.7"
-val neotypesVersion = "1.2.0"
+val natchezVersion = "0.3.8"
+val neotypesVersion = "1.2.1"
 val jawnAstVersion = "1.6.0"
-val zioVersion = "2.1.14"
+val zioVersion = "2.1.17"
 
 val shapeless = "org.typelevel" %% "shapeless3-deriving" % shapelessVersion
 val shapeless2 = "com.chuusai" %% "shapeless" % shapeless2Version
@@ -971,17 +971,17 @@ val zioStreams = "dev.zio" %% "zio-streams" % zioVersion
 
 // Library
 
-val logbackVersion = "1.5.16"
+val logbackVersion = "1.5.18"
 // val jansiVersion = "1.18"
 val akkaVersion = "2.8.8"
-val apacheCommonsCodecVersion = "1.17.2"
+val apacheCommonsCodecVersion = "1.18.0"
 val h2Version = "2.3.232"
-val postgisJdbcVersion = "2024.1.0"
-val neo4jVersion = "5.26.0"
+//val postgisJdbcVersion = "2024.1.0"
+val neo4jVersion = "5.28.5"
 // https://mvnrepository.com/artifact/com.vesoft/client
 val nebulaClientVersion = "3.8.4"
-val bouncyCastleVersion = "1.79"
-val jwtCirceVersion = "10.0.1"
+val bouncyCastleVersion = "1.80"
+val jwtCirceVersion = "10.0.4"
 val scalaJwkVersion = "1.2.24"
 
 val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
@@ -1003,11 +1003,11 @@ val scalaJwk = "com.chatwork" %% "scala-jwk" % scalaJwkVersion
 // https://www.webjars.org/
 val jQueryVersion = "3.7.1"
 val flexibleVersion = "2.2.1"
-val swiperVersion = "11.0.5"
-val bootstrapVersion = "5.3.3"
-val bootstrapIconsVersion = "1.11.3"
+val swiperVersion = "11.2.6"
+val bootstrapVersion = "5.3.6"
+val bootstrapIconsVersion = "1.12.1"
 val fastClickVersion = "1.0.6"
-val eChartsVersion = "5.5.1" // "5.4.3"
+val eChartsVersion = "5.6.0" // "5.5.1"
 val vueVersion = "3.5.13" // "3.5.4"
 val html5ShivVersion = "3.7.3-1"
 val respondJsVersion = "1.4.2"
@@ -1032,7 +1032,7 @@ val scalaTestPlusVersion = "3.2.19.0"
 val scalaCheckEffectVersion = "1.0.4"
 val catsEffectTestingSpecsVersion = "1.6.0"
 val catsEffectTestingScalaTestVersion = "1.6.0"
-val mUnitCatsEffectVersion = "2.0.0"
+val mUnitCatsEffectVersion = "2.1.0"
 val weaverCatsVersion = "0.8.4"
 
 val scalaTestFlatSpec = "org.scalatest" %% "scalatest-flatspec" % scalaTestVersion
@@ -1054,7 +1054,7 @@ val weaverCats = "com.disneystreaming" %% "weaver-cats" % weaverCatsVersion
 
 val scalaJsDomVersion = "2.8.0"
 val scalaTagsVersion = "0.13.1"
-val uPickleVersion = "4.0.2"
-val uTestVersion = "0.8.4"
+val uPickleVersion = "4.1.0"
+val uTestVersion = "0.8.5"
 val scalaCssVersion = "1.0.0"
 val jQueryFacadeVersion = "2.1"
