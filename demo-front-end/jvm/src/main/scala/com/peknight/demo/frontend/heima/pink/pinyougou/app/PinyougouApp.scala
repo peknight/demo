@@ -26,7 +26,7 @@ object PinyougouApp extends DemoFrontEndHttp4sApp:
     case GET -> Root / "cart.html" => renderHtml(ShoppingCartPage.Text.cart)
     case GET -> Root / "jingdong" => renderHtml(JingdongPage.Text.index)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.6.2/demo-front-end-opt/$path"), Some(req))
+      StaticFile.fromPath(file.Path(s"./demo-front-end/js/target/scala-3.7.0/demo-front-end-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
 
