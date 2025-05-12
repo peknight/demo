@@ -7,8 +7,8 @@ class BootstrapPage[Builder, Output <: FragT, FragT](override val bundle: Bundle
   import bundle.all.{style as inlineStyle, title as inlineTitle, *}
   import bundle.tags2.{nav, section, style, title}
 
-  override def links: Seq[String] = Seq("/webjars/bootstrap/5.3.3/dist/css/bootstrap.min.css")
-  override def scripts: Seq[String] = Seq("/webjars/bootstrap/5.3.3/dist/js/bootstrap.bundle.min.js")
+  override def links: Seq[String] = Seq("/webjars/bootstrap/5.3.6/dist/css/bootstrap.min.css")
+  override def scripts: Seq[String] = Seq("/webjars/bootstrap/5.3.6/dist/js/bootstrap.bundle.min.js")
   override def headTitle: String = "Bootstrap"
   override def javaScriptMethod: Option[String] = Some("bootstrap")
   override def bodyFrag = div(cls := "container")(

@@ -26,7 +26,7 @@ class OAuthPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, Out
         meta(name := "viewport", content := "width=device-width, initial-scale=1"),
         title(s"OAuth in Action: OAuth $pageName"),
         // link(rel := "stylesheet", href := "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"),
-        link(rel := "stylesheet", href := "/webjars/bootstrap/5.3.3/dist/css/bootstrap.min.css"),
+        link(rel := "stylesheet", href := "/webjars/bootstrap/5.3.6/dist/css/bootstrap.min.css"),
         style(OAuthStyles(navbarInverseBackgroundColor).render[String]),
         // script(src := "https://oss.maxcdn.com/html5shiv/3.7.3-1/html5shiv.min.js"),
         script (src := "/webjars/html5shiv/3.7.3-1/dist/html5shiv.min.js"),
@@ -46,10 +46,10 @@ class OAuthPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, Out
         div(cls := "container")(
           main
         ),
-        // script(src := "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"),
+        // script(src := "https://ajax.googleapis.com/ajax/libs/jquery/1.12.1/jquery.min.js"),
         script(src := "/webjars/jquery/3.7.1/jquery.min.js"),
         // script(src := "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"),
-        script(src := "/webjars/bootstrap/5.3.3/dist/js/bootstrap.min.js"),
+        script(src := "/webjars/bootstrap/5.3.6/dist/js/bootstrap.min.js"),
         scriptSrc.map(uri => script(src := uri.toString)).getOrElse("")
       )
     )

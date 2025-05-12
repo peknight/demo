@@ -15,7 +15,7 @@ class HeimammPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, O
         title("黑马面面"),
         link(rel := "stylesheet", href := "/css/normalize.css"),
         // 先引入css文件 放到自己css文件的上面
-        link(rel := "stylesheet", href := "/webjars/swiper/11.0.5/swiper-bundle.min.css"),
+        link(rel := "stylesheet", href := "/webjars/swiper/11.2.6/swiper-bundle.min.css"),
         link(rel := "stylesheet", href := "/css/heimamm-media.css"),
         link(rel := "stylesheet", href := "/css/heimamm.css"),
       ),
@@ -70,7 +70,7 @@ class HeimammPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, O
           case (text, pic) => a(href := "#", cls := "item")(img(src := s"/heimamm/icons/$pic.png"), p(text))
         }),
         script(src := "/webjars/amfe-flexible/2.2.1/index.min.js"),
-        script(src := "/webjars/swiper/11.0.5/swiper-bundle.min.js"),
+        script(src := "/webjars/swiper/11.2.6/swiper-bundle.min.js"),
         script(src := "/js/heimamm/heimamm.js"),
       )
     )
