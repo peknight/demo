@@ -1,6 +1,7 @@
 package com.peknight.demo.fpinscala.parsing
 
 import java.util.regex.Pattern
+import scala.compiletime.deferred
 import scala.language.implicitConversions
 import scala.util.matching.Regex
 
@@ -10,10 +11,11 @@ trait Parsers[Parser[+_]]:
 
   def run[A](p: Parser[A])(input: String): Either[ParseError, A]
 
-  given string: Conversion[String, Parser[String]]
+  given string: Conversion[String, Parser[String]] = deferred
   given operators[A]: Conversion[Parser[A], ParserOps[A]] = (p: Parser[A]) => ParserOps[A](p)
   given asStringParser[A](using f: A => Parser[String]): Conversion[A, ParserOps[String]] = (a: A) => ParserOps(f(a))
-  given regex: Conversion[Regex, Parser[String]]
+
+  given regex: Conversion[Regex, Parser[String]] = deferred
 
   // Here the Parser type constructor is applied to Char.
   def char(c: Char): Parser[Char] = string(c.toString).map(_.charAt(0))
