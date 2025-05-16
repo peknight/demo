@@ -5,6 +5,8 @@ import org.scalajs.dom.html
 import tyrian.*
 import tyrian.cmds.*
 
+import scala.concurrent.duration.*
+
 
 object BuiltInGoodiesApp:
   enum Msg:
@@ -77,4 +79,35 @@ object BuiltInGoodiesApp:
       }
     )
   }
+
+  // Logger
+  // Allows you to log to your browsers JavaScript console:
+
+  val loggerCmd: Cmd[IO, Msg] =
+    Logger.info("Log this!")
+
+  val loggerOnceCmd: Cmd[IO, Msg] =
+    Logger.debugOnce("Log this exact message only once!")
+
+  // Random
+  // As you might expect, Random produces random values! Random works slightly differently from other commands, in that it doesn't except a conversion function to turn the result into a message. You do that by mapping over it.
+  // Assuming a message RandomValue, here are a few examples:
+  val toMessage: String => Msg = (v: String) => Msg.RandomValue(v)
+  val randomCmd: Cmd[IO, Msg] =
+    Cmd.Batch(
+      Random.int[IO].map(i => toMessage(i.value.toString)),
+      Random.shuffle[IO, Int](List(1, 2, 3)).map(l => toMessage(l.value.toString)),
+      Random.Seeded(12L).alphaNumeric[IO](5).map(a => toMessage(a.value.mkString))
+    )
+
+  // HotReload
+  // Won't compile: Model? Msg.Log? Msg.OverwriteModel? hotReloadKey?
+  // HotReload.bootstrap("my-save-data", Model.decode) {
+  //   case Left(msg) => Msg.Log("Error during hot-reload!: " + msg)
+  //   case Right(model) => Msg.OverwriteModel(model)
+  // }
+
+  // Sub.every[IO](1.second, hotReloadKey).map(_ => Msg.TakeSnapshot)
+
+  // case Msg.TakeSnapshot => (model, HotReload.snapshot(hotReloadKey, model, Model.encode))
 end BuiltInGoodiesApp
