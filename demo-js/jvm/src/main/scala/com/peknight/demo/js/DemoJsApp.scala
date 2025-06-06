@@ -10,16 +10,12 @@ import com.peknight.demo.js.page.DemoJsPage
 import fs2.Pipe
 import fs2.io.file
 import fs2.io.net.Network
-import io.circe.generic.auto.*
-import io.circe.syntax.*
 import org.http4s.*
-import org.http4s.circe.*
 import org.http4s.dsl.io.*
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.scalatags.*
 import org.http4s.server.Server
 import org.http4s.server.middleware.Logger as MiddlewareLogger
-import org.http4s.server.staticcontent.*
 import org.http4s.server.websocket.WebSocketBuilder
 import org.http4s.websocket.*
 import org.typelevel.log4cats.Logger
@@ -31,8 +27,13 @@ object DemoJsApp extends IOApp.Simple:
   given CanEqual[Path, Path] = CanEqual.derived
   given CanEqual[Method, Method] = CanEqual.derived
 
-  private val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  private def routes(builder: WebSocketBuilder[IO])(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(DemoJsPage.Text.index)
+    case GET -> Root / "ws" =>
+      val process: Pipe[IO, WebSocketFrame, WebSocketFrame] = _.evalMap { frame =>
+        info"WebSocket Received: $frame".map(_ => frame)
+      }
+      builder.build(process)
     case GET -> Root / "tutorial" => Ok(DemoJsPage.Text.tutorial)
     case GET -> Root / "alert" => Ok(DemoJsPage.Text.alertDemo)
     case GET -> Root / "node-append-child" => Ok(DemoJsPage.Text.nodeAppendChildDemo)
@@ -93,9 +94,8 @@ object DemoJsApp extends IOApp.Simple:
     for
       logger <- Slf4jLogger.create[IO]
       given Logger[IO] = logger
-      _ <- start[IO](port"8080")(_.withHttpApp(
-        MiddlewareLogger.httpApp(true, false)(routes.orNotFound)
+      _ <- start[IO](port"8080")(_.withHttpWebSocketApp(builder =>
+        MiddlewareLogger.httpApp(true, false)(routes(builder).orNotFound)
       ))
-      _ <- start[IO](port"10000")(_.withHttpWebSocketApp(echoApp))
       _ <- IO.never
     yield ()
