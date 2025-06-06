@@ -1,6 +1,5 @@
 package com.peknight.demo.js
 
-import cats.Monad
 import cats.effect.*
 import cats.syntax.flatMap.*
 import cats.syntax.functor.*
@@ -29,11 +28,6 @@ object DemoJsApp extends IOApp.Simple:
 
   private def routes(builder: WebSocketBuilder[IO])(using Logger[IO]): HttpRoutes[IO] = HttpRoutes.of[IO] {
     case GET -> Root => Ok(DemoJsPage.Text.index)
-    case GET -> Root / "ws" =>
-      val process: Pipe[IO, WebSocketFrame, WebSocketFrame] = _.evalMap { frame =>
-        info"WebSocket Received: $frame".map(_ => frame)
-      }
-      builder.build(process)
     case GET -> Root / "tutorial" => Ok(DemoJsPage.Text.tutorial)
     case GET -> Root / "alert" => Ok(DemoJsPage.Text.alertDemo)
     case GET -> Root / "node-append-child" => Ok(DemoJsPage.Text.nodeAppendChildDemo)
@@ -59,20 +53,15 @@ object DemoJsApp extends IOApp.Simple:
     case GET -> Root / "weather-1" => Ok(DemoJsPage.Text.weather1Demo)
     case GET -> Root / "weather-search" => Ok(DemoJsPage.Text.weatherSearchDemo)
     case GET -> Root / "future-weather" => Ok(DemoJsPage.Text.futureWeatherDemo)
+    case GET -> Root / "ws" =>
+      val process: Pipe[IO, WebSocketFrame, WebSocketFrame] = _.evalMap { frame =>
+        info"WebSocket Received: $frame".map(_ => frame)
+      }
+      builder.build(process)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
       StaticFile.fromPath(file.Path(s"./demo-js/js/target/scala-3.7.0/demo-js-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
-
-  private def echoRoutes[F[_]: {Monad, Logger}](builder: WebSocketBuilder[F]): HttpRoutes[F] = HttpRoutes.of[F] {
-    case GET -> Root =>
-      val process: Pipe[F, WebSocketFrame, WebSocketFrame] = _.evalMap { frame =>
-        info"WebSocket Received: $frame".map(_ => frame)
-      }
-      builder.build(process)
-  }
-
-  private def echoApp[F[_]: {Async, Logger}](builder: WebSocketBuilder[F]): HttpApp[F] = echoRoutes(builder).orNotFound
 
   private val storePasswordConfig: ConfigValue[Effect, Secret[String]] =
     env("STORE_PASSWORD").default("123456").secret
