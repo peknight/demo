@@ -2,6 +2,8 @@ package com.peknight.demo.http4s.jdkclient
 
 import cats.effect.*
 import cats.implicits.*
+import cats.syntax.parallel.*
+import fs2.Stream
 import org.http4s.*
 import org.http4s.client.Client
 import org.http4s.client.websocket.*
@@ -10,6 +12,7 @@ import org.http4s.jdkhttpclient.*
 
 import java.net.http.HttpClient
 import java.net.{InetSocketAddress, ProxySelector}
+import scala.concurrent.duration.*
 
 object Http4sJdkHttpClientApp extends IOApp.Simple:
 
@@ -37,12 +40,22 @@ object Http4sJdkHttpClientApp extends IOApp.Simple:
     // in almost all cases, it is better to call `use` instead
     .allocated.map(_._1)
 
-  val run = for
-    status <- client.use(c => fetchStatus(c, uri"https://http4s.org/"))
-    _ <- IO.println(status)
-    httpWebSocketTuple <- httpWebSocketTupleIO
-    (http, webSocket) = httpWebSocketTuple
-  yield ()
+  val run =
+    for
+      // status <- client.use(c => fetchStatus(c, uri"https://http4s.org/"))
+      // _ <- IO.println(status)
+      httpWebSocketTuple <- httpWebSocketTupleIO
+      (http, webSocket) = httpWebSocketTuple
+      stream = Stream.awakeEvery[IO](1.second).zipRight(Stream(WSFrame.Text("hello1"), WSFrame.Text("hello2"), WSFrame.Text("hello3")))
+      x <- webSocket.connectHighLevel(WSRequest(uri"wss://local.peknight.com:8080/ws")).use {
+        connection =>
+          (
+            stream.evalMap(connection.send).compile.drain,
+            connection.receiveStream.evalTap(frame => IO.println(s"receive: $frame")).take(3).compile.toList,
+          ).parTupled
+      }
+    yield
+      ()
 
 
 
