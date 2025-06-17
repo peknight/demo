@@ -10,10 +10,6 @@ ThisBuild / scalaVersion := scala3Version
 
 ThisBuild / organization := "com.peknight"
 
-ThisBuild / resolvers ++= Seq(
-  "Nexus" at "https://nexus.peknight.com/repository/maven-public/"
-)
-
 Docker / packageName := "pek/demo"
 Docker / maintainer := "peknight <JKpeknight@gmail.com>"
 
