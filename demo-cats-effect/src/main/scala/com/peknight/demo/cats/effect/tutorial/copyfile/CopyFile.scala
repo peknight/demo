@@ -1,9 +1,9 @@
 package com.peknight.demo.cats.effect.tutorial.copyfile
 
-import cats.effect.*
+import cats.effect.{IO as CEIO, *}
 import cats.syntax.all.*
 
-import java.io.{IO as _, *}
+import java.io.*
 
 object CopyFile extends IOApp:
 
@@ -26,8 +26,8 @@ object CopyFile extends IOApp:
     yield (inStream, outStream)
 
   // `fromAutoCloseable`这种方式虽然简洁一些，但不像`make`方式那样可以使用handleErrorWith处理关闭时的异常
-  def inputStreamViaFromAutoCloseable(f: File): Resource[IO, FileInputStream] =
-    Resource.fromAutoCloseable(IO(new FileInputStream(f)))
+  def inputStreamViaFromAutoCloseable(f: File): Resource[CEIO, FileInputStream] =
+    Resource.fromAutoCloseable(CEIO(new FileInputStream(f)))
 
   def copy[F[_]: Sync](origin: File, destination: File): F[Long] = inoutOutputStream(origin, destination).use {
     case (in, out) => transfer[F](in, out)
@@ -39,14 +39,14 @@ object CopyFile extends IOApp:
    * 而上面使用Resource的方式通过flatMap决定输出流打开失败也会自动关闭输入流
    * 所以用到bracket方式的地方都要考虑是否可以用上面Resource的方式替换
    */
-  def copyWithBracket(origin: File, destination: File): IO[Long] =
-    val inIO: IO[InputStream] = IO(new FileInputStream(origin))
-    val outIO: IO[OutputStream] = IO(new FileOutputStream(destination))
+  def copyWithBracket(origin: File, destination: File): CEIO[Long] =
+    val inIO: CEIO[InputStream] = CEIO(new FileInputStream(origin))
+    val outIO: CEIO[OutputStream] = CEIO(new FileOutputStream(destination))
     (inIO, outIO).tupled.bracket {
-      case (in, out) => transfer[IO](in, out)
+      case (in, out) => transfer[CEIO](in, out)
     } {
       case (in, out) =>
-        (IO(in.close()), IO(out.close())).tupled.handleErrorWith(_ => IO.unit).void
+        (CEIO(in.close()), CEIO(out.close())).tupled.handleErrorWith(_ => CEIO.unit).void
     }
 
   def transfer[F[_]: Sync](origin: InputStream, destination: OutputStream): F[Long] =
@@ -60,11 +60,11 @@ object CopyFile extends IOApp:
       count <- if amount > -1 then Sync[F].blocking(destination.write(buffer, 0, amount)) >> transmit(origin, destination, buffer, acc + amount) else Sync[F].pure(acc)
     yield count
 
-  override def run(args: List[String]): IO[ExitCode] =
+  override def run(args: List[String]): CEIO[ExitCode] =
     for
-      _ <- if args.length < 2 then IO.raiseError(new IllegalArgumentException("Need origin and destination files")) else IO.unit
+      _ <- if args.length < 2 then CEIO.raiseError(new IllegalArgumentException("Need origin and destination files")) else CEIO.unit
       orig = new File(args.head)
       dest = new File(args(1))
-      count <- copy[IO](orig, dest)
-      _ <- IO.println(s"$count bytes copied from ${orig.getPath} to ${dest.getPath}")
+      count <- copy[CEIO](orig, dest)
+      _ <- CEIO.println(s"$count bytes copied from ${orig.getPath} to ${dest.getPath}")
     yield ExitCode.Success
