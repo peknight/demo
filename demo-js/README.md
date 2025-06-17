@@ -26,7 +26,7 @@ To generate JavaScript using sbt, use the `fastLinkJS` task:
 
 ```
 > fastLinkJS
-[info] Fast optimizing (...)/scalajs-tutorial/target/scala-3.7.0/scala-js-tutorial-fastopt
+[info] Fast optimizing (...)/scalajs-tutorial/target/scala-3.7.1/scala-js-tutorial-fastopt
 [success] (...)
 ```
 
@@ -53,7 +53,7 @@ To run full optimizations, simply use the `fullLinkJS` task:
 
 ```
 > fullLinkJS
-[info] Full optimizing (...)/scalajs-tutorial/target/scala-3.7.0/scala-js-tutorial-opt
+[info] Full optimizing (...)/scalajs-tutorial/target/scala-3.7.1/scala-js-tutorial-opt
 [inof] Closure: 0 error(s), 0 warning(s)
 [success] (...)
 ```

@@ -46,7 +46,7 @@ class OAuthPage[Builder, Output <: FragT, FragT](val bundle: Bundle[Builder, Out
         div(cls := "container")(
           main
         ),
-        // script(src := "https://ajax.googleapis.com/ajax/libs/jquery/1.12.1/jquery.min.js"),
+        // script(src := "https://ajax.googleapis.com/ajax/libs/jquery/1.13.1/jquery.min.js"),
         script(src := "/webjars/jquery/3.7.1/jquery.min.js"),
         // script(src := "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"),
         script(src := "/webjars/bootstrap/5.3.6/dist/js/bootstrap.min.js"),

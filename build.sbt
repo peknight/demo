@@ -3,7 +3,7 @@ import org.scalajs.linker.interface.ModuleInitializer
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 // https://www.scala-lang.org/
-val scala3Version = "3.7.0"
+val scala3Version = "3.7.1"
 val scala2Version = "2.13.16"
 
 ThisBuild / scalaVersion := scala3Version
@@ -905,8 +905,8 @@ val fs2Version = "3.12.0"
 val circeVersion = "0.14.13"
 val circeFs2Version = "0.14.1"
 val monocleVersion = "3.3.0"
-val log4CatsVersion = "2.7.0"
-val cirisVersion = "3.8.0"
+val log4CatsVersion = "2.7.1"
+val cirisVersion = "3.9.0"
 val cirisHoconVersion = "1.3.0"
 val refinedCatsVersion = "0.11.3"
 // https://mvnrepository.com/artifact/io.github.timwspence/cats-stm
@@ -921,14 +921,14 @@ val http4sPrometheusMetricsVersion = "1.0.0-M34" // 1.0.0-M35 -> 1.0.0-M35, 1.0.
 // https://mvnrepository.com/artifact/org.http4s/http4s-dropwizard-metrics
 val http4sDropwizardMetricsVersion = "1.0.0-M32"
 val http4sJdkHttpClientVersion = "1.0.0-M3" // 1.0.0-M4 -> M35, 1.0.0-M5 -> 1.0.0-M36, 1.0.0-M6 & 1.0.0-M7 -> 1.0.0-M37, 1.0.0-M8 -> 1.0.0-M38, 1.0.0-M9 -> 1.0.0-M39 1.0.0-M10 -> 1.0.0-M44
-val sttpVersion = "4.0.3"
-val tapirVersion = "1.11.25"
+val sttpVersion = "4.0.8"
+val tapirVersion = "1.11.33"
 val doobieVersion = "1.0.0-RC9"
-val redis4CatsVersion = "1.7.2"
+val redis4CatsVersion = "2.0.0"
 val natchezVersion = "0.3.8"
-val neotypesVersion = "1.2.1"
+val neotypesVersion = "1.2.2"
 val jawnAstVersion = "1.6.0"
-val zioVersion = "2.1.17"
+val zioVersion = "2.1.19"
 
 val shapeless = "org.typelevel" %% "shapeless3-deriving" % shapelessVersion
 val shapeless2 = "com.chuusai" %% "shapeless" % shapeless2Version
@@ -994,11 +994,11 @@ val logbackVersion = "1.5.18"
 val akkaVersion = "2.8.8"
 val apacheCommonsCodecVersion = "1.18.0"
 val h2Version = "2.3.232"
-//val postgisJdbcVersion = "2024.1.0"
+//val postgisJdbcVersion = "2025.1.1"
 val neo4jVersion = "5.28.5"
 // https://mvnrepository.com/artifact/com.vesoft/client
 val nebulaClientVersion = "3.8.4"
-val bouncyCastleVersion = "1.80"
+val bouncyCastleVersion = "1.81"
 val jwtCirceVersion = "10.0.4"
 val scalaJwkVersion = "1.2.24"
 
@@ -1023,10 +1023,10 @@ val jQueryVersion = "3.7.1"
 val flexibleVersion = "2.2.1"
 val swiperVersion = "11.2.6"
 val bootstrapVersion = "5.3.6"
-val bootstrapIconsVersion = "1.12.1"
+val bootstrapIconsVersion = "1.13.1"
 val fastClickVersion = "1.0.6"
-val eChartsVersion = "5.6.0" // "5.5.1"
-val vueVersion = "3.5.13" // "3.5.4"
+val eChartsVersion = "5.6.0"
+val vueVersion = "3.5.16"
 val html5ShivVersion = "3.7.3-1"
 val respondJsVersion = "1.4.2"
 
@@ -1072,9 +1072,9 @@ val weaverCats = "com.disneystreaming" %% "weaver-cats" % weaverCatsVersion
 
 val scalaJsDomVersion = "2.8.0"
 val scalaTagsVersion = "0.13.1"
-val uPickleVersion = "4.1.0"
+val uPickleVersion = "4.2.1"
 val uTestVersion = "0.8.5"
 val scalaCssVersion = "1.0.0"
 val jQueryFacadeVersion = "2.1"
-val tyrianVersion = "0.13.0"
-val tyrianIndigoBridgeVersion = "0.20.0"
+val tyrianVersion = "0.14.0"
+val tyrianIndigoBridgeVersion = "0.21.1"

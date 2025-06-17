@@ -59,7 +59,7 @@ object DemoJsApp extends IOApp.Simple:
       }
       builder.build(process)
     case req @ GET -> Root / path if Set(".js", ".map").exists(path.endsWith) =>
-      StaticFile.fromPath(file.Path(s"./demo-js/js/target/scala-3.7.0/demo-js-opt/$path"), Some(req))
+      StaticFile.fromPath(file.Path(s"./demo-js/js/target/scala-3.7.1/demo-js-opt/$path"), Some(req))
         .getOrElseF(NotFound())
   }
 

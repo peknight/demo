@@ -2,7 +2,7 @@
   "dependencies": {
     "jsdom": "^25.0.1",
     "snabbdom": "^3.6.2",
-    "vue": "^3.5.13"
+    "vue": "^3.5.16"
   },
   "private": true,
   "version": "0.0.0",
